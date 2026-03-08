@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pix.gg - 전적검색</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* =========================================
            1. 기본 설정 및 레이아웃
@@ -478,7 +477,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* 랭킹/장인랭킹 소환사명 클릭 하이퍼링크 효과 */
         .summoner-link {
             cursor: pointer;
             transition: color 0.2s;
@@ -642,7 +640,6 @@
             letter-spacing: 1px;
         }
 
-        /* 1. 요약 전적 데스 빨간색 제거 */
         .pix-kda-score .d {
             color: inherit;
         }
@@ -661,7 +658,6 @@
             padding-left: 12px;
         }
 
-        /* 2. 요약 전적 킬관여율 빨간색 제거 */
         .pix-stats .kp {
             color: #9aa4af;
             font-weight: bold;
@@ -706,12 +702,14 @@
             color: #fff;
         }
 
-        .pix-badge.red {
-            background: #e84057;
+        /* 연속 킬: 약간 진한 붉은색 */
+        .pix-badge.multi-kill {
+            background: #c0392b;
         }
 
-        .pix-badge.green {
-            background: #00bba3;
+        /* 선취점: 약간 진한 보라색 */
+        .pix-badge.first-blood {
+            background: #6a1b9a;
         }
 
         .pix-players {
@@ -856,17 +854,17 @@
             overflow: visible;
         }
 
-        .team-blue-header th:first-child {
+        .detail-table thead:first-of-type th:first-child {
             border-top-left-radius: 8px !important;
         }
-        .team-blue-header th:last-child {
+        .detail-table thead:first-of-type th:last-child {
             border-top-right-radius: 8px !important;
         }
 
-        .team-red tr:last-child td:first-child {
+        .detail-table tbody:last-of-type tr:last-child td:first-child {
             border-bottom-left-radius: 8px !important;
         }
-        .team-red tr:last-child td:last-child {
+        .detail-table tbody:last-of-type tr:last-child td:last-child {
             border-bottom-right-radius: 8px !important;
         }
 
@@ -998,7 +996,6 @@
             font-size: 13px;
         }
 
-        /* 3. 상세 전적 데스 빨간색 제거 */
         .detail-kda .d {
             color: inherit;
         }
@@ -1598,12 +1595,32 @@
             <p style="margin-bottom: 15px;">서비스 이용 중 발생하는 건의사항, 버그 리포트 또는 개인정보 처리방침과 관련된 문의는 아래의 이메일 채널을 통해 연락해 주시기 바랍니다.<br>
             ▶ 이메일: <a href="mailto:00.y4no@gmail.com" style="color: #60a5fa; text-decoration: none; font-weight: bold;">00.y4no@gmail.com</a></p>
         </div>
+        <div id="terms-container" style="display: none; max-width: 800px; margin: 40px auto; padding: 40px 30px; line-height: 1.8; color: #ddd; background: #1a1a2e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; animation: fadeIn 0.6s ease; min-height: 60vh;">
+            <h2 style="color: #fff; margin-bottom: 20px; text-align: center; font-size: 28px;">이용약관</h2>
+            
+            <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">제1조 (목적)</h3>
+            <p style="margin-bottom: 15px;">본 약관은 <b>pix.gg</b>(이하 '본 사이트')가 제공하는 리그 오브 레전드 전적 검색 및 관련 통계 서비스의 이용 조건 및 제반 사항을 규정함을 목적으로 합니다.</p>
+            
+            <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">제2조 (라이엇 게임즈와의 관계)</h3>
+            <p style="margin-bottom: 15px;">본 사이트는 라이엇 게임즈(Riot Games)의 공식 서비스가 아니며, 라이엇 게임즈 또는 리그 오브 레전드의 제작 및 관리에 공식적으로 관여하는 당사자의 견해나 의견을 반영하지 않습니다. 리그 오브 레전드 및 라이엇 게임즈는 Riot Games, Inc.의 상표 또는 등록 상표입니다.</p>
+            
+            <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">제3조 (서비스의 제공 및 변경)</h3>
+            <p style="margin-bottom: 15px;">본 사이트는 라이엇 API를 기반으로 데이터를 제공하므로, API 서버 상태나 운영 상황에 따라 서비스가 사전 예고 없이 지연, 변경, 또는 중단될 수 있습니다. 본 사이트는 이로 인해 발생하는 이용자의 불편에 대해 법적 책임을 지지 않습니다.</p>
+            
+            <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">제4조 (이용자의 의무)</h3>
+            <p style="margin-bottom: 15px;">이용자는 본 사이트를 이용함에 있어 비정상적인 접근(매크로, 봇 등)을 통해 서버에 과도한 부하를 주거나, 제공되는 데이터를 무단 가공 및 재배포하는 행위를 하여서는 안 됩니다.</p>
+
+            <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">제5조 (면책 조항)</h3>
+            <p style="margin-bottom: 15px;">본 사이트에서 제공하는 데이터는 라이엇 API를 바탕으로 자동 처리되므로 데이터의 완벽한 정확성을 보증하지 않으며, 이를 바탕으로 한 이용자의 게임 내 의사결정에 대한 책임은 본인에게 있습니다.</p>
+        </div>
 
         <footer style="text-align: center; padding: 40px 20px; margin-top: 50px; border-top: 1px solid rgba(255, 255, 255, 0.1); color: #777; font-size: 12px; line-height: 1.6;">
             <div style="margin-bottom: 20px; display: flex; justify-content: center; gap: 20px;">
+                <a onclick="showTerms()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none;">이용약관</a>
+                <span style="color: #444;">|</span>
                 <a onclick="showPrivacyPolicy()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none;">개인정보 처리방침</a>
                 <span style="color: #444;">|</span>
-                <a href="mailto:00.y4no@gmail.com" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none;">버그제보 및 피드백</a>
+                <a onclick="copyEmail()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none;">버그제보 및 피드백</a>
             </div>
             
             <div>
@@ -1656,11 +1673,24 @@
             setInterval(updateShopTimer, 1000);
 
             const pathParts = window.location.pathname.split('/');
+            
+            // ★ URL에서 page 파라미터 추출 함수
+            const getQueryPage = () => {
+                const params = new URLSearchParams(window.location.search);
+                const pageParam = params.get('page');
+                return pageParam ? parseInt(pageParam) : 1;
+            };
+
             if (pathParts[1] === 'summoner' && pathParts[2]) {
                 document.getElementById('summoner-input').value = decodeURIComponent(pathParts[2]);
                 executeSearch();
             } else if (pathParts[1] === 'ranking') {
-                showRanking();
+                showRanking(getQueryPage());
+            } else if (pathParts[1] === 'masters') {
+                // ★ 추가: 주소창에 챔피언 영문 이름이 있다면 파악해서 띄워줌
+                const requestedChamp = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
+                showMasters(requestedChamp);
+                setActiveNav('nav-masters');
             }
         });
 
@@ -1672,10 +1702,65 @@
                 executeSearch();
                 setActiveNav('nav-search');
             } else if (currentPath === '/ranking') {
-                showRanking();
+                const params = new URLSearchParams(window.location.search);
+                const pageParam = params.get('page');
+                const targetPage = pageParam ? parseInt(pageParam) : 1;
+                
+                if (fullRankingData.length > 0) {
+                    // ★ 추가된 부분: 전적 화면의 껍데기를 지우고 랭킹 화면으로 완벽하게 초기화
+                    hideAllContainers();
+                    document.getElementById('result-container').style.display = "block";
+                    
+                    const sidebarArea = document.getElementById('sidebar-area');
+                    const filterArea = document.getElementById('filter-area');
+                    if (sidebarArea) sidebarArea.style.display = "none";
+                    if (filterArea) filterArea.style.display = "none";
+                    
+                    document.getElementById('user-profile').innerHTML = `
+                        <div class="stats-header">
+                            <h1 class="ranking-title">
+                                <img src="https://opgg-static.akamaized.net/images/medals_new/challenger.png" style="position: absolute; right: 100%; margin-right: 12px; top: 50%; transform: translateY(-50%); width: 60px; height: 60px;">
+                                한국서버 솔로랭크 랭킹
+                            </h1>
+                            <p style="color: #9aa4af; margin-top: 10px; font-size: 14px;">약 10분마다 갱신됩니다.</p>
+                        </div>
+                    `;
+                    
+                    renderRankingPage(targetPage);
+                } else {
+                    showRanking(targetPage);
+                }
                 setActiveNav('nav-ranking');
             } else if (currentPath === '/privacy') {
                 showPrivacyPolicy();
+            } else if (currentPath === '/terms') {
+                showTerms();
+            } else if (currentPath.startsWith('/masters')) {
+                // ★ 수정: 뒤로가기 시 챔피언 간 부드러운 전환 지원
+                const pathParts = currentPath.split('/');
+                const champId = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
+                const existingGrid = document.getElementById('masters-champ-grid');
+                
+                // 이미 화면에 챔피언 목록이 떠있는 상태라면 새로고침 없이 즉시 전환
+                if (existingGrid && existingGrid.innerHTML.trim() !== '') {
+                    const items = existingGrid.querySelectorAll('.champ-grid-item');
+                    let targetItem = Array.from(items).find(i => i.dataset.id.toLowerCase() === (champId ? champId.toLowerCase() : items[0].dataset.id.toLowerCase()));
+                    
+                    if (targetItem) {
+                        // ★ 바로 이 두 줄이 추가되었습니다! (전적 화면을 숨기고 장인랭킹 화면을 켬)
+                        hideAllContainers();
+                        document.getElementById('masters-container').style.display = "block";
+
+                        items.forEach(i => i.classList.remove('active'));
+                        targetItem.classList.add('active');
+                        renderMasterRanking(targetItem.dataset.name, targetItem.dataset.id);
+                    } else {
+                        showMasters(champId);
+                    }
+                } else {
+                    showMasters(champId);
+                }
+                setActiveNav('nav-masters');
             } else {
                 goLobby();
             }
@@ -1717,6 +1802,7 @@
             document.getElementById('stats-container').style.display = "none";
             document.getElementById('masters-container').style.display = "none";
             document.getElementById('privacy-container').style.display = "none";
+            document.getElementById('terms-container').style.display = "none";
             clearSearchError();
             if (window.refreshTimerInterval) clearInterval(window.refreshTimerInterval);
         }
@@ -1753,29 +1839,35 @@
                 return;
             }
             
-            if (Date.now() < rateLimitUnlockTime) {
-                showErrorToast("현재 접속자가 많아 검색이 지연되고 있습니다. 잠시 후 다시 시도해주세요.");
-                return; 
-            }
+            // ★ 삭제된 부분: 기존에는 여기서 Date.now() < rateLimitUnlockTime 이면 요청을 막아버렸습니다.
+            // 이제는 서버가 DB를 뒤질 기회를 주기 위해 무조건 요청을 보냅니다.
 
             try {
                 const response = await fetch(`/api/summoner/${encodeURIComponent(inputName)}`);
 
                 if (response.status === 429) {
-                    const retryAfter = response.headers.get('Retry-After');
-                    const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 5000; 
-                    rateLimitUnlockTime = Date.now() + waitTime;
-                    showErrorToast("현재 접속자가 많아 검색이 지연되고 있습니다. 잠시 후 다시 시도해주세요.");
+                    // 서버 DB에서도 데이터를 찾지 못해 진짜로 실패했을 때만 띄웁니다.
+                    showErrorToast("서버 요청이 많아 지연되고 있습니다.\n잠시 후 다시 시도해주세요.");
                     return; 
                 }
 
-                if (response.status === 404 || !response.ok) {
-                    throw new Error("소환사를 찾을 수 없습니다.");
+                if (response.status === 404) {
+                    showErrorToast("해당 유저를 찾을 수 없습니다.\n정확한 닉네임과 태그로 검색해 주세요.");
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error("서버 통신 중 오류가 발생했습니다.");
                 }
                 
                 const data = await response.json();
 
                 if (data.error) throw new Error(data.error);
+
+                // ★ 이 부분: 백엔드에서 과거 데이터라고 꼬리표를 달아주면 알림 띄우기
+                if (data.isCachedFallback) {
+                    showErrorToast("서버 지연으로 최근 저장된 과거 데이터를 표시합니다.\n잠시 후 다시 갱신해주세요.");
+                }
 
                 addRecentSearch(data.profile.name);
 
@@ -1788,7 +1880,8 @@
                 const sidebar = document.getElementById('sidebar-area');
                 if (sidebar) sidebar.style.display = "flex";
 
-                // 프로필 헤더 렌더링
+                window.scrollTo(0, 0);
+
                 document.getElementById('user-profile').innerHTML = `
                 <div class="profile-header">
                     <img src="${data.profile.icon}" class="profile-icon">
@@ -1812,7 +1905,6 @@
                 </div>
                 `;
 
-                // 사이드바 렌더링 (티어 + 모스트 챔피언 연동)
                 const rawTier = data.profile.tier || "Unranked";
                 const rawRank = data.profile.rank || "";
                 const safeTier = rawTier.split(' ')[0].toLowerCase();
@@ -1840,7 +1932,6 @@
 
                 await fetchChampionMap();
 
-                // 모스트 챔피언 탑재 (스마트 탐색 로직 적용)
                 const userPuuid = data.puuid || (data.profile && data.profile.puuid);
                 
                 if (userPuuid) {
@@ -1879,13 +1970,15 @@
 
                 sidebar.innerHTML = sidebarHtml;
                 
-                // 리스트 렌더링 및 갱신버튼 세팅
                 document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
                 renderMatches(allMatches);
 
                 const refreshBtn = document.getElementById('refresh-btn');
                 const refreshText = document.getElementById('refresh-timer-text');
-                const expireAt = data.expireAt;
+                let expireAt = data.expireAt;
+                if (data.isCachedFallback) {
+                    expireAt = Date.now() + 120 * 1000; 
+                }
 
                 refreshBtn.addEventListener('click', executeSearch);
 
@@ -1897,7 +1990,7 @@
                         refreshBtn.style.background = "#6b3f8e";
                         refreshBtn.style.cursor = "pointer";
                         refreshText.innerText = "지금 갱신 가능";
-                        clearInterval(window.refreshTimerInterval);
+                        if (window.refreshTimerInterval) clearInterval(window.refreshTimerInterval);
                     } else {
                         refreshBtn.disabled = true;
                         refreshBtn.style.background = "#444";
@@ -1908,6 +2001,7 @@
                     }
                 }
                 updateRefreshTimer();
+                if (window.refreshTimerInterval) clearInterval(window.refreshTimerInterval);
                 window.refreshTimerInterval = setInterval(updateRefreshTimer, 1000);
 
                 const newUrl = `/summoner/${encodeURIComponent(inputName)}`;
@@ -1916,13 +2010,7 @@
                 }
 
             } catch (e) {
-                if (errorMsgDiv && (e.message.includes("찾을 수 없습니다") || e.message.includes("error"))) {
-                    errorMsgDiv.innerHTML = "해당 유저를 찾을 수 없습니다.<br>정확한 닉네임과 태그로 검색해 주세요.";
-                    errorMsgDiv.style.display = 'block';
-                    triggerShake();
-                } else {
-                    showErrorToast("서버 요청이 많아 지연되고 있습니다. 잠시 후 다시 시도해주세요.");
-                }
+                showErrorToast("서버 요청이 많아 지연되고 있습니다.\n잠시 후 다시 시도해주세요.");
             }
         }
 
@@ -1933,7 +2021,7 @@
             listDiv.innerHTML = "";
 
             if (!matches || matches.length === 0) {
-                listDiv.innerHTML = `<div style="text-align: center; padding: 60px 0; color: #9aa4af; line-height: 1.6;">전적 데이터가 없습니다.<br><span style="font-size: 12px; color: #777;">(최근 10게임 기준)</span></div>`;
+                listDiv.innerHTML = `<div style="text-align: center; padding: 60px 0; color: #9aa4af; line-height: 1.6;">전적 데이터가 없습니다.<br><span style="font-size: 12px; color: #777;">(최근 20게임 기준)</span></div>`;
                 return;
             }
 
@@ -1948,13 +2036,12 @@
                 const winText = isRemake ? '다시하기' : (game.win ? '승리' : '패배');
                 const queueColor = isRemake ? '#7b7a8e' : (game.win ? '#5383e8' : '#e84057');
 
-                // --- 시간 계산 로직 시작 ---
                 let exactDateText = '상세 시간 정보 없음';
-                let displayDate = game.dateStr; // 기본값
+                let displayDate = game.dateStr; 
 
                 if (game.timestamp) {
                     const now = Date.now();
-                    const timeDiff = now - game.timestamp; // 밀리초 차이
+                    const timeDiff = now - game.timestamp; 
                     const diffMinutes = Math.floor(timeDiff / (1000 * 60));
                     const diffHours = Math.floor(timeDiff / (1000 * 60 * 60));
                     const diffDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
@@ -1979,7 +2066,7 @@
                         const d = String(date.getDate()).padStart(2, '0');
                         let h = date.getHours();
                         const ampm = h >= 12 ? '오후' : '오전';
-                        h = h % 12 || 12; // 0시는 12시로 표기
+                        h = h % 12 || 12; 
                         const hh = String(h).padStart(2, '0');
                         const mm = String(date.getMinutes()).padStart(2, '0');
                         const ss = String(date.getSeconds()).padStart(2, '0');
@@ -2013,8 +2100,8 @@
                 itemsHtml += `</div>`;
 
                 let badgeHtml = `<div class="pix-badges">`;
-                if (game.multiKill) badgeHtml += `<div class="pix-badge red">${game.multiKill}</div>`;
-                if (game.firstBlood) badgeHtml += `<div class="pix-badge green">선취점</div>`;
+                if (game.multiKill) badgeHtml += `<div class="pix-badge multi-kill">${game.multiKill}</div>`;
+                if (game.firstBlood) badgeHtml += `<div class="pix-badge first-blood">선취점</div>`;
                 badgeHtml += `</div>`;
 
                 const renderTeamList = (participantsArray, targetTeamId) => {
@@ -2029,6 +2116,37 @@
                         `;
                     }).join('');
                 };
+
+                const me = game.participants.find(p => p.isSearchedUser);
+                
+                // 시즌 14 서포터 아이템 ID 목록 (세계 지도집 및 업그레이드 템)
+                const supportItems = [3869, 3870, 3871, 3873, 3874, 3875, 3876, 3877];
+                const isSupport = [me.item0, me.item1, me.item2, me.item3, me.item4, me.item5, me.item6].some(id => supportItems.includes(id));
+
+                let statsHtml = '';
+                if (isSupport) {
+                    // 서포터용 지표
+                    statsHtml = `
+                        <div class="kp">킬관여 ${game.kp}%</div>
+                        <div style="display: flex; align-items: center; justify-content: flex-start; gap: 3px;" data-tooltip="제어 와드 구매 / 설치 / 파괴">
+                            <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/2055.png" style="width: 12px; height: 12px; border-radius: 50%; transform: translateY(1.5px);">
+                            <span style="color: #fff; font-weight: bold;">${me.visionWards}</span>
+                            <span style="font-size: 11px; margin-left: 2px;">(+${me.wardsPlaced}/-${me.wardsKilled})</span>
+                        </div>
+                        <div>시야점수 ${me.visionScore}</div>
+                    `;
+                } else {
+                    // 비서포터용 지표 (DPM, 골드 계산)
+                    const totalMins = game.durationMin + (game.durationSec / 60);
+                    const dpm = totalMins > 0 ? Math.round(me.damage / totalMins) : 0;
+                    const goldText = me.gold > 1000 ? (me.gold / 1000).toFixed(1) + 'k' : me.gold;
+                    
+                    statsHtml = `
+                        <div class="kp">킬관여 ${game.kp}%</div>
+                        <div>CS ${me.cs} <span style="font-size:11px;">(${game.csPerMin})</span></div>
+                        <div>DPM ${dpm.toLocaleString()}</div>
+                    `;
+                }
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'match-wrapper';
@@ -2064,9 +2182,7 @@
                         <div class="pix-kda-ratio">평점 ${game.kda}</div>
                     </div>
                     <div class="pix-stats">
-                        <div class="kp">킬관여 ${game.kp}%</div>
-                        <div>CS ${game.totalCs} (${game.csPerMin})</div>
-                        <div>시야 ${game.visionScore}</div>
+                        ${statsHtml}
                     </div>
                     <div class="pix-items-box">
                         ${itemsHtml}
@@ -2112,7 +2228,6 @@
                     const isMeStyle = p.isSearchedUser ? 'background: rgba(255,255,255,0.08); font-weight: bold;' : '';
                     const kpColor = '#9aa4af';
 
-                    // ★ 분당 CS 계산 로직 추가
                     const totalMins = game.durationMin + (game.durationSec / 60);
                     const pCsPerMin = totalMins > 0 ? (p.cs / totalMins).toFixed(1) : "0.0";
 
@@ -2144,8 +2259,8 @@
                             <td style="color: ${kpColor}; font-weight: bold; font-size: 11px;">${p.kp}%</td>
                             <td>${pItems}</td>
                             <td style="color: #9aa4af;">
-                                <div>${p.cs}</div>
-                                <div style="font-size: 11px;">(${pCsPerMin})</div>
+                                <div style="color: #ddd;">${p.cs} <span style="font-size: 11px; color: #9aa4af;">(${pCsPerMin})</span></div>
+                                <div style="font-size: 11px; margin-top: 2px;">${p.gold.toLocaleString()} G</div>
                             </td>
                             <td>
                                 <div style="color: #fff;">${p.damage.toLocaleString()}</div>
@@ -2157,7 +2272,7 @@
                             </td>
                             <td style="color: #9aa4af; cursor: help;" data-tooltip="시야 점수: ${p.visionScore || 0}">
                                 <div style="display: flex; align-items: center; justify-content: center; gap: 3px;">
-                                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/2055.png" style="width: 12px; height: 12px; border-radius: 50%;">
+                                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/2055.png" style="width: 12px; height: 12px; border-radius: 50%; transform: translateY(1.5px);">
                                     <span style="color: #fff;">${p.visionWards}</span>
                                 </div>
                                 <div style="font-size: 11px; margin-top: 2px;">+${p.wardsPlaced} / -${p.wardsKilled}</div>
@@ -2168,28 +2283,36 @@
 
                 const detailHtml = document.createElement('div');
                 detailHtml.className = 'match-detail';
+                
+                // 승패 여부에 따라 적용할 클래스를 동적으로 결정
+                const blueHeaderClass = blueWon ? 'team-blue-header' : 'team-red-header';
+                const blueBodyClass = blueWon ? 'team-blue' : 'team-red';
+                
+                const redHeaderClass = redWon ? 'team-blue-header' : 'team-red-header';
+                const redBodyClass = redWon ? 'team-blue' : 'team-red';
+
                 detailHtml.innerHTML = `
                     <table class="detail-table">
                         <colgroup>
-                            <col> <col style="width: 55px;"> <col style="width: 35px;"> <col style="width: 90px;"> <col style="width: 55px;"> <col style="width: 105px;"> <col style="width: 45px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 55px;"> </colgroup>
+                            <col> <col style="width: 55px;"> <col style="width: 35px;"> <col style="width: 90px;"> <col style="width: 55px;"> <col style="width: 105px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 55px;"> </colgroup>
                         <thead>
-                            <tr class="team-blue-header">
+                            <tr class="${blueHeaderClass}">
                                 <th style="text-align:left; padding-left:15px;">${blueWon ? '승리' : '패배'} (블루팀)</th>
                                 <th>스펠/룬</th>
                                 <th>레벨</th>
-                                <th>KDA</th><th>킬관여</th><th>아이템</th><th>CS</th><th>피해량</th><th>받은피해량</th><th>와드</th>
+                                <th>KDA</th><th>킬관여</th><th>아이템</th><th>CS/골드</th><th>피해량</th><th>받은피해량</th><th>와드</th>
                             </tr>
                         </thead>
-                        <tbody class="team-blue">${game.participants.filter(p => p.teamId === 100).map(p => renderDetailRow(p)).join('')}</tbody>
+                        <tbody class="${blueBodyClass}">${game.participants.filter(p => p.teamId === 100).map(p => renderDetailRow(p)).join('')}</tbody>
                         <thead>
-                            <tr class="team-red-header">
+                            <tr class="${redHeaderClass}">
                                 <th style="text-align:left; padding-left:15px;">${redWon ? '승리' : '패배'} (레드팀)</th>
                                 <th>스펠/룬</th>
                                 <th>레벨</th>
-                                <th>KDA</th><th>킬관여</th><th>아이템</th><th>CS</th><th>피해량</th><th>받은피해량</th><th>와드</th>
+                                <th>KDA</th><th>킬관여</th><th>아이템</th><th>CS/골드</th><th>피해량</th><th>받은피해량</th><th>와드</th>
                             </tr>
                         </thead>
-                        <tbody class="team-red">${game.participants.filter(p => p.teamId === 200).map(p => renderDetailRow(p)).join('')}</tbody>
+                        <tbody class="${redBodyClass}">${game.participants.filter(p => p.teamId === 200).map(p => renderDetailRow(p)).join('')}</tbody>
                     </table>
                 `;
 
@@ -2223,7 +2346,7 @@
                     emptyMsg = document.createElement('div');
                     emptyMsg.id = 'empty-filter-msg';
                     emptyMsg.style.cssText = "text-align: center; padding: 60px 0; color: #9aa4af; line-height: 1.6;";
-                    emptyMsg.innerHTML = "전적 데이터가 없습니다.<br><span style='font-size: 12px; color: #777;'>(최근 10게임 기준)</span>";
+                    emptyMsg.innerHTML = "전적 데이터가 없습니다.<br><span style='font-size: 12px; color: #777;'>(최근 20게임 기준)</span>";
                     listDiv.appendChild(emptyMsg);
                 }
                 emptyMsg.style.display = 'block';
@@ -2235,7 +2358,7 @@
         // ==========================================
         // [★] 즐겨찾기 및 최근기록 로직
         // ==========================================
-        let currentDropdownTab = 'favorites'; // 기본 탭 설정
+        let currentDropdownTab = 'favorites'; 
 
         function getFavorites() { return JSON.parse(localStorage.getItem('pix_favorites') || '[]'); }
         function saveFavorites(favs) { localStorage.setItem('pix_favorites', JSON.stringify(favs)); }
@@ -2243,7 +2366,6 @@
         function getRecents() { return JSON.parse(localStorage.getItem('pix_recent') || '[]'); }
         function saveRecents(recents) { localStorage.setItem('pix_recent', JSON.stringify(recents)); }
 
-        // 즐겨찾기 추가/해제
         function toggleFavorite(name) {
             let favs = getFavorites();
             const index = favs.indexOf(name);
@@ -2269,7 +2391,6 @@
             if (starIcon && starIcon.dataset.name === name) starIcon.classList.remove('active');
         }
 
-        // 최근기록 추가 (검색 성공 시 자동 호출)
         function addRecentSearch(name) {
             let recents = getRecents();
             recents = recents.filter(r => r !== name); 
@@ -2286,7 +2407,6 @@
             renderDropdownList();
         }
 
-        // 탭 전환
         function switchTab(tabName) {
             currentDropdownTab = tabName;
             document.getElementById('tab-favorites').classList.toggle('active', tabName === 'favorites');
@@ -2295,7 +2415,6 @@
             document.getElementById('summoner-input').focus(); 
         }
 
-        // 목록 그리기
         function renderDropdownList() {
             const listDiv = document.getElementById('dropdown-list');
             
@@ -2516,10 +2635,18 @@
         }
 
         // ==========================================
-        // [4] 한국 서버 솔로랭크 랭킹
+        // [4] 한국 서버 솔로랭크 랭킹 (페이지네이션 적용)
         // ==========================================
-        async function showRanking() {
-            if (window.location.pathname !== '/ranking') window.history.pushState({ page: 'ranking' }, '', '/ranking');
+        let fullRankingData = [];
+        let currentRankingPage = 1;
+        const RANKING_ITEMS_PER_PAGE = 50;
+
+        async function showRanking(targetPage = 1) {
+            // ★ 인자로 받은 targetPage가 없을 경우 기본값 1 적용, 네비게이션 클릭 시에는 주소를 깔끔하게 /ranking으로 유지
+            if (window.location.pathname !== '/ranking') {
+                window.history.pushState({ page: 'ranking' }, '', '/ranking');
+            }
+
             if (Date.now() < rateLimitUnlockTime) {
                 showErrorToast("현재 접속자가 많아 검색이 지연되고 있습니다. 잠시 후 다시 시도해주세요.");
                 return;
@@ -2560,44 +2687,113 @@
                 if (res.error) throw new Error(res.error);
                 const data = await res.json();
 
-                let tableHtml = `
-                <div style="max-height: 600px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: #1a1a2e;">
-                    <table style="width:100%; border-collapse: collapse; font-size: 14px;">
-                        <thead style="background: #2b1a52; color: #a78bfa; position: sticky; top: 0; z-index: 10;">
-                            <tr>
-                                <th style="padding: 15px;">#</th><th style="padding: 15px; text-align: left;">소환사</th><th style="padding: 15px;">LP</th><th style="padding: 15px;">승률</th>
-                            </tr>
-                        </thead>
-                        <tbody class="ranking-body">
-                `;
-
-                data.players.forEach((player, index) => {
-                    const total = player.wins + player.losses;
-                    const winRate = total > 0 ? ((player.wins / total) * 100).toFixed(1) : 0;
-                    
-                    // ★ 랭킹의 승률 색상은 보내주신 원본 그대로 되돌렸습니다!
-                    tableHtml += `
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <td style="padding: 12px; color: #777; text-align: center;">${index + 1}</td>
-                        <td style="padding: 12px; text-align: left; font-weight: bold; color: #ddd;">
-                            <span class="summoner-link" onclick="document.getElementById('summoner-input').value='${player.displayName}'; document.getElementById('search-btn').click();" title="${player.displayName} 검색">${player.displayName}</span>
-                        </td>
-                        <td style="padding: 12px; color: #facc15; text-align: center;">${player.leaguePoints}</td>
-                        <td style="padding: 12px; text-align: center;">
-                            <span style="color: ${winRate >= 55 ? '#f87171' : '#60a5fa'}">${winRate}%</span>
-                            <span style="font-size: 11px; color: #555; margin-left: 4px;">(${player.wins}W ${player.losses}L)</span>
-                        </td>
-                    </tr>
-                    `;
-                });
-
-                tableHtml += `</tbody></table></div>`;
-                listDiv.innerHTML = tableHtml;
+                fullRankingData = data.players;
+                renderRankingPage(targetPage);
 
             } catch (e) {
                 showErrorToast("데이터 로드 실패");
                 listDiv.innerHTML = `<div style='text-align:center; padding:50px; color:#f87171;'>데이터 로드 실패: ${e.message}</div>`;
             }
+        }
+
+        function renderRankingPage(page) {
+            currentRankingPage = page;
+            const listDiv = document.getElementById('game-list');
+            
+            // URL에 현재 페이지 번호 반영 (새로고침 유지용)
+            const newUrl = `/ranking?page=${page}`;
+            if (window.location.pathname + window.location.search !== newUrl) {
+                window.history.pushState({ page: 'ranking', rankingPage: page }, '', newUrl);
+            }
+
+            const startIndex = (page - 1) * RANKING_ITEMS_PER_PAGE;
+            const endIndex = startIndex + RANKING_ITEMS_PER_PAGE;
+            const pageData = fullRankingData.slice(startIndex, endIndex);
+            const totalPages = Math.ceil(fullRankingData.length / RANKING_ITEMS_PER_PAGE);
+
+            // ★ 헤더 내용 및 정렬 변경 ('#' -> '순위', '소환사' -> '닉네임', 모두 가운데 정렬)
+            let tableHtml = `
+            <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: #1a1a2e;">
+                <table style="width:100%; border-collapse: collapse; font-size: 14px;">
+                    <thead style="background: #2b1a52; color: #a78bfa;">
+                        <tr>
+                            <th style="padding: 15px; text-align: center;">순위</th>
+                            <th style="padding: 15px; text-align: center;">닉네임</th>
+                            <th style="padding: 15px; text-align: center;">LP</th>
+                            <th style="padding: 15px; text-align: center;">승률</th>
+                        </tr>
+                    </thead>
+                    <tbody class="ranking-body">
+            `;
+
+            pageData.forEach((player, index) => {
+                const actualIndex = startIndex + index + 1;
+                const total = player.wins + player.losses;
+                const winRate = total > 0 ? ((player.wins / total) * 100).toFixed(1) : 0;
+                
+                // ★ 순위에 따른 LP 텍스트 색상 결정
+                let lpColor = "#8b5cf6"; // 기본 마스터 색상 (1001등 ~ 1500등)
+                if (actualIndex <= 300) {
+                    lpColor = "#ca8a04"; // 챌린저 색상 (1등 ~ 300등)
+                } else if (actualIndex <= 1000) {
+                    lpColor = "#d33148"; // 그랜드마스터 색상 (301등 ~ 1000등)
+                }
+                
+                tableHtml += `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 12px; color: #777; text-align: center;">${actualIndex}</td>
+                    <td style="padding: 12px; text-align: left; font-weight: bold; color: #ddd; padding-left: 30px;">
+                        <span class="summoner-link" onclick="document.getElementById('summoner-input').value='${player.displayName}'; document.getElementById('search-btn').click();" title="${player.displayName} 검색">${player.displayName}</span>
+                    </td>
+                    <td style="padding: 12px; color: ${lpColor}; font-weight: bold; text-align: center;">${player.leaguePoints}</td>
+                    <td style="padding: 12px; text-align: left; padding-left: 20px;">
+                        <span style="display: inline-block; width: 45px; text-align: right; color: ${winRate >= 55 ? '#f87171' : '#60a5fa'}">${winRate}%</span>
+                        <span style="font-size: 11px; color: #555; margin-left: 8px;">(${player.wins}W ${player.losses}L)</span>
+                    </td>
+                </tr>
+                `;
+            });
+
+            tableHtml += `</tbody></table></div>`;
+
+            // ==========================================
+            // ★ 페이지네이션 5개 단위 그룹화 로직
+            // ==========================================
+            let paginationHtml = `<div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding-bottom: 20px;">`;
+            
+            const groupSize = 5; // 한 번에 보여줄 페이지 번호 개수
+            const currentGroup = Math.ceil(page / groupSize); // 현재 보고 있는 페이지 그룹 (예: 6페이지면 2번째 그룹)
+            
+            const startPageOfGroup = (currentGroup - 1) * groupSize + 1;
+            let endPageOfGroup = startPageOfGroup + groupSize - 1;
+            if (endPageOfGroup > totalPages) endPageOfGroup = totalPages;
+
+            // [이전 그룹 버튼 (<)]
+            // 첫 번째 그룹이 아닐 때만 표시. 클릭 시 이전 그룹의 마지막 페이지로 이동
+            if (currentGroup > 1) {
+                const prevGroupLastPage = startPageOfGroup - 1;
+                paginationHtml += `<button onclick="renderRankingPage(${prevGroupLastPage})" style="padding: 8px 14px; background: #1a1a2e; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; font-weight: bold;">&lt;</button>`;
+            }
+
+            // [숫자 버튼 5개 표시]
+            for (let p = startPageOfGroup; p <= endPageOfGroup; p++) {
+                const activeStyle = p === page 
+                    ? "background: #6b46c1; color: white; border-color: #a78bfa;" 
+                    : "background: #1a1a2e; color: #9aa4af; border-color: rgba(255,255,255,0.2);";
+                paginationHtml += `<button onclick="renderRankingPage(${p})" style="padding: 8px 14px; border: 1px solid; border-radius: 4px; cursor: pointer; ${activeStyle}">${p}</button>`;
+            }
+
+            // [다음 그룹 버튼 (>)]
+            // 마지막 그룹이 아닐 때만 표시. 클릭 시 다음 그룹의 첫 번째 페이지로 이동
+            if (endPageOfGroup < totalPages) {
+                const nextGroupFirstPage = endPageOfGroup + 1;
+                paginationHtml += `<button onclick="renderRankingPage(${nextGroupFirstPage})" style="padding: 8px 14px; background: #1a1a2e; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; font-weight: bold;">&gt;</button>`;
+            }
+
+            paginationHtml += `</div>`;
+
+            listDiv.innerHTML = tableHtml + paginationHtml;
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
 
         // ==========================================
@@ -2609,8 +2805,12 @@
         let currentChampId = '';
         let currentChampName = '';
 
-        async function showMasters() {
-            if (window.location.pathname !== '/masters') window.history.pushState({ page: 'masters' }, '', '/masters');
+        async function showMasters(requestedChampId = null) {
+            // 네비게이션 바 클릭 등으로 처음 넘어온 경우 기본 주소(히스토리) 기록
+            if (!window.location.pathname.startsWith('/masters')) {
+                window.history.pushState({ page: 'masters' }, '', requestedChampId ? `/masters/${requestedChampId}` : '/masters');
+            }
+            
             hideAllContainers();
             const mastersContainer = document.getElementById('masters-container');
             mastersContainer.style.display = "block";
@@ -2648,17 +2848,49 @@
                 `).join('');
 
                 const gridItems = document.querySelectorAll('.champ-grid-item');
+                
+                // ★ 클릭 시 주소 변경 로직
                 gridItems.forEach(item => {
                     item.addEventListener('click', (e) => {
                         gridItems.forEach(i => i.classList.remove('active'));
-                        e.currentTarget.classList.add('active');
-                        renderMasterRanking(e.currentTarget.dataset.name, e.currentTarget.dataset.id);
+                        const target = e.currentTarget;
+                        target.classList.add('active');
+                        
+                        const cid = target.dataset.id;
+                        const cname = target.dataset.name;
+                        
+                        // 클릭 시 주소 업데이트 (예: /masters/Aatrox)
+                        const newUrl = `/masters/${cid}`;
+                        if (window.location.pathname !== newUrl) {
+                            window.history.pushState({ page: 'masters', champ: cid }, '', newUrl);
+                        }
+                        
+                        renderMasterRanking(cname, cid);
                     });
                 });
 
-                if(gridItems.length > 0) {
-                    gridItems[0].classList.add('active');
-                    renderMasterRanking(gridItems[0].dataset.name, gridItems[0].dataset.id);
+                if (gridItems.length > 0) {
+                    // ★ 외부에서 주소를 타고 들어왔으면 해당 챔피언 찾기
+                    let targetItem = null;
+                    if (requestedChampId) {
+                        targetItem = Array.from(gridItems).find(i => i.dataset.id.toLowerCase() === requestedChampId.toLowerCase());
+                    }
+                    
+                    // ★ 변경: 주소에 챔피언이 명시되어 있지 않으면 기본값으로 'Lulu(룰루)'를 찾아서 띄움
+                    if (!targetItem) {
+                        targetItem = Array.from(gridItems).find(i => i.dataset.id === 'Lulu');
+                        if (!targetItem) targetItem = gridItems[0]; // 혹시라도 룰루를 못 찾으면 0번째 챔피언으로 대체
+                    }
+
+                    targetItem.classList.add('active');
+                    
+                    const cid = targetItem.dataset.id;
+                    const newUrl = `/masters/${cid}`;
+                    if (window.location.pathname !== newUrl) {
+                        window.history.replaceState({ page: 'masters', champ: cid }, '', newUrl);
+                    }
+                    
+                    renderMasterRanking(targetItem.dataset.name, cid);
                 }
 
             } catch (e) {
@@ -2781,7 +3013,13 @@
             document.getElementById('privacy-container').style.display = "block";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
+        function showTerms() {
+            if (window.location.pathname !== '/terms') window.history.pushState({ page: 'terms' }, '', '/terms');
+            hideAllContainers();
+            document.getElementById('terms-container').style.display = "block";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
         // ==========================================
         // [7] 사이드 유틸 (신화상점 등)
         // ==========================================
@@ -2818,6 +3056,17 @@
             document.getElementById('shop-timer').innerText = `${hours}:${minutes}:${seconds} 뒤 초기화`;
         }
         
+        function copyEmail() {
+            navigator.clipboard.writeText("00.y4no@gmail.com").then(() => {
+                // 성공 시 기존 토스트 알림창 재사용
+                showErrorToast("이메일 주소(00.y4no@gmail.com)가 클립보드에 복사되었습니다.");
+            }).catch(err => {
+                console.error('이메일 복사 실패:', err);
+                // 실패 시 알림
+                showErrorToast("이메일 복사에 실패했습니다. 직접 복사해주세요: 00.y4no@gmail.com");
+            });
+        }
+
     </script>
 </body>
 
