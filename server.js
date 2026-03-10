@@ -21,6 +21,18 @@ let isFetchingNames = false;
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
+const rateLimit = require('express-rate-limit');
+
+// 한 IP당 1분에 최대 30번까지만 API 요청 허용
+const apiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1분
+    max: 30, 
+    message: { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }
+});
+
+// 전적 검색 API에 적용
+app.use('/api/', apiLimiter);
+
 // ==========================================
 // [2] MongoDB 연결 및 스키마 정의
 // ==========================================
@@ -353,4 +365,5 @@ app.get('/api/ranking', async (req, res) => {
 // ==========================================
 app.get(/.*/, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-app.listen(3000, () => console.log('[System] 서버 실행 중: http://localhost:3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`[System] 서버 실행 중: 포트 ${PORT}`));
