@@ -10,13 +10,13 @@ const mongoose = require('mongoose');
 // [1] 초기 설정 및 전역 변수
 // ==========================================
 const app = express();
-const myCache = new NodeCache({ stdTTL: 300 }); 
+const myCache = new NodeCache({ stdTTL: 300 });
 const API_KEY = process.env.API_KEY;
 
-let currentVersion = "14.4.1"; 
-let challengerList = []; 
-let resolvedNames = {};  
-let isFetchingNames = false; 
+let currentVersion = "14.4.1";
+let challengerList = [];
+let resolvedNames = {};
+let isFetchingNames = false;
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -26,7 +26,7 @@ const rateLimit = require('express-rate-limit');
 // 한 IP당 1분에 최대 30번까지만 API 요청 허용
 const apiLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1분
-    max: 30, 
+    max: 30,
     message: { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }
 });
 
@@ -41,8 +41,8 @@ mongoose.connect(process.env.MONGO_URI)
     .catch((err) => console.error('❌ MongoDB 연결 실패:', err));
 
 const MatchCache = mongoose.model('MatchCache', new mongoose.Schema({
-    matchId: { type: String, required: true, unique: true }, 
-    detail: { type: Object, required: true }, 
+    matchId: { type: String, required: true, unique: true },
+    detail: { type: Object, required: true },
     timeline: { type: Object }
 }));
 
@@ -77,15 +77,15 @@ async function updateVersion() {
 
 async function updateChallengerList() {
     try {
-        const urls = ['challengerleagues', 'grandmasterleagues', 'masterleagues'].map(tier => 
+        const urls = ['challengerleagues', 'grandmasterleagues', 'masterleagues'].map(tier =>
             axios.get(`https://kr.api.riotgames.com/lol/league/v4/${tier}/by-queue/RANKED_SOLO_5x5?api_key=${API_KEY}`)
         );
         const results = await Promise.all(urls.map(p => p.catch(e => ({ data: null }))));
-        
+
         const combinedEntries = results.flatMap(res => res.data?.entries || []);
-        
+
         if (combinedEntries.length > 0) {
-            challengerList = combinedEntries.sort((a, b) => b.leaguePoints - a.leaguePoints).slice(0, 1500);
+            challengerList = combinedEntries.sort((a, b) => b.leaguePoints - a.leaguePoints);
             console.log(`[Task] 랭킹 명단 갱신 완료 (총 ${challengerList.length}명)`);
         }
     } catch (err) {
@@ -109,11 +109,11 @@ async function resolveNamesInBackground() {
                 if (accRes.data.gameName) {
                     const dName = `${accRes.data.gameName}#${accRes.data.tagLine}`;
                     resolvedNames[p.puuid] = { displayName: dName, updatedAt: now };
-                    
+
                     await SummonerCache.findOneAndUpdate({ puuid: p.puuid }, { displayName: dName, updatedAt: now }, { upsert: true });
                     myCache.del('challenger_ranking_data');
                 }
-            } catch (err) {}
+            } catch (err) { }
             await new Promise(resolve => setTimeout(resolve, 1200));
         }
         console.log("[Task] 백그라운드 닉네임 변환 완료");
@@ -122,12 +122,12 @@ async function resolveNamesInBackground() {
 }
 
 async function startJobs() {
-    await loadResolvedNames(); 
+    await loadResolvedNames();
     await updateVersion();
-    await updateChallengerList(); 
-    await resolveNamesInBackground(); 
-    
-    setInterval(updateChallengerList, 600 * 1000); 
+    await updateChallengerList();
+    await resolveNamesInBackground();
+
+    setInterval(updateChallengerList, 600 * 1000);
     setInterval(resolveNamesInBackground, 60 * 1000);
 }
 startJobs();
@@ -157,14 +157,18 @@ app.get('/api/summoner/:name', async (req, res) => {
             axios.get(`https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/${targetPuuid}?api_key=${API_KEY}`),
             axios.get(`https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${targetPuuid}/ids?start=0&count=30&api_key=${API_KEY}`)
         ]);
-        
+
         const rankData = leagueRes.data.find(entry => entry.queueType === 'RANKED_SOLO_5x5') || null;
+
+        const rankIndex = challengerList.findIndex(p => p.puuid === targetPuuid);
+        const serverRank = rankIndex !== -1 ? rankIndex + 1 : null;
+
         const matchIds = matchIdsRes.data;
 
         const cachedMatches = await MatchCache.find({ matchId: { $in: matchIds } });
         const cachedMatchIds = cachedMatches.map(m => m.matchId);
         const matchesToFetch = matchIds.filter(id => !cachedMatchIds.includes(id));
-        
+
         console.log(`[DB Cache] ${summonerName}: 30게임 중 DB에서 ${cachedMatchIds.length}게임 로드, 신규 ${matchesToFetch.length}게임 요청`);
 
         const newMatchesData = await Promise.all(matchesToFetch.map(async (matchId, index) => {
@@ -174,8 +178,8 @@ app.get('/api/summoner/:name', async (req, res) => {
                     axios.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}?api_key=${API_KEY}`),
                     axios.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline?api_key=${API_KEY}`).catch(() => ({ data: null }))
                 ]);
-                
-                MatchCache.create({ matchId, detail: detailRes.data, timeline: timelineRes.data }).catch(() => {});
+
+                MatchCache.create({ matchId, detail: detailRes.data, timeline: timelineRes.data }).catch(() => { });
                 return { detail: detailRes.data, timeline: timelineRes.data };
             } catch (err) { return null; }
         }));
@@ -196,15 +200,15 @@ app.get('/api/summoner/:name', async (req, res) => {
 
             let myTimeline = { skills: [], items: [] };
             let goldFrames = null;
-            
+
             if (timeline?.info?.frames) {
                 goldFrames = { labels: [], blue: [], red: [] };
                 timeline.info.frames.forEach((frame, idx) => {
                     goldFrames.labels.push(`${idx}분`);
                     let blueGold = 0, redGold = 0;
                     if (frame.participantFrames) {
-                        for(let i=1; i<=5; i++) blueGold += frame.participantFrames[i]?.totalGold || 0;
-                        for(let i=6; i<=10; i++) redGold += frame.participantFrames[i]?.totalGold || 0;
+                        for (let i = 1; i <= 5; i++) blueGold += frame.participantFrames[i]?.totalGold || 0;
+                        for (let i = 6; i <= 10; i++) redGold += frame.participantFrames[i]?.totalGold || 0;
                     }
                     goldFrames.blue.push(blueGold);
                     goldFrames.red.push(redGold);
@@ -223,39 +227,39 @@ app.get('/api/summoner/:name', async (req, res) => {
             }
 
             return {
-                matchId: detail.metadata.matchId, 
-                queueType: queueMap[detail.info.queueId] || "일반", 
-                win: p.win, 
-                championName: p.championName === "FiddleSticks" ? "Fiddlesticks" : p.championName, 
-                champLevel: p.champLevel, 
-                kills: p.kills, deaths: p.deaths, assists: p.assists, 
-                kda: p.deaths === 0 ? "Perfect" : ((p.kills + p.assists) / p.deaths).toFixed(2), 
-                kp: teamKills === 0 ? 0 : Math.round(((p.kills + p.assists) / teamKills) * 100), 
+                matchId: detail.metadata.matchId,
+                queueType: queueMap[detail.info.queueId] || "일반",
+                win: p.win,
+                championName: p.championName === "FiddleSticks" ? "Fiddlesticks" : p.championName,
+                champLevel: p.champLevel,
+                kills: p.kills, deaths: p.deaths, assists: p.assists,
+                kda: p.deaths === 0 ? "Perfect" : ((p.kills + p.assists) / p.deaths).toFixed(2),
+                kp: teamKills === 0 ? 0 : Math.round(((p.kills + p.assists) / teamKills) * 100),
                 spell1: p.summoner1Id, spell2: p.summoner2Id,
-                mainRune: p.perks?.styles?.[0]?.style || null, subRune: p.perks?.styles?.[1]?.style || null, 
-                item0: p.item0, item1: p.item1, item2: p.item2, item3: p.item3, item4: p.item4, item5: p.item5, item6: p.item6, 
-                item7: (p.roleBoundItem || p.item7 || p.playerAugment1 || 0), 
-                totalCs: p.totalMinionsKilled + p.neutralMinionsKilled, 
-                csPerMin: durationMin > 0 ? ((p.totalMinionsKilled + p.neutralMinionsKilled) / durationMin).toFixed(1) : "0.0", 
-                goldEarned: p.goldEarned, visionScore: p.visionScore, controlWards: p.visionWardsBoughtInGame, 
-                multiKill: p.pentaKills ? "펜타킬" : (p.quadraKills ? "쿼드라킬" : (p.tripleKills ? "트리플킬" : (p.doubleKills ? "더블킬" : ""))), 
-                firstBlood: p.firstBloodKill, durationMin, durationSec, 
-                dateStr: daysAgo === 0 ? "오늘" : (daysAgo > 30 ? "1개월 전" : `${daysAgo}일 전`), 
-                timestamp: detail.info.gameEndTimestamp, 
+                mainRune: p.perks?.styles?.[0]?.style || null, subRune: p.perks?.styles?.[1]?.style || null,
+                item0: p.item0, item1: p.item1, item2: p.item2, item3: p.item3, item4: p.item4, item5: p.item5, item6: p.item6,
+                item7: (p.roleBoundItem || p.item7 || p.playerAugment1 || 0),
+                totalCs: p.totalMinionsKilled + p.neutralMinionsKilled,
+                csPerMin: durationMin > 0 ? ((p.totalMinionsKilled + p.neutralMinionsKilled) / durationMin).toFixed(1) : "0.0",
+                goldEarned: p.goldEarned, visionScore: p.visionScore, controlWards: p.visionWardsBoughtInGame,
+                multiKill: p.pentaKills ? "펜타킬" : (p.quadraKills ? "쿼드라킬" : (p.tripleKills ? "트리플킬" : (p.doubleKills ? "더블킬" : ""))),
+                firstBlood: p.firstBloodKill, durationMin, durationSec,
+                dateStr: daysAgo === 0 ? "오늘" : (daysAgo > 30 ? "1개월 전" : `${daysAgo}일 전`),
+                timestamp: detail.info.gameEndTimestamp,
                 participants: detail.info.participants.map(part => ({
-                    puuid: part.puuid, isSearchedUser: part.puuid === targetPuuid, teamId: part.teamId, win: part.win, champLevel: part.champLevel, 
+                    puuid: part.puuid, isSearchedUser: part.puuid === targetPuuid, teamId: part.teamId, win: part.win, champLevel: part.champLevel,
                     championName: part.championName === "FiddleSticks" ? "Fiddlesticks" : part.championName, visionScore: part.visionScore,
                     summonerName: part.riotIdGameName ? `${part.riotIdGameName}#${part.riotIdTagline}` : (part.summonerName || "알 수 없음"),
-                    kills: part.kills, deaths: part.deaths, assists: part.assists, damage: part.totalDamageDealtToChampions, damageTaken: part.totalDamageTaken, 
-                    kp: Math.round(((part.kills + part.assists) / (part.teamId === 100 ? detail.info.participants.filter(x => x.teamId === 100).reduce((sum, x) => sum + x.kills, 0) : detail.info.participants.filter(x => x.teamId === 200).reduce((sum, x) => sum + x.kills, 0))) * 100) || 0, 
-                    gold: part.goldEarned, cs: part.totalMinionsKilled + part.neutralMinionsKilled, 
+                    kills: part.kills, deaths: part.deaths, assists: part.assists, damage: part.totalDamageDealtToChampions, damageTaken: part.totalDamageTaken,
+                    kp: Math.round(((part.kills + part.assists) / (part.teamId === 100 ? detail.info.participants.filter(x => x.teamId === 100).reduce((sum, x) => sum + x.kills, 0) : detail.info.participants.filter(x => x.teamId === 200).reduce((sum, x) => sum + x.kills, 0))) * 100) || 0,
+                    gold: part.goldEarned, cs: part.totalMinionsKilled + part.neutralMinionsKilled,
                     wardsPlaced: part.wardsPlaced || 0, wardsKilled: part.wardsKilled || 0, visionWards: part.visionWardsBoughtInGame || 0,
-                    item0: part.item0, item1: part.item1, item2: part.item2, item3: part.item3, item4: part.item4, item5: part.item5, item6: part.item6, item7: (part.roleBoundItem || part.item7 || part.playerAugment1 || 0), 
+                    item0: part.item0, item1: part.item1, item2: part.item2, item3: part.item3, item4: part.item4, item5: part.item5, item6: part.item6, item7: (part.roleBoundItem || part.item7 || part.playerAugment1 || 0),
                     spell1: part.summoner1Id, spell2: part.summoner2Id, mainRune: part.perks?.styles?.[0]?.style || null, subRune: part.perks?.styles?.[1]?.style || null
-                })), 
-                goldFrames, 
-                myRunes: p.perks?.styles ? { primaryStyle: p.perks.styles[0].style, primarySelections: p.perks.styles[0].selections.map(s => s.perk), subStyle: p.perks.styles[1].style, subSelections: p.perks.styles[1].selections.map(s => s.perk), statPerks: p.perks.statPerks ? [p.perks.statPerks.offense, p.perks.statPerks.flex, p.perks.statPerks.defense] : [] } : null, 
-                myTimeline 
+                })),
+                goldFrames,
+                myRunes: p.perks?.styles ? { primaryStyle: p.perks.styles[0].style, primarySelections: p.perks.styles[0].selections.map(s => s.perk), subStyle: p.perks.styles[1].style, subSelections: p.perks.styles[1].selections.map(s => s.perk), statPerks: p.perks.statPerks ? [p.perks.statPerks.offense, p.perks.statPerks.flex, p.perks.statPerks.defense] : [] } : null,
+                myTimeline
             };
         }).filter(Boolean);
 
@@ -265,7 +269,8 @@ app.get('/api/summoner/:name', async (req, res) => {
             profile: {
                 name: `${gameName}#${tagLine}`, level: summonerRes.data.summonerLevel, icon: `https://ddragon.leagueoflegends.com/cdn/${currentVersion}/img/profileicon/${summonerRes.data.profileIconId}.png`,
                 tier: rankData?.tier || 'UNRANKED', rank: rankData?.rank || '', leaguePoints: rankData?.leaguePoints || 0,
-                wins: rankData?.wins || 0, losses: rankData?.losses || 0 
+                wins: rankData?.wins || 0, losses: rankData?.losses || 0, 
+                serverRank: serverRank
             },
             history
         };
@@ -281,7 +286,7 @@ app.get('/api/summoner/:name', async (req, res) => {
             try {
                 const safeName = req.params.name.split('#')[0].replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/\s+/g, '');
                 const flexibleRegex = new RegExp("^" + safeName.split('').join('\\s*') + "$", "i");
-                
+
                 const fallbackMatches = await MatchCache.find({
                     "detail.info.participants": { $elemMatch: { $or: [{ riotIdGameName: { $regex: flexibleRegex } }, { summonerName: { $regex: flexibleRegex } }] } }
                 }).sort({ "detail.info.gameEndTimestamp": -1 }).limit(30);
@@ -290,10 +295,10 @@ app.get('/api/summoner/:name', async (req, res) => {
                     let targetPuuid = "", profileIconId = 1;
                     const history = fallbackMatches.map(m => {
                         const p = m.detail.info.participants.find(part => {
-                            return (part.riotIdGameName || "").replace(/\s+/g, '').toLowerCase() === safeName.toLowerCase() || 
-                                   (part.summonerName || "").replace(/\s+/g, '').toLowerCase() === safeName.toLowerCase();
+                            return (part.riotIdGameName || "").replace(/\s+/g, '').toLowerCase() === safeName.toLowerCase() ||
+                                (part.summonerName || "").replace(/\s+/g, '').toLowerCase() === safeName.toLowerCase();
                         });
-                        
+
                         if (!p) return null;
                         targetPuuid = p.puuid;
                         if (p.profileIcon) profileIconId = p.profileIcon;
@@ -339,7 +344,7 @@ app.get('/api/mastery/:puuid', async (req, res) => {
 });
 
 app.get('/api/champion-stats', (req, res) => {
-    try { res.json(require('./stats_data.json')); } 
+    try { res.json(require('./stats_data.json')); }
     catch (error) { res.status(500).json({ error: "통계 데이터를 불러오지 못했습니다." }); }
 });
 
