@@ -1167,15 +1167,12 @@
                 <div class="profile-header">
                     <img src="${data.profile.icon}" class="profile-icon">
                     <div class="profile-info" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                        <div style="color: #9aa4af; font-size: 13px; margin-bottom: 2px;">레벨 ${data.profile.level}</div>
-                        <h2 style="font-size: 26px; display: flex; align-items: center; margin: 0; line-height: 1.2;">
-                            ${data.profile.name}
-                            <span id="profile-fav-star" 
-                                  class="fav-star ${getFavorites().includes(data.profile.name) ? 'active' : ''}" 
-                                  data-name="${data.profile.name}" 
-                                  onclick="toggleFavorite('${data.profile.name}')" 
-                                  title="즐겨찾기">★</span>
-                        </h2>
+                    <div style="color: #9aa4af; font-size: 13px; margin-bottom: 2px;">레벨 ${data.profile.level}</div>
+                    <h2 style="font-size: 26px; display: flex; align-items: center; margin: 0; line-height: 1.2;">
+                        ${data.profile.name}
+                        <span id="profile-fav-star" ...>★</span>
+                    </h2>
+                    ${data.profile.serverRank ? `<div style="color: #facc15; font-size: 13px; font-weight: bold; margin-top: 6px; letter-spacing: 0.5px;">KR 랭킹 ${data.profile.serverRank.toLocaleString()}위</div>` : ''}
                     </div>
                     <div style="text-align: right; min-width: 140px;">
                         <button id="refresh-btn" class="search-btn" style="padding: 10px 20px; font-size: 14px; border-radius: 4px; width: 100%;">전적 갱신</button>
@@ -2319,8 +2316,8 @@
                 <table style="width:100%; min-width:600px; border-collapse: collapse; font-size: 14px;">
                     <thead style="background: #2b1a52; color: #a78bfa;">
                         <tr>
-                            <th style="padding: 15px; text-align: center;">순위</th>
-                            <th style="padding: 15px; text-align: center;">닉네임</th>
+                            <th style="width: 60px; padding: 15px; text-align: center;">순위</th>
+                            <th style="padding: 15px; text-align: left; padding-left: 30px;">닉네임</th>
                             <th style="padding: 15px; text-align: center;">LP</th>
                             <th style="padding: 15px; text-align: center;">승률</th>
                         </tr>
@@ -2339,7 +2336,7 @@
 
                 tableHtml += `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <td style="padding: 12px; color: #777; text-align: center;">${actualIndex}</td>
+                    <td style="width: 60px; padding: 12px; color: #777; text-align: center;">${actualIndex}</td>
                     <td style="padding: 12px; text-align: left; font-weight: bold; color: #ddd; padding-left: 30px;">
                         <span class="summoner-link" onclick="document.getElementById('summoner-input').value='${player.displayName}'; document.getElementById('search-btn').click();" title="${player.displayName} 검색">${player.displayName}</span>
                     </td>
@@ -2600,10 +2597,10 @@
 
         window.loadMythicShop = function() {
             const mythicItems = [
-                { name: "프레스티지 바다의 노래 세라핀", price: 25, imgUrl: "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loadouts/summoneremotes/events/oceansong/em_prestige_ocean_song_seraphine_inventory.png" },
-                { name: "2021 프로젝트: 이벤트 아이콘", price: 5, imgUrl: "https://ddragon.leagueoflegends.com/cdn/14.4.1/img/profileicon/4982.png" },
-                { name: "연미복 말자하 크로마 아이콘", price: 5, imgUrl: "https://ddragon.leagueoflegends.com/cdn/14.4.1/img/profileicon/5198.png" },
-                { name: "헤헤헤", price: 25, imgUrl: "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loadouts/summoneremotes/events/darkstar/em_darkstar_lux_inventory.png" }
+                { name: "와락!", price: 25, imgUrl: "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loadouts/summoneremotes/events/spacegroove/spacegroove_blitzcrank_emote_inventory.png" },
+                { name: "공격 준비 완료", price: 25, imgUrl: "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loadouts/summoneremotes/tft/grindrewards/4488_ready_to_strike_inventory.png" },
+                { name: "강타 준비됐어?", price: 25, imgUrl: "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loadouts/summoneremotes/rewards/watchrewards/em_esports_graves_inventory.png" },
+                { name: "천상비늘 잔나 크로마 아이콘", price: 5, imgUrl: "https://ddragon.leagueoflegends.com/cdn/14.4.1/img/profileicon/6512.png" }
             ];
             const meIcon = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/rarity-gem-icons/mythic.png";
             document.getElementById('mythic-items').innerHTML = mythicItems.map(item => `
