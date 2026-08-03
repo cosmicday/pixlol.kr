@@ -77,10 +77,21 @@ async function updateVersion() {
 
 async function updateChallengerList() {
     try {
-        const urls = ['challengerleagues', 'grandmasterleagues', 'masterleagues'].map(tier =>
-            axios.get(`https://kr.api.riotgames.com/lol/league/v4/${tier}/by-queue/RANKED_SOLO_5x5?api_key=${API_KEY}`)
+        const tiers = ['challengerleagues', 'grandmasterleagues', 'masterleagues'];
+
+        const results = await Promise.all(
+            tiers.map(tier =>
+                axios.get(`https://kr.api.riotgames.com/lol/league/v4/${tier}/by-queue/RANKED_SOLO_5x5?api_key=${API_KEY}`)
+                    .catch(e => {
+                        console.error(`[Task Error] ${tier} 조회 실패:`, e.response?.status || e.message);
+                        return { data: null };
+                    })
+            )
         );
-        const results = await Promise.all(urls.map(p => p.catch(e => ({ data: null }))));
+
+        results.forEach((res, i) => {
+            console.log(`[Task] ${tiers[i]}: ${res.data?.entries?.length || 0}명`);
+        });
 
         const combinedEntries = results.flatMap(res => res.data?.entries || []);
 
@@ -89,7 +100,7 @@ async function updateChallengerList() {
             console.log(`[Task] 랭킹 명단 갱신 완료 (총 ${challengerList.length}명)`);
         }
     } catch (err) {
-        console.error("[Task Error] 랭킹 명단 로드 실패:", err.message);
+        console.error("[Task Error] 랭킹 명단 갱신 실패:", err.message);
     }
 }
 
