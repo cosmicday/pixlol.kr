@@ -383,12 +383,6 @@ app.get('/api/mastery/:puuid', async (req, res) => {
     } catch (error) { res.status(500).json({ error: '마스터리 데이터를 불러오지 못했습니다.' }); }
 });
 
-// 챔피언 통계
-app.get('/api/champion-stats', (req, res) => {
-    try { res.json(require('./stats_data.json')); }
-    catch (error) { res.status(500).json({ error: "통계 데이터를 불러오지 못했습니다." }); }
-});
-
 // 랭킹
 app.get('/api/ranking', async (req, res) => {
     const cachedRanking = myCache.get('challenger_ranking_data');
