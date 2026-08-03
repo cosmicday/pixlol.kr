@@ -36,6 +36,12 @@ app.set('trust proxy', 1);
 const myCache = new NodeCache({ stdTTL: 300 });
 const API_KEY = process.env.API_KEY;
 
+// 라이엇 API 전용 호출기 (키를 헤더에 담아 전송)
+const riotApi = axios.create({
+    headers: { 'X-Riot-Token': API_KEY },
+    timeout: 10000
+});
+
 let currentVersion = "16.1.1";
 let challengerList = [];
 let resolvedNames = {};
@@ -95,7 +101,7 @@ async function updateChallengerList() {
 
         const results = await Promise.all(
             tiers.map(tier =>
-                axios.get(`https://kr.api.riotgames.com/lol/league/v4/${tier}/by-queue/RANKED_SOLO_5x5?api_key=${API_KEY}`)
+                riotApi.get(`https://kr.api.riotgames.com/lol/league/v4/${tier}/by-queue/RANKED_SOLO_5x5`)
                     .catch(e => {
                         console.error(`[Task Error] ${tier} 조회 실패:`, e.response?.status || e.message);
                         return { data: null };
@@ -125,14 +131,14 @@ async function resolveNamesInBackground() {
     const now = Date.now();
     // ★ 수정됨: 갱신 주기를 14일로 변경
     const FOURTEEN_DAYS = 14 * 24 * 60 * 60 * 1000;
-    
+
     // ★ 기존 유지: 1분에 최대 20명(실제론 타이머 때문에 14명 내외)씩만 살살 가져옴 (유저 검색 API 방어)
     const targets = challengerList.filter(p => !resolvedNames[p.puuid] || (now - resolvedNames[p.puuid].updatedAt > FOURTEEN_DAYS)).slice(0, 20);
 
     if (targets.length > 0) {
         for (const p of targets) {
             try {
-                const accRes = await axios.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-puuid/${p.puuid}?api_key=${API_KEY}`);
+                const accRes = await riotApi.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-puuid/${p.puuid}`);
                 if (accRes.data.gameName) {
                     const dName = `${accRes.data.gameName}#${accRes.data.tagLine}`;
                     resolvedNames[p.puuid] = { displayName: dName, updatedAt: now };
@@ -140,9 +146,9 @@ async function resolveNamesInBackground() {
                     myCache.del('challenger_ranking_data');
                 }
             } catch (err) { }
-            
+
             resolvedCountIn10Mins++; // 처리할 때마다 카운트 1씩 증가 (로그는 안 띄움)
-            await new Promise(resolve => setTimeout(resolve, 1200)); 
+            await new Promise(resolve => setTimeout(resolve, 1200));
         }
     }
     isFetchingNames = false;
@@ -189,13 +195,13 @@ app.get('/api/summoner/:name', async (req, res) => {
         const [gameName, tagLine] = summonerName.split('#');
         if (!gameName || !tagLine) return res.status(400).json({ error: "닉네임#태그 형식으로 입력해주세요." });
 
-        const { data: accountData } = await axios.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}?api_key=${API_KEY}`);
+        const { data: accountData } = await riotApi.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`);
         const targetPuuid = accountData.puuid;
 
         const [summonerRes, leagueRes, matchIdsRes] = await Promise.all([
-            axios.get(`https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${targetPuuid}?api_key=${API_KEY}`),
-            axios.get(`https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/${targetPuuid}?api_key=${API_KEY}`),
-            axios.get(`https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${targetPuuid}/ids?start=0&count=30&api_key=${API_KEY}`)
+            riotApi.get(`https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${targetPuuid}`),
+            riotApi.get(`https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/${targetPuuid}`),
+            riotApi.get(`https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${targetPuuid}/ids?start=0&count=30`)
         ]);
 
         const rankData = leagueRes.data.find(entry => entry.queueType === 'RANKED_SOLO_5x5') || null;
@@ -215,8 +221,8 @@ app.get('/api/summoner/:name', async (req, res) => {
             try {
                 await new Promise(r => setTimeout(r, index * 150));
                 const [detailRes, timelineRes] = await Promise.all([
-                    axios.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}?api_key=${API_KEY}`),
-                    axios.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline?api_key=${API_KEY}`).catch(() => ({ data: null }))
+                    riotApi.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}`),
+                    riotApi.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline`).catch(() => ({ data: null }))
                 ]);
                 MatchCache.create({ matchId, detail: detailRes.data, timeline: timelineRes.data }).catch(() => { });
                 return { detail: detailRes.data, timeline: timelineRes.data };
@@ -378,7 +384,7 @@ app.get('/api/summoner/:name', async (req, res) => {
 // 마스터리 조회
 app.get('/api/mastery/:puuid', async (req, res) => {
     try {
-        const response = await axios.get(`https://kr.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${req.params.puuid}/top?count=7`, { headers: { 'X-Riot-Token': API_KEY } });
+        const response = await riotApi.get(`https://kr.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${req.params.puuid}/top?count=7`);
         res.json(response.data);
     } catch (error) { res.status(500).json({ error: '마스터리 데이터를 불러오지 못했습니다.' }); }
 });
