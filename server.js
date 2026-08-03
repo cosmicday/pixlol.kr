@@ -5,45 +5,20 @@ const cors = require('cors');
 const path = require('path');
 const NodeCache = require('node-cache');
 const mongoose = require('mongoose');
-
-// ==========================================
-// [1] 초기 설정 및 전역 변수
-// ==========================================
-const app = express();
-const myCache = new NodeCache({ stdTTL: 300 });
-const API_KEY = process.env.API_KEY;
-
-let currentVersion = "14.4.1";
-let challengerList = [];
-let resolvedNames = {};
-let isFetchingNames = false;
-
-app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
-
 const rateLimit = require('express-rate-limit');
 
-// 한 IP당 1분에 최대 30번까지만 API 요청 허용
-const apiLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1분
-    max: 30,
-    message: { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }
-});
-
-// 전적 검색 API에 적용
-app.use('/api/', apiLimiter);
-
 // ==========================================
-// [2] MongoDB 연결 및 스키마 정의
+// [1] DB 연결 및 스키마 정의
 // ==========================================
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('✅ MongoDB 연결 성공!'))
-    .catch((err) => console.error('❌ MongoDB 연결 실패:', err));
+    .then(() => console.log("[System] MongoDB 연결 성공"))
+    .catch(err => console.error("[System] MongoDB 연결 에러:", err));
 
 const MatchCache = mongoose.model('MatchCache', new mongoose.Schema({
     matchId: { type: String, required: true, unique: true },
     detail: { type: Object, required: true },
-    timeline: { type: Object }
+    timeline: { type: Object },
+    createdAt: { type: Date, expires: '14d', default: Date.now }
 }));
 
 const SummonerCache = mongoose.model('SummonerCache', new mongoose.Schema({
@@ -53,15 +28,43 @@ const SummonerCache = mongoose.model('SummonerCache', new mongoose.Schema({
 }));
 
 // ==========================================
-// [3] 백그라운드 스케줄러 (캐시 갱신 및 랭킹 관리)
+// [2] 전역 변수 및 서버(Express) 세팅
+// ==========================================
+const app = express();
+app.set('trust proxy', 1);
+const myCache = new NodeCache({ stdTTL: 300 });
+const API_KEY = process.env.API_KEY;
+
+let currentVersion = "16.1.1";
+let challengerList = [];
+let resolvedNames = {};
+let isFetchingNames = false;
+let resolvedCountIn10Mins = 0;
+let merakiChampionData = {};
+
+// ★ 중복 선언되어 있던 정적 파일 제공 설정을 하나로 통합
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// API 속도 제한 (Rate Limiting) - 1분에 30번
+const apiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 30,
+    keyGenerator: (req) => req.headers['cf-connecting-ip'] || req.ip,
+    message: { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }
+});
+app.use('/api/', apiLimiter);
+
+// ==========================================
+// [3] 백그라운드 스케줄러 (데이터 갱신)
 // ==========================================
 async function loadResolvedNames() {
     try {
         const summoners = await SummonerCache.find({});
         summoners.forEach(s => resolvedNames[s.puuid] = { displayName: s.displayName, updatedAt: s.updatedAt });
-        console.log(`[System] MongoDB 연동 완료: 닉네임 ${summoners.length}명, 전적 ${await MatchCache.countDocuments()}게임 로드`);
+        console.log(`[System] DB 로드: 닉네임 ${summoners.length}명, 전적 ${await MatchCache.countDocuments()}게임`);
     } catch (err) {
-        console.error("[System] MongoDB 초기 데이터 로드 실패:", err.message);
+        console.error("[System] DB 로드 실패:", err.message);
     }
 }
 
@@ -69,9 +72,19 @@ async function updateVersion() {
     try {
         const res = await axios.get('https://ddragon.leagueoflegends.com/api/versions.json');
         currentVersion = res.data[0];
-        console.log(`[System] Data Dragon 최신 버전 로드 완료: ${currentVersion}`);
+        console.log(`[Task] Data Dragon 최신 버전 갱신: ${currentVersion}`);
     } catch (e) {
-        console.error("[System] 버전 갱신 실패. 기본 버전을 사용합니다.");
+        console.error("[Task] 버전 갱신 실패. 기본값을 사용합니다.");
+    }
+}
+
+async function updateMerakiData() {
+    try {
+        const res = await axios.get('http://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions.json');
+        merakiChampionData = res.data;
+        console.log(`[Task] Meraki 챔피언 세부 스킬 데이터 갱신 완료`);
+    } catch (err) {
+        console.error("[Task] Meraki 데이터 갱신 실패:", err.message);
     }
 }
 
@@ -109,25 +122,27 @@ async function resolveNamesInBackground() {
     isFetchingNames = true;
 
     const now = Date.now();
-    const THREE_DAYS = 3 * 24 * 60 * 60 * 1000;
-    const targets = challengerList.filter(p => !resolvedNames[p.puuid] || (now - resolvedNames[p.puuid].updatedAt > THREE_DAYS)).slice(0, 10);
+    // ★ 수정됨: 갱신 주기를 14일로 변경
+    const FOURTEEN_DAYS = 14 * 24 * 60 * 60 * 1000;
+    
+    // ★ 기존 유지: 1분에 최대 20명(실제론 타이머 때문에 14명 내외)씩만 살살 가져옴 (유저 검색 API 방어)
+    const targets = challengerList.filter(p => !resolvedNames[p.puuid] || (now - resolvedNames[p.puuid].updatedAt > FOURTEEN_DAYS)).slice(0, 20);
 
     if (targets.length > 0) {
-        console.log(`[Task] 백그라운드 닉네임 변환 시작 (${targets.length}건 진행)`);
         for (const p of targets) {
             try {
                 const accRes = await axios.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-puuid/${p.puuid}?api_key=${API_KEY}`);
                 if (accRes.data.gameName) {
                     const dName = `${accRes.data.gameName}#${accRes.data.tagLine}`;
                     resolvedNames[p.puuid] = { displayName: dName, updatedAt: now };
-
                     await SummonerCache.findOneAndUpdate({ puuid: p.puuid }, { displayName: dName, updatedAt: now }, { upsert: true });
                     myCache.del('challenger_ranking_data');
                 }
             } catch (err) { }
-            await new Promise(resolve => setTimeout(resolve, 1200));
+            
+            resolvedCountIn10Mins++; // 처리할 때마다 카운트 1씩 증가 (로그는 안 띄움)
+            await new Promise(resolve => setTimeout(resolve, 1200)); 
         }
-        console.log("[Task] 백그라운드 닉네임 변환 완료");
     }
     isFetchingNames = false;
 }
@@ -135,23 +150,36 @@ async function resolveNamesInBackground() {
 async function startJobs() {
     await loadResolvedNames();
     await updateVersion();
+    await updateMerakiData();
     await updateChallengerList();
     await resolveNamesInBackground();
 
-    setInterval(updateChallengerList, 600 * 1000);
-    setInterval(resolveNamesInBackground, 60 * 1000);
+    // 스케줄러 간격 설정
+    setInterval(updateChallengerList, 600 * 1000);        // 10분: 랭킹 명단 갱신
+    setInterval(resolveNamesInBackground, 60 * 1000);     // 1분: 닉네임 변환 (조용히 백그라운드에서 진행)
+    setInterval(updateMerakiData, 24 * 60 * 60 * 1000);   // 24시간: 챔피언 데이터 갱신
+
+    // ★ 추가됨: 10분에 한 번씩만 누적된 작업량을 콘솔에 보고하고 초기화
+    setInterval(() => {
+        if (resolvedCountIn10Mins > 0) {
+            console.log(`[Task] 백그라운드 닉네임 변환 진행 (최근 10분간 ${resolvedCountIn10Mins}건 갱신 완료)`);
+            resolvedCountIn10Mins = 0; // 보고 후 초기화
+        }
+    }, 600 * 1000);
 }
 startJobs();
 
 // ==========================================
 // [4] API 라우터
 // ==========================================
+
+// 소환사 전적 검색 (폴백 로직 포함)
 app.get('/api/summoner/:name', async (req, res) => {
     const summonerName = req.params.name;
     const cachedData = myCache.get(summonerName);
 
     if (cachedData) {
-        console.log(`[API] 전적 검색 메모리 캐시 적중: ${summonerName}`);
+        console.log(`[API] 전적 검색 캐시 적중: ${summonerName}`);
         cachedData.expireAt = myCache.getTtl(summonerName);
         return res.json(cachedData);
     }
@@ -170,17 +198,17 @@ app.get('/api/summoner/:name', async (req, res) => {
         ]);
 
         const rankData = leagueRes.data.find(entry => entry.queueType === 'RANKED_SOLO_5x5') || null;
-
         const rankIndex = challengerList.findIndex(p => p.puuid === targetPuuid);
         const serverRank = rankIndex !== -1 ? rankIndex + 1 : null;
 
         const matchIds = matchIdsRes.data;
 
+        // DB 캐시 확인 및 매치 상세 조회
         const cachedMatches = await MatchCache.find({ matchId: { $in: matchIds } });
         const cachedMatchIds = cachedMatches.map(m => m.matchId);
         const matchesToFetch = matchIds.filter(id => !cachedMatchIds.includes(id));
 
-        console.log(`[DB Cache] ${summonerName}: 30게임 중 DB에서 ${cachedMatchIds.length}게임 로드, 신규 ${matchesToFetch.length}게임 요청`);
+        console.log(`[DB Cache] ${summonerName}: DB ${cachedMatchIds.length}개 / 신규 ${matchesToFetch.length}개 로드`);
 
         const newMatchesData = await Promise.all(matchesToFetch.map(async (matchId, index) => {
             try {
@@ -189,7 +217,6 @@ app.get('/api/summoner/:name', async (req, res) => {
                     axios.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}?api_key=${API_KEY}`),
                     axios.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline?api_key=${API_KEY}`).catch(() => ({ data: null }))
                 ]);
-
                 MatchCache.create({ matchId, detail: detailRes.data, timeline: timelineRes.data }).catch(() => { });
                 return { detail: detailRes.data, timeline: timelineRes.data };
             } catch (err) { return null; }
@@ -206,7 +233,7 @@ app.get('/api/summoner/:name', async (req, res) => {
 
             const durationMin = Math.floor(detail.info.gameDuration / 60);
             const durationSec = detail.info.gameDuration % 60;
-            const daysAgo = Math.floor((Date.now() - detail.info.gameEndTimestamp) / (86400000));
+            const daysAgo = Math.floor((Date.now() - detail.info.gameEndTimestamp) / 86400000);
             const teamKills = detail.info.participants.filter(x => x.teamId === p.teamId).reduce((sum, x) => sum + x.kills, 0);
 
             let myTimeline = { skills: [], items: [] };
@@ -280,7 +307,7 @@ app.get('/api/summoner/:name', async (req, res) => {
             profile: {
                 name: `${gameName}#${tagLine}`, level: summonerRes.data.summonerLevel, icon: `https://ddragon.leagueoflegends.com/cdn/${currentVersion}/img/profileicon/${summonerRes.data.profileIconId}.png`,
                 tier: rankData?.tier || 'UNRANKED', rank: rankData?.rank || '', leaguePoints: rankData?.leaguePoints || 0,
-                wins: rankData?.wins || 0, losses: rankData?.losses || 0, 
+                wins: rankData?.wins || 0, losses: rankData?.losses || 0,
                 serverRank: serverRank
             },
             history
@@ -347,6 +374,7 @@ app.get('/api/summoner/:name', async (req, res) => {
     }
 });
 
+// 마스터리 조회
 app.get('/api/mastery/:puuid', async (req, res) => {
     try {
         const response = await axios.get(`https://kr.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${req.params.puuid}/top?count=7`, { headers: { 'X-Riot-Token': API_KEY } });
@@ -354,11 +382,13 @@ app.get('/api/mastery/:puuid', async (req, res) => {
     } catch (error) { res.status(500).json({ error: '마스터리 데이터를 불러오지 못했습니다.' }); }
 });
 
+// 챔피언 통계
 app.get('/api/champion-stats', (req, res) => {
     try { res.json(require('./stats_data.json')); }
     catch (error) { res.status(500).json({ error: "통계 데이터를 불러오지 못했습니다." }); }
 });
 
+// 랭킹
 app.get('/api/ranking', async (req, res) => {
     const cachedRanking = myCache.get('challenger_ranking_data');
     if (cachedRanking) return res.json(cachedRanking);
@@ -376,10 +406,19 @@ app.get('/api/ranking', async (req, res) => {
     res.json(finalRankingData);
 });
 
+// 메라키 챔피언 세부 데이터
+app.get('/api/champions/meraki', (req, res) => {
+    if (Object.keys(merakiChampionData).length > 0) {
+        res.json(merakiChampionData);
+    } else {
+        res.status(503).json({ error: "데이터를 준비 중입니다." });
+    }
+});
+
 // ==========================================
 // [5] 프론트엔드 라우팅 및 서버 구동
 // ==========================================
 app.get(/.*/, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`[System] 서버 실행 중: 포트 ${PORT}`));
+app.listen(PORT, () => console.log(`[System] 서버 실행 중: http://localhost:${PORT}`));
