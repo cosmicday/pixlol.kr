@@ -6,6 +6,7 @@ const path = require('path');
 const NodeCache = require('node-cache');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 
 // ==========================================
 // [1] DB 연결 및 스키마 정의
@@ -50,7 +51,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const apiLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
     max: 30,
-    keyGenerator: (req) => req.headers['cf-connecting-ip'] || req.ip,
+    keyGenerator: (req) => ipKeyGenerator(req.headers['cf-connecting-ip'] || req.ip),
     message: { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }
 });
 app.use('/api/', apiLimiter);
