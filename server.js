@@ -31,12 +31,24 @@ const MatchCache = mongoose.model('MatchCache', matchCacheSchema);
 
 const summonerCacheSchema = new mongoose.Schema({
     puuid: { type: String, required: true, unique: true },
-    displayName: { type: String, required: true },
-    updatedAt: { type: Number, required: true }
+    displayName: { type: String, required: true },   // 화면 표시용 원본 ("Faker#KR1")
+    updatedAt: { type: Number, required: true },
+
+    // ★ 검색 전용 소문자 사본 (인덱스를 타기 위함)
+    nameLower: { type: String },      // "faker#kr1"
+    namePartLower: { type: String },  // "faker"  (태그 제외)
+
+    // ★ 자동완성 표시/정렬용
+    tier: { type: String },
+    rank: { type: String },
+    lp: { type: Number },
+    tierScore: { type: Number },      // 티어 정렬용 점수
+    iconId: { type: Number },
+    level: { type: Number }
 });
 
-// ★ 닉네임 → puuid 역방향 조회용 인덱스
 summonerCacheSchema.index({ displayName: 1 });
+summonerCacheSchema.index({ namePartLower: 1, tierScore: -1 });
 
 const SummonerCache = mongoose.model('SummonerCache', summonerCacheSchema);
 
@@ -74,6 +86,15 @@ const apiLimiter = rateLimit({
     message: { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }
 });
 app.use('/api/', apiLimiter);
+
+// 자동완성 전용 제한 (라이엇 API를 쓰지 않으므로 넉넉하게)
+const suggestLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 120,
+    keyGenerator: (req) => ipKeyGenerator(req.headers['cf-connecting-ip'] || req.ip),
+    message: { error: "요청이 너무 많습니다." }
+});
+app.use('/api/suggest', suggestLimiter);
 
 // ==========================================
 // [3] 백그라운드 스케줄러 (데이터 갱신)
@@ -175,7 +196,11 @@ async function resolveNamesInBackground() {
                     const dName = `${accRes.data.gameName}#${accRes.data.tagLine}`;
                     resolvedNames[p.puuid] = { displayName: dName, updatedAt: now };
                     delete failedPuuids[p.puuid];
-                    await SummonerCache.findOneAndUpdate({ puuid: p.puuid }, { displayName: dName, updatedAt: now }, { upsert: true });
+                    await SummonerCache.findOneAndUpdate(
+                        { puuid: p.puuid },
+                        { displayName: dName, updatedAt: now, ...toSearchFields(dName) },
+                        { upsert: true }
+                    );
                     myCache.del('challenger_ranking_data');
                 }
             } catch (err) {
@@ -198,6 +223,7 @@ async function resolveNamesInBackground() {
 
 async function startJobs() {
     await loadResolvedNames();
+    await backfillSearchFields();
     await updateVersion();
     await updateMerakiData();
     await updateChallengerList();
@@ -220,7 +246,41 @@ async function startJobs() {
 // ==========================================
 // [4] 공통 헬퍼
 // ==========================================
-const QUEUE_MAP = { 420: "솔로랭크", 440: "자유랭크", 450: "칼바람", 1700: "아레나" };
+const QUEUE_MAP = {
+    420: "솔로랭크",
+    440: "자유랭크",
+    450: "칼바람",
+    1700: "아레나",   // 구버전
+    1710: "아레나",   // 구버전
+    1750: "아레나"    // ★ 현재
+};
+
+// 티어 정렬용 점수 계산
+const TIER_BASE = {
+    IRON: 1, BRONZE: 2, SILVER: 3, GOLD: 4, PLATINUM: 5,
+    EMERALD: 6, DIAMOND: 7, MASTER: 8, GRANDMASTER: 9, CHALLENGER: 10
+};
+const DIV_BASE = { IV: 1, III: 2, II: 3, I: 4 };
+
+function calcTierScore(tier, rank, lp) {
+    const base = TIER_BASE[String(tier || '').toUpperCase()] || 0;
+    if (base === 0) return 0;
+    const div = DIV_BASE[String(rank || '').toUpperCase()] || 1;
+    return base * 100000 + div * 10000 + Math.min(Number(lp) || 0, 9999);
+}
+
+// 입력 가중치 (한글 2점, 그 외 1점)
+function inputWeight(str) {
+    let w = 0;
+    for (const ch of String(str)) w += /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(ch) ? 2 : 1;
+    return w;
+}
+
+// 닉네임을 검색용 소문자 필드로 분해
+function toSearchFields(displayName) {
+    const lower = String(displayName).toLowerCase();
+    return { nameLower: lower, namePartLower: lower.split('#')[0] };
+}
 
 // 정규식 특수문자 이스케이프
 function escapeRegex(str) {
@@ -231,6 +291,13 @@ function escapeRegex(str) {
 function buildHistoryEntry(detail, targetPuuid, isPast = false) {
     const p = detail.info.participants.find(part => part.puuid === targetPuuid);
     if (!p) return null;
+
+    if (!QUEUE_MAP[detail.info.queueId]) {
+    const p0 = detail.info.participants[0];
+    console.log(`[Queue] id=${detail.info.queueId} mode=${detail.info.gameMode} ver=${detail.info.gameVersion}`);
+    console.log(`  참가자: ${detail.info.participants.map(x => x.riotIdGameName || x.summonerName).join(', ')}`);
+    console.log(`  룬구조: ${JSON.stringify(p0.perks?.styles?.map(s => s.style))}`);
+}
 
     const durationMin = Math.floor(detail.info.gameDuration / 60);
     const durationSec = detail.info.gameDuration % 60;
@@ -270,6 +337,56 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         })),
         myRunes: p.perks?.styles ? { primaryStyle: p.perks.styles[0].style, primarySelections: p.perks.styles[0].selections.map(s => s.perk), subStyle: p.perks.styles[1].style, subSelections: p.perks.styles[1].selections.map(s => s.perk), statPerks: p.perks.statPerks ? [p.perks.statPerks.offense, p.perks.statPerks.flex, p.perks.statPerks.defense] : [] } : null
     };
+}
+
+// 매치 참가자들의 닉네임을 캐시에 축적 (티어 정보는 건드리지 않음)
+function saveParticipantNames(matchDetails, excludePuuid) {
+    const seen = new Map();
+
+    for (const { detail } of matchDetails) {
+        for (const part of detail?.info?.participants || []) {
+            if (!part.puuid || part.puuid === excludePuuid) continue;
+            if (!part.riotIdGameName || !part.riotIdTagline) continue;
+            if (/\sbot$/i.test(part.riotIdGameName)) continue;   // 봇 제외
+            seen.set(part.puuid, `${part.riotIdGameName}#${part.riotIdTagline}`);
+        }
+    }
+    if (seen.size === 0) return;
+
+    const now = Date.now();
+    const ops = [...seen].map(([puuid, name]) => ({
+        updateOne: {
+            filter: { puuid },
+            update: { $set: { displayName: name, updatedAt: now, ...toSearchFields(name) } },
+            upsert: true
+        }
+    }));
+
+    SummonerCache.bulkWrite(ops, { ordered: false }).catch(() => { });
+}
+
+// 기존 데이터에 검색용 소문자 필드를 채워 넣음 (서버 시작 시 1회)
+async function backfillSearchFields() {
+    try {
+        const targets = await SummonerCache.find({ namePartLower: { $exists: false } })
+            .select('puuid displayName')
+            .limit(50000);
+        if (targets.length === 0) return;
+
+        const ops = targets.map(d => ({
+            updateOne: {
+                filter: { _id: d._id },
+                update: { $set: toSearchFields(d.displayName) }
+            }
+        }));
+
+        for (let i = 0; i < ops.length; i += 1000) {
+            await SummonerCache.bulkWrite(ops.slice(i, i + 1000), { ordered: false });
+        }
+        console.log(`[System] 검색 색인 보강 완료: ${targets.length}건`);
+    } catch (err) {
+        console.error("[System] 검색 색인 보강 실패:", err.message);
+    }
 }
 
 // 닉네임으로 puuid 찾기 (SummonerCache 우선)
@@ -388,14 +505,28 @@ app.get('/api/summoner/:name', async (req, res) => {
             history
         };
 
-        // ★ 검색된 소환사를 캐시에 저장 (429 폴백 및 랭킹 닉네임에 재사용)
+        // ★ 검색된 소환사를 캐시에 저장 (자동완성 / 429 폴백 / 랭킹 닉네임에 재사용)
         const canonicalName = `${accountData.gameName}#${accountData.tagLine}`;
+        const now = Date.now();
         SummonerCache.findOneAndUpdate(
             { puuid: targetPuuid },
-            { displayName: canonicalName, updatedAt: Date.now() },
+            {
+                displayName: canonicalName,
+                updatedAt: now,
+                ...toSearchFields(canonicalName),
+                tier: rankData?.tier || 'UNRANKED',
+                rank: rankData?.rank || '',
+                lp: rankData?.leaguePoints || 0,
+                tierScore: calcTierScore(rankData?.tier, rankData?.rank, rankData?.leaguePoints),
+                iconId: summonerRes.data.profileIconId,
+                level: summonerRes.data.summonerLevel
+            },
             { upsert: true }
         ).catch(() => { });
-        resolvedNames[targetPuuid] = { displayName: canonicalName, updatedAt: Date.now() };
+        resolvedNames[targetPuuid] = { displayName: canonicalName, updatedAt: now };
+
+        // ★ 같은 게임에 있던 참가자들도 닉네임만 저장 (자동완성 후보 축적)
+        saveParticipantNames(allMatchDetails, targetPuuid);
 
         myCache.set(summonerName, finalData);
         finalData.expireAt = myCache.getTtl(summonerName);
@@ -504,6 +635,132 @@ app.get('/api/timeline/:matchId', async (req, res) => {
         if (status === 404) return res.status(404).json({ error: "타임라인 데이터가 없습니다." });
         console.error(`[Timeline] 조회 실패 ${matchId}: ${error.message}`);
         res.status(500).json({ error: "타임라인을 불러오지 못했습니다." });
+    }
+});
+
+// 전적 더 보기 (start부터 count개 추가 조회)
+app.get('/api/matches/:puuid', async (req, res) => {
+    const targetPuuid = req.params.puuid;
+    const start = Math.max(0, parseInt(req.query.start) || 0);
+    const count = Math.min(Math.max(1, parseInt(req.query.count) || 10), 10);
+
+    if (!/^[\w-]{40,120}$/.test(targetPuuid)) {
+        return res.status(400).json({ error: "잘못된 요청입니다." });
+    }
+
+    try {
+        const { data: matchIds } = await riotApi.get(
+            `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${targetPuuid}/ids?start=${start}&count=${count}`
+        );
+
+        if (!matchIds || matchIds.length === 0) {
+            return res.json({ history: [], hasMore: false });
+        }
+
+        const cachedMatches = await MatchCache.find({ matchId: { $in: matchIds } });
+        const cachedMatchIds = cachedMatches.map(m => m.matchId);
+        const matchesToFetch = matchIds.filter(id => !cachedMatchIds.includes(id));
+
+        console.log(`[More] ${start}~${start + count}: DB ${cachedMatchIds.length}개 / 신규 ${matchesToFetch.length}개`);
+
+        const newMatchesData = await Promise.all(matchesToFetch.map(async (matchId, index) => {
+            try {
+                await new Promise(r => setTimeout(r, index * 150));
+                const detailRes = await riotApi.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}`);
+                MatchCache.create({ matchId, detail: detailRes.data }).catch(() => { });
+                return { detail: detailRes.data };
+            } catch (err) { return null; }
+        }));
+
+        const allDetails = [...cachedMatches.map(m => ({ detail: m.detail })), ...newMatchesData]
+            .filter(m => m?.detail);
+        allDetails.sort((a, b) => b.detail.info.gameEndTimestamp - a.detail.info.gameEndTimestamp);
+
+        const history = allDetails
+            .map(({ detail }) => buildHistoryEntry(detail, targetPuuid))
+            .filter(Boolean);
+
+        saveParticipantNames(allDetails, targetPuuid);
+
+        res.json({ history, hasMore: matchIds.length === count });
+
+    } catch (error) {
+        const status = error.response?.status;
+        if (status === 429) return res.status(429).json({ error: "조회 한도를 초과했습니다. 잠시 후 다시 시도해주세요." });
+        console.error(`[More] 조회 실패: ${error.message}`);
+        res.status(500).json({ error: "전적을 더 불러오지 못했습니다." });
+    }
+});
+
+// 닉네임 자동완성 / 태그 후보 목록 (전부 자체 DB 조회 — 라이엇 API 미사용)
+app.get('/api/suggest', async (req, res) => {
+    const raw = String(req.query.q || '').trim();
+    const exact = req.query.exact === '1';
+
+    if (!raw) return res.json([]);
+
+    const namePart = raw.split('#')[0].trim();
+    const lower = namePart.toLowerCase();
+
+    // 접두사 검색은 최소 4포인트(한글 2점 / 그 외 1점)부터
+    if (!exact && inputWeight(namePart) < 4) return res.json([]);
+    if (exact && namePart.length === 0) return res.json([]);
+
+    try {
+        const filter = exact
+            ? { namePartLower: lower }
+            : { namePartLower: new RegExp('^' + escapeRegex(lower)) };
+
+        const limit = exact ? 100 : 30;
+
+        const rows = await SummonerCache
+            .find(filter)
+            .sort({ tierScore: -1 })
+            .limit(limit)
+            .select('displayName tier rank lp iconId level -_id')
+            .maxTimeMS(2000);
+
+        let list = rows.map(r => ({
+            displayName: r.displayName,
+            tier: r.tier || null,
+            rank: r.rank || '',
+            lp: r.lp ?? null,
+            iconId: r.iconId ?? null,
+            level: r.level ?? null
+        }));
+
+        if (exact) {
+            // 티어 높은 순 > 태그 가나다순
+            list.sort((a, b) => {
+                const aScore = calcTierScore(a.tier, a.rank, a.lp);
+                const bScore = calcTierScore(b.tier, b.rank, b.lp);
+                if (aScore !== bScore) return bScore - aScore;
+
+                const aTag = a.displayName.split('#')[1] || '';
+                const bTag = b.displayName.split('#')[1] || '';
+                return aTag.localeCompare(bTag, 'ko', { sensitivity: 'base' });
+            });
+        } else {
+            // 완전 일치 > 닉네임 짧은 순 > 가나다순
+            list.sort((a, b) => {
+                const aName = a.displayName.split('#')[0];
+                const bName = b.displayName.split('#')[0];
+
+                const aExact = aName.toLowerCase() === lower ? 0 : 1;
+                const bExact = bName.toLowerCase() === lower ? 0 : 1;
+                if (aExact !== bExact) return aExact - bExact;
+
+                if (aName.length !== bName.length) return aName.length - bName.length;
+
+                return a.displayName.localeCompare(b.displayName, 'ko', { sensitivity: 'base' });
+            });
+            list = list.slice(0, 6);
+        }
+
+        res.json(list);
+    } catch (err) {
+        console.error("[Suggest] 조회 실패:", err.message);
+        res.json([]);
     }
 });
 

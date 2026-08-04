@@ -2017,3 +2017,199 @@ body::before {
         margin: 0 auto 10px auto !important;
     }
 }
+/* ================================
+   닉네임 자동완성 드롭다운
+   ================================ */
+.ac-dropdown {
+    padding: 6px 0;
+}
+
+.ac-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.ac-item:hover,
+.ac-item.active {
+    background: rgba(167, 139, 250, 0.12);
+}
+
+.ac-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #0f0f1a;
+    object-fit: cover;
+}
+
+.ac-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.ac-name {
+    font-size: 14px;
+    color: #fff;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ac-name .ac-hl {
+    color: #a78bfa;
+}
+
+.ac-name .ac-tag {
+    color: #9aa4af;
+    font-weight: normal;
+    margin-left: 4px;
+}
+
+.ac-sub {
+    font-size: 11px;
+    color: #9aa4af;
+    margin-top: 2px;
+}
+
+.ac-empty {
+    padding: 16px 20px;
+    text-align: center;
+    color: #777;
+    font-size: 13px;
+}
+
+/* ================================
+   태그 후보 목록 페이지
+   ================================ */
+.cand-wrap {
+    max-width: 760px;
+    margin: 40px auto;
+    padding-bottom: 60px;
+    animation: fadeIn 0.4s ease;
+    min-height: 60vh;
+}
+
+.cand-count {
+    color: #9aa4af;
+    font-size: 14px;
+    margin: 0 0 14px 4px;
+}
+
+.cand-count b {
+    color: #a78bfa;
+}
+
+.cand-list {
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.cand-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.cand-item:last-child {
+    border-bottom: none;
+}
+
+.cand-item:hover {
+    background: rgba(167, 139, 250, 0.1);
+}
+
+.cand-badge {
+    flex-shrink: 0;
+    min-width: 34px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 6px;
+    border-radius: 4px;
+    color: #fff;
+    background: #3a3a4a;
+}
+
+.cand-badge.t-challenger { background: #ca8a04; }
+.cand-badge.t-grandmaster { background: #d33148; }
+.cand-badge.t-master { background: #8b5cf6; }
+.cand-badge.t-diamond { background: #3b82f6; }
+.cand-badge.t-emerald { background: #10b981; }
+.cand-badge.t-platinum { background: #14b8a6; }
+.cand-badge.t-gold { background: #b8860b; }
+.cand-badge.t-silver { background: #6b7280; }
+.cand-badge.t-bronze { background: #92400e; }
+.cand-badge.t-iron { background: #4b4b4b; }
+
+.cand-name {
+    flex: 1;
+    color: #ddd;
+    font-size: 14px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cand-name .ac-tag {
+    color: #9aa4af;
+    font-weight: normal;
+}
+
+.cand-lp {
+    color: #9aa4af;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+/* ================================
+   전적 더 보기 버튼
+   ================================ */
+#load-more-area {
+    padding: 4px 0 40px;
+}
+
+.load-more-btn {
+    display: block;
+    width: 100%;
+    padding: 14px 0;
+    background: #1a1a2e;
+    color: #a78bfa;
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    outline: none;
+}
+
+.load-more-btn:hover:not(:disabled) {
+    background: rgba(167, 139, 250, 0.12);
+    border-color: rgba(167, 139, 250, 0.7);
+}
+
+.load-more-btn:disabled {
+    color: #777;
+    border-color: rgba(255, 255, 255, 0.08);
+    cursor: default;
+}
+
+.load-more-end {
+    text-align: center;
+    padding: 18px 0;
+    color: #666;
+    font-size: 13px;
+}

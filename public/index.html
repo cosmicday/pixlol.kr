@@ -52,6 +52,8 @@
                     </div>
                     <div id="dropdown-list" class="favorite-list"></div>
                 </div>
+
+                <div id="autocomplete-dropdown" class="search-dropdown ac-dropdown"></div>
             </div>
 
             <div id="mythic-shop-container" class="mythic-shop-container">
@@ -81,12 +83,14 @@
                     </div>
                     <div id="summary-stats-area"></div>
                     <div class="match-list" id="game-list"></div>
+                    <div id="load-more-area"></div>
                 </div>
             </div>
         </div>
 
         <div id="stats-container" class="page-container"></div>
         <div id="masters-container" class="page-container"></div>
+        <div id="candidates-container" class="page-container"></div>
 
         <div id="champions-container" class="page-container" 
             style="display: none; max-width: 1500px; margin: 40px auto; padding-bottom: 50px; animation: fadeIn 0.6s ease; min-height: 100vh;">
@@ -99,10 +103,17 @@
             <p style="margin-bottom: 15px;"><b>pixlol.kr</b>(이하 '본 사이트')는 이용자의 개인정보를 중요시하며, 안전하게 보호하기 위해 최선을 다하고 있습니다.</p>
 
             <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">1. 수집하는 개인정보 항목</h3>
-            <p style="margin-bottom: 15px;">본 사이트는 리그 오브 레전드 전적 검색 서비스를 제공하기 위해 라이엇 게임즈(Riot Games) API 파트너 프로그램을 사용합니다. 이 과정에서 사용자가 검색창에 입력한 <b>'소환사명 및 태그'</b> 정보만을 일시적으로 처리하며, 당사의 서버나 데이터베이스에 사용자의 개인 식별 정보를 영구적으로 저장하거나 무단으로 수집하지 않습니다.</p>
+            <p style="margin-bottom: 15px;">본 사이트는 리그 오브 레전드 전적 검색 서비스를 제공하기 위해 라이엇 게임즈(Riot Games) API를 사용합니다. 본 사이트가 저장하는 정보는 <b>라이엇 API를 통해 공개적으로 제공되는 게임 데이터</b>에 한하며, 구체적으로 다음과 같습니다.</p>
+            <ul style="margin-bottom: 15px; padding-left: 20px; line-height: 1.9;">
+                <li>소환사명 및 태그, 프로필 아이콘, 소환사 레벨</li>
+                <li>랭크 티어, 승급 등급, 리그 포인트(LP)</li>
+                <li>경기 기록(매치 데이터) 및 해당 경기 참가자의 소환사명</li>
+            </ul>
+            <p style="margin-bottom: 15px;">본 사이트는 회원가입 절차가 없으며, 이메일·연락처·결제 정보 등 <b>라이엇 API에서 제공되지 않는 개인 식별 정보는 일절 수집하지 않습니다.</b></p>
 
-            <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">2. 개인정보의 처리 목적</h3>
-            <p style="margin-bottom: 15px;">입력된 닉네임 정보는 오직 라이엇 게임즈 서버로 전적 데이터를 요청하고, 그 결과를 가공하여 사용자 화면에 보여주기 위한 1회성 검색 목적으로만 사용됩니다.</p>
+            <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">2. 개인정보의 처리 목적 및 보관 기간</h3>
+            <p style="margin-bottom: 15px;">수집된 게임 데이터는 전적 검색 결과 제공, 소환사명 자동완성, 랭킹 및 통계 표시, 그리고 라이엇 API 호출량을 줄이기 위한 캐시(임시 저장) 용도로만 사용됩니다.</p>
+            <p style="margin-bottom: 15px;">경기 기록은 저장 시점으로부터 <b>14일이 지나면 자동으로 삭제</b>되며, 소환사명 정보는 검색 편의를 위해 보관하되 주기적으로 최신 정보로 갱신됩니다. 저장된 정보의 삭제를 원하시는 경우 아래 5항의 이메일로 요청해 주시기 바랍니다.</p>
 
             <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">3. 제3자 제공 및 위탁</h3>
             <p style="margin-bottom: 15px;">본 사이트는 사용자의 어떠한 개인정보도 영리 목적을 위해 제3자에게 제공하거나 외부에 위탁하지 않습니다.</p>

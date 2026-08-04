@@ -360,6 +360,7 @@ function goLobby() {
     hideAllContainers();
     document.getElementById('search-section').style.display = "flex";
     document.getElementById('summoner-input').value = "";
+    hideAutocomplete();
     setActiveNav('nav-search');
 }
 
@@ -378,12 +379,20 @@ async function executeSearch() {
 
     clearSearchError();
 
-    if (!inputName || !inputName.includes('#')) {
+    hideAutocomplete();
+
+    if (!inputName) {
         if (errorMsgDiv) {
-            errorMsgDiv.innerHTML = "해당 유저를 찾을 수 없습니다.<br>정확한 닉네임과 태그로 검색해 주세요.";
+            errorMsgDiv.innerHTML = "소환사명을 입력해 주세요.";
             errorMsgDiv.style.display = 'block';
         }
         triggerShake();
+        return;
+    }
+
+    // 태그 없이 닉네임만 입력한 경우 → 같은 닉네임의 태그 후보 목록 표시
+    if (!inputName.includes('#')) {
+        await showCandidates(inputName);
         return;
     }
 
@@ -550,6 +559,8 @@ async function executeSearch() {
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
 
         renderMatches(allMatches);
+        window.matchOffset = allMatches.length;
+        renderLoadMore(allMatches.length >= 20);
 
         const allBtn = document.querySelector('.filter-btn');
         if (allBtn) toggleFilter(allBtn, '전체');
@@ -679,13 +690,13 @@ async function ensureTimeline(matchId) {
     }
 }
 
-function renderMatches(matches) {
+function renderMatches(matches, append = false) {
     const listDiv = document.getElementById('game-list');
     const filterArea = document.getElementById('filter-area');
     if (filterArea) filterArea.style.display = "flex";
-    listDiv.innerHTML = "";
+    if (!append) listDiv.innerHTML = "";
 
-    if (!matches || matches.length === 0) {
+    if (!append && (!matches || matches.length === 0)) {
         listDiv.innerHTML = `<div style="text-align: center; padding: 60px 0; color: #9aa4af; line-height: 1.6;">전적 데이터가 없습니다.<br><span style="font-size: 12px; color: #777;">(최근 20게임 기준)</span></div>`;
         return;
     }
@@ -1384,7 +1395,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('summoner-input');
     const dropdown = document.getElementById('search-dropdown');
 
-    searchInput.addEventListener('focus', () => { renderDropdownList(); dropdown.style.display = 'block'; });
+    searchInput.addEventListener('focus', () => {
+        // 입력값이 있으면 자동완성이 우선이므로 즐겨찾기는 띄우지 않음
+        if (searchInput.value.trim()) return;
+        renderDropdownList();
+        dropdown.style.display = 'block';
+    });
     document.addEventListener('click', (e) => {
         const wrapper = document.querySelector('.search-box-wrapper');
         if (wrapper && !wrapper.contains(e.target)) dropdown.style.display = 'none';
@@ -1586,6 +1602,8 @@ async function showRanking(targetPage = 1) {
         </div>
     `;
     listDiv.innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:#9aa4af;'>데이터를 불러오는 중입니다...</div>";
+    const moreArea = document.getElementById('load-more-area');
+    if (moreArea) moreArea.innerHTML = "";
 
     try {
         const res = await fetch('/api/ranking');
@@ -2506,4 +2524,292 @@ window.updateSkinDetail = function () {
     const skin = window.currentChampSkins[window.currentSkinIndex];
     document.getElementById('skin-detail-img').src = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${window.currentChampIdForSkins}_${skin.num}.jpg`;
     document.getElementById('skin-detail-name').innerText = skin.name === 'default' ? '기본 스킨' : skin.name;
+};
+
+// ==========================================
+// [9] 닉네임 자동완성 & 태그 후보 목록
+// ==========================================
+let acTimer = null;
+let acItems = [];
+let acIndex = -1;
+let acSeq = 0;
+
+// 입력 가중치 (한글 2점, 그 외 1점) — 서버 규칙과 동일
+function inputWeight(str) {
+    let w = 0;
+    for (const ch of String(str)) w += /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(ch) ? 2 : 1;
+    return w;
+}
+
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+
+const TIER_SHORT = {
+    IRON: 'I', BRONZE: 'B', SILVER: 'S', GOLD: 'G', PLATINUM: 'P',
+    EMERALD: 'E', DIAMOND: 'D', MASTER: 'M', GRANDMASTER: 'GM', CHALLENGER: 'C'
+};
+const DIV_NUM = { I: '1', II: '2', III: '3', IV: '4' };
+
+function shortTier(tier, rank) {
+    const t = String(tier || '').toUpperCase();
+    if (!TIER_SHORT[t]) return '–';
+    if (['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(t)) return TIER_SHORT[t];
+    return TIER_SHORT[t] + (DIV_NUM[String(rank || '').toUpperCase()] || '');
+}
+
+function fullTierText(tier, rank, lp) {
+    const t = String(tier || '').toUpperCase();
+    if (!t || t === 'UNRANKED') return null;
+    const div = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(t) ? '' : ` ${rank || ''}`;
+    const name = t.charAt(0) + t.slice(1).toLowerCase();
+    return `${name}${div} - ${lp ?? 0}LP`;
+}
+
+function hideAutocomplete() {
+    const box = document.getElementById('autocomplete-dropdown');
+    if (box) box.style.display = 'none';
+    acItems = [];
+    acIndex = -1;
+}
+
+function renderAutocomplete(list, typed) {
+    const box = document.getElementById('autocomplete-dropdown');
+    if (!box) return;
+
+    if (!list || list.length === 0) { hideAutocomplete(); return; }
+
+    // 즐겨찾기 드롭다운과 동시에 뜨지 않도록
+    const fav = document.getElementById('search-dropdown');
+    if (fav) fav.style.display = 'none';
+
+    acItems = list;
+    acIndex = -1;
+
+    const typedLen = typed.split('#')[0].length;
+
+    box.innerHTML = list.map((it, i) => {
+        const [namePart, tag] = it.displayName.split('#');
+        const head = escapeHtml(namePart.slice(0, typedLen));
+        const rest = escapeHtml(namePart.slice(typedLen));
+        const sub = fullTierText(it.tier, it.rank, it.lp)
+            || (it.level ? `Level ${it.level}` : '전적 정보 없음');
+        const icon = it.iconId != null
+            ? `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/${it.iconId}.png`
+            : `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/29.png`;
+
+        return `
+            <div class="ac-item" data-index="${i}" onclick="pickAutocomplete(${i})">
+                <img class="ac-icon" src="${icon}" onerror="this.style.visibility='hidden'">
+                <div class="ac-body">
+                    <div class="ac-name"><span class="ac-hl">${head}</span>${rest}<span class="ac-tag">#${escapeHtml(tag || '')}</span></div>
+                    <div class="ac-sub">${escapeHtml(sub)}</div>
+                </div>
+            </div>`;
+    }).join('');
+
+    box.style.display = 'block';
+}
+
+function highlightAcItem() {
+    document.querySelectorAll('#autocomplete-dropdown .ac-item').forEach((el, i) => {
+        el.classList.toggle('active', i === acIndex);
+    });
+}
+
+window.pickAutocomplete = function (i) {
+    const item = acItems[i];
+    if (!item) return;
+    document.getElementById('summoner-input').value = item.displayName;
+    hideAutocomplete();
+    executeSearch();
+};
+
+async function fetchAutocomplete(value) {
+    const namePart = value.split('#')[0].trim();
+    if (inputWeight(namePart) < 4) { hideAutocomplete(); return; }
+
+    const seq = ++acSeq;
+    try {
+        const res = await fetch(`/api/suggest?q=${encodeURIComponent(namePart)}`);
+        if (!res.ok) { hideAutocomplete(); return; }
+        const list = await res.json();
+
+        if (seq !== acSeq) return;                       // 늦게 도착한 응답 무시
+        const now = document.getElementById('summoner-input').value.trim();
+        if (now.split('#')[0].trim() !== namePart) return;
+
+        renderAutocomplete(list, namePart);
+    } catch (e) {
+        hideAutocomplete();
+    }
+}
+
+// 태그 후보 목록 페이지
+async function showCandidates(name) {
+    hideAllContainers();
+    const box = document.getElementById('candidates-container');
+    box.style.display = 'block';
+    box.innerHTML = `<div class="cand-wrap"><div style="text-align:center; padding:80px 0; color:#9aa4af;">검색 중입니다...</div></div>`;
+    window.scrollTo(0, 0);
+
+    let list = [];
+    try {
+        const res = await fetch(`/api/suggest?q=${encodeURIComponent(name)}&exact=1`);
+        if (res.ok) list = await res.json();
+    } catch (e) { }
+
+    if (!list || list.length === 0) {
+        box.innerHTML = `
+            <div class="cand-wrap">
+                <div style="text-align:center; padding:70px 20px; color:#9aa4af; line-height:1.9;">
+                    <div style="font-size:18px; color:#fff; margin-bottom:12px;">'${escapeHtml(name)}' 님을 찾지 못했습니다.</div>
+                    태그까지 함께 입력하면 정확하게 찾을 수 있습니다.<br>
+                    <span style="font-size:13px; color:#777;">예) ${escapeHtml(name)}#KR1</span>
+                </div>
+            </div>`;
+        return;
+    }
+
+    const rows = list.map(it => {
+        const [namePart, tag] = it.displayName.split('#');
+        const t = String(it.tier || '').toUpperCase();
+        const cls = TIER_SHORT[t] ? `t-${t.toLowerCase()}` : '';
+        const lpText = fullTierText(it.tier, it.rank, it.lp) || (it.level ? `Level ${it.level}` : '');
+        const safe = it.displayName.replace(/'/g, "\\'");
+
+        return `
+            <div class="cand-item" onclick="document.getElementById('summoner-input').value='${escapeHtml(safe)}'; executeSearch();">
+                <span class="cand-badge ${cls}">${shortTier(it.tier, it.rank)}</span>
+                <span class="cand-name">${escapeHtml(namePart)}<span class="ac-tag">#${escapeHtml(tag || '')}</span></span>
+                <span class="cand-lp">${escapeHtml(lpText)}</span>
+            </div>`;
+    }).join('');
+
+    box.innerHTML = `
+        <div class="cand-wrap">
+            <div class="cand-count"><b>${list.length}</b>개의 결과가 있습니다.</div>
+            <div class="cand-list">${rows}</div>
+        </div>`;
+}
+
+// 입력 이벤트 연결 (디바운스 0.2초)
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('summoner-input');
+    if (!input) return;
+
+    input.addEventListener('input', () => {
+        const value = input.value.trim();
+        if (acTimer) clearTimeout(acTimer);
+
+        if (!value) { hideAutocomplete(); return; }
+        acTimer = setTimeout(() => fetchAutocomplete(value), 200);
+    });
+
+    input.addEventListener('keydown', (e) => {
+        const box = document.getElementById('autocomplete-dropdown');
+        const open = box && box.style.display === 'block' && acItems.length > 0;
+
+        if (e.key === 'Escape') { hideAutocomplete(); return; }
+        if (!open) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            acIndex = (acIndex + 1) % acItems.length;
+            highlightAcItem();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            acIndex = acIndex <= 0 ? acItems.length - 1 : acIndex - 1;
+            highlightAcItem();
+        } else if (e.key === 'Enter' && acIndex >= 0) {
+            e.preventDefault();
+            pickAutocomplete(acIndex);
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const wrapper = document.querySelector('.search-box-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) hideAutocomplete();
+    });
+});
+
+// ==========================================
+// [10] 전적 더 보기
+// ==========================================
+window.matchOffset = 0;
+let isLoadingMore = false;
+
+function renderLoadMore(hasMore) {
+    const area = document.getElementById('load-more-area');
+    if (!area) return;
+
+    if (!hasMore) {
+        area.innerHTML = `<div class="load-more-end">더 이상 불러올 전적이 없습니다.</div>`;
+        return;
+    }
+    area.innerHTML = `<button class="load-more-btn" id="load-more-btn" onclick="loadMoreMatches()">+ 10게임 더 보기</button>`;
+}
+
+window.loadMoreMatches = async function () {
+    if (isLoadingMore) return;
+
+    const puuid = window.currentPuuid;
+    if (!puuid) return;
+
+    const btn = document.getElementById('load-more-btn');
+    isLoadingMore = true;
+    if (btn) { btn.disabled = true; btn.textContent = "불러오는 중..."; }
+
+    try {
+        const res = await fetch(`/api/matches/${puuid}?start=${window.matchOffset}&count=10`);
+
+        if (res.status === 429) {
+            showErrorToast("서버 요청이 많아 지연되고 있습니다.\n잠시 후 다시 시도해주세요.");
+            if (btn) { btn.disabled = false; btn.textContent = "+ 10게임 더 보기"; }
+            return;
+        }
+        if (!res.ok) throw new Error("불러오기 실패");
+
+        const data = await res.json();
+        const newMatches = data.history || [];
+
+        if (newMatches.length === 0) {
+            renderLoadMore(false);
+            return;
+        }
+
+        // 챔피언 스킬 정보 미리 확보 (스킬 빌드 표에 필요)
+        window.champDetailCache = window.champDetailCache || {};
+        const uniqueChamps = [...new Set(newMatches.map(m => m.championName))];
+        await Promise.all(uniqueChamps.map(async champName => {
+            if (window.champDetailCache[champName]) return;
+            try {
+                const r = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/champion/${champName}.json`);
+                const d = await r.json();
+                window.champDetailCache[champName] = d.data[champName].spells.map(sp => ({ img: sp.image.full, max: sp.maxrank }));
+            } catch (e) { }
+        }));
+
+        allMatches = allMatches.concat(newMatches);
+        window.matchOffset += newMatches.length;
+
+        renderMatches(newMatches, true);
+        renderLoadMore(data.hasMore !== false);
+
+        // 현재 선택된 필터를 새로 추가된 항목에도 적용
+        const activeBtn = document.querySelector('.filter-btn.active');
+        if (activeBtn) {
+            const label = activeBtn.textContent.trim();
+            toggleFilter(activeBtn, label);
+        }
+
+    } catch (e) {
+        console.error("더 보기 실패:", e);
+        showErrorToast("전적을 더 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.");
+        if (btn) { btn.disabled = false; btn.textContent = "+ 10게임 더 보기"; }
+    } finally {
+        isLoadingMore = false;
+    }
 };
