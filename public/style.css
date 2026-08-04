@@ -2358,7 +2358,7 @@ body::before {
 /* 상세 표 증강체: 스펠/룬 칸(55px)과 같은 폭에 3열 2행으로 */
 .detail-augments {
     display: grid;
-    grid-template-columns: repeat(3, 16px);
+    grid-template-columns: repeat(2, 16px);
     gap: 2px;
     justify-content: center;
     align-content: center;

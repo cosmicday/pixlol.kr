@@ -391,6 +391,9 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         item7: (p.roleBoundItem || p.item7 || 0),
         isArena,
         isAram,
+        // 다시하기: 라이엇이 조기 항복 플래그를 주고, 없으면 4분 미만으로 판정.
+        // 실제로 플레이한 게임이 아니라 승률·포지션·챔피언 통계에서 전부 제외한다.
+        isRemake: !isArena && (p.gameEndedInEarlySurrender === true || durationMin < 4),
         subteam: isArena ? subteamIdOf(p) : null,
         placement: isArena ? (placementOf(p) || null) : null,
         augments: isArena ? augmentsOf(p) : [],

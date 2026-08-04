@@ -59,7 +59,8 @@ function groupArenaTeams(participantsArray) {
 
 // 아레나 등수 표기
 function placementText(n) {
-    return n ? `${n}위` : '-';
+    if (!n) return '-';
+    return n === 1 ? '우승' : `${n}위`;
 }
 
 function placementClass(n) {
@@ -779,7 +780,7 @@ function renderMatches(matches, append = false) {
         if (champNameExceptions[game.championName]) game.championName = champNameExceptions[game.championName];
 
         const isArena = !!game.isArena;
-        const isRemake = !isArena && game.durationMin < 4;
+        const isRemake = !isArena && (game.isRemake === true || game.durationMin < 4);
 
         // 아레나는 승/패가 아니라 등수로 색을 정한다 (1위 금색 / 2~3위 상위권 / 4~6위 하위권)
         const myPlacement = isArena ? (Number(game.placement) || 0) : 0;
@@ -879,7 +880,7 @@ function renderMatches(matches, append = false) {
                     ${list.map(t => {
                         const mine = t.members.some(m => m.isSearchedUser);
                         return `
-                        <div class="arena-team ${mine ? 'mine' : ''}" title="${t.placement ? t.placement + '위' : '등수 없음'}">
+                        <div class="arena-team ${mine ? 'mine' : ''}" title="${t.placement ? placementText(t.placement) : '등수 없음'}">
                             <span class="arena-team-rank ${placementClass(t.placement)}">${t.placement || '-'}</span>
                             ${t.members.map(p => `
                                 <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png"
@@ -1092,7 +1093,7 @@ function renderMatches(matches, append = false) {
                     <thead>
                         <tr class="arena-group-header">
                             <th colspan="10" style="text-align:left; padding-left:15px;">
-                                <span class="arena-rank-badge ${placementClass(t.placement)}">${t.placement ? t.placement + '위' : '순위 미상'}</span>
+                                <span class="arena-rank-badge ${placementClass(t.placement)}">${t.placement ? placementText(t.placement) : '순위 미상'}</span>
                             </th>
                         </tr>
                     </thead>`;
@@ -1478,8 +1479,7 @@ function renderArenaSummaryHtml(matches) {
     const total = matches.length;
 
     let firsts = 0, top3 = 0, placeSum = 0, placeCount = 0;
-    let totalKills = 0, totalDeaths = 0, totalAssists = 0, totalGold = 0;
-    let totalDmg = 0, totalMins = 0;
+    let totalKills = 0, totalDeaths = 0, totalAssists = 0, totalKp = 0;
     const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
     const champData = {};
 
@@ -1493,12 +1493,7 @@ function renderArenaSummaryHtml(matches) {
         }
 
         totalKills += game.kills; totalDeaths += game.deaths; totalAssists += game.assists;
-        totalGold += game.goldEarned || 0;
-
-        const mins = game.durationMin + (game.durationSec / 60);
-        totalMins += mins;
-        const me = (game.participants || []).find(x => x.isSearchedUser);
-        if (me) totalDmg += me.damage || 0;
+        totalKp += game.kp || 0;
 
         const cName = game.championName;
         if (!champData[cName]) champData[cName] = { games: 0, firsts: 0, placeSum: 0, placeCount: 0 };
@@ -1513,8 +1508,7 @@ function renderArenaSummaryHtml(matches) {
     const avgD = (totalDeaths / total).toFixed(1);
     const avgA = (totalAssists / total).toFixed(1);
     const kdaRatio = totalDeaths === 0 ? 'Perfect' : ((totalKills + totalAssists) / totalDeaths).toFixed(2);
-    const avgGold = Math.round(totalGold / total);
-    const avgDpm = totalMins > 0 ? Math.round(totalDmg / totalMins) : 0;
+    const avgKp = Math.round(totalKp / total);
 
     const placeColor = (n) => n === 1 ? '#facc15' : (n <= 3 ? '#5383e8' : '#e84057');
     const top3Deg = Math.round((top3Rate / 100) * 360);
@@ -1531,9 +1525,8 @@ function renderArenaSummaryHtml(matches) {
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                 <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${cName}.png" style="width: 28px; height: 28px; border-radius: 50%;" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
                 <div style="flex: 1; display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                    <span style="color: ${c}; font-weight: bold; width: 52px;">평균 ${cAvg}위</span>
-                    <span style="color: #ffffff; width: 52px;">(${d.games}판)</span>
-                    <span style="color: #facc15; font-weight: bold;">1위 ${d.firsts}회</span>
+                    <span style="color: #ffffff; width: 62px;">${d.games}게임</span>
+                    <span style="color: #facc15; font-weight: bold;">우승 ${d.firsts}회</span>
                 </div>
             </div>`;
     }).join('');
@@ -1561,7 +1554,7 @@ function renderArenaSummaryHtml(matches) {
 
             <div style="display: flex; align-items: center; gap: 30px; width: 270px;">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="color: #ffffff; font-size: 11px;">${total}전 · 1위 ${firsts}회</div>
+                    <div style="color: #ffffff; font-size: 11px;">${total}전 · ${firsts}회 우승</div>
                     <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${top3Deg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;" data-tooltip="3위 안에 든 비율 ${top3Rate}%">
                         <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: ${avgColor};">
                             <div style="font-size: 15px; font-weight: bold;">${avgPlace}위</div>
@@ -1577,8 +1570,8 @@ function renderArenaSummaryHtml(matches) {
                     <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">
                         ${kdaRatio} <span style="font-size: 14px; font-weight: normal; color: #ffffff;">: 1</span>
                     </div>
-                    <div style="font-size: 11px; color: #9aa4af; font-weight: bold;">
-                        평균 골드 ${avgGold.toLocaleString()} · DPM ${avgDpm.toLocaleString()}
+                    <div style="font-size: 11px; color: #e84057; font-weight: bold;">
+                        킬관여 ${avgKp}%
                     </div>
                 </div>
             </div>
@@ -1621,9 +1614,19 @@ function renderSummaryStats(matchesToCalc) {
     // '전체'에서는 협곡 판만 집계하고, 칼바람과 아레나는 각자 버튼을
     // 눌렀을 때만 전용 패널로 보여준다.
     // ============================================================
-    const arenaMatches = matchesToCalc.filter(g => g.isArena);
-    const aramMatches = matchesToCalc.filter(g => g.isAram);
-    const riftMatches = matchesToCalc.filter(g => !g.isArena && !g.isAram);
+    // 다시하기는 실제로 플레이한 게임이 아니다. 승/패로도, 포지션으로도 세면 안 된다.
+    //   (스펠은 챔피언 선택에서 이미 정해지므로 3분짜리 다시하기도 포지션에 집계됐었다)
+    const played = matchesToCalc.filter(g => !(g.isRemake || (!g.isArena && g.durationMin < 4)));
+
+    if (played.length === 0) {
+        statsArea.innerHTML = '';
+        statsArea.style.display = 'none';
+        return;
+    }
+
+    const arenaMatches = played.filter(g => g.isArena);
+    const aramMatches = played.filter(g => g.isAram);
+    const riftMatches = played.filter(g => !g.isArena && !g.isAram);
 
     if (riftMatches.length === 0) {
         // 협곡 판이 하나도 없을 때: 단일 모드면 그 모드 전용 패널
