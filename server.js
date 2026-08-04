@@ -232,7 +232,7 @@ app.get('/api/summoner/:name', async (req, res) => {
         const [summonerRes, leagueRes, matchIdsRes] = await Promise.all([
             riotApi.get(`https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${targetPuuid}`),
             riotApi.get(`https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/${targetPuuid}`),
-            riotApi.get(`https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${targetPuuid}/ids?start=0&count=30`)
+            riotApi.get(`https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${targetPuuid}/ids?start=0&count=20`)
         ]);
 
         const rankData = leagueRes.data.find(entry => entry.queueType === 'RANKED_SOLO_5x5') || null;
@@ -251,12 +251,9 @@ app.get('/api/summoner/:name', async (req, res) => {
         const newMatchesData = await Promise.all(matchesToFetch.map(async (matchId, index) => {
             try {
                 await new Promise(r => setTimeout(r, index * 150));
-                const [detailRes, timelineRes] = await Promise.all([
-                    riotApi.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}`),
-                    riotApi.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline`).catch(() => ({ data: null }))
-                ]);
-                MatchCache.create({ matchId, detail: detailRes.data, timeline: timelineRes.data }).catch(() => { });
-                return { detail: detailRes.data, timeline: timelineRes.data };
+                const detailRes = await riotApi.get(`https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}`);
+                MatchCache.create({ matchId, detail: detailRes.data }).catch(() => { });
+                return { detail: detailRes.data, timeline: null };
             } catch (err) { return null; }
         }));
 
@@ -265,7 +262,7 @@ app.get('/api/summoner/:name', async (req, res) => {
 
         const queueMap = { 420: "솔로랭크", 440: "자유랭크", 450: "칼바람", 1700: "아레나" };
 
-        const history = allMatchDetails.map(({ detail, timeline }) => {
+        const history = allMatchDetails.map(({ detail }) => {
             const p = detail.info.participants.find(part => part.puuid === targetPuuid);
             if (!p) return null;
 
@@ -273,34 +270,6 @@ app.get('/api/summoner/:name', async (req, res) => {
             const durationSec = detail.info.gameDuration % 60;
             const daysAgo = Math.floor((Date.now() - detail.info.gameEndTimestamp) / 86400000);
             const teamKills = detail.info.participants.filter(x => x.teamId === p.teamId).reduce((sum, x) => sum + x.kills, 0);
-
-            let myTimeline = { skills: [], items: [] };
-            let goldFrames = null;
-
-            if (timeline?.info?.frames) {
-                goldFrames = { labels: [], blue: [], red: [] };
-                timeline.info.frames.forEach((frame, idx) => {
-                    goldFrames.labels.push(`${idx}분`);
-                    let blueGold = 0, redGold = 0;
-                    if (frame.participantFrames) {
-                        for (let i = 1; i <= 5; i++) blueGold += frame.participantFrames[i]?.totalGold || 0;
-                        for (let i = 6; i <= 10; i++) redGold += frame.participantFrames[i]?.totalGold || 0;
-                    }
-                    goldFrames.blue.push(blueGold);
-                    goldFrames.red.push(redGold);
-
-                    frame.events?.forEach(event => {
-                        if (event.participantId === p.participantId) {
-                            if (event.type === 'SKILL_LEVEL_UP') myTimeline.skills.push(event.skillSlot);
-                            else if (event.type === 'ITEM_PURCHASED') myTimeline.items.push({ id: event.itemId, ts: event.timestamp });
-                            else if (event.type === 'ITEM_UNDO') {
-                                const undoIdx = myTimeline.items.map(i => i.id).lastIndexOf(event.beforeId);
-                                if (undoIdx > -1) myTimeline.items.splice(undoIdx, 1);
-                            }
-                        }
-                    });
-                });
-            }
 
             return {
                 matchId: detail.metadata.matchId,
@@ -333,9 +302,7 @@ app.get('/api/summoner/:name', async (req, res) => {
                     item0: part.item0, item1: part.item1, item2: part.item2, item3: part.item3, item4: part.item4, item5: part.item5, item6: part.item6, item7: (part.roleBoundItem || part.item7 || part.playerAugment1 || 0),
                     spell1: part.summoner1Id, spell2: part.summoner2Id, mainRune: part.perks?.styles?.[0]?.style || null, subRune: part.perks?.styles?.[1]?.style || null
                 })),
-                goldFrames,
-                myRunes: p.perks?.styles ? { primaryStyle: p.perks.styles[0].style, primarySelections: p.perks.styles[0].selections.map(s => s.perk), subStyle: p.perks.styles[1].style, subSelections: p.perks.styles[1].selections.map(s => s.perk), statPerks: p.perks.statPerks ? [p.perks.statPerks.offense, p.perks.statPerks.flex, p.perks.statPerks.defense] : [] } : null,
-                myTimeline
+                myRunes: p.perks?.styles ? { primaryStyle: p.perks.styles[0].style, primarySelections: p.perks.styles[0].selections.map(s => s.perk), subStyle: p.perks.styles[1].style, subSelections: p.perks.styles[1].selections.map(s => s.perk), statPerks: p.perks.statPerks ? [p.perks.statPerks.offense, p.perks.statPerks.flex, p.perks.statPerks.defense] : [] } : null
             };
         }).filter(Boolean);
 
@@ -418,6 +385,83 @@ app.get('/api/mastery/:puuid', async (req, res) => {
         const response = await riotApi.get(`https://kr.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${req.params.puuid}/top?count=7`);
         res.json(response.data);
     } catch (error) { res.status(500).json({ error: '마스터리 데이터를 불러오지 못했습니다.' }); }
+});
+
+// 타임라인 원본에서 화면에 필요한 것만 추출
+function extractTimeline(timeline, detail, targetPuuid = null) {
+    if (!timeline?.info?.frames) return { goldFrames: null, myTimeline: null };
+
+    const goldFrames = { labels: [], blue: [], red: [] };
+    let myTimeline = { skills: [], items: [] };
+
+    // 대상 플레이어의 participantId 찾기
+    let myParticipantId = null;
+    if (targetPuuid && detail?.info?.participants) {
+        const me = detail.info.participants.find(p => p.puuid === targetPuuid);
+        if (me) myParticipantId = me.participantId;
+    }
+
+    timeline.info.frames.forEach((frame, idx) => {
+        goldFrames.labels.push(`${idx}분`);
+        let blueGold = 0, redGold = 0;
+        if (frame.participantFrames) {
+            for (let i = 1; i <= 5; i++) blueGold += frame.participantFrames[i]?.totalGold || 0;
+            for (let i = 6; i <= 10; i++) redGold += frame.participantFrames[i]?.totalGold || 0;
+        }
+        goldFrames.blue.push(blueGold);
+        goldFrames.red.push(redGold);
+
+        if (myParticipantId) {
+            frame.events?.forEach(event => {
+                if (event.participantId === myParticipantId) {
+                    if (event.type === 'SKILL_LEVEL_UP') myTimeline.skills.push(event.skillSlot);
+                    else if (event.type === 'ITEM_PURCHASED') myTimeline.items.push({ id: event.itemId, ts: event.timestamp });
+                    else if (event.type === 'ITEM_UNDO') {
+                        const undoIdx = myTimeline.items.map(i => i.id).lastIndexOf(event.beforeId);
+                        if (undoIdx > -1) myTimeline.items.splice(undoIdx, 1);
+                    }
+                }
+            });
+        }
+    });
+
+    return { goldFrames, myTimeline: myParticipantId ? myTimeline : null };
+}
+
+// 매치 타임라인 조회 (상세 탭 클릭 시 호출)
+app.get('/api/timeline/:matchId', async (req, res) => {
+    const { matchId } = req.params;
+    const puuid = req.query.puuid || null;    // ★ 추가
+
+    if (!/^[A-Z0-9]+_\d+$/i.test(matchId)) {
+        return res.status(400).json({ error: "잘못된 매치 ID입니다." });
+    }
+
+    try {
+        // 1. DB에 이미 있으면 그대로 반환
+        const cached = await MatchCache.findOne({ matchId });
+        if (cached?.timeline) {
+            return res.json(extractTimeline(cached.timeline, cached.detail, puuid));
+        }
+
+        // 2. 없으면 라이엇에서 받아옴
+        const { data: timeline } = await riotApi.get(
+            `https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline`
+        );
+
+        // 3. DB에 저장 (매치가 이미 있으면 timeline만 채움)
+        MatchCache.updateOne({ matchId }, { $set: { timeline } }).catch(() => { });
+
+        const detail = cached?.detail || null;
+        res.json(extractTimeline(timeline, detail, puuid));
+
+    } catch (error) {
+        const status = error.response?.status;
+        if (status === 429) return res.status(429).json({ error: "조회 한도를 초과했습니다." });
+        if (status === 404) return res.status(404).json({ error: "타임라인 데이터가 없습니다." });
+        console.error(`[Timeline] 조회 실패 ${matchId}: ${error.message}`);
+        res.status(500).json({ error: "타임라인을 불러오지 못했습니다." });
+    }
 });
 
 // 랭킹

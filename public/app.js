@@ -18,6 +18,8 @@ let globalSpellMap = {};
 let runeDataMap = {};
 
 let merakiDataGlobal = {};
+window.matchTimelineCache = {};   // ★ 추가
+window.currentPuuid = null;       // ★ 추가
 
 async function fetchMerakiData() {
     try {
@@ -422,6 +424,7 @@ async function executeSearch() {
         addRecentSearch(data.profile.name);
 
         ddragonVersion = data.version || ddragonVersion;
+        window.currentPuuid = data.puuid || null;    // ★ 추가
         allMatches = data.history || [];
 
         window.champDetailCache = window.champDetailCache || {};
@@ -591,6 +594,91 @@ async function executeSearch() {
     }
 }
 
+// 스킬 빌드 표 생성
+function buildSkillTableHtml(game, myTimeline) {
+    if (!myTimeline?.skills?.length) return '';
+
+    const maxLevel = Math.max(15, myTimeline.skills.length);
+    const spellInfos = window.champDetailCache?.[game.championName] || [];
+    let counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+
+    let html = `<div class="skill-table-wrapper"><table class="skill-table"><thead><tr><th class="skill-icon-cell"></th>`;
+    for (let i = 1; i <= maxLevel; i++) html += `<th>${i}</th>`;
+    html += `</tr></thead><tbody>`;
+
+    [1, 2, 3, 4].forEach(slot => {
+        counts[slot] = 0;
+        const spell = spellInfos[slot - 1];
+        const sImg = spell ? (typeof spell === 'string' ? spell : spell.img) : null;
+        const sMax = spell && spell.max ? spell.max : (slot === 4 ? 3 : 5);
+        const letter = ['Q', 'W', 'E', 'R'][slot - 1];
+
+        let rowHtml = `<tr><td class="skill-icon-cell">${sImg ? `<img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${sImg}" title="${letter}">` : `<b style="color:#fff;">${letter}</b>`}</td>`;
+
+        for (let i = 0; i < maxLevel; i++) {
+            if (myTimeline.skills[i] === slot) {
+                counts[slot]++;
+                const isMastered = counts[slot] === sMax;
+                const tdStyle = isMastered ? ` style="box-shadow: inset 0 0 0 2px currentColor;"` : ``;
+                rowHtml += `<td class="skill-active-${slot}"${tdStyle}>${counts[slot]}</td>`;
+            } else {
+                rowHtml += `<td></td>`;
+            }
+        }
+        html += rowHtml + `</tr>`;
+    });
+    return html + `</tbody></table></div>`;
+}
+
+// 아이템 빌드 순서 생성
+function buildItemOrderHtml(myTimeline) {
+    if (!myTimeline?.items?.length) return '';
+
+    let groupedItems = [];
+    let currentGroup = [];
+
+    myTimeline.items.forEach((item) => {
+        if (currentGroup.length === 0) currentGroup.push(item);
+        else {
+            const lastItem = currentGroup[currentGroup.length - 1];
+            if (item.ts - lastItem.ts <= 20000) currentGroup.push(item);
+            else { groupedItems.push(currentGroup); currentGroup = [item]; }
+        }
+    });
+    if (currentGroup.length > 0) groupedItems.push(currentGroup);
+
+    let html = `<div class="build-items">`;
+    html += groupedItems.map((grp) => {
+        const firstTs = grp[0].ts;
+        const mins = String(Math.floor(firstTs / 60000)).padStart(2, '0');
+        const secs = String(Math.floor((firstTs % 60000) / 1000)).padStart(2, '0');
+        let grpHtml = `<div class="item-group-col"><div class="item-row">`;
+        grp.forEach(item => {
+            grpHtml += `<img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${item.id}.png" data-tt-type="item" data-tt-id="${item.id}">`;
+        });
+        return grpHtml + `</div><div class="build-item-time">${mins}:${secs}</div></div>`;
+    }).join('<div class="build-item-arrow">▶</div>');
+    return html + `</div>`;
+}
+
+// 타임라인 확보 (캐시 우선, 없으면 서버 요청)
+async function ensureTimeline(matchId) {
+    const cached = window.matchTimelineCache[matchId];
+    if (cached?.loaded) return cached;
+
+    try {
+        const puuidParam = window.currentPuuid ? `?puuid=${window.currentPuuid}` : '';
+        const res = await fetch(`/api/timeline/${matchId}${puuidParam}`);
+        if (!res.ok) throw new Error('timeline fetch failed');
+        const data = await res.json();
+        window.matchTimelineCache[matchId] = { ...data, loaded: true };
+        return window.matchTimelineCache[matchId];
+    } catch (e) {
+        window.matchTimelineCache[matchId] = { goldFrames: null, myTimeline: null, loaded: true };
+        return window.matchTimelineCache[matchId];
+    }
+}
+
 function renderMatches(matches) {
     const listDiv = document.getElementById('game-list');
     const filterArea = document.getElementById('filter-area');
@@ -598,7 +686,7 @@ function renderMatches(matches) {
     listDiv.innerHTML = "";
 
     if (!matches || matches.length === 0) {
-        listDiv.innerHTML = `<div style="text-align: center; padding: 60px 0; color: #9aa4af; line-height: 1.6;">전적 데이터가 없습니다.<br><span style="font-size: 12px; color: #777;">(최근 30게임 기준)</span></div>`;
+        listDiv.innerHTML = `<div style="text-align: center; padding: 60px 0; color: #9aa4af; line-height: 1.6;">전적 데이터가 없습니다.<br><span style="font-size: 12px; color: #777;">(최근 20게임 기준)</span></div>`;
         return;
     }
 
@@ -869,14 +957,18 @@ function renderMatches(matches) {
         const detailHtml = document.createElement('div');
         detailHtml.className = 'match-detail';
 
-        window.matchGoldData = window.matchGoldData || {};
-        window.matchGoldData[game.matchId] = game.goldFrames;
+        // 서버가 이미 타임라인을 보내줬으면 캐시에 넣어둠
+        if (game.goldFrames || game.myTimeline) {
+            window.matchTimelineCache[game.matchId] = {
+                goldFrames: game.goldFrames || null,
+                myTimeline: game.myTimeline || null,
+                loaded: true
+            };
+        }
 
         let runesHtml = '';
-        let skillTableHtml = '';
-        let buildItemsHtml = '';
 
-        if (game.myRunes && game.myTimeline && game.myTimeline.skills.length > 0) {
+        if (game.myRunes) {
 
             let primaryTree = fullRuneData[game.myRunes.primaryStyle];
             let subTree = fullRuneData[game.myRunes.subStyle];
@@ -950,77 +1042,6 @@ function renderMatches(matches) {
             });
             runesHtml += `</div>`;
             runesHtml += `</div>`;
-
-            const maxLevel = Math.max(15, game.myTimeline.skills.length);
-            const spellInfos = window.champDetailCache[game.championName] || [];
-            let counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
-
-            skillTableHtml = `<div class="skill-table-wrapper"><table class="skill-table"><thead><tr><th class="skill-icon-cell"></th>`;
-            for (let i = 1; i <= maxLevel; i++) skillTableHtml += `<th>${i}</th>`;
-            skillTableHtml += `</tr></thead><tbody>`;
-
-            [1, 2, 3, 4].forEach(slot => {
-                counts[slot] = 0;
-                const spell = spellInfos[slot - 1];
-                const sImg = spell ? (typeof spell === 'string' ? spell : spell.img) : null;
-                const sMax = spell && spell.max ? spell.max : (slot === 4 ? 3 : 5);
-
-                const letter = ['Q', 'W', 'E', 'R'][slot - 1];
-                let rowHtml = `
-                    <tr>
-                        <td class="skill-icon-cell">
-                            ${sImg ? `<img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${sImg}" title="${letter}">` : `<b style="color:#fff;">${letter}</b>`}
-                        </td>`;
-
-                for (let i = 0; i < maxLevel; i++) {
-                    if (game.myTimeline.skills[i] === slot) {
-                        counts[slot]++;
-                        const isMastered = counts[slot] === sMax;
-                        const tdStyle = isMastered ? ` style="box-shadow: inset 0 0 0 2px currentColor;"` : ``;
-                        rowHtml += `<td class="skill-active-${slot}"${tdStyle}>${counts[slot]}</td>`;
-                    } else {
-                        rowHtml += `<td></td>`;
-                    }
-                }
-                rowHtml += `</tr>`;
-                skillTableHtml += rowHtml;
-            });
-            skillTableHtml += `</tbody></table></div>`;
-
-            let groupedItems = [];
-            let currentGroup = [];
-
-            game.myTimeline.items.forEach((item) => {
-                if (currentGroup.length === 0) currentGroup.push(item);
-                else {
-                    const lastItem = currentGroup[currentGroup.length - 1];
-                    if (item.ts - lastItem.ts <= 20000) currentGroup.push(item);
-                    else {
-                        groupedItems.push(currentGroup);
-                        currentGroup = [item];
-                    }
-                }
-            });
-            if (currentGroup.length > 0) groupedItems.push(currentGroup);
-
-            buildItemsHtml = `<div class="build-items">`;
-            buildItemsHtml += groupedItems.map((grp) => {
-                const firstTs = grp[0].ts;
-                const mins = String(Math.floor(firstTs / 60000)).padStart(2, '0');
-                const secs = String(Math.floor((firstTs % 60000) / 1000)).padStart(2, '0');
-
-                let grpHtml = `
-                    <div class="item-group-col">
-                        <div class="item-row">`;
-                grp.forEach(item => {
-                    grpHtml += `<img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${item.id}.png" data-tt-type="item" data-tt-id="${item.id}">`;
-                });
-                grpHtml += `</div>
-                        <div class="build-item-time">${mins}:${secs}</div>
-                    </div>`;
-                return grpHtml;
-            }).join('<div class="build-item-arrow">▶</div>');
-            buildItemsHtml += `</div>`;
         }
 
         detailHtml.innerHTML = `
@@ -1053,29 +1074,31 @@ function renderMatches(matches) {
 
             <div id="tab-analysis-${game.matchId}" class="detail-tab-content" style="padding: 20px;">
                 <h4 style="color:#fff; text-align:center; margin-bottom:15px;">시간대별 팀 골드</h4>
-                ${game.goldFrames ?
-                `<div style="position:relative; width:100%; height:250px;"><canvas id="gold-chart-${game.matchId}"></canvas></div>` :
-                `<div style="text-align:center; color:#9aa4af; padding:40px;">과거 전적이라 상세 그래프 데이터가 없습니다.</div>`}
+                <div id="analysis-body-${game.matchId}">
+                    <div style="text-align:center; color:#9aa4af; padding:40px;">불러오는 중...</div>
+                </div>
             </div>
 
             <div id="tab-build-${game.matchId}" class="detail-tab-content">
                 ${runesHtml === ''
-                ? `<div style="text-align:center; padding:50px; color:#9aa4af;">과거 전적이라 빌드 데이터가 없습니다.</div>`
+                ? `<div style="text-align:center; padding:50px; color:#9aa4af;">룬 데이터가 없습니다.</div>`
                 : `
                 <div class="build-container">
                     <div class="build-box">
                         <div class="build-title">룬 세팅</div>
                         ${runesHtml}
                     </div>
-                    
                     <div class="build-box">
                         <div class="build-title">스킬 빌드</div>
-                        ${skillTableHtml}
+                        <div id="skill-body-${game.matchId}">
+                            <div style="text-align:center; color:#9aa4af; padding:30px;">불러오는 중...</div>
+                        </div>
                     </div>
-
                     <div class="build-box">
                         <div class="build-title">아이템 빌드</div>
-                        ${buildItemsHtml}
+                        <div id="item-body-${game.matchId}">
+                            <div style="text-align:center; color:#9aa4af; padding:30px;">불러오는 중...</div>
+                        </div>
                     </div>
                 </div>
                 `}
@@ -1265,7 +1288,7 @@ function toggleFilter(btn, type) {
             emptyMsg = document.createElement('div');
             emptyMsg.id = 'empty-filter-msg';
             emptyMsg.style.cssText = "text-align: center; padding: 60px 0; color: #9aa4af; line-height: 1.6;";
-            emptyMsg.innerHTML = "전적 데이터가 없습니다.<br><span style='font-size: 12px; color: #777;'>(최근 30게임 기준)</span>";
+            emptyMsg.innerHTML = "전적 데이터가 없습니다.<br><span style='font-size: 12px; color: #777;'>(최근 20게임 기준)</span>";
             listDiv.appendChild(emptyMsg);
         }
         emptyMsg.style.display = 'block';
@@ -1927,45 +1950,65 @@ window.copyEmail = function () {
     });
 };
 
-window.switchDetailTab = function (event, matchId, tabName) {
+window.switchDetailTab = async function (event, matchId, tabName) {
     const wrapper = event.target.closest('.match-detail');
 
     wrapper.querySelectorAll('.detail-tab-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
-
-    wrapper.querySelectorAll('.detail-tab-content').forEach(content => content.classList.remove('active'));
+    wrapper.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
     wrapper.querySelector(`#tab-${tabName}-${matchId}`).classList.add('active');
 
+    if (tabName !== 'analysis' && tabName !== 'build') return;
+
+    const tl = await ensureTimeline(matchId);
+
     if (tabName === 'analysis') {
-        const canvas = wrapper.querySelector(`#gold-chart-${matchId}`);
-        if (canvas && !canvas.classList.contains('drawn')) {
-            canvas.classList.add('drawn');
-            const gData = window.matchGoldData[matchId];
-            if (gData) {
-                new Chart(canvas, {
-                    type: 'line',
-                    data: {
-                        labels: gData.labels,
-                        datasets: [
-                            { label: '블루팀', data: gData.blue, borderColor: '#5383e8', backgroundColor: 'rgba(83, 131, 232, 0.1)', fill: true, tension: 0.3, pointRadius: 1 },
-                            { label: '레드팀', data: gData.red, borderColor: '#e84057', backgroundColor: 'rgba(232, 64, 87, 0.1)', fill: true, tension: 0.3, pointRadius: 1 }
-                        ]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
-                        plugins: {
-                            legend: { labels: { color: '#9aa4af' } },
-                            tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ': ' + ctx.raw.toLocaleString() + ' G'; } } }
-                        },
-                        scales: {
-                            x: { ticks: { color: '#9aa4af' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                            y: { ticks: { color: '#9aa4af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-                        }
-                    }
-                });
-            }
+        const body = wrapper.querySelector(`#analysis-body-${matchId}`);
+        if (!body || body.dataset.drawn) return;
+        body.dataset.drawn = '1';
+
+        if (!tl.goldFrames) {
+            body.innerHTML = `<div style="text-align:center; color:#9aa4af; padding:40px;">그래프 데이터가 없습니다.</div>`;
+            return;
         }
+
+        body.innerHTML = `<div style="position:relative; width:100%; height:250px;"><canvas id="gold-chart-${matchId}"></canvas></div>`;
+        new Chart(body.querySelector('canvas'), {
+            type: 'line',
+            data: {
+                labels: tl.goldFrames.labels,
+                datasets: [
+                    { label: '블루팀', data: tl.goldFrames.blue, borderColor: '#5383e8', backgroundColor: 'rgba(83, 131, 232, 0.1)', fill: true, tension: 0.3, pointRadius: 1 },
+                    { label: '레드팀', data: tl.goldFrames.red, borderColor: '#e84057', backgroundColor: 'rgba(232, 64, 87, 0.1)', fill: true, tension: 0.3, pointRadius: 1 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#9aa4af' } },
+                    tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.raw.toLocaleString() + ' G' } }
+                },
+                scales: {
+                    x: { ticks: { color: '#9aa4af' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { ticks: { color: '#9aa4af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+            }
+        });
+    }
+
+    if (tabName === 'build') {
+        const skillBody = wrapper.querySelector(`#skill-body-${matchId}`);
+        const itemBody = wrapper.querySelector(`#item-body-${matchId}`);
+        if (!skillBody || skillBody.dataset.drawn) return;
+        skillBody.dataset.drawn = '1';
+
+        const game = allMatches.find(m => m.matchId === matchId);
+        const skillHtml = game ? buildSkillTableHtml(game, tl.myTimeline) : '';
+        const itemHtml = buildItemOrderHtml(tl.myTimeline);
+
+        skillBody.innerHTML = skillHtml || `<div style="text-align:center; color:#9aa4af; padding:30px;">데이터가 없습니다.</div>`;
+        itemBody.innerHTML = itemHtml || `<div style="text-align:center; color:#9aa4af; padding:30px;">데이터가 없습니다.</div>`;
     }
 };
 
