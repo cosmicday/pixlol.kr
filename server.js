@@ -325,6 +325,36 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
     const isArena = ARENA_QUEUES.has(detail.info.queueId);
     const augmentsOf = (x) => [x.playerAugment1, x.playerAugment2, x.playerAugment3, x.playerAugment4, x.playerAugment5, x.playerAugment6].filter(Boolean);
 
+    // ============================================================
+    // 아레나 팀 해석
+    //   playerSubteamId   = 몇 번 조냐 (1~6, 경기 내내 고정)
+    //   subteamPlacement  = 몇 등으로 끝났냐 (1~6)
+    //   둘 다 1~6짜리 숫자라 눈으로는 구분이 안 되지만 의미가 다르다. 섞으면 안 됨.
+    //
+    //   - 팀을 묶는 기준  : 조 번호
+    //   - 화면에 찍는 값  : 등수
+    //   도중 이탈 등으로 subteamPlacement가 0인 참가자가 섞여도 팀이 쪼개지지 않도록,
+    //   조원 중 유효한 등수 하나를 그 조 전체의 등수로 사용한다.
+    // ============================================================
+    const hasSubteamId = isArena && detail.info.participants.some(x => x.playerSubteamId);
+    const subteamIdOf = (x) => hasSubteamId
+        ? (Number(x.playerSubteamId) || 0)
+        : (Number(x.subteamPlacement) || 0);   // playerSubteamId가 없던 구버전 매치 폴백
+
+    const placementByTeam = {};
+    if (isArena) {
+        for (const part of detail.info.participants) {
+            const tid = subteamIdOf(part);
+            const pl = Number(part.subteamPlacement) || 0;
+            if (tid && pl && !placementByTeam[tid]) placementByTeam[tid] = pl;
+        }
+    }
+
+    const placementOf = (x) => {
+        const tid = subteamIdOf(x);
+        return placementByTeam[tid] || Number(x.subteamPlacement) || 0;
+    };
+
     const durationMin = Math.floor(detail.info.gameDuration / 60);
     const durationSec = detail.info.gameDuration % 60;
     const daysAgo = Math.floor((Date.now() - detail.info.gameEndTimestamp) / 86400000);
@@ -344,7 +374,8 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         item0: p.item0, item1: p.item1, item2: p.item2, item3: p.item3, item4: p.item4, item5: p.item5, item6: p.item6,
         item7: (p.roleBoundItem || p.item7 || 0),
         isArena,
-        placement: isArena ? (p.subteamPlacement ?? p.placement ?? null) : null,
+        subteam: isArena ? subteamIdOf(p) : null,
+        placement: isArena ? (placementOf(p) || null) : null,
         augments: isArena ? augmentsOf(p) : [],
         totalCs: p.totalMinionsKilled + p.neutralMinionsKilled,
         csPerMin: durationMin > 0 ? ((p.totalMinionsKilled + p.neutralMinionsKilled) / durationMin).toFixed(1) : "0.0",
@@ -362,8 +393,8 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
             gold: part.goldEarned, cs: part.totalMinionsKilled + part.neutralMinionsKilled,
             wardsPlaced: part.wardsPlaced || 0, wardsKilled: part.wardsKilled || 0, visionWards: part.visionWardsBoughtInGame || 0,
             item0: part.item0, item1: part.item1, item2: part.item2, item3: part.item3, item4: part.item4, item5: part.item5, item6: part.item6, item7: (part.roleBoundItem || part.item7 || 0),
-            subteam: part.playerSubteamId ?? part.subteamPlacement ?? 0,
-            placement: part.subteamPlacement ?? part.placement ?? 0,
+            subteam: isArena ? subteamIdOf(part) : 0,
+            placement: isArena ? placementOf(part) : 0,
             augments: isArena ? augmentsOf(part) : [],
             spell1: part.summoner1Id, spell2: part.summoner2Id, mainRune: part.perks?.styles?.[0]?.style || null, subRune: part.perks?.styles?.[1]?.style || null
         })),

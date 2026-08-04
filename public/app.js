@@ -41,6 +41,22 @@ function renderAugments(augments, size = 22) {
     }).join('');
 }
 
+// 아레나: 참가자 18명을 "조 번호" 기준으로 6팀으로 묶고 등수 순으로 정렬
+//   - 묶는 키는 subteam(조 번호). placement로 묶으면 등수가 0인 참가자가
+//     자기 팀에서 떨어져 나가 그룹이 7개가 되거나 남의 팀에 끼어든다.
+//   - 조의 등수는 조원 중 유효한 값 하나를 쓴다.
+function groupArenaTeams(participantsArray) {
+    const groups = {};
+    (participantsArray || []).forEach(p => {
+        const tid = Number(p.subteam) || 0;
+        if (!groups[tid]) groups[tid] = { subteam: tid, placement: 0, members: [] };
+        const pl = Number(p.placement) || 0;
+        if (pl && !groups[tid].placement) groups[tid].placement = pl;
+        groups[tid].members.push(p);
+    });
+    return Object.values(groups).sort((a, b) => (a.placement || 99) - (b.placement || 99));
+}
+
 // 아레나 등수 표기
 function placementText(n) {
     return n ? `${n}위` : '-';
@@ -51,6 +67,25 @@ function placementClass(n) {
     if (n === 2) return 'place-2';
     if (n === 3) return 'place-3';
     return 'place-low';
+}
+
+// ============================================================
+// 스펠 아이콘
+//   하드코딩 spellMap에 없는 ID(아레나 전용 스펠 등)를 만나면 예전에는
+//   || "SummonerFlash" / || "SummonerDot" 으로 폴백해서 엉뚱한 아이콘을 그렸다.
+//   ddragon summoner.json이 id -> 이미지이름을 이미 갖고 있으므로 그걸 먼저 쓰고,
+//   그래도 모르는 ID면 거짓말 대신 빈 칸을 그린다.
+// ============================================================
+function spellIconUrl(id) {
+    const name = (globalSpellMap[id] && globalSpellMap[id].img) || spellMap[id];
+    if (!name) return null;
+    return `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${name}.png`;
+}
+
+function spellImg(id) {
+    const url = spellIconUrl(id);
+    if (!url) return `<span class="spell-unknown" title="알 수 없는 스펠"></span>`;
+    return `<img src="${url}" data-tt-type="spell" data-tt-id="${id}">`;
 }
 window.matchTimelineCache = {};   // ★ 추가
 window.currentPuuid = null;       // ★ 추가
@@ -143,7 +178,7 @@ async function fetchSpellData() {
         const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/summoner.json`);
         const data = await res.json();
         for (const key in data.data) {
-            globalSpellMap[data.data[key].key] = { name: data.data[key].name, desc: cleanTooltipText(data.data[key].description) };
+            globalSpellMap[data.data[key].key] = { name: data.data[key].name, desc: cleanTooltipText(data.data[key].description), img: data.data[key].id };
         }
     } catch (e) { }
 }
@@ -746,10 +781,22 @@ function renderMatches(matches, append = false) {
         const isArena = !!game.isArena;
         const isRemake = !isArena && game.durationMin < 4;
 
-        const resultClass = isRemake ? 'remake' : (game.win ? 'win' : 'lose');
-        const winText = isRemake ? '다시하기'
-            : (isArena ? placementText(game.placement) : (game.win ? '승리' : '패배'));
-        const queueColor = isRemake ? '#7b7a8e' : (game.win ? '#5383e8' : '#e84057');
+        // 아레나는 승/패가 아니라 등수로 색을 정한다 (1위 금색 / 2~3위 상위권 / 4~6위 하위권)
+        const myPlacement = isArena ? (Number(game.placement) || 0) : 0;
+        let resultClass, winText, queueColor;
+
+        if (isArena) {
+            if (myPlacement === 1) { resultClass = 'win arena-first'; queueColor = '#facc15'; }
+            else if (myPlacement >= 2 && myPlacement <= 3) { resultClass = 'win'; queueColor = '#5383e8'; }
+            else { resultClass = 'lose'; queueColor = '#e84057'; }
+            winText = placementText(myPlacement);
+        } else if (isRemake) {
+            resultClass = 'remake'; winText = '다시하기'; queueColor = '#7b7a8e';
+        } else {
+            resultClass = game.win ? 'win' : 'lose';
+            winText = game.win ? '승리' : '패배';
+            queueColor = game.win ? '#5383e8' : '#e84057';
+        }
 
         let exactDateText = '상세 시간 정보 없음';
         let displayDate = game.dateStr;
@@ -778,9 +825,6 @@ function renderMatches(matches, append = false) {
             };
             exactDateText = `${formatCustomDate(startTime)}\n~ ${formatCustomDate(endTime)}`;
         }
-
-        const s1 = spellMap[game.spell1] || "SummonerFlash";
-        const s2 = spellMap[game.spell2] || "SummonerDot";
 
         const runeMap = { 8000: '7201_Precision', 8100: '7200_Domination', 8200: '7202_Sorcery', 8300: '7203_Whimsy', 8400: '7204_Resolve' };
         const mainRuneImg = `https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/${runeMap[game.mainRune] || '7200_Domination'}.png`;
@@ -826,26 +870,28 @@ function renderMatches(matches, append = false) {
             }).join('');
         };
 
-        // 아레나: 서브팀 등수(1~6)로 묶어서 표시
+        // 아레나 미리보기: 1~3위는 왼쪽 열, 4~6위는 오른쪽 열 (일반 게임의 블루/레드팀과 같은 폭)
         const renderArenaTeams = (participantsArray) => {
-            const groups = {};
-            participantsArray.forEach(p => {
-                const key = p.placement || p.subteam || 0;
-                (groups[key] = groups[key] || []).push(p);
-            });
-            return Object.keys(groups).sort((a, b) => a - b).map(key => {
-                const members = groups[key];
-                const mine = members.some(m => m.isSearchedUser);
-                return `
-                    <div class="arena-team ${mine ? 'mine' : ''}">
-                        <span class="arena-team-rank ${placementClass(Number(key))}">${key}</span>
-                        ${members.map(p => `
-                            <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png"
-                                 title="${p.summonerName}"
-                                 onclick="document.getElementById('summoner-input').value='${p.summonerName}'; document.getElementById('search-btn').click();">
-                        `).join('')}
-                    </div>`;
-            }).join('');
+            const teams = groupArenaTeams(participantsArray);
+
+            const renderCol = (list) => `
+                <div class="arena-col">
+                    ${list.map(t => {
+                        const mine = t.members.some(m => m.isSearchedUser);
+                        return `
+                        <div class="arena-team ${mine ? 'mine' : ''}" title="${t.placement ? t.placement + '위' : '등수 없음'}">
+                            <span class="arena-team-rank ${placementClass(t.placement)}">${t.placement || '-'}</span>
+                            ${t.members.map(p => `
+                                <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png"
+                                     class="${p.isSearchedUser ? 'me' : ''}"
+                                     title="${p.summonerName}"
+                                     onclick="document.getElementById('summoner-input').value='${p.summonerName}'; document.getElementById('search-btn').click();">
+                            `).join('')}
+                        </div>`;
+                    }).join('')}
+                </div>`;
+
+            return renderCol(teams.slice(0, 3)) + renderCol(teams.slice(3, 6));
         };
 
         const me = game.participants.find(p => p.isSearchedUser);
@@ -860,7 +906,6 @@ function renderMatches(matches, append = false) {
             statsHtml = `
                 <div class="kp">골드 ${me.gold.toLocaleString()}</div>
                 <div>DPM ${dpm.toLocaleString()}</div>
-                <div style="color:#666;">CS -</div>
             `;
         } else if (isSupport) {
             statsHtml = `
@@ -897,19 +942,19 @@ function renderMatches(matches, append = false) {
                 <div class="win-text">${winText}</div>
                 <div>${game.durationMin}분 ${game.durationSec}초</div>
             </div>
-            <div class="pix-champ">
+            <div class="pix-champ ${isArena ? 'arena' : ''}">
                 <div class="pix-champ-icon">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${game.championName}.png">
                     <div class="pix-level">${game.champLevel}</div>
                     ${badgeHtml} 
                 </div>
-                <div class="pix-spells">
-                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${s1}.png" data-tt-type="spell" data-tt-id="${game.spell1}">
-                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${s2}.png" data-tt-type="spell" data-tt-id="${game.spell2}">
-                </div>
                 ${isArena
-                ? `<div class="pix-augments">${renderAugments(game.augments, 20)}</div>`
+                ? `<div class="pix-augments">${renderAugments(game.augments, 22)}</div>`
                 : `<div class="pix-spells">
+                    ${spellImg(game.spell1)}
+                    ${spellImg(game.spell2)}
+                </div>
+                <div class="pix-spells">
                     <img src="${mainRuneImg}" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/7200_Domination.png'" data-tt-type="rune" data-tt-id="${game.mainRune}">
                     <img src="${subRuneImg}" style="width:22px; height:22px; border-radius:50%; background:#202d37; padding:2px;" data-tt-type="rune" data-tt-id="${game.subRune}">
                 </div>`}
@@ -953,8 +998,6 @@ function renderMatches(matches, append = false) {
         const redBodyClass = redWon ? 'team-blue' : 'team-red';
 
         const renderDetailRow = (p) => {
-            const pS1 = spellMap[p.spell1] || "SummonerFlash";
-            const pS2 = spellMap[p.spell2] || "SummonerDot";
             const pMainRune = `https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/${runeMap[p.mainRune] || '7200_Domination'}.png`;
             const pSubRune = `https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/${runeMap[p.subRune] || '7204_Resolve'}.png`;
 
@@ -1000,8 +1043,8 @@ function renderMatches(matches, append = false) {
                     <td class="detail-spell-rune-col">
                         <div class="spell-rune-wrapper">
                             <div class="detail-spells">
-                                <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${pS1}.png" data-tt-type="spell" data-tt-id="${p.spell1}">
-                                <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${pS2}.png" data-tt-type="spell" data-tt-id="${p.spell2}">
+                                ${spellImg(p.spell1)}
+                                ${spellImg(p.spell2)}
                             </div>
                             <div class="detail-runes">
                                 <img src="${pMainRune}" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/7200_Domination.png'">
@@ -1041,19 +1084,15 @@ function renderMatches(matches, append = false) {
 
         // 아레나 상세: 등수별로 묶은 표
         const renderArenaDetail = () => {
-            const groups = {};
-            game.participants.forEach(p => {
-                const key = p.placement || p.subteam || 0;
-                (groups[key] = groups[key] || []).push(p);
-            });
+            const teams = groupArenaTeams(game.participants);
 
-            const rows = Object.keys(groups).sort((a, b) => a - b).map(key => {
-                const members = groups[key];
+            const rows = teams.map(t => {
+                const members = t.members;
                 const header = `
                     <thead>
                         <tr class="arena-group-header">
                             <th colspan="8" style="text-align:left; padding-left:15px;">
-                                <span class="arena-rank-badge ${placementClass(Number(key))}">${key}위</span>
+                                <span class="arena-rank-badge ${placementClass(t.placement)}">${t.placement ? t.placement + '위' : '순위 미상'}</span>
                             </th>
                         </tr>
                     </thead>`;

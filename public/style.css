@@ -1951,8 +1951,9 @@ body::before {
         margin-left: 0;
     }
 
-    .pix-players {
-        display: none;
+    .pix-players,
+    .arena-players {
+        display: none !important;
     }
 
     .pix-items-box {
@@ -2216,11 +2217,21 @@ body::before {
 /* ================================
    아레나 모드
    ================================ */
+/* 아레나 미리보기 박스는 일반 전적 박스와 칸 폭을 그대로 맞춘다.
+   .pix-info(85) / .pix-champ(115) / .pix-kda(110) / .pix-stats(80) /
+   .pix-items-box(80) / .pix-players(나머지, 85px 두 열)               */
+
+/* 증강체: 스펠 자리를 비웠으므로 챔프 아이콘 옆 2열 3행으로 들어간다 */
+.pix-champ.arena {
+    gap: 8px;
+}
+
 .pix-augments {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 22px);
     gap: 2px;
-    flex-wrap: wrap;
-    max-width: 48px;
+    width: 46px;
+    flex-shrink: 0;
 }
 
 .aug-icon {
@@ -2235,19 +2246,36 @@ body::before {
     border-radius: 4px;
 }
 
-/* 미리보기 팀 목록 (6팀 × 3명) */
+/* 1위 박스만 금색 강조 (win/lose 규칙보다 뒤에 있어야 이긴다) */
+.pix-game.arena-first {
+    background: #3b3524;
+    border-left: 6px solid #facc15;
+}
+
+.pix-game.arena-first .pix-info .win-text {
+    color: #facc15;
+}
+
+/* 미리보기 팀 목록: 1~3위 왼쪽 열 / 4~6위 오른쪽 열
+   (일반 게임의 블루팀·레드팀 열과 같은 85px 폭) */
 .arena-players {
-    display: grid !important;
-    grid-template-columns: repeat(3, auto);
-    gap: 4px 10px;
-    align-content: center;
+    display: flex !important;
+    align-items: center;
+}
+
+.arena-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 85px;
+    flex-shrink: 0;
 }
 
 .arena-team {
     display: flex;
     align-items: center;
-    gap: 3px;
-    padding: 2px 4px;
+    gap: 2px;
+    padding: 1px 3px;
     border-radius: 4px;
 }
 
@@ -2256,23 +2284,48 @@ body::before {
 }
 
 .arena-team img {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 3px;
     cursor: pointer;
+    transition: transform 0.12s;
+}
+
+.arena-team img:hover {
+    transform: scale(1.15);
+}
+
+.arena-team img.me {
+    outline: 1px solid #a78bfa;
+    outline-offset: -1px;
 }
 
 .arena-team-rank {
     font-size: 10px;
     font-weight: bold;
-    width: 13px;
+    width: 14px;
     text-align: center;
     color: #9aa4af;
+    flex-shrink: 0;
 }
 
 .arena-team-rank.place-1 { color: #facc15; }
 .arena-team-rank.place-2 { color: #cbd5e1; }
 .arena-team-rank.place-3 { color: #d19a66; }
+
+/* ddragon에 없는 스펠 ID를 만났을 때 엉뚱한 아이콘 대신 빈 칸 */
+.spell-unknown {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.detail-spells .spell-unknown {
+    width: 20px;
+    height: 20px;
+}
 
 /* 상세 표 */
 .arena-detail-table .arena-col-header th {
