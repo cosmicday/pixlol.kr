@@ -17,18 +17,28 @@ mongoose.set('bufferCommands', false);
 mongoose.connection.on('disconnected', () => console.error("[System] MongoDB 연결 끊김"));
 mongoose.connection.on('reconnected', () => console.log("[System] MongoDB 재연결 완료"));
 
-const MatchCache = mongoose.model('MatchCache', new mongoose.Schema({
+const matchCacheSchema = new mongoose.Schema({
     matchId: { type: String, required: true, unique: true },
     detail: { type: Object, required: true },
     timeline: { type: Object },
     createdAt: { type: Date, expires: '14d', default: Date.now }
-}));
+});
 
-const SummonerCache = mongoose.model('SummonerCache', new mongoose.Schema({
+// ★ 폴백 조회용 인덱스 (puuid로 매치를 찾고 최신순 정렬)
+matchCacheSchema.index({ 'detail.metadata.participants': 1, 'detail.info.gameEndTimestamp': -1 });
+
+const MatchCache = mongoose.model('MatchCache', matchCacheSchema);
+
+const summonerCacheSchema = new mongoose.Schema({
     puuid: { type: String, required: true, unique: true },
     displayName: { type: String, required: true },
     updatedAt: { type: Number, required: true }
-}));
+});
+
+// ★ 닉네임 → puuid 역방향 조회용 인덱스
+summonerCacheSchema.index({ displayName: 1 });
+
+const SummonerCache = mongoose.model('SummonerCache', summonerCacheSchema);
 
 // ==========================================
 // [2] 전역 변수 및 서버(Express) 세팅
@@ -208,7 +218,109 @@ async function startJobs() {
 }
 
 // ==========================================
-// [4] API 라우터
+// [4] 공통 헬퍼
+// ==========================================
+const QUEUE_MAP = { 420: "솔로랭크", 440: "자유랭크", 450: "칼바람", 1700: "아레나" };
+
+// 정규식 특수문자 이스케이프
+function escapeRegex(str) {
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// 매치 상세(detail) 하나를 화면용 데이터로 변환
+function buildHistoryEntry(detail, targetPuuid, isPast = false) {
+    const p = detail.info.participants.find(part => part.puuid === targetPuuid);
+    if (!p) return null;
+
+    const durationMin = Math.floor(detail.info.gameDuration / 60);
+    const durationSec = detail.info.gameDuration % 60;
+    const daysAgo = Math.floor((Date.now() - detail.info.gameEndTimestamp) / 86400000);
+    const teamKills = detail.info.participants.filter(x => x.teamId === p.teamId).reduce((sum, x) => sum + x.kills, 0);
+
+    return {
+        matchId: detail.metadata.matchId,
+        queueType: QUEUE_MAP[detail.info.queueId] || "일반",
+        win: p.win,
+        championName: p.championName === "FiddleSticks" ? "Fiddlesticks" : p.championName,
+        champLevel: p.champLevel,
+        kills: p.kills, deaths: p.deaths, assists: p.assists,
+        kda: p.deaths === 0 ? "Perfect" : ((p.kills + p.assists) / p.deaths).toFixed(2),
+        kp: teamKills === 0 ? 0 : Math.round(((p.kills + p.assists) / teamKills) * 100),
+        spell1: p.summoner1Id, spell2: p.summoner2Id,
+        mainRune: p.perks?.styles?.[0]?.style || null, subRune: p.perks?.styles?.[1]?.style || null,
+        item0: p.item0, item1: p.item1, item2: p.item2, item3: p.item3, item4: p.item4, item5: p.item5, item6: p.item6,
+        item7: (p.roleBoundItem || p.item7 || p.playerAugment1 || 0),
+        totalCs: p.totalMinionsKilled + p.neutralMinionsKilled,
+        csPerMin: durationMin > 0 ? ((p.totalMinionsKilled + p.neutralMinionsKilled) / durationMin).toFixed(1) : "0.0",
+        goldEarned: p.goldEarned, visionScore: p.visionScore, controlWards: p.visionWardsBoughtInGame,
+        multiKill: p.pentaKills ? "펜타킬" : (p.quadraKills ? "쿼드라킬" : (p.tripleKills ? "트리플킬" : (p.doubleKills ? "더블킬" : ""))),
+        firstBlood: p.firstBloodKill, durationMin, durationSec,
+        dateStr: isPast ? "과거 전적" : (daysAgo === 0 ? "오늘" : (daysAgo > 30 ? "1개월 전" : `${daysAgo}일 전`)),
+        timestamp: detail.info.gameEndTimestamp,
+        participants: detail.info.participants.map(part => ({
+            puuid: part.puuid, isSearchedUser: part.puuid === targetPuuid, teamId: part.teamId, win: part.win, champLevel: part.champLevel,
+            championName: part.championName === "FiddleSticks" ? "Fiddlesticks" : part.championName, visionScore: part.visionScore,
+            summonerName: part.riotIdGameName ? `${part.riotIdGameName}#${part.riotIdTagline}` : (part.summonerName || "알 수 없음"),
+            kills: part.kills, deaths: part.deaths, assists: part.assists, damage: part.totalDamageDealtToChampions, damageTaken: part.totalDamageTaken,
+            kp: Math.round(((part.kills + part.assists) / (part.teamId === 100 ? detail.info.participants.filter(x => x.teamId === 100).reduce((sum, x) => sum + x.kills, 0) : detail.info.participants.filter(x => x.teamId === 200).reduce((sum, x) => sum + x.kills, 0))) * 100) || 0,
+            gold: part.goldEarned, cs: part.totalMinionsKilled + part.neutralMinionsKilled,
+            wardsPlaced: part.wardsPlaced || 0, wardsKilled: part.wardsKilled || 0, visionWards: part.visionWardsBoughtInGame || 0,
+            item0: part.item0, item1: part.item1, item2: part.item2, item3: part.item3, item4: part.item4, item5: part.item5, item6: part.item6, item7: (part.roleBoundItem || part.item7 || part.playerAugment1 || 0),
+            spell1: part.summoner1Id, spell2: part.summoner2Id, mainRune: part.perks?.styles?.[0]?.style || null, subRune: part.perks?.styles?.[1]?.style || null
+        })),
+        myRunes: p.perks?.styles ? { primaryStyle: p.perks.styles[0].style, primarySelections: p.perks.styles[0].selections.map(s => s.perk), subStyle: p.perks.styles[1].style, subSelections: p.perks.styles[1].selections.map(s => s.perk), statPerks: p.perks.statPerks ? [p.perks.statPerks.offense, p.perks.statPerks.flex, p.perks.statPerks.defense] : [] } : null
+    };
+}
+
+// 닉네임으로 puuid 찾기 (SummonerCache 우선)
+async function findPuuidByName(fullName) {
+    // 1순위: 정확히 일치 (인덱스 사용)
+    let hit = await SummonerCache.findOne({ displayName: fullName });
+    if (hit) return hit.puuid;
+
+    // 2순위: 대소문자 무시 (SummonerCache는 문서가 작아 스캔해도 부담 적음)
+    hit = await SummonerCache.findOne({
+        displayName: new RegExp(`^${escapeRegex(fullName)}$`, 'i')
+    });
+    return hit ? hit.puuid : null;
+}
+
+// 429 발생 시 DB에 쌓인 과거 전적으로 응답 구성
+async function buildFallbackResponse(fullName) {
+    const targetPuuid = await findPuuidByName(fullName);
+    if (!targetPuuid) return null;
+
+    const fallbackMatches = await MatchCache
+        .find({ 'detail.metadata.participants': targetPuuid })
+        .select('-timeline')
+        .sort({ 'detail.info.gameEndTimestamp': -1 })
+        .limit(20)
+        .maxTimeMS(3000);
+
+    if (!fallbackMatches?.length) return null;
+
+    const history = fallbackMatches
+        .map(m => buildHistoryEntry(m.detail, targetPuuid, true))
+        .filter(Boolean);
+
+    if (history.length === 0) return null;
+
+    return {
+        puuid: targetPuuid,
+        version: currentVersion,
+        profile: {
+            name: fullName,
+            level: "정보없음",
+            icon: `https://ddragon.leagueoflegends.com/cdn/${currentVersion}/img/profileicon/1.png`,
+            tier: "서버 지연", rank: "", leaguePoints: 0, wins: 0, losses: 0
+        },
+        history,
+        isCachedFallback: true
+    };
+}
+
+// ==========================================
+// [5] API 라우터
 // ==========================================
 
 // 소환사 전적 검색 (폴백 로직 포함)
@@ -260,51 +372,9 @@ app.get('/api/summoner/:name', async (req, res) => {
         let allMatchDetails = [...cachedMatches.map(m => ({ detail: m.detail, timeline: m.timeline })), ...newMatchesData].filter(m => m?.detail);
         allMatchDetails.sort((a, b) => b.detail.info.gameEndTimestamp - a.detail.info.gameEndTimestamp);
 
-        const queueMap = { 420: "솔로랭크", 440: "자유랭크", 450: "칼바람", 1700: "아레나" };
-
-        const history = allMatchDetails.map(({ detail }) => {
-            const p = detail.info.participants.find(part => part.puuid === targetPuuid);
-            if (!p) return null;
-
-            const durationMin = Math.floor(detail.info.gameDuration / 60);
-            const durationSec = detail.info.gameDuration % 60;
-            const daysAgo = Math.floor((Date.now() - detail.info.gameEndTimestamp) / 86400000);
-            const teamKills = detail.info.participants.filter(x => x.teamId === p.teamId).reduce((sum, x) => sum + x.kills, 0);
-
-            return {
-                matchId: detail.metadata.matchId,
-                queueType: queueMap[detail.info.queueId] || "일반",
-                win: p.win,
-                championName: p.championName === "FiddleSticks" ? "Fiddlesticks" : p.championName,
-                champLevel: p.champLevel,
-                kills: p.kills, deaths: p.deaths, assists: p.assists,
-                kda: p.deaths === 0 ? "Perfect" : ((p.kills + p.assists) / p.deaths).toFixed(2),
-                kp: teamKills === 0 ? 0 : Math.round(((p.kills + p.assists) / teamKills) * 100),
-                spell1: p.summoner1Id, spell2: p.summoner2Id,
-                mainRune: p.perks?.styles?.[0]?.style || null, subRune: p.perks?.styles?.[1]?.style || null,
-                item0: p.item0, item1: p.item1, item2: p.item2, item3: p.item3, item4: p.item4, item5: p.item5, item6: p.item6,
-                item7: (p.roleBoundItem || p.item7 || p.playerAugment1 || 0),
-                totalCs: p.totalMinionsKilled + p.neutralMinionsKilled,
-                csPerMin: durationMin > 0 ? ((p.totalMinionsKilled + p.neutralMinionsKilled) / durationMin).toFixed(1) : "0.0",
-                goldEarned: p.goldEarned, visionScore: p.visionScore, controlWards: p.visionWardsBoughtInGame,
-                multiKill: p.pentaKills ? "펜타킬" : (p.quadraKills ? "쿼드라킬" : (p.tripleKills ? "트리플킬" : (p.doubleKills ? "더블킬" : ""))),
-                firstBlood: p.firstBloodKill, durationMin, durationSec,
-                dateStr: daysAgo === 0 ? "오늘" : (daysAgo > 30 ? "1개월 전" : `${daysAgo}일 전`),
-                timestamp: detail.info.gameEndTimestamp,
-                participants: detail.info.participants.map(part => ({
-                    puuid: part.puuid, isSearchedUser: part.puuid === targetPuuid, teamId: part.teamId, win: part.win, champLevel: part.champLevel,
-                    championName: part.championName === "FiddleSticks" ? "Fiddlesticks" : part.championName, visionScore: part.visionScore,
-                    summonerName: part.riotIdGameName ? `${part.riotIdGameName}#${part.riotIdTagline}` : (part.summonerName || "알 수 없음"),
-                    kills: part.kills, deaths: part.deaths, assists: part.assists, damage: part.totalDamageDealtToChampions, damageTaken: part.totalDamageTaken,
-                    kp: Math.round(((part.kills + part.assists) / (part.teamId === 100 ? detail.info.participants.filter(x => x.teamId === 100).reduce((sum, x) => sum + x.kills, 0) : detail.info.participants.filter(x => x.teamId === 200).reduce((sum, x) => sum + x.kills, 0))) * 100) || 0,
-                    gold: part.goldEarned, cs: part.totalMinionsKilled + part.neutralMinionsKilled,
-                    wardsPlaced: part.wardsPlaced || 0, wardsKilled: part.wardsKilled || 0, visionWards: part.visionWardsBoughtInGame || 0,
-                    item0: part.item0, item1: part.item1, item2: part.item2, item3: part.item3, item4: part.item4, item5: part.item5, item6: part.item6, item7: (part.roleBoundItem || part.item7 || part.playerAugment1 || 0),
-                    spell1: part.summoner1Id, spell2: part.summoner2Id, mainRune: part.perks?.styles?.[0]?.style || null, subRune: part.perks?.styles?.[1]?.style || null
-                })),
-                myRunes: p.perks?.styles ? { primaryStyle: p.perks.styles[0].style, primarySelections: p.perks.styles[0].selections.map(s => s.perk), subStyle: p.perks.styles[1].style, subSelections: p.perks.styles[1].selections.map(s => s.perk), statPerks: p.perks.statPerks ? [p.perks.statPerks.offense, p.perks.statPerks.flex, p.perks.statPerks.defense] : [] } : null
-            };
-        }).filter(Boolean);
+        const history = allMatchDetails
+            .map(({ detail }) => buildHistoryEntry(detail, targetPuuid))
+            .filter(Boolean);
 
         const finalData = {
             puuid: targetPuuid,
@@ -318,6 +388,15 @@ app.get('/api/summoner/:name', async (req, res) => {
             history
         };
 
+        // ★ 검색된 소환사를 캐시에 저장 (429 폴백 및 랭킹 닉네임에 재사용)
+        const canonicalName = `${accountData.gameName}#${accountData.tagLine}`;
+        SummonerCache.findOneAndUpdate(
+            { puuid: targetPuuid },
+            { displayName: canonicalName, updatedAt: Date.now() },
+            { upsert: true }
+        ).catch(() => { });
+        resolvedNames[targetPuuid] = { displayName: canonicalName, updatedAt: Date.now() };
+
         myCache.set(summonerName, finalData);
         finalData.expireAt = myCache.getTtl(summonerName);
         console.log(`[API] 전적 데이터 처리 완료: ${summonerName}`);
@@ -327,49 +406,13 @@ app.get('/api/summoner/:name', async (req, res) => {
         if (error.response?.status === 429) {
             console.log(`[API] 429 한도 초과. ${req.params.name} DB 폴백 시도...`);
             try {
-                const safeName = req.params.name.split('#')[0].replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/\s+/g, '');
-                const flexibleRegex = new RegExp("^" + safeName.split('').join('\\s*') + "$", "i");
-
-                const fallbackMatches = await MatchCache.find({
-                    "detail.info.participants": { $elemMatch: { $or: [{ riotIdGameName: { $regex: flexibleRegex } }, { summonerName: { $regex: flexibleRegex } }] } }
-                }).sort({ "detail.info.gameEndTimestamp": -1 }).limit(30);
-
-                if (fallbackMatches?.length > 0) {
-                    let targetPuuid = "", profileIconId = 1;
-                    const history = fallbackMatches.map(m => {
-                        const p = m.detail.info.participants.find(part => {
-                            return (part.riotIdGameName || "").replace(/\s+/g, '').toLowerCase() === safeName.toLowerCase() ||
-                                (part.summonerName || "").replace(/\s+/g, '').toLowerCase() === safeName.toLowerCase();
-                        });
-
-                        if (!p) return null;
-                        targetPuuid = p.puuid;
-                        if (p.profileIcon) profileIconId = p.profileIcon;
-
-                        const durationMin = Math.floor(m.detail.info.gameDuration / 60);
-                        const teamKills = m.detail.info.participants.filter(x => x.teamId === p.teamId).reduce((sum, x) => sum + x.kills, 0);
-
-                        return {
-                            matchId: m.detail.metadata.matchId, queueType: { 420: "솔로랭크", 440: "자유랭크", 450: "칼바람", 1700: "아레나" }[m.detail.info.queueId] || "일반", win: p.win, championName: p.championName === "FiddleSticks" ? "Fiddlesticks" : p.championName,
-                            champLevel: p.champLevel, kills: p.kills, deaths: p.deaths, assists: p.assists, kda: p.deaths === 0 ? "Perfect" : ((p.kills + p.assists) / p.deaths).toFixed(2),
-                            kp: teamKills === 0 ? 0 : Math.round(((p.kills + p.assists) / teamKills) * 100), spell1: p.summoner1Id, spell2: p.summoner2Id, mainRune: p.perks?.styles?.[0]?.style || null, subRune: p.perks?.styles?.[1]?.style || null,
-                            item0: p.item0, item1: p.item1, item2: p.item2, item3: p.item3, item4: p.item4, item5: p.item5, item6: p.item6, item7: (p.roleBoundItem || p.item7 || p.playerAugment1 || 0),
-                            totalCs: p.totalMinionsKilled + p.neutralMinionsKilled, csPerMin: durationMin > 0 ? ((p.totalMinionsKilled + p.neutralMinionsKilled) / durationMin).toFixed(1) : "0.0",
-                            goldEarned: p.goldEarned, visionScore: p.visionScore, controlWards: p.visionWardsBoughtInGame, durationMin, durationSec: m.detail.info.gameDuration % 60,
-                            dateStr: "과거 전적", timestamp: m.detail.info.gameEndTimestamp, participants: []
-                        };
-                    }).filter(Boolean);
-
-                    if (history.length > 0) {
-                        console.log(`[API] 429 폴백 성공. DB에서 ${history.length}게임 반환`);
-                        return res.json({
-                            puuid: targetPuuid, version: currentVersion,
-                            profile: { name: req.params.name, level: "정보없음", icon: `https://ddragon.leagueoflegends.com/cdn/${currentVersion}/img/profileicon/${profileIconId}.png`, tier: "서버 지연", rank: "", leaguePoints: 0 },
-                            history, isCachedFallback: true
-                        });
-                    }
+                const fallback = await buildFallbackResponse(req.params.name);
+                if (fallback) {
+                    console.log(`[API] 429 폴백 성공. DB에서 ${fallback.history.length}게임 반환`);
+                    return res.json(fallback);
                 }
-            } catch (err) { console.error("[Fallback Error]", err); }
+                console.log(`[API] 429 폴백 실패. 저장된 전적 없음`);
+            } catch (err) { console.error("[Fallback Error]", err.message); }
             return res.status(429).json({ error: "조회 한도를 초과했습니다. 잠시 후 다시 시도해주세요." });
         }
 
@@ -492,7 +535,7 @@ app.get('/api/champions/meraki', (req, res) => {
 });
 
 // ==========================================
-// [5] 프론트엔드 라우팅 및 서버 구동
+// [6] 프론트엔드 라우팅 및 서버 구동
 // ==========================================
 app.get(/.*/, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 

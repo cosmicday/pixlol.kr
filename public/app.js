@@ -693,7 +693,7 @@ function renderMatches(matches) {
     const champNameExceptions = { "FiddleSticks": "Fiddlesticks" };
 
     matches.forEach(game => {
-        if (!game.participants) return;
+        if (!game.participants || game.participants.length === 0) return;
         if (champNameExceptions[game.championName]) game.championName = champNameExceptions[game.championName];
 
         const isRemake = game.durationMin < 4;
@@ -777,6 +777,7 @@ function renderMatches(matches) {
         };
 
         const me = game.participants.find(p => p.isSearchedUser);
+        if (!me) return;
         const supportItems = [3869, 3870, 3871, 3873, 3874, 3875, 3876, 3877];
         const isSupport = [me.item0, me.item1, me.item2, me.item3, me.item4, me.item5, me.item6].some(id => supportItems.includes(id));
 
