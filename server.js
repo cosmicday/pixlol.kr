@@ -279,14 +279,50 @@ const ARENA_QUEUES = new Set([1700, 1710, 1750]);
 // 칼바람: 라인/포지션 개념이 없어서 요약 통계를 협곡과 같은 통에 넣으면 안 된다.
 const ARAM_QUEUES = new Set([450, 720]);   // 450 칼바람, 720 칼바람 클래시
 
+// 화면에 찍는 라벨 (세분화). 여기 없는 큐는 "기타"로 떨어진다.
 const QUEUE_MAP = {
     420: "솔로랭크",
     440: "자유랭크",
+
+    400: "일반",          // 드래프트 픽
+    430: "일반",          // 대전 선택
+    480: "빠른대전",      // 스위프트플레이
+    490: "빠른대전",      // 퀵플레이 (구버전)
+
     450: "칼바람",
-    720: "칼바람",   // 클래시
-    1700: "아레나",   // 구버전
-    1710: "아레나",   // 구버전
-    1750: "아레나"    // ★ 현재
+    720: "칼바람",        // 칼바람 클래시
+
+    830: "봇전(입문)", 840: "봇전(초보)", 850: "봇전(중급)",   // 구버전 봇전
+    870: "봇전(입문)", 880: "봇전(초보)", 890: "봇전(중급)",   // 현재 봇전
+
+    700: "클래시",
+    900: "우르프",
+    1020: "단일 챔피언",
+    1300: "돌격! 넥서스",
+    1400: "궁극기 주문서",
+    1900: "우르프",
+
+    1700: "아레나",       // 구버전
+    1710: "아레나",       // 구버전
+    1750: "아레나"        // 현재 (3인 6팀)
+};
+
+// 필터 버튼용 그룹. 라벨과 분리한 이유:
+//   프론트 필터가 라벨 부분일치로 동작하면 "빠른대전"이 "일반" 버튼에 안 잡히고,
+//   나중에 라벨을 늘릴 때 서로 부분문자열이 되어 잡아먹는 사고가 난다.
+//   표시용 라벨과 분류용 그룹을 따로 두고, 필터는 그룹 완전일치로 판정한다.
+const QUEUE_GROUP = {
+    420: "솔로랭크",
+    440: "자유랭크",
+
+    400: "일반", 430: "일반", 480: "일반", 490: "일반",
+
+    450: "칼바람", 720: "칼바람",
+
+    830: "봇", 840: "봇", 850: "봇",
+    870: "봇", 880: "봇", 890: "봇",
+
+    1700: "아레나", 1710: "아레나", 1750: "아레나"
 };
 
 // 티어 정렬용 점수 계산
@@ -363,6 +399,14 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
     const durationMin = Math.floor(detail.info.gameDuration / 60);
     const durationSec = detail.info.gameDuration % 60;
     const daysAgo = Math.floor((Date.now() - detail.info.gameEndTimestamp) / 86400000);
+
+    // 30일이 넘으면 6개월 전이든 2년 전이든 전부 "1개월 전"으로 찍히던 것을 단계화
+    const relativeDay = (d) => {
+        if (d === 0) return "오늘";
+        if (d < 30) return `${d}일 전`;
+        if (d < 365) return `${Math.max(1, Math.round(d / 30.44))}개월 전`;
+        return `${Math.floor(d / 365)}년 전`;
+    };
     // 킬관여 분모: 일반 게임은 같은 teamId(5명), 아레나는 같은 조(3명).
     //   아레나의 teamId는 100/200 두 개뿐이라 그대로 쓰면 9명 킬 총합으로 나눠버린다.
     const alliesOf = (x) => isArena
@@ -378,7 +422,8 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
 
     return {
         matchId: detail.metadata.matchId,
-        queueType: QUEUE_MAP[detail.info.queueId] || "일반",
+        queueType: QUEUE_MAP[detail.info.queueId] || "기타",
+        queueGroup: QUEUE_GROUP[detail.info.queueId] || "기타",
         win: p.win,
         championName: p.championName === "FiddleSticks" ? "Fiddlesticks" : p.championName,
         champLevel: p.champLevel,
@@ -402,7 +447,7 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         goldEarned: p.goldEarned, visionScore: p.visionScore, controlWards: p.visionWardsBoughtInGame,
         multiKill: p.pentaKills ? "펜타킬" : (p.quadraKills ? "쿼드라킬" : (p.tripleKills ? "트리플킬" : (p.doubleKills ? "더블킬" : ""))),
         firstBlood: p.firstBloodKill, durationMin, durationSec,
-        dateStr: isPast ? "과거 전적" : (daysAgo === 0 ? "오늘" : (daysAgo > 30 ? "1개월 전" : `${daysAgo}일 전`)),
+        dateStr: isPast ? "과거 전적" : relativeDay(daysAgo),
         timestamp: detail.info.gameEndTimestamp,
         participants: detail.info.participants.map(part => ({
             puuid: part.puuid, isSearchedUser: part.puuid === targetPuuid, teamId: part.teamId, win: part.win, champLevel: part.champLevel,

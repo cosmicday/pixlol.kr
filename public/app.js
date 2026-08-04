@@ -809,10 +809,13 @@ function renderMatches(matches, append = false) {
             const diffHours = Math.floor(timeDiff / (1000 * 60 * 60));
             const diffDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
+            // 화면을 그리는 시점(Date.now())이 기준. 30일이 넘으면 전부 "1개월 전"으로
+            // 뭉개지던 것을 개월/년까지 단계화했다.
             if (diffHours < 1) displayDate = diffMinutes <= 0 ? "방금 전" : `${diffMinutes}분 전`;
             else if (diffHours < 24) displayDate = `${diffHours}시간 전`;
-            else if (diffDays <= 30) displayDate = `${diffDays}일 전`;
-            else displayDate = "1개월 전";
+            else if (diffDays < 30) displayDate = `${diffDays}일 전`;
+            else if (diffDays < 365) displayDate = `${Math.max(1, Math.round(diffDays / 30.44))}개월 전`;
+            else displayDate = `${Math.floor(diffDays / 365)}년 전`;
 
             const durationMs = (game.durationMin * 60 + game.durationSec) * 1000;
             const startTime = new Date(game.timestamp - durationMs);
@@ -930,7 +933,8 @@ function renderMatches(matches, append = false) {
 
         const wrapper = document.createElement('div');
         wrapper.className = 'match-wrapper';
-        wrapper.dataset.queue = game.queueType;
+        wrapper.dataset.queue = game.queueType;                    // 표시용 라벨
+        wrapper.dataset.group = game.queueGroup || '기타';          // 필터용 그룹
 
         const summary = document.createElement('div');
         summary.className = `pix-game ${resultClass}`;
@@ -1624,34 +1628,41 @@ function renderSummaryStats(matchesToCalc) {
         return;
     }
 
+    const RIFT_GROUPS = new Set(['솔로랭크', '자유랭크', '일반']);
+
     const arenaMatches = played.filter(g => g.isArena);
     const aramMatches = played.filter(g => g.isAram);
-    const riftMatches = played.filter(g => !g.isArena && !g.isAram);
+    const others = played.filter(g => !g.isArena && !g.isAram);
+    // 협곡 랭크·일반만 '전체' 종합 통계에 들어간다.
+    // 봇전(승률 대부분 100%)과 이벤트 모드는 섞이면 승률이 통째로 왜곡된다.
+    const riftMatches = others.filter(g => RIFT_GROUPS.has(g.queueGroup));
+    const offRiftMatches = others.filter(g => !RIFT_GROUPS.has(g.queueGroup));
 
-    if (riftMatches.length === 0) {
-        // 협곡 판이 하나도 없을 때: 단일 모드면 그 모드 전용 패널
-        if (aramMatches.length > 0 && arenaMatches.length === 0) {
-            statsArea.innerHTML = renderAramSummaryHtml(aramMatches);
-            statsArea.style.display = 'block';
-        } else if (arenaMatches.length > 0 && aramMatches.length === 0) {
-            statsArea.innerHTML = renderArenaSummaryHtml(arenaMatches);
-            statsArea.style.display = 'block';
-        } else if (arenaMatches.length > 0 && aramMatches.length > 0) {
-            // '전체'인데 칼바람+아레나만 있는 경우 — 섞어서 평균 내지 않고 안내만
-            statsArea.innerHTML = `
-                <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 22px 30px; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4); text-align: center; color: #9aa4af; font-size: 13px; line-height: 1.7;">
-                    협곡 전적이 없어 종합 통계를 낼 수 없습니다.<br>
-                    <span style="font-size: 12px; color: #777;">칼바람 · 아레나는 각각의 필터 버튼에서 확인할 수 있습니다.</span>
-                </div>`;
-            statsArea.style.display = 'block';
-        } else {
-            statsArea.innerHTML = '';
-            statsArea.style.display = 'none';
-        }
+    if (riftMatches.length > 0) {
+        matchesToCalc = riftMatches;
+    } else if (aramMatches.length > 0 && arenaMatches.length === 0 && offRiftMatches.length === 0) {
+        // 칼바람 필터
+        statsArea.innerHTML = renderAramSummaryHtml(aramMatches);
+        statsArea.style.display = 'block';
+        return;
+    } else if (arenaMatches.length > 0 && aramMatches.length === 0 && offRiftMatches.length === 0) {
+        // 아레나 필터
+        statsArea.innerHTML = renderArenaSummaryHtml(arenaMatches);
+        statsArea.style.display = 'block';
+        return;
+    } else if (offRiftMatches.length > 0 && aramMatches.length === 0 && arenaMatches.length === 0) {
+        // 봇 필터 등 — 승패·라인 개념이 살아있으므로 기본 패널을 그대로 쓴다
+        matchesToCalc = offRiftMatches;
+    } else {
+        // '전체'인데 협곡 판이 하나도 없는 경우 — 섞어서 평균 내지 않고 안내만
+        statsArea.innerHTML = `
+            <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 22px 30px; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4); text-align: center; color: #9aa4af; font-size: 13px; line-height: 1.7;">
+                협곡 전적이 없어 종합 통계를 낼 수 없습니다.<br>
+                <span style="font-size: 12px; color: #777;">칼바람 · 아레나 · 봇은 각각의 필터 버튼에서 확인할 수 있습니다.</span>
+            </div>`;
+        statsArea.style.display = 'block';
         return;
     }
-
-    matchesToCalc = riftMatches;
 
     let wins = 0, losses = 0, totalKills = 0, totalDeaths = 0, totalAssists = 0, totalKp = 0;
     let champData = {};
@@ -1805,7 +1816,9 @@ function toggleFilter(btn, type) {
     let visibleCount = 0; let filteredMatches = [];
 
     games.forEach((gameDiv, index) => {
-        if (type === '전체' || (gameDiv.dataset.queue && gameDiv.dataset.queue.includes(type))) {
+        // 라벨 부분일치(includes)는 라벨을 늘릴 때 서로 잡아먹는다. 그룹 완전일치로 판정.
+        const group = gameDiv.dataset.group || '기타';
+        if (type === '전체' || group === type) {
             gameDiv.style.display = 'block'; visibleCount++;
             if (allMatches[index]) filteredMatches.push(allMatches[index]);
         } else { gameDiv.style.display = 'none'; }
