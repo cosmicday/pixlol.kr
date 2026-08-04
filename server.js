@@ -73,6 +73,7 @@ let failedPuuids = {};        // ★ 추가: 조회 실패한 puuid와 실패 �
 let isFetchingNames = false;
 let resolvedCountIn10Mins = 0;
 let merakiChampionData = {};
+let arenaAugments = {};
 
 // ★ 중복 선언되어 있던 정적 파일 제공 설정을 하나로 통합
 app.use(cors());
@@ -126,6 +127,31 @@ async function updateMerakiData() {
         console.log(`[Task] Meraki 챔피언 세부 스킬 데이터 갱신 완료`);
     } catch (err) {
         console.error("[Task] Meraki 데이터 갱신 실패:", err.message);
+    }
+}
+
+async function updateArenaAugments() {
+    try {
+        const res = await axios.get('https://raw.communitydragon.org/latest/cdragon/arena/ko_kr.json');
+        const raw = res.data?.augments;
+        const list = Array.isArray(raw) ? raw : Object.values(raw || {});
+
+        const map = {};
+        for (const a of list) {
+            if (a?.id == null) continue;
+            const path = String(a.iconLarge || a.iconSmall || '').toLowerCase();
+            map[a.id] = {
+                name: a.name || '',
+                desc: (a.desc || '').replace(/<[^>]+>/g, ''),
+                icon: path ? `https://raw.communitydragon.org/latest/game/${path}` : null
+            };
+        }
+        if (Object.keys(map).length > 0) {
+            arenaAugments = map;
+            console.log(`[Task] 아레나 증강체 데이터 갱신 완료 (${Object.keys(map).length}종)`);
+        }
+    } catch (err) {
+        console.error("[Task] 아레나 증강체 갱신 실패:", err.message);
     }
 }
 
@@ -226,6 +252,7 @@ async function startJobs() {
     await backfillSearchFields();
     await updateVersion();
     await updateMerakiData();
+    await updateArenaAugments();
     await updateChallengerList();
 
     // 닉네임 변환은 오래 걸리므로 기다리지 않고 백그라운드로 던짐
@@ -234,6 +261,7 @@ async function startJobs() {
     setInterval(updateChallengerList, 600 * 1000);
     setInterval(resolveNamesInBackground, 60 * 1000);
     setInterval(updateMerakiData, 24 * 60 * 60 * 1000);
+    setInterval(updateArenaAugments, 24 * 60 * 60 * 1000);
 
     setInterval(() => {
         if (resolvedCountIn10Mins > 0) {
@@ -246,6 +274,8 @@ async function startJobs() {
 // ==========================================
 // [4] 공통 헬퍼
 // ==========================================
+const ARENA_QUEUES = new Set([1700, 1710, 1750]);
+
 const QUEUE_MAP = {
     420: "솔로랭크",
     440: "자유랭크",
@@ -292,12 +322,8 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
     const p = detail.info.participants.find(part => part.puuid === targetPuuid);
     if (!p) return null;
 
-    if (!QUEUE_MAP[detail.info.queueId]) {
-    const p0 = detail.info.participants[0];
-    console.log(`[Queue] id=${detail.info.queueId} mode=${detail.info.gameMode} ver=${detail.info.gameVersion}`);
-    console.log(`  참가자: ${detail.info.participants.map(x => x.riotIdGameName || x.summonerName).join(', ')}`);
-    console.log(`  룬구조: ${JSON.stringify(p0.perks?.styles?.map(s => s.style))}`);
-}
+    const isArena = ARENA_QUEUES.has(detail.info.queueId);
+    const augmentsOf = (x) => [x.playerAugment1, x.playerAugment2, x.playerAugment3, x.playerAugment4, x.playerAugment5, x.playerAugment6].filter(Boolean);
 
     const durationMin = Math.floor(detail.info.gameDuration / 60);
     const durationSec = detail.info.gameDuration % 60;
@@ -316,7 +342,10 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         spell1: p.summoner1Id, spell2: p.summoner2Id,
         mainRune: p.perks?.styles?.[0]?.style || null, subRune: p.perks?.styles?.[1]?.style || null,
         item0: p.item0, item1: p.item1, item2: p.item2, item3: p.item3, item4: p.item4, item5: p.item5, item6: p.item6,
-        item7: (p.roleBoundItem || p.item7 || p.playerAugment1 || 0),
+        item7: (p.roleBoundItem || p.item7 || 0),
+        isArena,
+        placement: isArena ? (p.subteamPlacement ?? p.placement ?? null) : null,
+        augments: isArena ? augmentsOf(p) : [],
         totalCs: p.totalMinionsKilled + p.neutralMinionsKilled,
         csPerMin: durationMin > 0 ? ((p.totalMinionsKilled + p.neutralMinionsKilled) / durationMin).toFixed(1) : "0.0",
         goldEarned: p.goldEarned, visionScore: p.visionScore, controlWards: p.visionWardsBoughtInGame,
@@ -332,7 +361,10 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
             kp: Math.round(((part.kills + part.assists) / (part.teamId === 100 ? detail.info.participants.filter(x => x.teamId === 100).reduce((sum, x) => sum + x.kills, 0) : detail.info.participants.filter(x => x.teamId === 200).reduce((sum, x) => sum + x.kills, 0))) * 100) || 0,
             gold: part.goldEarned, cs: part.totalMinionsKilled + part.neutralMinionsKilled,
             wardsPlaced: part.wardsPlaced || 0, wardsKilled: part.wardsKilled || 0, visionWards: part.visionWardsBoughtInGame || 0,
-            item0: part.item0, item1: part.item1, item2: part.item2, item3: part.item3, item4: part.item4, item5: part.item5, item6: part.item6, item7: (part.roleBoundItem || part.item7 || part.playerAugment1 || 0),
+            item0: part.item0, item1: part.item1, item2: part.item2, item3: part.item3, item4: part.item4, item5: part.item5, item6: part.item6, item7: (part.roleBoundItem || part.item7 || 0),
+            subteam: part.playerSubteamId ?? part.subteamPlacement ?? 0,
+            placement: part.subteamPlacement ?? part.placement ?? 0,
+            augments: isArena ? augmentsOf(part) : [],
             spell1: part.summoner1Id, spell2: part.summoner2Id, mainRune: part.perks?.styles?.[0]?.style || null, subRune: part.perks?.styles?.[1]?.style || null
         })),
         myRunes: p.perks?.styles ? { primaryStyle: p.perks.styles[0].style, primarySelections: p.perks.styles[0].selections.map(s => s.perk), subStyle: p.perks.styles[1].style, subSelections: p.perks.styles[1].selections.map(s => s.perk), statPerks: p.perks.statPerks ? [p.perks.statPerks.offense, p.perks.statPerks.flex, p.perks.statPerks.defense] : [] } : null
@@ -780,6 +812,11 @@ app.get('/api/ranking', async (req, res) => {
     const finalRankingData = { tier: "CHALLENGER", players: processedPlayers };
     myCache.set('challenger_ranking_data', finalRankingData, 600);
     res.json(finalRankingData);
+});
+
+// 아레나 증강체 데이터
+app.get('/api/arena/augments', (req, res) => {
+    res.json(arenaAugments);
 });
 
 // 메라키 챔피언 세부 데이터

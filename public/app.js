@@ -18,6 +18,40 @@ let globalSpellMap = {};
 let runeDataMap = {};
 
 let merakiDataGlobal = {};
+let arenaAugmentMap = {};
+
+async function fetchArenaAugments() {
+    try {
+        const res = await fetch('/api/arena/augments');
+        if (res.ok) arenaAugmentMap = await res.json();
+    } catch (e) {
+        console.error("아레나 증강체 데이터 로드 실패", e);
+    }
+}
+
+// 증강체 아이콘 4~6개를 렌더링
+function renderAugments(augments, size = 22) {
+    if (!augments || augments.length === 0) return '';
+    return augments.map(id => {
+        const a = arenaAugmentMap[id];
+        if (!a || !a.icon) {
+            return `<div class="aug-icon empty" style="width:${size}px;height:${size}px;"></div>`;
+        }
+        return `<img src="${a.icon}" class="aug-icon" style="width:${size}px;height:${size}px;" data-tt-type="augment" data-tt-id="${id}">`;
+    }).join('');
+}
+
+// 아레나 등수 표기
+function placementText(n) {
+    return n ? `${n}위` : '-';
+}
+
+function placementClass(n) {
+    if (n === 1) return 'place-1';
+    if (n === 2) return 'place-2';
+    if (n === 3) return 'place-3';
+    return 'place-low';
+}
 window.matchTimelineCache = {};   // ★ 추가
 window.currentPuuid = null;       // ★ 추가
 
@@ -141,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchItemData();
         fetchSpellData();
         fetchMerakiData();
+        fetchArenaAugments();
     });
 
     loadMythicShop();
@@ -171,6 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'item' && globalItemMap[id]) data = globalItemMap[id];
         else if (type === 'spell' && globalSpellMap[id]) data = globalSpellMap[id];
         else if (type === 'rune') data = runeDataMap[id] || statRuneDataMap[id];
+        else if (type === 'augment' && arenaAugmentMap[id]) data = arenaAugmentMap[id];
 
         if (data) {
             customTooltip.innerHTML = `<span style="color:#facc15; font-weight:bold; display:block; margin-bottom:4px; font-size:13px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">${data.name}</span>${data.desc}`;
@@ -707,9 +743,12 @@ function renderMatches(matches, append = false) {
         if (!game.participants || game.participants.length === 0) return;
         if (champNameExceptions[game.championName]) game.championName = champNameExceptions[game.championName];
 
-        const isRemake = game.durationMin < 4;
+        const isArena = !!game.isArena;
+        const isRemake = !isArena && game.durationMin < 4;
+
         const resultClass = isRemake ? 'remake' : (game.win ? 'win' : 'lose');
-        const winText = isRemake ? '다시하기' : (game.win ? '승리' : '패배');
+        const winText = isRemake ? '다시하기'
+            : (isArena ? placementText(game.placement) : (game.win ? '승리' : '패배'));
         const queueColor = isRemake ? '#7b7a8e' : (game.win ? '#5383e8' : '#e84057');
 
         let exactDateText = '상세 시간 정보 없음';
@@ -787,13 +826,43 @@ function renderMatches(matches, append = false) {
             }).join('');
         };
 
+        // 아레나: 서브팀 등수(1~6)로 묶어서 표시
+        const renderArenaTeams = (participantsArray) => {
+            const groups = {};
+            participantsArray.forEach(p => {
+                const key = p.placement || p.subteam || 0;
+                (groups[key] = groups[key] || []).push(p);
+            });
+            return Object.keys(groups).sort((a, b) => a - b).map(key => {
+                const members = groups[key];
+                const mine = members.some(m => m.isSearchedUser);
+                return `
+                    <div class="arena-team ${mine ? 'mine' : ''}">
+                        <span class="arena-team-rank ${placementClass(Number(key))}">${key}</span>
+                        ${members.map(p => `
+                            <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png"
+                                 title="${p.summonerName}"
+                                 onclick="document.getElementById('summoner-input').value='${p.summonerName}'; document.getElementById('search-btn').click();">
+                        `).join('')}
+                    </div>`;
+            }).join('');
+        };
+
         const me = game.participants.find(p => p.isSearchedUser);
         if (!me) return;
         const supportItems = [3869, 3870, 3871, 3873, 3874, 3875, 3876, 3877];
         const isSupport = [me.item0, me.item1, me.item2, me.item3, me.item4, me.item5, me.item6].some(id => supportItems.includes(id));
 
         let statsHtml = '';
-        if (isSupport) {
+        if (isArena) {
+            const totalMins = game.durationMin + (game.durationSec / 60);
+            const dpm = totalMins > 0 ? Math.round(me.damage / totalMins) : 0;
+            statsHtml = `
+                <div class="kp">골드 ${me.gold.toLocaleString()}</div>
+                <div>DPM ${dpm.toLocaleString()}</div>
+                <div style="color:#666;">CS -</div>
+            `;
+        } else if (isSupport) {
             statsHtml = `
                 <div class="kp">킬관여 ${game.kp}%</div>
                 <div style="display: flex; align-items: center; justify-content: flex-start; gap: 3px;" data-tooltip="제어 와드 구매 / 설치 / 파괴">
@@ -838,10 +907,12 @@ function renderMatches(matches, append = false) {
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${s1}.png" data-tt-type="spell" data-tt-id="${game.spell1}">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${s2}.png" data-tt-type="spell" data-tt-id="${game.spell2}">
                 </div>
-                <div class="pix-spells">
+                ${isArena
+                ? `<div class="pix-augments">${renderAugments(game.augments, 20)}</div>`
+                : `<div class="pix-spells">
                     <img src="${mainRuneImg}" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/7200_Domination.png'" data-tt-type="rune" data-tt-id="${game.mainRune}">
                     <img src="${subRuneImg}" style="width:22px; height:22px; border-radius:50%; background:#202d37; padding:2px;" data-tt-type="rune" data-tt-id="${game.subRune}">
-                </div>
+                </div>`}
             </div>
             <div class="pix-kda">
                 <div class="pix-kda-score">${game.kills} / <span class="d">${game.deaths}</span> / ${game.assists}</div>
@@ -853,10 +924,12 @@ function renderMatches(matches, append = false) {
             <div class="pix-items-box">
                 ${itemsHtml} 
             </div>
-            <div class="pix-players">
+            ${isArena
+                ? `<div class="pix-players arena-players">${renderArenaTeams(game.participants)}</div>`
+                : `<div class="pix-players">
                 <div class="pix-team">${renderTeamList(game.participants, 100)}</div>
                 <div class="pix-team">${renderTeamList(game.participants, 200)}</div>
-            </div>
+            </div>`}
             <button class="toggle-btn" onclick="
                 const wrapper = this.closest('.match-wrapper');
                 if (!wrapper.classList.contains('open')) {
@@ -966,6 +1039,87 @@ function renderMatches(matches, append = false) {
             `;
         };
 
+        // 아레나 상세: 등수별로 묶은 표
+        const renderArenaDetail = () => {
+            const groups = {};
+            game.participants.forEach(p => {
+                const key = p.placement || p.subteam || 0;
+                (groups[key] = groups[key] || []).push(p);
+            });
+
+            const rows = Object.keys(groups).sort((a, b) => a - b).map(key => {
+                const members = groups[key];
+                const header = `
+                    <thead>
+                        <tr class="arena-group-header">
+                            <th colspan="8" style="text-align:left; padding-left:15px;">
+                                <span class="arena-rank-badge ${placementClass(Number(key))}">${key}위</span>
+                            </th>
+                        </tr>
+                    </thead>`;
+
+                const body = members.map(p => {
+                    const kdaRatio = p.deaths === 0 ? "Perfect" : ((p.kills + p.assists) / p.deaths).toFixed(2);
+                    const isMeStyle = p.isSearchedUser ? 'background: rgba(255,255,255,0.08); font-weight: bold;' : '';
+                    const dmgPercent = maxDamage > 0 ? (p.damage / maxDamage) * 100 : 0;
+                    const dmgTakenPercent = maxDamageTaken > 0 ? (p.damageTaken / maxDamageTaken) * 100 : 0;
+
+                    let pItems = `<div class="detail-items" style="display:flex; gap:1px; justify-content:center; flex-wrap:wrap;">`;
+                    [0, 1, 2, 3, 4, 5, 6].forEach(i => {
+                        const id = p[`item${i}`];
+                        pItems += id
+                            ? `<img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${id}.png" style="width:20px; height:20px; border-radius:3px;" data-tt-type="item" data-tt-id="${id}">`
+                            : `<div class="empty" style="width:20px; height:20px; background:rgba(0,0,0,0.3); border-radius:3px;"></div>`;
+                    });
+                    pItems += `</div>`;
+
+                    return `
+                        <tr style="${isMeStyle}">
+                            <td class="detail-champ-col">
+                                <div class="champ-name-wrapper">
+                                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png">
+                                    <div class="detail-summoner" onclick="document.getElementById('summoner-input').value='${p.summonerName}'; document.getElementById('search-btn').click();" title="${p.summonerName}">${p.summonerName}</div>
+                                </div>
+                            </td>
+                            <td style="color: #fff; font-size: 11px; font-weight: bold;">${p.champLevel || '-'}</td>
+                            <td>
+                                <div class="detail-kda">${p.kills} / <span class="d">${p.deaths}</span> / ${p.assists}</div>
+                                <div style="color: #9aa4af; font-size: 11px;">(${kdaRatio})</div>
+                            </td>
+                            <td><div class="detail-augments">${renderAugments(p.augments, 20) || '<span style="color:#555;">-</span>'}</div></td>
+                            <td>${pItems}</td>
+                            <td style="color: #ddd; font-size: 11px;">${(p.gold || 0).toLocaleString()}</td>
+                            <td>
+                                <div style="color: #fff;">${p.damage.toLocaleString()}</div>
+                                <div class="damage-bar-container"><div class="damage-bar" style="width: ${dmgPercent}%;"></div></div>
+                            </td>
+                            <td>
+                                <div style="color: #fff;">${p.damageTaken.toLocaleString()}</div>
+                                <div class="damage-bar-container"><div class="damage-bar taken" style="width: ${dmgTakenPercent}%;"></div></div>
+                            </td>
+                        </tr>`;
+                }).join('');
+
+                return header + `<tbody>${body}</tbody>`;
+            }).join('');
+
+            return `
+                <table class="detail-table arena-detail-table">
+                    <colgroup>
+                        <col style="width: 170px;"> <col style="width: 40px;"> <col style="width: 90px;">
+                        <col style="width: 95px;"> <col style="width: 150px;"> <col style="width: 70px;">
+                        <col style="width: 80px;"> <col style="width: 80px;">
+                    </colgroup>
+                    <thead>
+                        <tr class="arena-col-header">
+                            <th style="text-align:left; padding-left:15px;">소환사</th>
+                            <th>레벨</th><th>KDA</th><th>증강체</th><th>아이템</th><th>골드</th><th>피해량</th><th>받은피해량</th>
+                        </tr>
+                    </thead>
+                    ${rows}
+                </table>`;
+        };
+
         const detailHtml = document.createElement('div');
         detailHtml.className = 'match-detail';
 
@@ -1059,11 +1213,12 @@ function renderMatches(matches, append = false) {
         detailHtml.innerHTML = `
             <div class="detail-tabs-header">
                 <button class="detail-tab-btn active" onclick="switchDetailTab(event, '${game.matchId}', 'summary')">종합</button>
-                <button class="detail-tab-btn" onclick="switchDetailTab(event, '${game.matchId}', 'analysis')">팀분석</button>
+                ${isArena ? '' : `<button class="detail-tab-btn" onclick="switchDetailTab(event, '${game.matchId}', 'analysis')">팀분석</button>`}
                 <button class="detail-tab-btn" onclick="switchDetailTab(event, '${game.matchId}', 'build')">빌드</button>
             </div>
             
             <div id="tab-summary-${game.matchId}" class="detail-tab-content active" style="padding: 0;">
+                ${isArena ? renderArenaDetail() : `
                 <table class="detail-table">
                     <colgroup>
                         <col style="width: 150px;"> <col style="width: 55px;"> <col style="width: 30px;"> <col style="width: 90px;"> <col style="width: 45px;"> <col style="width: 105px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 55px;"> </colgroup>
@@ -1081,15 +1236,16 @@ function renderMatches(matches, append = false) {
                         </tr>
                     </thead>
                     <tbody class="${redBodyClass}">${game.participants.filter(p => p.teamId === 200).map(p => renderDetailRow(p)).join('')}</tbody>
-                </table>
+                </table>`}
             </div>
 
+            ${isArena ? '' : `
             <div id="tab-analysis-${game.matchId}" class="detail-tab-content" style="padding: 20px;">
                 <h4 style="color:#fff; text-align:center; margin-bottom:15px;">시간대별 팀 골드</h4>
                 <div id="analysis-body-${game.matchId}">
                     <div style="text-align:center; color:#9aa4af; padding:40px;">불러오는 중...</div>
                 </div>
-            </div>
+            </div>`}
 
             <div id="tab-build-${game.matchId}" class="detail-tab-content">
                 ${runesHtml === ''
