@@ -11,9 +11,11 @@ const { ipKeyGenerator } = require('express-rate-limit');
 // ==========================================
 // [1] DB 연결 및 스키마 정의
 // ==========================================
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("[System] MongoDB 연결 성공"))
-    .catch(err => console.error("[System] MongoDB 연결 에러:", err));
+mongoose.set('bufferCommands', false);
+
+// 연결이 끊기거나 복구될 때 로그를 남김
+mongoose.connection.on('disconnected', () => console.error("[System] MongoDB 연결 끊김"));
+mongoose.connection.on('reconnected', () => console.log("[System] MongoDB 재연결 완료"));
 
 const MatchCache = mongoose.model('MatchCache', new mongoose.Schema({
     matchId: { type: String, required: true, unique: true },
@@ -159,22 +161,21 @@ async function startJobs() {
     await updateVersion();
     await updateMerakiData();
     await updateChallengerList();
-    await resolveNamesInBackground();
 
-    // 스케줄러 간격 설정
-    setInterval(updateChallengerList, 600 * 1000);        // 10분: 랭킹 명단 갱신
-    setInterval(resolveNamesInBackground, 60 * 1000);     // 1분: 닉네임 변환 (조용히 백그라운드에서 진행)
-    setInterval(updateMerakiData, 24 * 60 * 60 * 1000);   // 24시간: 챔피언 데이터 갱신
+    // 닉네임 변환은 오래 걸리므로 기다리지 않고 백그라운드로 던짐
+    resolveNamesInBackground();
 
-    // ★ 추가됨: 10분에 한 번씩만 누적된 작업량을 콘솔에 보고하고 초기화
+    setInterval(updateChallengerList, 600 * 1000);
+    setInterval(resolveNamesInBackground, 60 * 1000);
+    setInterval(updateMerakiData, 24 * 60 * 60 * 1000);
+
     setInterval(() => {
         if (resolvedCountIn10Mins > 0) {
             console.log(`[Task] 백그라운드 닉네임 변환 진행 (최근 10분간 ${resolvedCountIn10Mins}건 갱신 완료)`);
-            resolvedCountIn10Mins = 0; // 보고 후 초기화
+            resolvedCountIn10Mins = 0;
         }
     }, 600 * 1000);
 }
-startJobs();
 
 // ==========================================
 // [4] API 라우터
@@ -422,4 +423,21 @@ app.get('/api/champions/meraki', (req, res) => {
 app.get(/.*/, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`[System] 서버 실행 중: http://localhost:${PORT}`));
+
+async function bootstrap() {
+    try {
+        await mongoose.connect(process.env.MONGO_URI, {
+            serverSelectionTimeoutMS: 15000
+        });
+        console.log("[System] MongoDB 연결 성공");
+    } catch (err) {
+        console.error("[System] MongoDB 연결 실패. 서버를 종료합니다.");
+        console.error(`  → ${err.message}`);
+        process.exit(1);
+    }
+
+    await startJobs();
+    app.listen(PORT, () => console.log(`[System] 서버 실행 중: 포트 ${PORT}`));
+}
+
+bootstrap();
