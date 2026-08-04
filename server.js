@@ -47,6 +47,7 @@ const riotApi = axios.create({
 let currentVersion = "16.1.1";
 let challengerList = [];
 let resolvedNames = {};
+let failedPuuids = {};        // ★ 추가: 조회 실패한 puuid와 실패 시각
 let isFetchingNames = false;
 let resolvedCountIn10Mins = 0;
 let merakiChampionData = {};
@@ -131,11 +132,30 @@ async function resolveNamesInBackground() {
     isFetchingNames = true;
 
     const now = Date.now();
-    // ★ 수정됨: 갱신 주기를 14일로 변경
     const FOURTEEN_DAYS = 14 * 24 * 60 * 60 * 1000;
+    const TOP_PRIORITY = 1000;   // 상위 1000명은 항상 먼저 처리
 
-    // ★ 기존 유지: 1분에 최대 20명(실제론 타이머 때문에 14명 내외)씩만 살살 가져옴 (유저 검색 API 방어)
-    const targets = challengerList.filter(p => !resolvedNames[p.puuid] || (now - resolvedNames[p.puuid].updatedAt > FOURTEEN_DAYS)).slice(0, 20);
+    // 아직 모르거나, 14일이 지나 갱신이 필요한 사람만 추림
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+
+    const pending = challengerList
+        .map((p, rank) => ({ ...p, rank }))
+        .filter(p => {
+            // 최근 24시간 내 조회 실패한 계정은 건너뜀
+            if (failedPuuids[p.puuid] && now - failedPuuids[p.puuid] < ONE_DAY) return false;
+            return !resolvedNames[p.puuid] || (now - resolvedNames[p.puuid].updatedAt > FOURTEEN_DAYS);
+        });
+
+    // 상위권을 앞으로 끌어올림
+    const topPending = pending.filter(p => p.rank < TOP_PRIORITY);
+    const restPending = pending.filter(p => p.rank >= TOP_PRIORITY);
+
+    const targets = [...topPending, ...restPending].slice(0, 20);
+
+    const skipped = Object.keys(failedPuuids).length;
+    if (pending.length > 0) {
+        console.log(`[Task] 닉네임 변환: 대기 ${pending.length}명 (상위권 ${topPending.length}명 / 조회불가 ${skipped}명 제외)`);
+    }
 
     if (targets.length > 0) {
         for (const p of targets) {
@@ -144,10 +164,20 @@ async function resolveNamesInBackground() {
                 if (accRes.data.gameName) {
                     const dName = `${accRes.data.gameName}#${accRes.data.tagLine}`;
                     resolvedNames[p.puuid] = { displayName: dName, updatedAt: now };
+                    delete failedPuuids[p.puuid];
                     await SummonerCache.findOneAndUpdate({ puuid: p.puuid }, { displayName: dName, updatedAt: now }, { upsert: true });
                     myCache.del('challenger_ranking_data');
                 }
-            } catch (err) { }
+            } catch (err) {
+                const status = err.response?.status;
+                if (status === 404) {
+                    // 존재하지 않는 계정 → 24시간 동안 재시도 안 함
+                    failedPuuids[p.puuid] = now;
+                } else {
+                    // 429, 500 등 일시적 오류는 다음 사이클에 재시도
+                    console.error(`[Name] 오류 ${p.puuid.substring(0, 8)}: ${status || err.message}`);
+                }
+            }
 
             resolvedCountIn10Mins++; // 처리할 때마다 카운트 1씩 증가 (로그는 안 띄움)
             await new Promise(resolve => setTimeout(resolve, 1200));
