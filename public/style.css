@@ -2355,9 +2355,16 @@ body::before {
 .arena-rank-badge.place-2 { background: rgba(203, 213, 225, 0.15); color: #cbd5e1; }
 .arena-rank-badge.place-3 { background: rgba(209, 154, 102, 0.18); color: #d19a66; }
 
+/* 상세 표 증강체: 스펠/룬 칸(55px)과 같은 폭에 3열 2행으로 */
 .detail-augments {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 16px);
     gap: 2px;
     justify-content: center;
-    flex-wrap: wrap;
+    align-content: center;
+}
+
+.detail-augments .aug-icon {
+    width: 16px !important;
+    height: 16px !important;
 }

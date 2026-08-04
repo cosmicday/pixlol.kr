@@ -276,10 +276,14 @@ async function startJobs() {
 // ==========================================
 const ARENA_QUEUES = new Set([1700, 1710, 1750]);
 
+// 칼바람: 라인/포지션 개념이 없어서 요약 통계를 협곡과 같은 통에 넣으면 안 된다.
+const ARAM_QUEUES = new Set([450, 720]);   // 450 칼바람, 720 칼바람 클래시
+
 const QUEUE_MAP = {
     420: "솔로랭크",
     440: "자유랭크",
     450: "칼바람",
+    720: "칼바람",   // 클래시
     1700: "아레나",   // 구버전
     1710: "아레나",   // 구버전
     1750: "아레나"    // ★ 현재
@@ -323,6 +327,7 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
     if (!p) return null;
 
     const isArena = ARENA_QUEUES.has(detail.info.queueId);
+    const isAram = ARAM_QUEUES.has(detail.info.queueId);
     const augmentsOf = (x) => [x.playerAugment1, x.playerAugment2, x.playerAugment3, x.playerAugment4, x.playerAugment5, x.playerAugment6].filter(Boolean);
 
     // ============================================================
@@ -358,7 +363,18 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
     const durationMin = Math.floor(detail.info.gameDuration / 60);
     const durationSec = detail.info.gameDuration % 60;
     const daysAgo = Math.floor((Date.now() - detail.info.gameEndTimestamp) / 86400000);
-    const teamKills = detail.info.participants.filter(x => x.teamId === p.teamId).reduce((sum, x) => sum + x.kills, 0);
+    // 킬관여 분모: 일반 게임은 같은 teamId(5명), 아레나는 같은 조(3명).
+    //   아레나의 teamId는 100/200 두 개뿐이라 그대로 쓰면 9명 킬 총합으로 나눠버린다.
+    const alliesOf = (x) => isArena
+        ? detail.info.participants.filter(y => subteamIdOf(y) === subteamIdOf(x))
+        : detail.info.participants.filter(y => y.teamId === x.teamId);
+
+    const kpOf = (x) => {
+        const tk = alliesOf(x).reduce((sum, y) => sum + y.kills, 0);
+        return tk === 0 ? 0 : Math.round(((x.kills + x.assists) / tk) * 100);
+    };
+
+    const teamKills = alliesOf(p).reduce((sum, x) => sum + x.kills, 0);
 
     return {
         matchId: detail.metadata.matchId,
@@ -374,6 +390,7 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         item0: p.item0, item1: p.item1, item2: p.item2, item3: p.item3, item4: p.item4, item5: p.item5, item6: p.item6,
         item7: (p.roleBoundItem || p.item7 || 0),
         isArena,
+        isAram,
         subteam: isArena ? subteamIdOf(p) : null,
         placement: isArena ? (placementOf(p) || null) : null,
         augments: isArena ? augmentsOf(p) : [],
@@ -389,7 +406,7 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
             championName: part.championName === "FiddleSticks" ? "Fiddlesticks" : part.championName, visionScore: part.visionScore,
             summonerName: part.riotIdGameName ? `${part.riotIdGameName}#${part.riotIdTagline}` : (part.summonerName || "알 수 없음"),
             kills: part.kills, deaths: part.deaths, assists: part.assists, damage: part.totalDamageDealtToChampions, damageTaken: part.totalDamageTaken,
-            kp: Math.round(((part.kills + part.assists) / (part.teamId === 100 ? detail.info.participants.filter(x => x.teamId === 100).reduce((sum, x) => sum + x.kills, 0) : detail.info.participants.filter(x => x.teamId === 200).reduce((sum, x) => sum + x.kills, 0))) * 100) || 0,
+            kp: kpOf(part),
             gold: part.goldEarned, cs: part.totalMinionsKilled + part.neutralMinionsKilled,
             wardsPlaced: part.wardsPlaced || 0, wardsKilled: part.wardsKilled || 0, visionWards: part.visionWardsBoughtInGame || 0,
             item0: part.item0, item1: part.item1, item2: part.item2, item3: part.item3, item4: part.item4, item5: part.item5, item6: part.item6, item7: (part.roleBoundItem || part.item7 || 0),

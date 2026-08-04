@@ -1091,7 +1091,7 @@ function renderMatches(matches, append = false) {
                 const header = `
                     <thead>
                         <tr class="arena-group-header">
-                            <th colspan="8" style="text-align:left; padding-left:15px;">
+                            <th colspan="10" style="text-align:left; padding-left:15px;">
                                 <span class="arena-rank-badge ${placementClass(t.placement)}">${t.placement ? t.placement + '위' : '순위 미상'}</span>
                             </th>
                         </tr>
@@ -1103,14 +1103,29 @@ function renderMatches(matches, append = false) {
                     const dmgPercent = maxDamage > 0 ? (p.damage / maxDamage) * 100 : 0;
                     const dmgTakenPercent = maxDamageTaken > 0 ? (p.damageTaken / maxDamageTaken) * 100 : 0;
 
-                    let pItems = `<div class="detail-items" style="display:flex; gap:1px; justify-content:center; flex-wrap:wrap;">`;
-                    [0, 1, 2, 3, 4, 5, 6].forEach(i => {
+                    // 일반 상세 표와 동일한 4 + 4 배치
+                    //   윗줄: item0, item1, item2, 장신구(item6)
+                    //   아랫줄: item3, item4, item5, item7
+                    let pItems = `<div class="detail-items" style="display:flex; flex-direction:column; gap:1px; align-items:center;">
+                                    <div style="display:flex; gap:1px;">`;
+                    [0, 1, 2, 6].forEach(i => {
+                        const id = p[`item${i}`];
+                        const tClass = (i === 6) ? " trinket" : "";
+                        pItems += id
+                            ? `<img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${id}.png" class="${tClass.trim()}" style="width:20px; height:20px; border-radius:3px;" data-tt-type="item" data-tt-id="${id}">`
+                            : `<div class="empty${tClass}" style="width:20px; height:20px; background:rgba(0,0,0,0.3); border-radius:3px;"></div>`;
+                    });
+                    pItems += `</div><div style="display:flex; gap:1px;">`;
+                    [3, 4, 5].forEach(i => {
                         const id = p[`item${i}`];
                         pItems += id
                             ? `<img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${id}.png" style="width:20px; height:20px; border-radius:3px;" data-tt-type="item" data-tt-id="${id}">`
                             : `<div class="empty" style="width:20px; height:20px; background:rgba(0,0,0,0.3); border-radius:3px;"></div>`;
                     });
-                    pItems += `</div>`;
+                    pItems += p.item7
+                        ? `<img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${p.item7}.png" style="width:20px; height:20px; border-radius:3px;" data-tt-type="item" data-tt-id="${p.item7}">`
+                        : `<div class="empty" style="width:20px; height:20px; background:rgba(0,0,0,0.3); border-radius:3px;"></div>`;
+                    pItems += `</div></div>`;
 
                     return `
                         <tr style="${isMeStyle}">
@@ -1120,14 +1135,17 @@ function renderMatches(matches, append = false) {
                                     <div class="detail-summoner" onclick="document.getElementById('summoner-input').value='${p.summonerName}'; document.getElementById('search-btn').click();" title="${p.summonerName}">${p.summonerName}</div>
                                 </div>
                             </td>
+                            <td class="detail-spell-rune-col">
+                                <div class="detail-augments">${renderAugments(p.augments, 16) || '<span style="color:#555;">-</span>'}</div>
+                            </td>
                             <td style="color: #fff; font-size: 11px; font-weight: bold;">${p.champLevel || '-'}</td>
                             <td>
                                 <div class="detail-kda">${p.kills} / <span class="d">${p.deaths}</span> / ${p.assists}</div>
                                 <div style="color: #9aa4af; font-size: 11px;">(${kdaRatio})</div>
                             </td>
-                            <td><div class="detail-augments">${renderAugments(p.augments, 20) || '<span style="color:#555;">-</span>'}</div></td>
+                            <td style="color: #9aa4af; font-weight: bold; font-size: 11px;">${p.kp}%</td>
                             <td>${pItems}</td>
-                            <td style="color: #ddd; font-size: 11px;">${(p.gold || 0).toLocaleString()}</td>
+                            <td style="color: #ddd; font-size: 11px;">${(p.gold || 0).toLocaleString()} G</td>
                             <td>
                                 <div style="color: #fff;">${p.damage.toLocaleString()}</div>
                                 <div class="damage-bar-container"><div class="damage-bar" style="width: ${dmgPercent}%;"></div></div>
@@ -1135,6 +1153,14 @@ function renderMatches(matches, append = false) {
                             <td>
                                 <div style="color: #fff;">${p.damageTaken.toLocaleString()}</div>
                                 <div class="damage-bar-container"><div class="damage-bar taken" style="width: ${dmgTakenPercent}%;"></div></div>
+                            </td>
+                            <td class="detail-spell-rune-col">
+                                <div class="spell-rune-wrapper">
+                                    <div class="detail-spells">
+                                        ${spellImg(p.spell1)}
+                                        ${spellImg(p.spell2)}
+                                    </div>
+                                </div>
                             </td>
                         </tr>`;
                 }).join('');
@@ -1145,14 +1171,11 @@ function renderMatches(matches, append = false) {
             return `
                 <table class="detail-table arena-detail-table">
                     <colgroup>
-                        <col style="width: 170px;"> <col style="width: 40px;"> <col style="width: 90px;">
-                        <col style="width: 95px;"> <col style="width: 150px;"> <col style="width: 70px;">
-                        <col style="width: 80px;"> <col style="width: 80px;">
-                    </colgroup>
+                        <col style="width: 150px;"> <col style="width: 55px;"> <col style="width: 30px;"> <col style="width: 90px;"> <col style="width: 45px;"> <col style="width: 105px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 55px;"> </colgroup>
                     <thead>
                         <tr class="arena-col-header">
                             <th style="text-align:left; padding-left:15px;">소환사</th>
-                            <th>레벨</th><th>KDA</th><th>증강체</th><th>아이템</th><th>골드</th><th>피해량</th><th>받은피해량</th>
+                            <th>증강체</th><th>레벨</th><th>KDA</th><th>킬관여</th><th>아이템</th><th>골드</th><th>피해량</th><th>받은피해량</th><th>스펠</th>
                         </tr>
                     </thead>
                     ${rows}
@@ -1318,6 +1341,267 @@ function renderMatches(matches, append = false) {
     });
 }
 
+// ============================================================
+// 칼바람 전용 요약 패널
+//   승률·챔피언·KDA는 협곡과 같은 방식이 통하지만, 라인이 없어서
+//   포지션 그래프 자리에는 칼바람에서 의미 있는 지표를 대신 넣는다.
+// ============================================================
+function renderAramSummaryHtml(matches) {
+    const total = matches.length;
+
+    let wins = 0, losses = 0;
+    let totalKills = 0, totalDeaths = 0, totalAssists = 0, totalKp = 0;
+    let totalDmg = 0, totalTaken = 0, totalGold = 0, totalMins = 0, multiKills = 0;
+    const champData = {};
+
+    matches.forEach(game => {
+        if (game.win) wins++; else losses++;
+        totalKills += game.kills; totalDeaths += game.deaths; totalAssists += game.assists;
+        totalKp += game.kp || 0;
+        totalGold += game.goldEarned || 0;
+        if (game.multiKill) multiKills++;
+
+        const mins = game.durationMin + (game.durationSec / 60);
+        totalMins += mins;
+        const me = (game.participants || []).find(x => x.isSearchedUser);
+        if (me) { totalDmg += me.damage || 0; totalTaken += me.damageTaken || 0; }
+
+        const cName = game.championName;
+        if (!champData[cName]) champData[cName] = { games: 0, wins: 0, kills: 0, deaths: 0, assists: 0 };
+        champData[cName].games++;
+        if (game.win) champData[cName].wins++;
+        champData[cName].kills += game.kills;
+        champData[cName].deaths += game.deaths;
+        champData[cName].assists += game.assists;
+    });
+
+    const winRate = Math.round((wins / total) * 100);
+    const winDeg = Math.round((wins / total) * 360);
+    const wrColor = winRate >= 50 ? '#5383e8' : '#e84057';
+    const avgK = (totalKills / total).toFixed(1);
+    const avgD = (totalDeaths / total).toFixed(1);
+    const avgA = (totalAssists / total).toFixed(1);
+    const kdaRatio = totalDeaths === 0 ? 'Perfect' : ((totalKills + totalAssists) / totalDeaths).toFixed(2);
+    const avgKp = Math.round(totalKp / total);
+
+    const avgDpm = totalMins > 0 ? Math.round(totalDmg / totalMins) : 0;
+    const avgTpm = totalMins > 0 ? Math.round(totalTaken / totalMins) : 0;
+    const avgGpm = totalMins > 0 ? Math.round(totalGold / totalMins) : 0;
+    const avgLenMin = Math.floor(totalMins / total);
+    const avgLenSec = Math.round(((totalMins / total) - avgLenMin) * 60);
+
+    const sortedChamps = Object.entries(champData)
+        .sort((a, b) => b[1].games - a[1].games || b[1].wins - a[1].wins).slice(0, 3);
+
+    let champsHtml = sortedChamps.map(([cName, d]) => {
+        const cWinRate = Math.round((d.wins / d.games) * 100);
+        const cKda = d.deaths === 0 ? 'Perfect' : ((d.kills + d.assists) / d.deaths).toFixed(2);
+        let kdaColor = "#ffffff";
+        if (cKda >= 5 || cKda === 'Perfect') kdaColor = "#e84057";
+        else if (cKda >= 4) kdaColor = "#5383e8";
+        else if (cKda >= 3) kdaColor = "#10b981";
+        return `
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${cName}.png" style="width: 28px; height: 28px; border-radius: 50%;" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
+                <div style="flex: 1; display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                    <span style="color: ${cWinRate >= 50 ? '#e84057' : '#ffffff'}; font-weight: bold; width: 34px;">${cWinRate}%</span>
+                    <span style="color: #ffffff; width: 62px;">(${d.wins}승 / ${d.games - d.wins}패)</span>
+                    <span style="color: ${kdaColor}; font-weight: bold;">${cKda}:1 평점</span>
+                </div>
+            </div>`;
+    }).join('');
+
+    if (sortedChamps.length < 3) {
+        for (let i = 0; i < 3 - sortedChamps.length; i++) {
+            champsHtml += `<div style="height: 28px; margin-bottom: 6px;"></div>`;
+        }
+    }
+
+    const metric = (label, value) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; padding:3px 0;">
+            <span style="color:#9aa4af;">${label}</span>
+            <span style="color:#ffffff; font-weight:bold;">${value}</span>
+        </div>`;
+
+    return `
+        <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
+
+            <div style="display: flex; align-items: center; gap: 30px; width: 270px;">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="color: #ffffff; font-size: 11px;">${total}전 ${wins}승 ${losses}패</div>
+                    <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${winDeg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; color: ${wrColor};">
+                            ${winRate}%
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; justify-content: center; gap: 6px; text-align: left;">
+                    <div style="font-size: 11px; color: #ffffff; font-weight: bold;">
+                        ${avgK} / <span style="color: #e84057;">${avgD}</span> / ${avgA}
+                    </div>
+                    <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">
+                        ${kdaRatio} <span style="font-size: 14px; font-weight: normal; color: #ffffff;">: 1</span>
+                    </div>
+                    <div style="font-size: 11px; color: #e84057; font-weight: bold;">
+                        킬관여 ${avgKp}%
+                    </div>
+                </div>
+            </div>
+
+            <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 20px;"></div>
+
+            <div style="width: 250px; display: flex; flex-direction: column; justify-content: center;">
+                <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${total}게임)</div>
+                ${champsHtml}
+            </div>
+
+            <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 20px;"></div>
+
+            <div style="display: flex; flex-direction: column; justify-content: center; width: 200px;">
+                <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">칼바람 지표 (평균)</div>
+                ${metric('분당 피해량', avgDpm.toLocaleString())}
+                ${metric('분당 받은 피해', avgTpm.toLocaleString())}
+                ${metric('분당 골드', avgGpm.toLocaleString())}
+                ${metric('게임 시간', `${avgLenMin}분 ${avgLenSec}초`)}
+                ${metric('멀티킬 기록', `${multiKills}게임`)}
+            </div>
+
+        </div>`;
+}
+
+// ============================================================
+// 아레나 전용 요약 패널
+//   아레나엔 승패도 포지션도 없다. 등수로 이야기해야 맞다.
+// ============================================================
+function renderArenaSummaryHtml(matches) {
+    const total = matches.length;
+
+    let firsts = 0, top3 = 0, placeSum = 0, placeCount = 0;
+    let totalKills = 0, totalDeaths = 0, totalAssists = 0, totalGold = 0;
+    let totalDmg = 0, totalMins = 0;
+    const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+    const champData = {};
+
+    matches.forEach(game => {
+        const pl = Number(game.placement) || 0;
+        if (pl) {
+            placeSum += pl; placeCount++;
+            if (dist[pl] !== undefined) dist[pl]++;
+            if (pl === 1) firsts++;
+            if (pl <= 3) top3++;
+        }
+
+        totalKills += game.kills; totalDeaths += game.deaths; totalAssists += game.assists;
+        totalGold += game.goldEarned || 0;
+
+        const mins = game.durationMin + (game.durationSec / 60);
+        totalMins += mins;
+        const me = (game.participants || []).find(x => x.isSearchedUser);
+        if (me) totalDmg += me.damage || 0;
+
+        const cName = game.championName;
+        if (!champData[cName]) champData[cName] = { games: 0, firsts: 0, placeSum: 0, placeCount: 0 };
+        champData[cName].games++;
+        if (pl === 1) champData[cName].firsts++;
+        if (pl) { champData[cName].placeSum += pl; champData[cName].placeCount++; }
+    });
+
+    const avgPlace = placeCount ? (placeSum / placeCount).toFixed(2) : '-';
+    const top3Rate = placeCount ? Math.round((top3 / placeCount) * 100) : 0;
+    const avgK = (totalKills / total).toFixed(1);
+    const avgD = (totalDeaths / total).toFixed(1);
+    const avgA = (totalAssists / total).toFixed(1);
+    const kdaRatio = totalDeaths === 0 ? 'Perfect' : ((totalKills + totalAssists) / totalDeaths).toFixed(2);
+    const avgGold = Math.round(totalGold / total);
+    const avgDpm = totalMins > 0 ? Math.round(totalDmg / totalMins) : 0;
+
+    const placeColor = (n) => n === 1 ? '#facc15' : (n <= 3 ? '#5383e8' : '#e84057');
+    const top3Deg = Math.round((top3Rate / 100) * 360);
+    const avgColor = placeColor(Math.round(Number(avgPlace)) || 6);
+
+    const sortedChamps = Object.entries(champData)
+        .sort((a, b) => b[1].games - a[1].games || a[1].placeSum / (a[1].placeCount || 1) - b[1].placeSum / (b[1].placeCount || 1))
+        .slice(0, 3);
+
+    let champsHtml = sortedChamps.map(([cName, d]) => {
+        const cAvg = d.placeCount ? (d.placeSum / d.placeCount).toFixed(1) : '-';
+        const c = placeColor(Math.round(Number(cAvg)) || 6);
+        return `
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${cName}.png" style="width: 28px; height: 28px; border-radius: 50%;" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
+                <div style="flex: 1; display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                    <span style="color: ${c}; font-weight: bold; width: 52px;">평균 ${cAvg}위</span>
+                    <span style="color: #ffffff; width: 52px;">(${d.games}판)</span>
+                    <span style="color: #facc15; font-weight: bold;">1위 ${d.firsts}회</span>
+                </div>
+            </div>`;
+    }).join('');
+
+    if (sortedChamps.length < 3) {
+        for (let i = 0; i < 3 - sortedChamps.length; i++) {
+            champsHtml += `<div style="height: 28px; margin-bottom: 6px;"></div>`;
+        }
+    }
+
+    const maxDist = Math.max(...Object.values(dist)) || 1;
+    const bars = [1, 2, 3, 4, 5, 6].map(n => {
+        const val = dist[n];
+        const h = val === 0 ? 0 : Math.max(2, (val / maxDist) * 60);
+        const isTop = val === maxDist && val > 0;
+        return `
+            <div data-tooltip="${n}위: ${val}게임" style="display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:6px; height: 90px; width: 22px;">
+                <div style="width: 12px; background: ${isTop ? placeColor(n) : '#31313c'}; height: ${h}px; border-radius: 2px;"></div>
+                <div style="font-size: 10px; color: ${isTop ? placeColor(n) : '#777'}; font-weight: bold;">${n}</div>
+            </div>`;
+    }).join('');
+
+    return `
+        <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
+
+            <div style="display: flex; align-items: center; gap: 30px; width: 270px;">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="color: #ffffff; font-size: 11px;">${total}전 · 1위 ${firsts}회</div>
+                    <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${top3Deg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;" data-tooltip="3위 안에 든 비율 ${top3Rate}%">
+                        <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: ${avgColor};">
+                            <div style="font-size: 15px; font-weight: bold;">${avgPlace}위</div>
+                            <div style="font-size: 9px; color: #9aa4af;">평균 등수</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; justify-content: center; gap: 6px; text-align: left;">
+                    <div style="font-size: 11px; color: #ffffff; font-weight: bold;">
+                        ${avgK} / <span style="color: #e84057;">${avgD}</span> / ${avgA}
+                    </div>
+                    <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">
+                        ${kdaRatio} <span style="font-size: 14px; font-weight: normal; color: #ffffff;">: 1</span>
+                    </div>
+                    <div style="font-size: 11px; color: #9aa4af; font-weight: bold;">
+                        평균 골드 ${avgGold.toLocaleString()} · DPM ${avgDpm.toLocaleString()}
+                    </div>
+                </div>
+            </div>
+
+            <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 20px;"></div>
+
+            <div style="width: 250px; display: flex; flex-direction: column; justify-content: center;">
+                <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${total}게임)</div>
+                ${champsHtml}
+            </div>
+
+            <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 20px;"></div>
+
+            <div style="display: flex; flex-direction: column; justify-content: center; width: 180px;">
+                <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">등수 분포</div>
+                <div style="display: flex; justify-content: center; gap: 8px; align-items: flex-end;">
+                    ${bars}
+                </div>
+            </div>
+
+        </div>`;
+}
+
 function renderSummaryStats(matchesToCalc) {
     const statsArea = document.getElementById('summary-stats-area');
     if (!statsArea) return;
@@ -1327,6 +1611,44 @@ function renderSummaryStats(matchesToCalc) {
         statsArea.style.display = 'none';
         return;
     }
+
+    // ============================================================
+    // 모드별로 통계의 의미가 달라서 한 통에 넣으면 안 된다.
+    //   협곡  : 승률 / 챔피언 / 포지션 / 킬관여 전부 유효
+    //   칼바람: 라인이 없음 -> 포지션 그래프가 무의미 (전부 미드로 집계됨)
+    //   아레나: 승패도 라인도 없음 -> 등수로 봐야 함
+    //
+    // '전체'에서는 협곡 판만 집계하고, 칼바람과 아레나는 각자 버튼을
+    // 눌렀을 때만 전용 패널로 보여준다.
+    // ============================================================
+    const arenaMatches = matchesToCalc.filter(g => g.isArena);
+    const aramMatches = matchesToCalc.filter(g => g.isAram);
+    const riftMatches = matchesToCalc.filter(g => !g.isArena && !g.isAram);
+
+    if (riftMatches.length === 0) {
+        // 협곡 판이 하나도 없을 때: 단일 모드면 그 모드 전용 패널
+        if (aramMatches.length > 0 && arenaMatches.length === 0) {
+            statsArea.innerHTML = renderAramSummaryHtml(aramMatches);
+            statsArea.style.display = 'block';
+        } else if (arenaMatches.length > 0 && aramMatches.length === 0) {
+            statsArea.innerHTML = renderArenaSummaryHtml(arenaMatches);
+            statsArea.style.display = 'block';
+        } else if (arenaMatches.length > 0 && aramMatches.length > 0) {
+            // '전체'인데 칼바람+아레나만 있는 경우 — 섞어서 평균 내지 않고 안내만
+            statsArea.innerHTML = `
+                <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 22px 30px; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4); text-align: center; color: #9aa4af; font-size: 13px; line-height: 1.7;">
+                    협곡 전적이 없어 종합 통계를 낼 수 없습니다.<br>
+                    <span style="font-size: 12px; color: #777;">칼바람 · 아레나는 각각의 필터 버튼에서 확인할 수 있습니다.</span>
+                </div>`;
+            statsArea.style.display = 'block';
+        } else {
+            statsArea.innerHTML = '';
+            statsArea.style.display = 'none';
+        }
+        return;
+    }
+
+    matchesToCalc = riftMatches;
 
     let wins = 0, losses = 0, totalKills = 0, totalDeaths = 0, totalAssists = 0, totalKp = 0;
     let champData = {};
