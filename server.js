@@ -817,6 +817,93 @@ function extractTimeline(timeline, detail, targetPuuid = null) {
     return { goldFrames, myTimeline: myParticipantId ? myTimeline : null };
 }
 
+// ==========================================
+// 진행 중인 게임 (Spectator v5)
+//   match-v5와 달리 플랫폼 라우팅(kr)을 쓴다. asia로 부르면 404가 뜬다.
+//   게임 중이 아니면 라이엇이 404를 주는데, 이건 에러가 아니라 정상 응답이다.
+// ==========================================
+const liveGameCache = new Map();       // puuid -> { at, payload }
+const LIVE_CACHE_MS = 30 * 1000;       // 실시간성이 중요해서 짧게만 캐싱
+
+function extractLiveGame(raw) {
+    const bans = { blue: [], red: [] };
+    (raw.bannedChampions || []).forEach(b => {
+        if (b.championId > 0) (b.teamId === 100 ? bans.blue : bans.red).push(b.championId);
+    });
+
+    const toPlayer = (p) => {
+        const perkIds = p.perks?.perkIds || [];
+        return {
+            puuid: p.puuid,
+            championId: p.championId,
+            riotId: p.riotId || '',
+            spell1: p.spell1Id,
+            spell2: p.spell2Id,
+            mainRune: perkIds[0] || null,
+            subStyle: p.perks?.perkSubStyle || null
+        };
+    };
+
+    const participants = raw.participants || [];
+    return {
+        gameId: raw.gameId,
+        queueId: raw.gameQueueConfigId,
+        queueName: QUEUE_MAP[raw.gameQueueConfigId] || '기타',
+        mapId: raw.mapId,
+        // gameLength는 로딩 화면 시간을 빼고 세기 때문에 음수로 시작할 수 있다
+        gameLength: Math.max(0, raw.gameLength || 0),
+        gameStartTime: raw.gameStartTime || 0,
+        bans,
+        teams: {
+            blue: participants.filter(p => p.teamId === 100).map(toPlayer),
+            red: participants.filter(p => p.teamId === 200).map(toPlayer)
+        }
+    };
+}
+
+app.get('/api/live/:puuid', async (req, res) => {
+    const puuid = req.params.puuid;
+    if (!/^[\w-]{40,120}$/.test(puuid)) {
+        return res.status(400).json({ error: "잘못된 요청입니다." });
+    }
+
+    const cached = liveGameCache.get(puuid);
+    if (cached && Date.now() - cached.at < LIVE_CACHE_MS) {
+        return res.json(cached.payload);
+    }
+
+    try {
+        const { data } = await riotApi.get(
+            `https://kr.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/${puuid}`
+        );
+        const payload = { inGame: true, game: extractLiveGame(data) };
+        liveGameCache.set(puuid, { at: Date.now(), payload });
+        res.json(payload);
+
+    } catch (error) {
+        const status = error.response?.status;
+
+        // 404 = 게임 중이 아님. 정상 상황이므로 캐싱해서 반복 호출을 줄인다.
+        if (status === 404) {
+            const payload = { inGame: false };
+            liveGameCache.set(puuid, { at: Date.now(), payload });
+            return res.json(payload);
+        }
+        if (status === 429) return res.status(429).json({ error: "조회 한도를 초과했습니다." });
+
+        console.error(`[Live] 조회 실패 ${puuid}: ${error.message}`);
+        res.status(500).json({ error: "진행 중인 게임을 불러오지 못했습니다." });
+    }
+});
+
+// 캐시가 무한히 커지지 않게 주기적으로 정리
+setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of liveGameCache) {
+        if (now - v.at > LIVE_CACHE_MS) liveGameCache.delete(k);
+    }
+}, 60 * 1000);
+
 // 매치 타임라인 조회 (상세 탭 클릭 시 호출)
 app.get('/api/timeline/:matchId', async (req, res) => {
     const { matchId } = req.params;

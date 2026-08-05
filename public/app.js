@@ -586,11 +586,12 @@ async function executeSearch() {
                 </h2>
                 ${data.profile.serverRank ? `<div style="color: #facc15; font-size: 13px; font-weight: bold; margin-top: 6px; letter-spacing: 0.5px;">KR 랭킹 ${data.profile.serverRank.toLocaleString()}위</div>` : ''}
                 </div>
-                <div style="text-align: right; min-width: 140px;">
-                    <button id="refresh-btn" class="search-btn" style="padding: 10px 20px; font-size: 14px; border-radius: 4px; width: 100%;">전적 갱신</button>
-                    <div id="refresh-timer-text" style="font-size: 12px; color: #a0a0a0; margin-top: 8px;"></div>
+                <div class="profile-actions">
+                    <button id="refresh-btn" class="search-btn profile-action-btn">전적 갱신</button>
+                    <button id="live-btn" class="profile-action-btn live-btn" onclick="toggleLiveGamePanel()" disabled>인게임 정보</button>
                 </div>
             </div>
+            <div id="live-game-area"></div>
         `;
 
         const rawTier = data.profile.tier || "Unranked";
@@ -679,7 +680,6 @@ async function executeSearch() {
         if (allBtn) toggleFilter(allBtn, '전체');
 
         const refreshBtn = document.getElementById('refresh-btn');
-        const refreshText = document.getElementById('refresh-timer-text');
         let expireAt = data.expireAt;
         if (data.isCachedFallback) expireAt = Date.now() + 120 * 1000;
 
@@ -692,7 +692,7 @@ async function executeSearch() {
                 refreshBtn.disabled = false;
                 refreshBtn.style.background = "#6b3f8e";
                 refreshBtn.style.cursor = "pointer";
-                refreshText.innerText = "지금 갱신 가능";
+                refreshBtn.innerText = "전적 갱신";
                 if (window.refreshTimerInterval) clearInterval(window.refreshTimerInterval);
             } else {
                 refreshBtn.disabled = true;
@@ -700,12 +700,14 @@ async function executeSearch() {
                 refreshBtn.style.cursor = "not-allowed";
                 const mins = Math.floor(diff / 1000 / 60);
                 const secs = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
-                refreshText.innerText = `${mins}분 ${secs}초 뒤 갱신 가능`;
+                refreshBtn.innerText = `${mins}분 ${secs}초`;
             }
         }
         updateRefreshTimer();
         if (window.refreshTimerInterval) clearInterval(window.refreshTimerInterval);
         window.refreshTimerInterval = setInterval(updateRefreshTimer, 1000);
+
+        checkLiveGame(data.puuid || (data.profile && data.profile.puuid));
 
         const newUrl = `/summoner/${encodeURIComponent(inputName)}`;
         if (window.location.pathname !== newUrl) {
@@ -2769,6 +2771,142 @@ window.switchDetailTab = async function (event, matchId, tabName) {
 };
 
 // ==========================================
+// 진행 중인 게임 (Spectator)
+// ==========================================
+let liveGameData = null;
+let liveGameOpen = false;
+
+async function checkLiveGame(puuid) {
+    const btn = document.getElementById('live-btn');
+    const area = document.getElementById('live-game-area');
+    if (!btn || !puuid) return;
+
+    liveGameData = null;
+    liveGameOpen = false;
+    if (area) area.innerHTML = '';
+    if (window.liveTimerInterval) clearInterval(window.liveTimerInterval);
+
+    btn.disabled = true;
+    btn.classList.remove('in-game');
+
+    try {
+        const res = await fetch(`/api/live/${puuid}`);
+        const json = await res.json();
+
+        if (json.inGame && json.game) {
+            liveGameData = json.game;
+            btn.disabled = false;
+            btn.classList.add('in-game');
+        }
+    } catch (e) {
+        // 조회 실패는 조용히 넘긴다. 버튼이 비활성 상태로 남는다.
+    }
+}
+
+window.toggleLiveGamePanel = function () {
+    const area = document.getElementById('live-game-area');
+    if (!area || !liveGameData) return;
+
+    liveGameOpen = !liveGameOpen;
+
+    if (!liveGameOpen) {
+        area.innerHTML = '';
+        if (window.liveTimerInterval) clearInterval(window.liveTimerInterval);
+        return;
+    }
+
+    area.innerHTML = renderLiveGameHtml(liveGameData);
+
+    // 경과 시간을 1초마다 갱신
+    const startedAt = Date.now() - liveGameData.gameLength * 1000;
+    const tick = () => {
+        const el = document.getElementById('live-timer');
+        if (!el) { clearInterval(window.liveTimerInterval); return; }
+        const sec = Math.floor((Date.now() - startedAt) / 1000);
+        el.innerText = `${Math.floor(sec / 60)}분 ${String(sec % 60).padStart(2, '0')}초`;
+    };
+    tick();
+    if (window.liveTimerInterval) clearInterval(window.liveTimerInterval);
+    window.liveTimerInterval = setInterval(tick, 1000);
+};
+
+function liveChampIcon(championId) {
+    const engName = championIdMap[championId];
+    return engName
+        ? `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${engName}.png`
+        : `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png`;
+}
+
+function liveRuneIcon(id) {
+    return runePathMap[id]
+        ? `https://ddragon.leagueoflegends.com/cdn/img/${runePathMap[id]}`
+        : '';
+}
+
+function renderLivePlayer(p, side) {
+    const name = (p.riotId || '').split('#')[0] || '알 수 없음';
+    const tag = (p.riotId || '').split('#')[1] || '';
+
+    const champ = `<img class="live-champ" src="${liveChampIcon(p.championId)}" onerror="this.style.visibility='hidden'">`;
+    const spells = `
+        <div class="live-spells">
+            ${spellImg(p.spell1)}
+            ${spellImg(p.spell2)}
+        </div>`;
+    const runes = `
+        <div class="live-runes">
+            ${p.mainRune ? `<img src="${liveRuneIcon(p.mainRune)}" onerror="this.style.visibility='hidden'">` : '<span></span>'}
+            ${p.subStyle ? `<img src="${liveRuneIcon(p.subStyle)}" onerror="this.style.visibility='hidden'">` : '<span></span>'}
+        </div>`;
+    const nameHtml = `
+        <div class="live-name" title="${p.riotId || ''}">
+            <span class="live-name-main">${name}</span>${tag ? `<span class="live-name-tag">#${tag}</span>` : ''}
+        </div>`;
+
+    // 블루팀은 오른쪽 정렬, 레드팀은 왼쪽 정렬로 가운데를 향하게 배치
+    return side === 'blue'
+        ? `<div class="live-player blue" onclick="searchSummonerFromLive('${(p.riotId || '').replace(/'/g, "\\'")}')">
+               ${runes}${spells}${nameHtml}${champ}
+           </div>`
+        : `<div class="live-player red" onclick="searchSummonerFromLive('${(p.riotId || '').replace(/'/g, "\\'")}')">
+               ${champ}${nameHtml}${spells}${runes}
+           </div>`;
+}
+
+window.searchSummonerFromLive = function (riotId) {
+    if (!riotId) return;
+    document.getElementById('summoner-input').value = riotId;
+    document.getElementById('search-btn').click();
+};
+
+function renderLiveGameHtml(g) {
+    const banHtml = (ids) => ids.length === 0
+        ? '<span class="live-no-ban">밴 없음</span>'
+        : ids.map(id => `<img class="live-ban" src="${liveChampIcon(id)}" onerror="this.style.visibility='hidden'">`).join('');
+
+    return `
+        <div class="live-game-box">
+            <div class="live-team blue">
+                ${g.teams.blue.map(p => renderLivePlayer(p, 'blue')).join('')}
+            </div>
+
+            <div class="live-center">
+                <div class="live-queue">${g.queueName}</div>
+                <div class="live-map">&lt; ${g.mapId === 12 ? '칼바람 나락' : '소환사의 협곡'} &gt;</div>
+                <div class="live-bans">
+                    <div class="live-ban-row">${banHtml(g.bans.blue)}</div>
+                    <div class="live-ban-row">${banHtml(g.bans.red)}</div>
+                </div>
+                <div class="live-timer" id="live-timer">-</div>
+            </div>
+
+            <div class="live-team red">
+                ${g.teams.red.map(p => renderLivePlayer(p, 'red')).join('')}
+            </div>
+        </div>`;
+}
+
+// ==========================================
 // 타임라인 탭 (팀 골드 / 골드 격차 / 챔피언별 골드)
 // ==========================================
 
@@ -2813,12 +2951,10 @@ function renderTimelineTab(body, matchId, gf) {
 
         ${players.length === 0 ? '' : `
         <h4 class="tl-chart-title">챔피언별 골드</h4>
-        <div class="tl-chart-hint">챔피언을 눌러 그래프에 추가하거나 뺄 수 있습니다. (여러 명 선택 가능)</div>
         ${toggleRow('gold')}
         <div class="tl-chart"><canvas id="champgold-chart-${matchId}"></canvas></div>
 
         <h4 class="tl-chart-title">챔피언별 경험치</h4>
-        <div class="tl-chart-hint">골드 그래프와 별개로 선택할 수 있습니다.</div>
         ${toggleRow('xp')}
         <div class="tl-chart"><canvas id="champxp-chart-${matchId}"></canvas></div>`}
     `;

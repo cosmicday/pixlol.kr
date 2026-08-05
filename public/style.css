@@ -822,6 +822,226 @@ body::before {
 }
 
 /* =========================================
+   5-3. 프로필 버튼 / 진행 중인 게임
+   ========================================= */
+.profile-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    min-width: 150px;
+}
+
+.profile-action-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    width: 100%;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.live-btn {
+    background: #444;
+    cursor: not-allowed;
+}
+
+.live-btn.in-game {
+    background: #6b46c1;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(107, 70, 193, 0.5);
+}
+
+.live-btn.in-game:hover {
+    background: #7c53d6;
+}
+
+/* 진행 중인 게임 패널 */
+.live-game-box {
+    display: flex;
+    align-items: stretch;
+    background: linear-gradient(135deg, #241a3f, #14141f);
+    border: 1px solid rgba(107, 70, 193, 0.4);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 12px;
+    gap: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+.live-team {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.live-player {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.live-player:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.live-player.blue {
+    justify-content: flex-end;
+    border-right: 3px solid #5383e8;
+}
+
+.live-player.red {
+    justify-content: flex-start;
+    border-left: 3px solid #e84057;
+}
+
+.live-champ {
+    width: 34px;
+    height: 34px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.live-spells,
+.live-runes {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.live-spells img,
+.live-spells .spell-unknown,
+.live-runes img,
+.live-runes span {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    display: block;
+}
+
+.live-runes img {
+    background: #202d37;
+    border-radius: 50%;
+}
+
+.live-name {
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+}
+
+.live-player.blue .live-name {
+    text-align: right;
+}
+
+.live-name-main {
+    color: #eee;
+    font-weight: bold;
+}
+
+.live-name-tag {
+    color: #777;
+    font-size: 11px;
+}
+
+/* 가운데 정보 */
+.live-center {
+    width: 190px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 8px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.live-queue {
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.live-map {
+    color: #9aa4af;
+    font-size: 11px;
+}
+
+.live-bans {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: 4px 0;
+}
+
+.live-ban-row {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    min-height: 20px;
+    align-items: center;
+}
+
+.live-ban {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    filter: grayscale(0.7);
+    opacity: 0.75;
+}
+
+.live-no-ban {
+    font-size: 10px;
+    color: #666;
+}
+
+.live-timer {
+    color: #facc15;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .profile-actions {
+        width: 100%;
+    }
+
+    .live-game-box {
+        flex-direction: column;
+    }
+
+    .live-center {
+        width: 100%;
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 0;
+    }
+
+    .live-player.blue {
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+}
+
+/* =========================================
    6. 전적 리스트 및 매치 요약 카드
    ========================================= */
 .match-wrapper {
