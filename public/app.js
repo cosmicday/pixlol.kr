@@ -1472,7 +1472,7 @@ function renderAramSummaryHtml(matches) {
     return `
         <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
 
-            <div style="display: flex; align-items: center; gap: 22px; width: 215px;">
+            <div style="display: flex; align-items: center; gap: 22px; width: 195px;">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="color: #ffffff; font-size: 11px;">${total}전 ${wins}승 ${losses}패</div>
                     <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${winDeg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;">
@@ -1497,14 +1497,14 @@ function renderAramSummaryHtml(matches) {
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="width: 250px; display: flex; flex-direction: column; justify-content: center;">
+            <div style="width: 235px; display: flex; flex-direction: column; justify-content: center;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${total}게임)</div>
                 ${champsHtml}
             </div>
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="display: flex; flex-direction: column; justify-content: center; width: 170px;">
+            <div style="display: flex; flex-direction: column; justify-content: center; width: 190px;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">칼바람 지표 (평균)</div>
                 ${metric('분당 피해량', avgDpm.toLocaleString())}
                 ${metric('분당 받은 피해', avgTpm.toLocaleString())}
@@ -1597,7 +1597,7 @@ function renderArenaSummaryHtml(matches) {
     return `
         <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
 
-            <div style="display: flex; align-items: center; gap: 22px; width: 215px;">
+            <div style="display: flex; align-items: center; gap: 22px; width: 195px;">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="color: #ffffff; font-size: 11px;">${total}전 · ${firsts}회 우승</div>
                     <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${top3Deg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;" data-tooltip="3위 안에 든 비율 ${top3Rate}%">
@@ -1623,14 +1623,14 @@ function renderArenaSummaryHtml(matches) {
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="width: 250px; display: flex; flex-direction: column; justify-content: center;">
+            <div style="width: 235px; display: flex; flex-direction: column; justify-content: center;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${total}게임)</div>
                 ${champsHtml}
             </div>
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="display: flex; flex-direction: column; justify-content: center; width: 150px;">
+            <div style="display: flex; flex-direction: column; justify-content: center; width: 185px;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">등수 분포</div>
                 <div style="display: flex; justify-content: center; gap: 8px; align-items: flex-end;">
                     ${bars}
@@ -1805,7 +1805,7 @@ function renderSummaryStats(matchesToCalc) {
     statsArea.innerHTML = `
         <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
             
-            <div style="display: flex; align-items: center; gap: 22px; width: 215px;">
+            <div style="display: flex; align-items: center; gap: 22px; width: 195px;">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="color: #ffffff; font-size: 11px;">${totalGames}전 ${wins}승 ${losses}패</div>
                     <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${winDeg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;">
@@ -1830,14 +1830,14 @@ function renderSummaryStats(matchesToCalc) {
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="width: 250px; display: flex; flex-direction: column; justify-content: center;">
+            <div style="width: 235px; display: flex; flex-direction: column; justify-content: center;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${totalGames}게임)</div>
                 ${champsHtml}
             </div>
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="display: flex; flex-direction: column; justify-content: center; width: 150px;">
+            <div style="display: flex; flex-direction: column; justify-content: center; width: 185px;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">선호 포지션 (랭크)</div>
                 <div style="display: flex; justify-content: center; gap: 10px; align-items: flex-end;">
                     ${posOrder.map(renderBar).join('')}
