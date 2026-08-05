@@ -823,6 +823,7 @@ function renderMatches(matches, append = false) {
         if (champNameExceptions[game.championName]) game.championName = champNameExceptions[game.championName];
 
         const isArena = !!game.isArena;
+        const isAram = !!game.isAram;
         const isRemake = !isArena && (game.isRemake === true || game.durationMin < 4);
 
         // 아레나는 승/패가 아니라 등수로 색을 정한다 (1위 금색 / 2~3위 상위권 / 4~6위 하위권)
@@ -899,10 +900,7 @@ function renderMatches(matches, append = false) {
 
         itemsHtml += `</div>`;
 
-        let badgeHtml = `<div class="pix-badges">`;
-        if (game.firstBlood) badgeHtml += `<div class="pix-badge first-blood">선취점</div>`;
-        if (game.multiKill) badgeHtml += `<div class="pix-badge multi-kill">${game.multiKill}</div>`;
-        badgeHtml += `</div>`;
+        const badgeHtml = buildBadges(game, isArena, isAram);
 
         const renderTeamList = (participantsArray, targetTeamId) => {
             return participantsArray.filter(p => p.teamId === targetTeamId).map(p => {
@@ -2814,6 +2812,49 @@ window.switchDetailTab = async function (event, matchId, tabName) {
         itemBody.innerHTML = itemHtml || `<div style="text-align:center; color:#9aa4af; padding:30px;">데이터가 없습니다.</div>`;
     }
 };
+
+// ==========================================
+// 전적 박스 뱃지
+//   1위 판정은 모두 "그 경기 전체 플레이어" 기준이다. (같은 팀이 아니라)
+//   동점이면 여럿에게 붙는다.
+// ==========================================
+function buildBadges(game, isArena, isAram) {
+    const all = game.participants || [];
+    const me = all.find(p => p.isSearchedUser);
+    if (!me) return `<div class="pix-badges"></div>`;
+
+    // 전체 최댓값. 값이 0뿐인 경기에는 뱃지를 주지 않는다.
+    const topOf = (key) => {
+        const max = Math.max(...all.map(p => Number(p[key]) || 0));
+        return max > 0 && (Number(me[key]) || 0) === max;
+    };
+
+    const badges = [];
+    const add = (cls, text) => badges.push(`<div class="pix-badge ${cls}">${text}</div>`);
+
+    if (isArena || isAram) {
+        // 아레나·칼바람: 라인·시야·오브젝트 개념이 없어서 전투 지표만 쓴다
+        if (topOf('damage')) add('dmg-top', '딜량 1위');
+        if (topOf('damageTaken')) add('tank-top', '탱킹 1위');
+        if (topOf('kills')) add('kill-top', '킬 1위');
+        if (topOf('assists')) add('assist-top', '도움 1위');
+        // 처형·포탑 사망은 빼고 적 챔피언에게 죽은 적이 없을 때
+        if ((me.champDeaths ?? me.deaths) === 0) add('no-death', '노데스');
+        if (me.kp === 100) add('domination', '장악');
+
+    } else {
+        if (me.firstBlood) add('first-blood', '선취점');
+        if (me.firstBloodAssist) add('first-blood-assist', '선취점 도움');
+        if (me.multiKill) add('multi-kill', me.multiKill);
+        if (topOf('damage')) add('dmg-top', '딜량 1위');
+        if (me.soloKills > 0) add('solo-kill', `솔로킬 ${me.soloKills}`);
+        if (me.steals > 0) add('steal', `스틸 ${me.steals}`);
+        if (topOf('visionScore')) add('vision-top', '시야 1위');
+        if (me.kp === 100) add('domination', '장악');
+    }
+
+    return `<div class="pix-badges">${badges.join('')}</div>`;
+}
 
 // ==========================================
 // 진행 중인 게임 (Spectator)

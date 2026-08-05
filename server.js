@@ -522,6 +522,15 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
             summonerName: part.riotIdGameName ? `${part.riotIdGameName}#${part.riotIdTagline}` : (part.summonerName || "알 수 없음"),
             kills: part.kills, deaths: part.deaths, assists: part.assists, damage: part.totalDamageDealtToChampions, damageTaken: part.totalDamageTaken,
             kp: kpOf(part),
+
+            // --- 뱃지용 (challenges는 옛 매치나 일부 모드에 없을 수 있어 ?. 로 접근) ---
+            multiKill: part.pentaKills ? "펜타킬" : (part.quadraKills ? "쿼드라킬" : (part.tripleKills ? "트리플킬" : (part.doubleKills ? "더블킬" : ""))),
+            firstBlood: part.firstBloodKill === true,
+            firstBloodAssist: part.firstBloodAssist === true,
+            soloKills: part.challenges?.soloKills || 0,
+            steals: part.challenges?.epicMonsterSteals || 0,
+            // 처형·포탑·몬스터 사망을 뺀, 적 챔피언에게 죽은 횟수
+            champDeaths: part.challenges?.deathsByEnemyChamps ?? part.deaths,
             gold: part.goldEarned, cs: part.totalMinionsKilled + part.neutralMinionsKilled,
             wardsPlaced: part.wardsPlaced || 0, wardsKilled: part.wardsKilled || 0, visionWards: part.visionWardsBoughtInGame || 0,
             item0: part.item0, item1: part.item1, item2: part.item2, item3: part.item3, item4: part.item4, item5: part.item5, item6: part.item6, item7: (part.roleBoundItem || part.item7 || 0),

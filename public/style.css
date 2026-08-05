@@ -1305,11 +1305,12 @@ body::before {
 
 .pix-badges {
     display: flex;
-    gap: 4px;
+    gap: 3px;
     position: absolute;
     bottom: -21px;
     left: 0;
     z-index: 2;
+    flex-wrap: nowrap;
 }
 
 .pix-badge {
@@ -1327,6 +1328,47 @@ body::before {
 
 .pix-badge.first-blood {
     background: #6a1b9a;
+}
+
+.pix-badge.first-blood-assist {
+    background: #8e44ad;
+}
+
+.pix-badge.dmg-top {
+    background: #b34700;
+}
+
+.pix-badge.tank-top {
+    background: #1f6f8b;
+}
+
+.pix-badge.kill-top {
+    background: #a33a3a;
+}
+
+.pix-badge.assist-top {
+    background: #2e7d5b;
+}
+
+.pix-badge.solo-kill {
+    background: #7a4a1f;
+}
+
+.pix-badge.steal {
+    background: #4a5568;
+}
+
+.pix-badge.vision-top {
+    background: #3d6b3d;
+}
+
+.pix-badge.no-death {
+    background: #2b6cb0;
+}
+
+.pix-badge.domination {
+    background: linear-gradient(135deg, #b8860b, #daa520);
+    color: #1a1a2e;
 }
 
 .pix-players {
