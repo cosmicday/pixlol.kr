@@ -697,7 +697,7 @@ async function executeSearch() {
                 refreshBtn.style.cursor = "not-allowed";
                 const mins = Math.floor(diff / 1000 / 60);
                 const secs = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
-                refreshBtn.innerText = `${mins}분 ${secs}초`;
+                refreshBtn.innerText = `갱신: ${mins}분 ${secs}초`;
             }
         }
         updateRefreshTimer();
@@ -2078,9 +2078,7 @@ function renderProfileFavBtn() {
     }
 
     wrap.innerHTML = `
-        <button class="profile-fav-btn" onclick="addFavorite(currentProfileName)">
-            <span class="fav-star">★</span> 즐겨찾기
-        </button>`;
+        <button class="profile-fav-btn" onclick="addFavorite(currentProfileName)">즐겨찾기</button>`;
 }
 
 function addFavorite(name) {

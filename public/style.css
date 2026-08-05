@@ -555,7 +555,9 @@ body::before {
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    gap: 4px;
+    gap: 3px;
+    /* 아래 버튼 때문에 닉네임이 위로 밀려서, 아이콘 세로 중앙에 오도록 보정 */
+    padding-top: 6px;
 }
 
 .profile-level {
@@ -579,14 +581,14 @@ body::before {
 .profile-fav-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    margin-top: 4px;
-    padding: 5px 12px;
+    margin-top: 2px;
+    padding: 4px 11px;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(167, 139, 250, 0.5);
-    border-radius: 14px;
+    border-radius: 12px;
     color: #cbd5e1;
     font-size: 12px;
+    line-height: 1.2;
     cursor: pointer;
     transition: all 0.18s;
 }
@@ -595,12 +597,6 @@ body::before {
     background: rgba(107, 70, 193, 0.3);
     border-color: #a78bfa;
     color: #fff;
-}
-
-.profile-fav-btn .fav-star {
-    color: #facc15;
-    font-size: 13px;
-    line-height: 1;
 }
 
 @media (max-width: 768px) {
