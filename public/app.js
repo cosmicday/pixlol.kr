@@ -2791,13 +2791,13 @@ window.champGoldCharts = window.champGoldCharts || {};
 function renderTimelineTab(body, matchId, gf) {
     const players = gf.players || [];
 
-    // 챔피언 토글 버튼 (블루 5 / 레드 5)
-    const toggleHtml = players.length === 0 ? '' : `
-        <div class="tl-toggle-row">
+    // 챔피언 토글 버튼 (블루 5 / 레드 5). 골드용과 경험치용을 따로 만든다.
+    const toggleRow = (kind) => `
+        <div class="tl-toggle-row" data-kind="${kind}">
             ${players.map((p, i) => `
-                <button class="tl-champ-toggle" data-pid="${p.id}"
+                <button class="tl-champ-toggle" data-pid="${p.id}" data-kind="${kind}"
                         style="--line-color:${CHAMP_LINE_COLORS[i] || '#888'}"
-                        onclick="toggleChampGoldLine('${matchId}', ${p.id})"
+                        onclick="toggleChampLine('${matchId}', ${p.id}, '${kind}')"
                         title="${p.name || p.champ}">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.champ}.png"
                          onerror="this.style.visibility='hidden'">
@@ -2813,11 +2813,13 @@ function renderTimelineTab(body, matchId, gf) {
 
         ${players.length === 0 ? '' : `
         <h4 class="tl-chart-title">챔피언별 골드</h4>
-        <div class="tl-chart-hint">챔피언을 눌러 그래프에 추가하거나 뺄 수 있습니다. (여러 명 선택 가능 · 골드와 경험치에 함께 적용됩니다)</div>
-        ${toggleHtml}
+        <div class="tl-chart-hint">챔피언을 눌러 그래프에 추가하거나 뺄 수 있습니다. (여러 명 선택 가능)</div>
+        ${toggleRow('gold')}
         <div class="tl-chart"><canvas id="champgold-chart-${matchId}"></canvas></div>
 
         <h4 class="tl-chart-title">챔피언별 경험치</h4>
+        <div class="tl-chart-hint">골드 그래프와 별개로 선택할 수 있습니다.</div>
+        ${toggleRow('xp')}
         <div class="tl-chart"><canvas id="champxp-chart-${matchId}"></canvas></div>`}
     `;
 
@@ -2913,53 +2915,56 @@ function renderTimelineTab(body, matchId, gf) {
         });
 
         window.champGoldCharts[matchId] = {
-            goldChart: makeChart(`#champgold-chart-${matchId}`, 'G'),
-            xpChart: makeChart(`#champxp-chart-${matchId}`, 'XP'),
+            charts: {
+                gold: makeChart(`#champgold-chart-${matchId}`, 'G'),
+                xp: makeChart(`#champxp-chart-${matchId}`, 'XP')
+            },
             players,
             root: body
         };
 
-        // 검색한 소환사가 있으면 기본으로 켜둔다
+        // 검색한 소환사가 있으면 두 그래프 모두 기본으로 켜둔다
         const game = allMatches.find(m => m.matchId === matchId);
         const meIdx = game ? game.participants.findIndex(p => p.isSearchedUser) : -1;
-        if (meIdx > -1 && players[meIdx]) toggleChampGoldLine(matchId, players[meIdx].id);
+        if (meIdx > -1 && players[meIdx]) {
+            toggleChampLine(matchId, players[meIdx].id, 'gold');
+            toggleChampLine(matchId, players[meIdx].id, 'xp');
+        }
     }
 }
 
-// 토글 하나로 골드·경험치 그래프를 함께 켜고 끈다
-window.toggleChampGoldLine = function (matchId, pid) {
+// kind('gold' | 'xp')별로 독립 동작한다. 두 그래프는 서로 영향을 주지 않는다.
+window.toggleChampLine = function (matchId, pid, kind) {
     const ctx = window.champGoldCharts[matchId];
     if (!ctx) return;
 
-    const { goldChart, xpChart, players, root } = ctx;
+    const { charts, players, root } = ctx;
+    const chart = charts[kind];
+    if (!chart) return;
+
     const idx = players.findIndex(p => p.id === pid);
     if (idx === -1) return;
 
     const p = players[idx];
-    const label = p.name || p.champ;
-    const color = CHAMP_LINE_COLORS[idx] || '#888';
-    const existing = goldChart.data.datasets.findIndex(d => d._pid === pid);
-    const turningOn = existing === -1;
+    const existing = chart.data.datasets.findIndex(d => d._pid === pid);
 
-    const apply = (chart, values) => {
-        const i = chart.data.datasets.findIndex(d => d._pid === pid);
-        if (turningOn) {
-            chart.data.datasets.push({
-                _pid: pid, label, data: values || [],
-                borderColor: color, backgroundColor: 'transparent',
-                borderWidth: 2, tension: 0.3, pointRadius: 0
-            });
-        } else if (i > -1) {
-            chart.data.datasets.splice(i, 1);
-        }
-        chart.update();
-    };
+    if (existing > -1) {
+        chart.data.datasets.splice(existing, 1);
+    } else {
+        chart.data.datasets.push({
+            _pid: pid,
+            label: p.name || p.champ,
+            data: (kind === 'xp' ? p.xp : p.gold) || [],
+            borderColor: CHAMP_LINE_COLORS[idx] || '#888',
+            backgroundColor: 'transparent',
+            borderWidth: 2, tension: 0.3, pointRadius: 0
+        });
+    }
+    chart.update();
 
-    apply(goldChart, p.gold);
-    apply(xpChart, p.xp);
-
-    const btn = root.querySelector(`.tl-champ-toggle[data-pid="${pid}"]`);
-    if (btn) btn.classList.toggle('active', turningOn);
+    // 해당 종류의 버튼만 상태를 바꾼다
+    const btn = root.querySelector(`.tl-champ-toggle[data-pid="${pid}"][data-kind="${kind}"]`);
+    if (btn) btn.classList.toggle('active', existing === -1);
 };
 
 // ==========================================
