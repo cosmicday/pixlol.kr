@@ -304,6 +304,10 @@ document.addEventListener('DOMContentLoaded', () => {
         showPrivacyPolicy();
     } else if (pathParts[1] === 'terms') {
         showTerms();
+    } else if (pathParts[1] === 'champions-classic') {
+        const requestedChamp = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
+        showChampions(requestedChamp, true);
+        setActiveNav('nav-champions-classic');
     } else if (pathParts[1] === 'champions') {
         const requestedChamp = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
         showChampions(requestedChamp);
@@ -356,6 +360,12 @@ window.addEventListener('popstate', (event) => {
     } else if (currentPath === '/stats') {
         showStats();
         setActiveNav('nav-stats');
+    } else if (currentPath.startsWith('/champions-classic')) {
+        // '/champions'보다 먼저 검사해야 한다. startsWith라 순서가 뒤바뀌면 이쪽으로 안 온다.
+        const pathParts = currentPath.split('/');
+        const champId = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
+        showChampions(champId, true);
+        setActiveNav('nav-champions-classic');
     } else if (currentPath.startsWith('/champions')) {
         const pathParts = currentPath.split('/');
         const champId = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
@@ -423,6 +433,22 @@ function clearSearchError() {
 //   페이지 코드와 데이터 파일은 그대로 두었으므로 두 군데만 고치면 복구된다.
 // ============================================================
 const HIDE_UNFINISHED_PAGES = true;
+
+// ============================================================
+// LoL 클래식 챔피언
+//   클래식 모드가 생기면서 Data Dragon이 챔피언을 두 벌로 준다.
+//     정규 : Garen      (key 86)
+//     클래식: Jade_Garen (key 60086)
+//   정규 챔피언 ID에는 언더스코어가 없으므로(MonkeyKing, DrMundo, TahmKench)
+//   '_' 포함 여부로 가른다. 라이엇이 다른 접두사를 붙여도 자동으로 걸러진다.
+// ============================================================
+function isClassicChamp(id) {
+    return typeof id === 'string' && id.includes('_');
+}
+
+// 챔피언 페이지가 정규/클래식 중 어느 모드로 열려 있는지
+// (selectChampion이 주소를 만들 때 필요)
+let currentChampMode = 'normal';
 
 function setActiveNav(navId) {
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -1972,7 +1998,13 @@ async function showStats() {
         try {
             const ddragonRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/champion.json`);
             const ddragonData = await ddragonRes.json();
-            for (let key in ddragonData.data) korToEngMap[ddragonData.data[key].name] = ddragonData.data[key].id;
+            // 클래식 챔피언은 한글 이름이 정규와 같아서, 걸러내지 않으면
+            // korToEngMap["가렌"]이 Jade_Garen으로 덮어써진다.
+            for (let key in ddragonData.data) {
+                const c = ddragonData.data[key];
+                if (isClassicChamp(c.id)) continue;
+                korToEngMap[c.name] = c.id;
+            }
             const newChampsMap = { "멜": "Mel", "암베사": "Ambessa", "오로라": "Aurora", "유나라": "Yunara", "자헨": "Zaahen" };
             Object.assign(korToEngMap, newChampsMap);
         } catch (e) {
@@ -2286,7 +2318,11 @@ async function showMasters(requestedChampId = null) {
         const ddragonData = await ddragonRes.json();
 
         let champList = [];
-        for (let key in ddragonData.data) champList.push({ id: ddragonData.data[key].id, name: ddragonData.data[key].name });
+        for (let key in ddragonData.data) {
+            const c = ddragonData.data[key];
+            if (isClassicChamp(c.id)) continue;
+            champList.push({ id: c.id, name: c.name });
+        }
         const newChamps = [{ id: "Mel", name: "멜" }, { id: "Ambessa", name: "암베사" }, { id: "Aurora", name: "오로라" }, { id: "Yunara", name: "유나라" }, { id: "Zaahen", name: "자헨" }];
         newChamps.forEach(newC => { if (!champList.find(c => c.id === newC.id)) champList.push(newC); });
         champList.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
@@ -2585,7 +2621,8 @@ window.switchDetailTab = async function (event, matchId, tabName) {
 // ==========================================
 // ★ 챔피언 목록 및 상세 페이지 로직
 // ==========================================
-async function showChampions(requestedChampId = null) {
+async function showChampions(requestedChampId = null, classicMode = false) {
+    currentChampMode = classicMode ? 'classic' : 'normal';
     if (!window.location.pathname.startsWith('/champions')) {
         window.history.pushState({ page: 'champions' }, '', requestedChampId ? `/champions/${requestedChampId}` : '/champions');
     }
@@ -2600,16 +2637,28 @@ async function showChampions(requestedChampId = null) {
         const data = await res.json();
 
         let champList = [];
-        for (let key in data.data) { champList.push({ id: data.data[key].id, name: data.data[key].name }); }
+        for (let key in data.data) {
+            const c = data.data[key];
+            // 클래식 탭이면 Jade_ 계열만, 정규 탭이면 그 외만
+            if (isClassicChamp(c.id) !== classicMode) continue;
+            champList.push({ id: c.id, name: c.name });
+        }
 
-        const newChamps = [{ id: "Mel", name: "멜" }, { id: "Ambessa", name: "암베사" }, { id: "Aurora", name: "오로라" }, { id: "Yunara", name: "유나라" }, { id: "Zaahen", name: "자헨" }];
-        newChamps.forEach(newC => { if (!champList.find(c => c.id === newC.id)) champList.push(newC); });
+        if (!classicMode) {
+            const newChamps = [{ id: "Mel", name: "멜" }, { id: "Ambessa", name: "암베사" }, { id: "Aurora", name: "오로라" }, { id: "Yunara", name: "유나라" }, { id: "Zaahen", name: "자헨" }];
+            newChamps.forEach(newC => { if (!champList.find(c => c.id === newC.id)) champList.push(newC); });
+        }
 
         champList.sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'));
 
+        if (champList.length === 0) {
+            champsContainer.innerHTML = `<div style='text-align:center; padding:100px 0; min-height:60vh; color:#9aa4af;'>표시할 챔피언이 없습니다.</div>`;
+            return;
+        }
+
         let html = `
             <div class="stats-header" id="champ-page-header" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 15px; height: 80px;">
-                <h1 class="ranking-title">챔피언 정보</h1>
+                <h1 class="ranking-title">${classicMode ? '챔피언 정보 (클래식)' : '챔피언 정보'}</h1>
             </div>
             
             <div style="display: flex; gap: 20px; align-items: flex-start; width: 100%;">
@@ -2648,7 +2697,8 @@ async function showChampions(requestedChampId = null) {
 }
 
 window.selectChampion = async function (champId, champName, isReplace = false) {
-    const newUrl = `/champions/${champId}`;
+    const basePath = currentChampMode === 'classic' ? '/champions-classic' : '/champions';
+    const newUrl = `${basePath}/${champId}`;
     if (window.location.pathname !== newUrl) {
         if (isReplace) {
             window.history.replaceState({ page: 'champions', champ: champId }, '', newUrl);
