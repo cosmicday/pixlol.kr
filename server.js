@@ -358,7 +358,25 @@ function escapeRegex(str) {
 }
 
 // 매치 상세(detail) 하나를 화면용 데이터로 변환
+// 미등록 큐 발견 로그
+//   로테이션 이벤트 모드는 큐ID가 수시로 생기고 바뀌어서 미리 다 넣어둘 수 없다.
+//   누가 그 모드를 검색하면 콘솔에 한 번 찍히고, 그걸 보고 QUEUE_MAP에 추가하면 된다.
+//   같은 큐가 반복해서 찍히지 않도록 프로세스당 한 번만 기록한다.
+const seenUnknownQueues = new Set();
+
+function logUnknownQueue(detail) {
+    const qid = detail.info.queueId;
+    if (QUEUE_MAP[qid] || seenUnknownQueues.has(qid)) return;
+    seenUnknownQueues.add(qid);
+    console.log(
+        `[미등록 큐] queueId=${qid} gameMode=${detail.info.gameMode} ` +
+        `mapId=${detail.info.mapId} matchId=${detail.metadata.matchId}`
+    );
+}
+
 function buildHistoryEntry(detail, targetPuuid, isPast = false) {
+    logUnknownQueue(detail);
+
     const p = detail.info.participants.find(part => part.puuid === targetPuuid);
     if (!p) return null;
 

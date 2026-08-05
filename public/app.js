@@ -412,6 +412,18 @@ function clearSearchError() {
     if (searchBox) searchBox.classList.remove('error-shake');
 }
 
+// ============================================================
+// 미완성 페이지 비공개 처리
+//   통계 / 장인랭킹은 statsData.js · mastersData.js의 하드코딩 데이터를 쓴다.
+//   실제 집계가 아니라서 프로덕션 키 심사 동안 노출하지 않는다.
+//
+//   되살릴 때:
+//     1) 아래 값을 false로
+//     2) index.html의 nav 주석(통계 · 장인랭킹) 해제
+//   페이지 코드와 데이터 파일은 그대로 두었으므로 두 군데만 고치면 복구된다.
+// ============================================================
+const HIDE_UNFINISHED_PAGES = true;
+
 function setActiveNav(navId) {
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     const activeItem = document.getElementById(navId);
@@ -1944,6 +1956,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // [7] 통계 및 랭킹 페이지 로직
 // ==========================================
 async function showStats() {
+    // 메뉴를 가려도 /stats 주소를 직접 치면 들어올 수 있어서 여기서도 막는다
+    if (HIDE_UNFINISHED_PAGES) { goLobby(); return; }
+
     if (window.location.pathname !== '/stats') window.history.pushState({ page: 'stats' }, '', '/stats');
     hideAllContainers();
     const statsContainer = document.getElementById('stats-container');
@@ -2254,6 +2269,9 @@ let currentChampId = '';
 let currentChampName = '';
 
 async function showMasters(requestedChampId = null) {
+    // 메뉴를 가려도 /masters 주소를 직접 치면 들어올 수 있어서 여기서도 막는다
+    if (HIDE_UNFINISHED_PAGES) { goLobby(); return; }
+
     if (!window.location.pathname.startsWith('/masters')) {
         window.history.pushState({ page: 'masters' }, '', requestedChampId ? `/masters/${requestedChampId}` : '/masters');
     }

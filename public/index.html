@@ -22,9 +22,13 @@
         </a>
         <nav class="nav-menu">
             <a class="nav-item active" id="nav-search" onclick="goLobby(); setActiveNav('nav-search')">전적검색</a>
+            <!-- ▼▼ 비공개 처리 (통계 · 장인랭킹) ▼▼
+                 하드코딩된 샘플 데이터라 프로덕션 키 심사 동안 메뉴에서 숨김.
+                 되살릴 때: 이 주석 두 줄을 풀고, app.js의 HIDE_UNFINISHED_PAGES를 false로.
             <a class="nav-item" id="nav-stats" onclick="showStats(); setActiveNav('nav-stats')">통계</a>
-            <a class="nav-item" id="nav-ranking" onclick="showRanking(); setActiveNav('nav-ranking')">랭킹</a>
             <a class="nav-item" id="nav-masters" onclick="showMasters(); setActiveNav('nav-masters')">장인랭킹</a>
+                 ▲▲ 비공개 처리 끝 ▲▲ -->
+            <a class="nav-item" id="nav-ranking" onclick="showRanking(); setActiveNav('nav-ranking')">랭킹</a>
             <a class="nav-item" id="nav-champions" onclick="showChampions(); setActiveNav('nav-champions')">챔피언</a>
         </nav>
     </header>
