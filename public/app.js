@@ -2021,9 +2021,11 @@ function selectChampFilter(id) {
 }
 
 function clearChampFilter(e) {
+    // stopPropagation 때문에 바깥 클릭 감지가 안 걸린다. 여기서 직접 닫아준다.
     if (e) e.stopPropagation();
     activeChampFilter = null;
     updateChampFilterBtn();
+    closeChampFilterPanel();
     applyMatchFilters();
 }
 
