@@ -3,6 +3,7 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const NodeCache = require('node-cache');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
@@ -75,9 +76,55 @@ let resolvedCountIn10Mins = 0;
 let merakiChampionData = {};
 let arenaAugments = {};
 
-// ★ 중복 선언되어 있던 정적 파일 제공 설정을 하나로 통합
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// ==========================================
+// index.html 자산 버전 자동 주입
+//   브라우저가 예전 app.js / style.css를 붙들고 있으면
+//   새 index.html이 내려가도 기능이 옛날 그대로 동작한다.
+//   그래서 파일 수정 시각(mtime)을 쿼리스트링으로 붙여
+//   내용이 바뀔 때만 브라우저가 새 파일로 인식하게 한다.
+//
+//     <script src="/app.js">  ->  <script src="/app.js?v=1754382910123">
+//
+//   index.html은 손댈 필요 없다. 여기서 응답할 때 자동으로 붙는다.
+//   배포할 때 버전을 손으로 올리는 걸 깜빡할 일도 없다.
+// ==========================================
+const PUBLIC_DIR = path.join(__dirname, 'public');
+let indexHtmlCache = null;
+
+function renderIndexHtml() {
+    if (indexHtmlCache) return indexHtmlCache;
+
+    let html = fs.readFileSync(path.join(PUBLIC_DIR, 'index.html'), 'utf8');
+
+    // 같은 서버에서 주는 .js / .css 참조에만 버전을 붙인다 (CDN 주소는 그대로)
+    html = html.replace(/(src|href)="\/([A-Za-z0-9_\-.]+\.(?:js|css))"/g, (match, attr, file) => {
+        try {
+            const v = Math.floor(fs.statSync(path.join(PUBLIC_DIR, file)).mtimeMs);
+            return `${attr}="/${file}?v=${v}"`;
+        } catch (e) {
+            return match;   // 파일이 없으면 원본 그대로
+        }
+    });
+
+    // 운영 환경에서만 캐싱. 로컬은 매번 다시 읽어야 파일을 고치는 즉시 반영된다.
+    if (process.env.NODE_ENV === 'production') indexHtmlCache = html;
+    return html;
+}
+
+function sendIndexHtml(req, res) {
+    // index.html 자체는 절대 캐시하면 안 된다.
+    // 이 파일이 캐시되면 위에서 붙인 새 버전 번호가 전달되지 않는다.
+    res.set('Cache-Control', 'no-cache');
+    res.type('html').send(renderIndexHtml());
+}
+
+// express.static보다 먼저 잡아야 한다. 뒤에 두면 static이 원본을 그냥 내보낸다.
+app.get('/', sendIndexHtml);
+app.get('/index.html', sendIndexHtml);
+
+app.use(express.static(PUBLIC_DIR, { index: false }));
 
 // API 속도 제한 (Rate Limiting) - 1분에 30번
 const apiLimiter = rateLimit({
@@ -945,7 +992,7 @@ app.get('/api/champions/meraki', (req, res) => {
 // ==========================================
 // [6] 프론트엔드 라우팅 및 서버 구동
 // ==========================================
-app.get(/.*/, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get(/.*/, sendIndexHtml);
 
 const PORT = process.env.PORT || 3000;
 
