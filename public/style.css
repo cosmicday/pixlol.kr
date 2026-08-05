@@ -1191,6 +1191,9 @@ body::before {
     align-items: center;
     gap: 6px;
     width: 115px;
+    /* 초상화 아래 뱃지가 박스 바닥에 붙어 답답해 보여서 위로 올린다.
+       가운데 정렬된 항목이라 margin-bottom의 절반만큼 올라간다. (14px -> 7px) */
+    margin-bottom: 14px;
 }
 
 .pix-champ-icon {
