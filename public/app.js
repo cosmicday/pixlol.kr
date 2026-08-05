@@ -545,6 +545,9 @@ async function executeSearch() {
         ddragonVersion = data.version || ddragonVersion;
         window.currentPuuid = data.puuid || null;    // ★ 추가
         allMatches = data.history || [];
+        // 새 소환사를 검색하면 챔피언 필터는 초기화 (큐 필터는 유지)
+        activeChampFilter = null;
+        updateChampFilterBtn();
 
         window.champDetailCache = window.champDetailCache || {};
         const uniqueChamps = [...new Set(allMatches.map(m => m.championName))];
@@ -973,6 +976,7 @@ function renderMatches(matches, append = false) {
         wrapper.className = 'match-wrapper';
         wrapper.dataset.queue = game.queueType;                    // 표시용 라벨
         wrapper.dataset.group = game.queueGroup || '기타';          // 필터용 그룹
+        wrapper.dataset.champ = game.championName || '';            // 챔피언 필터용
 
         const summary = document.createElement('div');
         summary.className = `pix-game ${resultClass}`;
@@ -1846,17 +1850,31 @@ function renderSummaryStats(matchesToCalc) {
     statsArea.style.display = 'block';
 }
 
+// 필터는 두 축이다. 큐(전체/솔랭/칼바람/...)와 챔피언.
+// 서로 독립이라 상태를 따로 두고 적용은 한 군데서 한다.
+let activeQueueFilter = '전체';
+let activeChampFilter = null;   // 챔피언 영문 ID. null이면 전체
+
 function toggleFilter(btn, type) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    activeQueueFilter = type;
+    applyMatchFilters();
+}
 
+function applyMatchFilters() {
     const games = document.querySelectorAll('.match-wrapper');
     let visibleCount = 0; let filteredMatches = [];
 
     games.forEach((gameDiv, index) => {
         // 라벨 부분일치(includes)는 라벨을 늘릴 때 서로 잡아먹는다. 그룹 완전일치로 판정.
         const group = gameDiv.dataset.group || '기타';
-        if (type === '전체' || group === type) {
+        const champ = gameDiv.dataset.champ || '';
+
+        const queueOk = activeQueueFilter === '전체' || group === activeQueueFilter;
+        const champOk = !activeChampFilter || champ === activeChampFilter;
+
+        if (queueOk && champOk) {
             gameDiv.style.display = 'block'; visibleCount++;
             if (allMatches[index]) filteredMatches.push(allMatches[index]);
         } else { gameDiv.style.display = 'none'; }
@@ -1871,12 +1889,165 @@ function toggleFilter(btn, type) {
             emptyMsg = document.createElement('div');
             emptyMsg.id = 'empty-filter-msg';
             emptyMsg.style.cssText = "text-align: center; padding: 60px 0; color: #9aa4af; line-height: 1.6;";
-            emptyMsg.innerHTML = "전적 데이터가 없습니다.<br><span style='font-size: 12px; color: #777;'>(최근 20게임 기준)</span>";
             listDiv.appendChild(emptyMsg);
         }
+        emptyMsg.innerHTML = activeChampFilter
+            ? "선택한 챔피언의 전적이 없습니다.<br><span style='font-size: 12px; color: #777;'>(최근 20게임 기준)</span>"
+            : "전적 데이터가 없습니다.<br><span style='font-size: 12px; color: #777;'>(최근 20게임 기준)</span>";
         emptyMsg.style.display = 'block';
     } else if (emptyMsg) emptyMsg.style.display = 'none';
 }
+
+// ============================================================
+// 챔피언 필터 패널
+// ============================================================
+
+// 한글 초성 검색 ("ㄱㄹ" -> 가렌)
+const HANGUL_CHO = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+
+function getChosung(str) {
+    return [...str].map(ch => {
+        const code = ch.charCodeAt(0) - 0xAC00;
+        return (code >= 0 && code <= 11171) ? HANGUL_CHO[Math.floor(code / 588)] : ch;
+    }).join('');
+}
+
+let champFilterCache = null;
+
+async function loadChampFilterList() {
+    if (champFilterCache) return champFilterCache;
+    const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/champion.json`);
+    const data = await res.json();
+
+    let list = [];
+    for (let key in data.data) {
+        const c = data.data[key];
+        if (isClassicChamp(c.id)) continue;   // 클래식(Jade_) 제외
+        list.push({ id: c.id, name: c.name });
+    }
+    const newChamps = [{ id: "Mel", name: "멜" }, { id: "Ambessa", name: "암베사" }, { id: "Aurora", name: "오로라" }, { id: "Yunara", name: "유나라" }, { id: "Zaahen", name: "자헨" }];
+    newChamps.forEach(n => { if (!list.find(c => c.id === n.id)) list.push(n); });
+
+    list.sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'));
+    champFilterCache = list;
+    return list;
+}
+
+function champIconUrl(id) {
+    return `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${id}.png`;
+}
+
+function champKorName(id) {
+    const found = champFilterCache && champFilterCache.find(c => c.id === id);
+    return found ? found.name : id;
+}
+
+// 현재 불러온 전적에서 많이 한 챔피언 상위 5개
+function getRecentTopChamps() {
+    const counts = {};
+    (allMatches || []).forEach(g => {
+        if (!g.championName) return;
+        counts[g.championName] = (counts[g.championName] || 0) + 1;
+    });
+    return Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([id, n]) => ({ id, count: n }));
+}
+
+async function toggleChampFilterPanel(e) {
+    if (e) e.stopPropagation();
+    const panel = document.getElementById('champ-filter-panel');
+    if (!panel) return;
+
+    if (panel.classList.contains('open')) { closeChampFilterPanel(); return; }
+
+    await loadChampFilterList();
+    renderChampFilterPanel();
+    panel.classList.add('open');
+
+    const search = document.getElementById('cf-search');
+    if (search) { search.value = ''; search.focus(); }
+}
+
+function closeChampFilterPanel() {
+    const panel = document.getElementById('champ-filter-panel');
+    if (panel) panel.classList.remove('open');
+}
+
+function renderChampFilterPanel() {
+    const recent = getRecentTopChamps();
+    const recentBox = document.getElementById('cf-recent');
+    const listBox = document.getElementById('cf-list');
+    if (!recentBox || !listBox) return;
+
+    recentBox.innerHTML = recent.length
+        ? recent.map(c => champFilterRow(c.id, `${c.count}게임`)).join('')
+        : `<div class="cf-empty">기록 없음</div>`;
+
+    listBox.innerHTML = champFilterCache.map(c => champFilterRow(c.id)).join('');
+}
+
+function champFilterRow(id, sub = '') {
+    const active = activeChampFilter === id ? ' active' : '';
+    return `
+        <div class="cf-item${active}" data-id="${id}" data-name="${champKorName(id)}"
+             onclick="selectChampFilter('${id}')">
+            <img src="${champIconUrl(id)}" onerror="this.style.visibility='hidden'">
+            <span class="cf-name">${champKorName(id)}</span>
+            ${sub ? `<span class="cf-sub">${sub}</span>` : ''}
+        </div>`;
+}
+
+function filterChampFilterList() {
+    const q = (document.getElementById('cf-search').value || '').trim().toLowerCase();
+    const rows = document.querySelectorAll('#cf-list .cf-item');
+
+    rows.forEach(row => {
+        const name = (row.dataset.name || '').toLowerCase();
+        const id = (row.dataset.id || '').toLowerCase();
+        const cho = getChosung(row.dataset.name || '').toLowerCase();
+        const hit = !q || name.includes(q) || id.includes(q) || cho.includes(q);
+        row.style.display = hit ? 'flex' : 'none';
+    });
+}
+
+function selectChampFilter(id) {
+    // 이미 선택된 챔피언을 다시 누르면 해제
+    activeChampFilter = (activeChampFilter === id) ? null : id;
+    updateChampFilterBtn();
+    closeChampFilterPanel();
+    applyMatchFilters();
+}
+
+function clearChampFilter(e) {
+    if (e) e.stopPropagation();
+    activeChampFilter = null;
+    updateChampFilterBtn();
+    applyMatchFilters();
+}
+
+function updateChampFilterBtn() {
+    const btn = document.getElementById('champ-filter-btn');
+    if (!btn) return;
+
+    if (activeChampFilter) {
+        btn.classList.add('selected');
+        btn.innerHTML = `
+            <img src="${champIconUrl(activeChampFilter)}" class="cf-btn-icon">
+            <span>${champKorName(activeChampFilter)}</span>
+            <span class="cf-clear" onclick="clearChampFilter(event)">×</span>`;
+    } else {
+        btn.classList.remove('selected');
+        btn.innerHTML = `<span>챔피언 필터</span>`;
+    }
+}
+
+// 패널 바깥을 누르면 닫기
+document.addEventListener('click', (e) => {
+    const wrap = document.getElementById('champ-filter-wrap');
+    if (wrap && !wrap.contains(e.target)) closeChampFilterPanel();
+});
 
 // ==========================================
 // [6] 즐겨찾기 및 최근기록 로직
@@ -3399,12 +3570,8 @@ window.loadMoreMatches = async function () {
         renderMatches(newMatches, true);
         renderLoadMore(data.hasMore !== false);
 
-        // 현재 선택된 필터를 새로 추가된 항목에도 적용
-        const activeBtn = document.querySelector('.filter-btn.active');
-        if (activeBtn) {
-            const label = activeBtn.textContent.trim();
-            toggleFilter(activeBtn, label);
-        }
+        // 새로 추가된 항목에도 현재 필터(큐 + 챔피언)를 그대로 적용
+        applyMatchFilters();
 
     } catch (e) {
         console.error("더 보기 실패:", e);

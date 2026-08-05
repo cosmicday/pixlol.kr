@@ -86,6 +86,25 @@
                         <button class="filter-btn" onclick="toggleFilter(this, '칼바람')">칼바람</button>
                         <button class="filter-btn" onclick="toggleFilter(this, '아레나')">아레나</button>
                         <button class="filter-btn" onclick="toggleFilter(this, '봇')">봇</button>
+
+                        <div class="champ-filter-wrap" id="champ-filter-wrap">
+                            <button class="champ-filter-btn" id="champ-filter-btn" onclick="toggleChampFilterPanel(event)">
+                                <span>챔피언 필터</span>
+                            </button>
+
+                            <div class="champ-filter-panel" id="champ-filter-panel">
+                                <div class="cf-left">
+                                    <div class="cf-title">최근 플레이</div>
+                                    <div id="cf-recent" class="cf-recent"></div>
+                                </div>
+                                <div class="cf-right">
+                                    <input type="text" id="cf-search" class="cf-search" autocomplete="off"
+                                           placeholder="챔피언 검색 (가렌, ㄱㄹ, ...)" oninput="filterChampFilterList()">
+                                    <div class="cf-title">챔피언 목록</div>
+                                    <div id="cf-list" class="cf-list"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div id="summary-stats-area"></div>
                     <div class="match-list" id="game-list"></div>
