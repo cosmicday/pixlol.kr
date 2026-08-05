@@ -741,6 +741,87 @@ body::before {
 }
 
 /* =========================================
+   5-2. 타임라인 탭 (팀 골드 / 골드 격차 / 챔피언별 골드)
+   ========================================= */
+.tl-chart-title {
+    color: #fff;
+    text-align: center;
+    margin: 25px 0 10px;
+    font-size: 15px;
+}
+
+.tl-chart-title:first-child {
+    margin-top: 0;
+}
+
+.tl-chart {
+    position: relative;
+    width: 100%;
+    height: 230px;
+}
+
+.tl-chart-hint {
+    text-align: center;
+    font-size: 11px;
+    color: #777;
+    margin-bottom: 10px;
+}
+
+.tl-toggle-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.tl-champ-toggle {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    overflow: hidden;
+    opacity: 0.45;
+    transition: all 0.15s;
+}
+
+.tl-champ-toggle:hover {
+    opacity: 0.8;
+    transform: translateY(-2px);
+}
+
+.tl-champ-toggle img {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.tl-champ-toggle.active {
+    opacity: 1;
+    border-color: var(--line-color, #a78bfa);
+    box-shadow: 0 0 8px var(--line-color, #a78bfa);
+}
+
+/* 블루팀 5명과 레드팀 5명 사이를 벌린다 */
+.tl-champ-toggle:nth-child(6) {
+    margin-left: 18px;
+}
+
+@media (max-width: 768px) {
+    .tl-chart {
+        height: 190px;
+    }
+
+    .tl-champ-toggle {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* =========================================
    6. 전적 리스트 및 매치 요약 카드
    ========================================= */
 .match-wrapper {

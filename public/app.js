@@ -1322,7 +1322,7 @@ function renderMatches(matches, append = false) {
         detailHtml.innerHTML = `
             <div class="detail-tabs-header">
                 <button class="detail-tab-btn active" onclick="switchDetailTab(event, '${game.matchId}', 'summary')">종합</button>
-                ${isArena ? '' : `<button class="detail-tab-btn" onclick="switchDetailTab(event, '${game.matchId}', 'analysis')">팀분석</button>`}
+                ${isArena ? '' : `<button class="detail-tab-btn" onclick="switchDetailTab(event, '${game.matchId}', 'analysis')">타임라인</button>`}
                 <button class="detail-tab-btn" onclick="switchDetailTab(event, '${game.matchId}', 'build')">빌드</button>
             </div>
             
@@ -1350,7 +1350,6 @@ function renderMatches(matches, append = false) {
 
             ${isArena ? '' : `
             <div id="tab-analysis-${game.matchId}" class="detail-tab-content" style="padding: 20px;">
-                <h4 style="color:#fff; text-align:center; margin-bottom:15px;">시간대별 팀 골드</h4>
                 <div id="analysis-body-${game.matchId}">
                     <div style="text-align:center; color:#9aa4af; padding:40px;">불러오는 중...</div>
                 </div>
@@ -2751,29 +2750,7 @@ window.switchDetailTab = async function (event, matchId, tabName) {
             return;
         }
 
-        body.innerHTML = `<div style="position:relative; width:100%; height:250px;"><canvas id="gold-chart-${matchId}"></canvas></div>`;
-        new Chart(body.querySelector('canvas'), {
-            type: 'line',
-            data: {
-                labels: tl.goldFrames.labels,
-                datasets: [
-                    { label: '블루팀', data: tl.goldFrames.blue, borderColor: '#5383e8', backgroundColor: 'rgba(83, 131, 232, 0.1)', fill: true, tension: 0.3, pointRadius: 1 },
-                    { label: '레드팀', data: tl.goldFrames.red, borderColor: '#e84057', backgroundColor: 'rgba(232, 64, 87, 0.1)', fill: true, tension: 0.3, pointRadius: 1 }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { labels: { color: '#9aa4af' } },
-                    tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.raw.toLocaleString() + ' G' } }
-                },
-                scales: {
-                    x: { ticks: { color: '#9aa4af' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                    y: { ticks: { color: '#9aa4af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-                }
-            }
-        });
+        renderTimelineTab(body, matchId, tl.goldFrames);
     }
 
     if (tabName === 'build') {
@@ -2789,6 +2766,175 @@ window.switchDetailTab = async function (event, matchId, tabName) {
         skillBody.innerHTML = skillHtml || `<div style="text-align:center; color:#9aa4af; padding:30px;">데이터가 없습니다.</div>`;
         itemBody.innerHTML = itemHtml || `<div style="text-align:center; color:#9aa4af; padding:30px;">데이터가 없습니다.</div>`;
     }
+};
+
+// ==========================================
+// 타임라인 탭 (팀 골드 / 골드 격차 / 챔피언별 골드)
+// ==========================================
+
+// 챔피언별 골드 선 색. 앞 5개가 블루팀, 뒤 5개가 레드팀.
+const CHAMP_LINE_COLORS = [
+    '#5383e8', '#38bdf8', '#2dd4bf', '#4ade80', '#a3e635',
+    '#e84057', '#fb7185', '#f97316', '#facc15', '#c084fc'
+];
+
+// 세 그래프가 공유하는 축·툴팁 설정
+function timelineChartScales() {
+    return {
+        x: { ticks: { color: '#9aa4af', maxTicksLimit: 12 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#9aa4af', callback: (v) => (v / 1000).toFixed(0) + 'k' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+    };
+}
+
+window.champGoldCharts = window.champGoldCharts || {};
+
+function renderTimelineTab(body, matchId, gf) {
+    const players = gf.players || [];
+
+    // 챔피언 토글 버튼 (블루 5 / 레드 5)
+    const toggleHtml = players.length === 0 ? '' : `
+        <div class="tl-toggle-row">
+            ${players.map((p, i) => `
+                <button class="tl-champ-toggle" data-pid="${p.id}"
+                        style="--line-color:${CHAMP_LINE_COLORS[i] || '#888'}"
+                        onclick="toggleChampGoldLine('${matchId}', ${p.id})"
+                        title="${p.name || p.champ}">
+                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.champ}.png"
+                         onerror="this.style.visibility='hidden'">
+                </button>`).join('')}
+        </div>`;
+
+    body.innerHTML = `
+        <h4 class="tl-chart-title">시간대별 팀 골드</h4>
+        <div class="tl-chart"><canvas id="gold-chart-${matchId}"></canvas></div>
+
+        <h4 class="tl-chart-title">골드 격차</h4>
+        <div class="tl-chart"><canvas id="golddiff-chart-${matchId}"></canvas></div>
+
+        ${players.length === 0 ? '' : `
+        <h4 class="tl-chart-title">챔피언별 골드</h4>
+        <div class="tl-chart-hint">챔피언을 눌러 그래프에 추가하거나 뺄 수 있습니다. (여러 명 선택 가능)</div>
+        ${toggleHtml}
+        <div class="tl-chart"><canvas id="champgold-chart-${matchId}"></canvas></div>`}
+    `;
+
+    // ---- 1. 팀 골드 ----
+    new Chart(body.querySelector(`#gold-chart-${matchId}`), {
+        type: 'line',
+        data: {
+            labels: gf.labels,
+            datasets: [
+                { label: '블루팀', data: gf.blue, borderColor: '#5383e8', backgroundColor: 'rgba(83, 131, 232, 0.1)', fill: true, tension: 0.3, pointRadius: 1 },
+                { label: '레드팀', data: gf.red, borderColor: '#e84057', backgroundColor: 'rgba(232, 64, 87, 0.1)', fill: true, tension: 0.3, pointRadius: 1 }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { labels: { color: '#9aa4af' } },
+                tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.raw.toLocaleString() + ' G' } }
+            },
+            scales: timelineChartScales()
+        }
+    });
+
+    // ---- 2. 골드 격차 (블루 - 레드) ----
+    const diff = gf.blue.map((v, i) => v - (gf.red[i] || 0));
+    new Chart(body.querySelector(`#golddiff-chart-${matchId}`), {
+        type: 'bar',
+        data: {
+            labels: gf.labels,
+            datasets: [{
+                label: '골드 격차',
+                data: diff,
+                backgroundColor: diff.map(v => v >= 0 ? 'rgba(83, 131, 232, 0.75)' : 'rgba(232, 64, 87, 0.75)'),
+                borderColor: diff.map(v => v >= 0 ? '#5383e8' : '#e84057'),
+                borderWidth: 1,
+                barPercentage: 1.0,
+                categoryPercentage: 0.9
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            const v = ctx.raw;
+                            const team = v >= 0 ? '블루팀' : '레드팀';
+                            return `${team} +${Math.abs(v).toLocaleString()} G`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { ticks: { color: '#9aa4af', maxTicksLimit: 12 }, grid: { display: false } },
+                y: {
+                    ticks: { color: '#9aa4af', callback: (v) => (v / 1000).toFixed(1) + 'k' },
+                    grid: { color: (ctx) => ctx.tick.value === 0 ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.05)' }
+                }
+            }
+        }
+    });
+
+    // ---- 3. 챔피언별 골드 ----
+    if (players.length > 0) {
+        const chart = new Chart(body.querySelector(`#champgold-chart-${matchId}`), {
+            type: 'line',
+            data: { labels: gf.labels, datasets: [] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#9aa4af', boxWidth: 12 } },
+                    tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.raw.toLocaleString() + ' G' } }
+                },
+                scales: timelineChartScales()
+            }
+        });
+
+        window.champGoldCharts[matchId] = { chart, players, labels: gf.labels, root: body };
+
+        // 검색한 소환사가 있으면 기본으로 켜둔다
+        const game = allMatches.find(m => m.matchId === matchId);
+        const meIdx = game ? game.participants.findIndex(p => p.isSearchedUser) : -1;
+        if (meIdx > -1 && players[meIdx]) toggleChampGoldLine(matchId, players[meIdx].id);
+    }
+}
+
+window.toggleChampGoldLine = function (matchId, pid) {
+    const ctx = window.champGoldCharts[matchId];
+    if (!ctx) return;
+
+    const { chart, players, root } = ctx;
+    const idx = players.findIndex(p => p.id === pid);
+    if (idx === -1) return;
+
+    const p = players[idx];
+    const label = p.name || p.champ;
+    const existing = chart.data.datasets.findIndex(d => d._pid === pid);
+
+    if (existing > -1) {
+        chart.data.datasets.splice(existing, 1);
+    } else {
+        chart.data.datasets.push({
+            _pid: pid,
+            label,
+            data: p.gold,
+            borderColor: CHAMP_LINE_COLORS[idx] || '#888',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            tension: 0.3,
+            pointRadius: 0
+        });
+    }
+    chart.update();
+
+    const btn = root.querySelector(`.tl-champ-toggle[data-pid="${pid}"]`);
+    if (btn) btn.classList.toggle('active', existing === -1);
 };
 
 // ==========================================

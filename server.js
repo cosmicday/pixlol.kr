@@ -758,8 +758,21 @@ app.get('/api/mastery/:puuid', async (req, res) => {
 function extractTimeline(timeline, detail, targetPuuid = null) {
     if (!timeline?.info?.frames) return { goldFrames: null, myTimeline: null };
 
-    const goldFrames = { labels: [], blue: [], red: [] };
+    // players: 챔피언별 골드 그래프용. participantId(1~10) 순서 그대로.
+    const goldFrames = { labels: [], blue: [], red: [], players: [] };
     let myTimeline = { skills: [], items: [] };
+
+    if (detail?.info?.participants) {
+        detail.info.participants.forEach(p => {
+            goldFrames.players.push({
+                id: p.participantId,
+                champ: p.championName,
+                name: p.riotIdGameName || p.summonerName || '',
+                teamId: p.teamId,
+                gold: []
+            });
+        });
+    }
 
     // 대상 플레이어의 participantId 찾기
     let myParticipantId = null;
@@ -772,8 +785,13 @@ function extractTimeline(timeline, detail, targetPuuid = null) {
         goldFrames.labels.push(`${idx}분`);
         let blueGold = 0, redGold = 0;
         if (frame.participantFrames) {
-            for (let i = 1; i <= 5; i++) blueGold += frame.participantFrames[i]?.totalGold || 0;
-            for (let i = 6; i <= 10; i++) redGold += frame.participantFrames[i]?.totalGold || 0;
+            for (let i = 1; i <= 10; i++) {
+                const g = frame.participantFrames[i]?.totalGold || 0;
+                if (i <= 5) blueGold += g; else redGold += g;
+
+                const slot = goldFrames.players.find(pl => pl.id === i);
+                if (slot) slot.gold.push(g);
+            }
         }
         goldFrames.blue.push(blueGold);
         goldFrames.red.push(redGold);
