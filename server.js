@@ -769,7 +769,8 @@ function extractTimeline(timeline, detail, targetPuuid = null) {
                 champ: p.championName,
                 name: p.riotIdGameName || p.summonerName || '',
                 teamId: p.teamId,
-                gold: []
+                gold: [],
+                xp: []
             });
         });
     }
@@ -790,7 +791,10 @@ function extractTimeline(timeline, detail, targetPuuid = null) {
                 if (i <= 5) blueGold += g; else redGold += g;
 
                 const slot = goldFrames.players.find(pl => pl.id === i);
-                if (slot) slot.gold.push(g);
+                if (slot) {
+                    slot.gold.push(g);
+                    slot.xp.push(frame.participantFrames[i]?.xp || 0);
+                }
             }
         }
         goldFrames.blue.push(blueGold);

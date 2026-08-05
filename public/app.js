@@ -2813,9 +2813,12 @@ function renderTimelineTab(body, matchId, gf) {
 
         ${players.length === 0 ? '' : `
         <h4 class="tl-chart-title">챔피언별 골드</h4>
-        <div class="tl-chart-hint">챔피언을 눌러 그래프에 추가하거나 뺄 수 있습니다. (여러 명 선택 가능)</div>
+        <div class="tl-chart-hint">챔피언을 눌러 그래프에 추가하거나 뺄 수 있습니다. (여러 명 선택 가능 · 골드와 경험치에 함께 적용됩니다)</div>
         ${toggleHtml}
-        <div class="tl-chart"><canvas id="champgold-chart-${matchId}"></canvas></div>`}
+        <div class="tl-chart"><canvas id="champgold-chart-${matchId}"></canvas></div>
+
+        <h4 class="tl-chart-title">챔피언별 경험치</h4>
+        <div class="tl-chart"><canvas id="champxp-chart-${matchId}"></canvas></div>`}
     `;
 
     // ---- 1. 팀 골드 ----
@@ -2842,17 +2845,29 @@ function renderTimelineTab(body, matchId, gf) {
     // ---- 2. 골드 격차 (블루 - 레드) ----
     const diff = gf.blue.map((v, i) => v - (gf.red[i] || 0));
     new Chart(body.querySelector(`#golddiff-chart-${matchId}`), {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: gf.labels,
             datasets: [{
                 label: '골드 격차',
                 data: diff,
-                backgroundColor: diff.map(v => v >= 0 ? 'rgba(83, 131, 232, 0.75)' : 'rgba(232, 64, 87, 0.75)'),
-                borderColor: diff.map(v => v >= 0 ? '#5383e8' : '#e84057'),
-                borderWidth: 1,
-                barPercentage: 1.0,
-                categoryPercentage: 0.9
+                borderColor: '#5383e8',
+                borderWidth: 2,
+                tension: 0.3,
+                pointRadius: 1,
+                // 구간별로 0 위/아래를 판정해 선 색을 바꾼다
+                segment: {
+                    borderColor: (ctx) => {
+                        const mid = (ctx.p0.parsed.y + ctx.p1.parsed.y) / 2;
+                        return mid >= 0 ? '#5383e8' : '#e84057';
+                    }
+                },
+                // 0선을 기준으로 위는 파랑, 아래는 빨강으로 채운다
+                fill: {
+                    value: 0,
+                    above: 'rgba(83, 131, 232, 0.25)',
+                    below: 'rgba(232, 64, 87, 0.25)'
+                }
             }]
         },
         options: {
@@ -2864,14 +2879,15 @@ function renderTimelineTab(body, matchId, gf) {
                     callbacks: {
                         label: (ctx) => {
                             const v = ctx.raw;
-                            const team = v >= 0 ? '블루팀' : '레드팀';
+                            if (v === 0) return '격차 없음';
+                            const team = v > 0 ? '블루팀' : '레드팀';
                             return `${team} +${Math.abs(v).toLocaleString()} G`;
                         }
                     }
                 }
             },
             scales: {
-                x: { ticks: { color: '#9aa4af', maxTicksLimit: 12 }, grid: { display: false } },
+                x: { ticks: { color: '#9aa4af', maxTicksLimit: 12 }, grid: { color: 'rgba(255,255,255,0.05)' } },
                 y: {
                     ticks: { color: '#9aa4af', callback: (v) => (v / 1000).toFixed(1) + 'k' },
                     grid: { color: (ctx) => ctx.tick.value === 0 ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.05)' }
@@ -2882,7 +2898,7 @@ function renderTimelineTab(body, matchId, gf) {
 
     // ---- 3. 챔피언별 골드 ----
     if (players.length > 0) {
-        const chart = new Chart(body.querySelector(`#champgold-chart-${matchId}`), {
+        const makeChart = (canvasId, unit) => new Chart(body.querySelector(canvasId), {
             type: 'line',
             data: { labels: gf.labels, datasets: [] },
             options: {
@@ -2890,13 +2906,18 @@ function renderTimelineTab(body, matchId, gf) {
                 interaction: { mode: 'index', intersect: false },
                 plugins: {
                     legend: { labels: { color: '#9aa4af', boxWidth: 12 } },
-                    tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.raw.toLocaleString() + ' G' } }
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()} ${unit}` } }
                 },
                 scales: timelineChartScales()
             }
         });
 
-        window.champGoldCharts[matchId] = { chart, players, labels: gf.labels, root: body };
+        window.champGoldCharts[matchId] = {
+            goldChart: makeChart(`#champgold-chart-${matchId}`, 'G'),
+            xpChart: makeChart(`#champxp-chart-${matchId}`, 'XP'),
+            players,
+            root: body
+        };
 
         // 검색한 소환사가 있으면 기본으로 켜둔다
         const game = allMatches.find(m => m.matchId === matchId);
@@ -2905,36 +2926,40 @@ function renderTimelineTab(body, matchId, gf) {
     }
 }
 
+// 토글 하나로 골드·경험치 그래프를 함께 켜고 끈다
 window.toggleChampGoldLine = function (matchId, pid) {
     const ctx = window.champGoldCharts[matchId];
     if (!ctx) return;
 
-    const { chart, players, root } = ctx;
+    const { goldChart, xpChart, players, root } = ctx;
     const idx = players.findIndex(p => p.id === pid);
     if (idx === -1) return;
 
     const p = players[idx];
     const label = p.name || p.champ;
-    const existing = chart.data.datasets.findIndex(d => d._pid === pid);
+    const color = CHAMP_LINE_COLORS[idx] || '#888';
+    const existing = goldChart.data.datasets.findIndex(d => d._pid === pid);
+    const turningOn = existing === -1;
 
-    if (existing > -1) {
-        chart.data.datasets.splice(existing, 1);
-    } else {
-        chart.data.datasets.push({
-            _pid: pid,
-            label,
-            data: p.gold,
-            borderColor: CHAMP_LINE_COLORS[idx] || '#888',
-            backgroundColor: 'transparent',
-            borderWidth: 2,
-            tension: 0.3,
-            pointRadius: 0
-        });
-    }
-    chart.update();
+    const apply = (chart, values) => {
+        const i = chart.data.datasets.findIndex(d => d._pid === pid);
+        if (turningOn) {
+            chart.data.datasets.push({
+                _pid: pid, label, data: values || [],
+                borderColor: color, backgroundColor: 'transparent',
+                borderWidth: 2, tension: 0.3, pointRadius: 0
+            });
+        } else if (i > -1) {
+            chart.data.datasets.splice(i, 1);
+        }
+        chart.update();
+    };
+
+    apply(goldChart, p.gold);
+    apply(xpChart, p.xp);
 
     const btn = root.querySelector(`.tl-champ-toggle[data-pid="${pid}"]`);
-    if (btn) btn.classList.toggle('active', existing === -1);
+    if (btn) btn.classList.toggle('active', turningOn);
 };
 
 // ==========================================
