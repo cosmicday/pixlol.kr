@@ -547,6 +547,69 @@ body::before {
 }
 
 /* =========================================
+   5-0. 프로필 정보 (레벨 / 닉네임 / 즐겨찾기)
+   ========================================= */
+.profile-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.profile-level {
+    color: #9aa4af;
+    font-size: 13px;
+}
+
+.profile-name {
+    font-size: 26px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.profile-rank {
+    color: #facc15;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.profile-fav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(167, 139, 250, 0.5);
+    border-radius: 14px;
+    color: #cbd5e1;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.profile-fav-btn:hover {
+    background: rgba(107, 70, 193, 0.3);
+    border-color: #a78bfa;
+    color: #fff;
+}
+
+.profile-fav-btn .fav-star {
+    color: #facc15;
+    font-size: 13px;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .profile-info {
+        align-items: center;
+    }
+}
+
+/* =========================================
    5-1. 챔피언 필터
    ========================================= */
 .champ-filter-wrap {
@@ -955,6 +1018,21 @@ body::before {
 .live-name-tag {
     color: #777;
     font-size: 11px;
+}
+
+/* Riot ID를 비공개한 사용자 */
+.live-name-main.anon {
+    color: #8a8a9a;
+    font-weight: normal;
+    font-style: italic;
+}
+
+.live-player.anon {
+    cursor: default;
+}
+
+.live-player.anon:hover {
+    background: transparent;
 }
 
 /* 가운데 정보 */

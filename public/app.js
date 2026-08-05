@@ -578,13 +578,10 @@ async function executeSearch() {
         document.getElementById('user-profile').innerHTML = `
             <div class="profile-header">
                 <img src="${data.profile.icon}" class="profile-icon">
-                <div class="profile-info" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                <div style="color: #9aa4af; font-size: 13px; margin-bottom: 2px;">레벨 ${data.profile.level}</div>
-                <h2 style="font-size: 26px; display: flex; align-items: center; margin: 0; line-height: 1.2;">
-                    ${data.profile.name}
-                    <span id="profile-fav-star" ...>★</span>
-                </h2>
-                ${data.profile.serverRank ? `<div style="color: #facc15; font-size: 13px; font-weight: bold; margin-top: 6px; letter-spacing: 0.5px;">KR 랭킹 ${data.profile.serverRank.toLocaleString()}위</div>` : ''}
+                <div class="profile-info">
+                    <div class="profile-level">레벨 ${data.profile.level}</div>
+                    <h2 class="profile-name">${data.profile.name}</h2>
+                    <div id="profile-fav-wrap"></div>
                 </div>
                 <div class="profile-actions">
                     <button id="refresh-btn" class="search-btn profile-action-btn">전적 갱신</button>
@@ -706,6 +703,9 @@ async function executeSearch() {
         updateRefreshTimer();
         if (window.refreshTimerInterval) clearInterval(window.refreshTimerInterval);
         window.refreshTimerInterval = setInterval(updateRefreshTimer, 1000);
+
+        currentProfileName = data.profile.name;
+        renderProfileFavBtn();
 
         checkLiveGame(data.puuid || (data.profile && data.profile.puuid));
 
@@ -2063,24 +2063,57 @@ function saveFavorites(favs) { localStorage.setItem('pix_favorites', JSON.string
 function getRecents() { return JSON.parse(localStorage.getItem('pix_recent') || '[]'); }
 function saveRecents(recents) { localStorage.setItem('pix_recent', JSON.stringify(recents)); }
 
+// 현재 보고 있는 소환사. 즐겨찾기 버튼 상태를 갱신할 때 쓴다.
+let currentProfileName = null;
+
+// 프로필의 즐겨찾기 버튼을 다시 그린다.
+// 이미 등록된 소환사면 버튼 자체를 없앤다. (해제는 검색창 드롭다운의 ×로)
+function renderProfileFavBtn() {
+    const wrap = document.getElementById('profile-fav-wrap');
+    if (!wrap) return;
+
+    if (!currentProfileName || getFavorites().includes(currentProfileName)) {
+        wrap.innerHTML = '';
+        return;
+    }
+
+    wrap.innerHTML = `
+        <button class="profile-fav-btn" onclick="addFavorite(currentProfileName)">
+            <span class="fav-star">★</span> 즐겨찾기
+        </button>`;
+}
+
+function addFavorite(name) {
+    if (!name) return;
+    let favs = getFavorites();
+    if (favs.includes(name)) return;
+
+    favs.push(name);
+    if (favs.length > 10) favs.shift();
+    saveFavorites(favs);
+
+    renderDropdownList();
+    renderProfileFavBtn();
+}
+
 function toggleFavorite(name) {
     let favs = getFavorites();
     const index = favs.indexOf(name);
     if (index > -1) favs.splice(index, 1);
     else { favs.push(name); if (favs.length > 10) favs.shift(); }
-    saveFavorites(favs); renderDropdownList();
+    saveFavorites(favs);
 
-    const starIcon = document.getElementById('profile-fav-star');
-    if (starIcon && starIcon.dataset.name === name) starIcon.classList.toggle('active', index === -1);
+    renderDropdownList();
+    renderProfileFavBtn();
 }
 
 function removeFavorite(name) {
     let favs = getFavorites();
     favs = favs.filter(f => f !== name);
-    saveFavorites(favs); renderDropdownList();
+    saveFavorites(favs);
 
-    const starIcon = document.getElementById('profile-fav-star');
-    if (starIcon && starIcon.dataset.name === name) starIcon.classList.remove('active');
+    renderDropdownList();
+    renderProfileFavBtn();   // 지운 소환사를 보고 있으면 버튼이 다시 나타난다
 }
 
 function addRecentSearch(name) {
@@ -2096,6 +2129,20 @@ function removeRecentSearch(name) {
     let recents = getRecents();
     recents = recents.filter(r => r !== name);
     saveRecents(recents); renderDropdownList();
+}
+
+// 드롭다운을 열 때 어느 탭을 먼저 보여줄지 정한다.
+//   즐겨찾기가 있으면 즐겨찾기, 없으면 최근기록.
+function pickDefaultDropdownTab() {
+    const tab = getFavorites().length > 0 ? 'favorites' : 'recent';
+    currentDropdownTab = tab;
+
+    const favTab = document.getElementById('tab-favorites');
+    const recTab = document.getElementById('tab-recent');
+    if (favTab) favTab.classList.toggle('active', tab === 'favorites');
+    if (recTab) recTab.classList.toggle('active', tab === 'recent');
+
+    renderDropdownList();
 }
 
 function switchTab(tabName) {
@@ -2143,7 +2190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('focus', () => {
         // 입력값이 있으면 자동완성이 우선이므로 즐겨찾기는 띄우지 않음
         if (searchInput.value.trim()) return;
-        renderDropdownList();
+        pickDefaultDropdownTab();   // 즐겨찾기가 있으면 즐겨찾기부터, 없으면 최근기록부터
         dropdown.style.display = 'block';
     });
     document.addEventListener('click', (e) => {
@@ -2788,6 +2835,7 @@ async function checkLiveGame(puuid) {
 
     btn.disabled = true;
     btn.classList.remove('in-game');
+    btn.title = '확인 중...';
 
     try {
         const res = await fetch(`/api/live/${puuid}`);
@@ -2797,9 +2845,13 @@ async function checkLiveGame(puuid) {
             liveGameData = json.game;
             btn.disabled = false;
             btn.classList.add('in-game');
+            btn.title = '진행 중인 게임 보기';
+        } else {
+            // 게임 중이 아닌 것과 조회 실패는 화면상 똑같이 회색이라, 이유를 툴팁으로 구분한다
+            btn.title = '현재 게임 중이 아닙니다';
         }
     } catch (e) {
-        // 조회 실패는 조용히 넘긴다. 버튼이 비활성 상태로 남는다.
+        btn.title = '인게임 정보를 불러올 수 없습니다';
     }
 }
 
@@ -2843,9 +2895,17 @@ function liveRuneIcon(id) {
         : '';
 }
 
+function liveChampKorName(championId) {
+    const engName = championIdMap[championId];
+    return (engName && window.korChampMap[engName]) || engName || '알 수 없음';
+}
+
 function renderLivePlayer(p, side) {
-    const name = (p.riotId || '').split('#')[0] || '알 수 없음';
-    const tag = (p.riotId || '').split('#')[1] || '';
+    // 스트리머 모드(Riot ID 익명화)를 켠 사람은 riotId가 비어서 온다.
+    // 이름 자리를 챔피언 이름으로 채운다. (포우·op.gg도 같은 방식)
+    const anon = !p.riotId || !p.riotId.trim();
+    const name = anon ? liveChampKorName(p.championId) : (p.riotId.split('#')[0] || '알 수 없음');
+    const tag = anon ? '' : (p.riotId.split('#')[1] || '');
 
     const champ = `<img class="live-champ" src="${liveChampIcon(p.championId)}" onerror="this.style.visibility='hidden'">`;
     const spells = `
@@ -2859,16 +2919,21 @@ function renderLivePlayer(p, side) {
             ${p.subStyle ? `<img src="${liveRuneIcon(p.subStyle)}" onerror="this.style.visibility='hidden'">` : '<span></span>'}
         </div>`;
     const nameHtml = `
-        <div class="live-name" title="${p.riotId || ''}">
-            <span class="live-name-main">${name}</span>${tag ? `<span class="live-name-tag">#${tag}</span>` : ''}
+        <div class="live-name" title="${anon ? '비공개' : p.riotId}">
+            <span class="live-name-main${anon ? ' anon' : ''}">${name}</span>${tag ? `<span class="live-name-tag">#${tag}</span>` : ''}
         </div>`;
+
+    // 익명 사용자는 검색할 대상이 없으므로 클릭을 막는다
+    const clickAttr = anon
+        ? 'class="live-player %SIDE% anon" title="Riot ID를 비공개한 사용자입니다"'
+        : `class="live-player %SIDE%" onclick="searchSummonerFromLive('${(p.riotId || '').replace(/'/g, "\\'")}')"`;
 
     // 블루팀은 오른쪽 정렬, 레드팀은 왼쪽 정렬로 가운데를 향하게 배치
     return side === 'blue'
-        ? `<div class="live-player blue" onclick="searchSummonerFromLive('${(p.riotId || '').replace(/'/g, "\\'")}')">
+        ? `<div ${clickAttr.replace('%SIDE%', 'blue')}>
                ${runes}${spells}${nameHtml}${champ}
            </div>`
-        : `<div class="live-player red" onclick="searchSummonerFromLive('${(p.riotId || '').replace(/'/g, "\\'")}')">
+        : `<div ${clickAttr.replace('%SIDE%', 'red')}>
                ${champ}${nameHtml}${spells}${runes}
            </div>`;
 }
