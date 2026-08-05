@@ -955,10 +955,10 @@ function renderMatches(matches, append = false) {
         } else if (isSupport) {
             statsHtml = `
                 <div class="kp">킬관여 ${game.kp}%</div>
-                <div style="display: flex; align-items: center; justify-content: flex-start; gap: 3px;" data-tooltip="제어 와드 구매 / 설치 / 파괴">
+                <div style="display: flex; align-items: center; justify-content: flex-start; gap: 3px;">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/2055.png" style="width: 12px; height: 12px; border-radius: 50%; transform: translateY(1.5px);">
                     <span style="color: #fff; font-weight: bold;">${me.visionWards}</span>
-                    <span style="font-size: 11px; margin-left: 2px;">(+${me.wardsPlaced}/-${me.wardsKilled})</span>
+                    <span style="font-size: 11px; margin-left: 2px; cursor: help;" data-tooltip="와드 설치 / 와드 파괴">(+${me.wardsPlaced}/-${me.wardsKilled})</span>
                 </div>
                 <div>시야점수 ${me.visionScore}</div>
             `;
@@ -2155,7 +2155,7 @@ function renderDropdownList() {
     if (currentDropdownTab === 'favorites') {
         const favs = getFavorites();
         if (favs.length === 0) {
-            listDiv.innerHTML = '<div class="empty-favorite">즐겨찾기한 소환사가 없습니다. <br>전적 검색 후 별(★)을 눌러 추가해 보세요!</div>';
+            listDiv.innerHTML = '<div class="empty-favorite">즐겨찾기에 등록된 유저가 존재하지 않습니다.</div>';
             return;
         }
         listDiv.innerHTML = favs.map(f => `
@@ -2186,7 +2186,13 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('focus', () => {
         // 입력값이 있으면 자동완성이 우선이므로 즐겨찾기는 띄우지 않음
         if (searchInput.value.trim()) return;
-        pickDefaultDropdownTab();   // 즐겨찾기가 있으면 즐겨찾기부터, 없으면 최근기록부터
+
+        // 이미 열려 있으면 탭을 건드리지 않는다.
+        // switchTab이 끝에서 input.focus()를 호출하기 때문에, 여기서 무조건
+        // 기본 탭으로 되돌리면 사용자가 누른 탭이 즉시 취소된다.
+        if (dropdown.style.display !== 'block') {
+            pickDefaultDropdownTab();   // 즐겨찾기가 있으면 즐겨찾기부터, 없으면 최근기록부터
+        }
         dropdown.style.display = 'block';
     });
     document.addEventListener('click', (e) => {
