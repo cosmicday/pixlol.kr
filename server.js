@@ -511,6 +511,7 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         item7: (p.roleBoundItem || p.item7 || 0),
         isArena,
         isAram,
+        teamPosition: p.teamPosition || '',
         // 다시하기: 라이엇이 조기 항복 플래그를 주고, 없으면 4분 미만으로 판정.
         // 실제로 플레이한 게임이 아니라 승률·포지션·챔피언 통계에서 전부 제외한다.
         isRemake: !isArena && (p.gameEndedInEarlySurrender === true || durationMin < 4),
@@ -551,6 +552,10 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
             summonerName: part.riotIdGameName ? `${part.riotIdGameName}#${part.riotIdTagline}` : (part.summonerName || "알 수 없음"),
             kills: part.kills, deaths: part.deaths, assists: part.assists, damage: part.totalDamageDealtToChampions, damageTaken: part.totalDamageTaken,
             kp: kpOf(part),
+
+            // 라이엇이 판정한 라인. TOP / JUNGLE / MIDDLE / BOTTOM / UTILITY.
+            // 칼바람·아레나는 빈 문자열로 온다.
+            teamPosition: part.teamPosition || '',
 
             // --- 뱃지용 (challenges는 옛 매치나 일부 모드에 없을 수 있어 ?. 로 접근) ---
             multiKill: part.pentaKills ? "펜타킬" : (part.quadraKills ? "쿼드라킬" : (part.tripleKills ? "트리플킬" : (part.doubleKills ? "더블킬" : ""))),
@@ -879,6 +884,102 @@ function extractTimeline(timeline, detail, targetPuuid = null) {
 }
 
 // ==========================================
+// 챔피언별 라인 분포
+//   관전 API는 포지션을 주지 않는다. 게임이 막 시작돼서 라이엇도 아직 판정 전이다.
+//   그래서 우리 DB에 쌓인 전적의 teamPosition으로 "이 챔피언은 주로 어느 라인"을 계산해
+//   인게임 화면의 라인을 추정한다. 표본이 늘수록 저절로 정확해지고 메타 변화도 따라간다.
+// ==========================================
+const LANES = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY'];
+const LANE_STAT_QUEUES = [420, 440, 400, 430, 480, 490];   // 라인 개념이 있는 큐만
+
+let champLaneStats = {};        // { championId: { TOP: 0.9, JUNGLE: 0.02, ... } }
+let champLaneSampleSize = 0;
+
+async function refreshChampLaneStats() {
+    try {
+        const rows = await MatchCache.aggregate([
+            { $match: { 'detail.info.queueId': { $in: LANE_STAT_QUEUES } } },
+            { $unwind: '$detail.info.participants' },
+            { $match: { 'detail.info.participants.teamPosition': { $in: LANES } } },
+            {
+                $group: {
+                    _id: {
+                        c: '$detail.info.participants.championId',
+                        p: '$detail.info.participants.teamPosition'
+                    },
+                    n: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const counts = {};
+        let total = 0;
+        rows.forEach(r => {
+            const c = r._id.c;
+            counts[c] = counts[c] || { TOP: 0, JUNGLE: 0, MIDDLE: 0, BOTTOM: 0, UTILITY: 0, _sum: 0 };
+            counts[c][r._id.p] += r.n;
+            counts[c]._sum += r.n;
+            total += r.n;
+        });
+
+        const next = {};
+        for (const c in counts) {
+            const row = counts[c];
+            next[c] = {};
+            // 표본이 적을 때 한 판짜리 챔피언이 100%가 되는 걸 막으려고 라플라스 보정을 넣는다
+            LANES.forEach(l => { next[c][l] = (row[l] + 0.5) / (row._sum + 2.5); });
+        }
+
+        champLaneStats = next;
+        champLaneSampleSize = total;
+        console.log(`[Task] 챔피언 라인 분포 갱신 완료 (${Object.keys(next).length}종 / 표본 ${total})`);
+    } catch (e) {
+        console.error('[Task] 챔피언 라인 분포 갱신 실패:', e.message);
+    }
+}
+
+// 모르는 챔피언은 균등 분포로 둔다 (사실상 순서가 무작위가 됨)
+const laneProb = (championId, lane) => champLaneStats[championId]?.[lane] ?? 0.2;
+
+function permutations(arr) {
+    if (arr.length <= 1) return [arr];
+    const out = [];
+    arr.forEach((v, i) => {
+        const rest = arr.slice(0, i).concat(arr.slice(i + 1));
+        permutations(rest).forEach(p => out.push([v, ...p]));
+    });
+    return out;
+}
+
+// 5명에게 라인을 하나씩 배정한다.
+//   강타(11)를 든 사람은 정글로 확정하고, 남은 4명만 24가지 조합을 따져 확률 합이 가장 큰 배치를 고른다.
+function assignLanes(players) {
+    if (players.length !== 5) return players.map(() => '');
+
+    const smiteIdx = players.findIndex(p => p.spell1 === 11 || p.spell2 === 11);
+    const result = new Array(5).fill('');
+
+    let targets = players.map((_, i) => i);
+    let lanes = LANES.slice();
+
+    if (smiteIdx > -1) {
+        result[smiteIdx] = 'JUNGLE';
+        targets = targets.filter(i => i !== smiteIdx);
+        lanes = lanes.filter(l => l !== 'JUNGLE');
+    }
+
+    let best = null, bestScore = -1;
+    permutations(lanes).forEach(perm => {
+        let score = 0;
+        perm.forEach((lane, k) => { score += laneProb(players[targets[k]].championId, lane); });
+        if (score > bestScore) { bestScore = score; best = perm; }
+    });
+
+    if (best) best.forEach((lane, k) => { result[targets[k]] = lane; });
+    return result;
+}
+
+// ==========================================
 // 진행 중인 게임 (Spectator v5)
 //   match-v5와 달리 플랫폼 라우팅(kr)을 쓴다. asia로 부르면 404가 뜬다.
 //   게임 중이 아니면 라이엇이 404를 주는데, 이건 에러가 아니라 정상 응답이다.
@@ -937,6 +1038,18 @@ function extractLiveGame(raw) {
             .map(k => ({ id: Number(k), players: groups[k] }));
     }
 
+    // 아레나·칼바람은 라인 개념이 없어 배정하지 않는다
+    const blue = participants.filter(p => p.teamId === 100).map(toPlayer);
+    const red = participants.filter(p => p.teamId === 200).map(toPlayer);
+    const laneMode = !isArenaLive && raw.mapId === 11;
+
+    if (laneMode) {
+        [blue, red].forEach(team => {
+            const lanes = assignLanes(team);
+            team.forEach((p, i) => { p.position = lanes[i] || ''; });
+        });
+    }
+
     return {
         gameId: raw.gameId,
         isArena: isArenaLive,
@@ -948,10 +1061,7 @@ function extractLiveGame(raw) {
         gameLength: Math.max(0, raw.gameLength || 0),
         gameStartTime: raw.gameStartTime || 0,
         bans,
-        teams: {
-            blue: participants.filter(p => p.teamId === 100).map(toPlayer),
-            red: participants.filter(p => p.teamId === 200).map(toPlayer)
-        }
+        teams: { blue, red }
     };
 }
 
@@ -1212,6 +1322,9 @@ async function bootstrap() {
     }
 
     await startJobs();
+    refreshChampLaneStats();
+    setInterval(refreshChampLaneStats, 60 * 60 * 1000);   // 1시간마다 갱신
+
     app.listen(PORT, () => console.log(`[System] 서버 실행 중: 포트 ${PORT}`));
 }
 

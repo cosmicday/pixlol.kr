@@ -1284,15 +1284,24 @@ body::before {
     flex-shrink: 0;
 }
 
-.live-arena-player span {
+.live-arena-name {
     font-size: 12px;
     color: #eee;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
-.live-arena-player.anon span {
+.live-arena-tag {
+    font-size: 11px;
+    color: #777;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.live-arena-player.anon .live-arena-name {
     color: #8a8a9a;
     font-style: italic;
 }

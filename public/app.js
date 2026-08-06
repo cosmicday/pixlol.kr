@@ -1337,7 +1337,7 @@ function renderMatches(matches, append = false) {
                             <th>스펠/룬</th><th>레벨</th><th>KDA</th><th>킬관여</th><th>아이템</th><th>CS/골드</th><th>피해량</th><th>받은피해량</th><th>와드</th>
                         </tr>
                     </thead>
-                    <tbody class="${blueBodyClass}">${game.participants.filter(p => p.teamId === 100).map(p => renderDetailRow(p)).join('')}</tbody>
+                    <tbody class="${blueBodyClass}">${sortByLane(game.participants.filter(p => p.teamId === 100)).map(p => renderDetailRow(p)).join('')}</tbody>
                     ${renderTeamSummaryRow(game)}
                     <thead>
                         <tr class="${redHeaderClass}">
@@ -1345,7 +1345,7 @@ function renderMatches(matches, append = false) {
                             <th>스펠/룬</th><th>레벨</th><th>KDA</th><th>킬관여</th><th>아이템</th><th>CS/골드</th><th>피해량</th><th>받은피해량</th><th>와드</th>
                         </tr>
                     </thead>
-                    <tbody class="${redBodyClass}">${game.participants.filter(p => p.teamId === 200).map(p => renderDetailRow(p)).join('')}</tbody>
+                    <tbody class="${redBodyClass}">${sortByLane(game.participants.filter(p => p.teamId === 200)).map(p => renderDetailRow(p)).join('')}</tbody>
                 </table>`}
             </div>
 
@@ -1727,14 +1727,21 @@ function renderSummaryStats(matchesToCalc) {
         champData[cName].deaths += game.deaths;
         champData[cName].assists += game.assists;
 
-        const hasSmite = (game.spell1 === 11 || game.spell2 === 11);
-        const hasSuppItem = [game.item0, game.item1, game.item2, game.item3, game.item4, game.item5, game.item6].some(id => supportItems.includes(id));
+        // 라이엇이 판정한 라인이 있으면 그걸 쓴다.
+        // 예전 방식(스마이트·서폿템·챔피언 이름 목록)은 신챔이나 유연한 픽에서 자주 틀렸다.
+        const riotPos = POS_KEY[game.teamPosition];
+        if (riotPos) {
+            posCounts[riotPos]++;
+        } else {
+            const hasSmite = (game.spell1 === 11 || game.spell2 === 11);
+            const hasSuppItem = [game.item0, game.item1, game.item2, game.item3, game.item4, game.item5, game.item6].some(id => supportItems.includes(id));
 
-        if (hasSmite) posCounts.jungle++;
-        else if (hasSuppItem) posCounts.support++;
-        else if (adcList.includes(cName)) posCounts.adc++;
-        else if (topList.includes(cName)) posCounts.top++;
-        else posCounts.mid++;
+            if (hasSmite) posCounts.jungle++;
+            else if (hasSuppItem) posCounts.support++;
+            else if (adcList.includes(cName)) posCounts.adc++;
+            else if (topList.includes(cName)) posCounts.top++;
+            else posCounts.mid++;
+        }
     });
 
     const totalGames = matchesToCalc.length;
@@ -2906,6 +2913,20 @@ function renderTeamSummaryRow(game) {
 }
 
 // ==========================================
+// 라인 정렬 / 포지션 판정
+// ==========================================
+const LANE_ORDER = { TOP: 0, JUNGLE: 1, MIDDLE: 2, BOTTOM: 3, UTILITY: 4 };
+
+// teamPosition이 없는 모드(칼바람·아레나)나 판정 실패 시에는 원래 순서를 유지한다.
+function sortByLane(list) {
+    if (!list.every(p => p.teamPosition && LANE_ORDER[p.teamPosition] !== undefined)) return list;
+    return list.slice().sort((a, b) => LANE_ORDER[a.teamPosition] - LANE_ORDER[b.teamPosition]);
+}
+
+// 선호 포지션 집계용. 라이엇 판정을 우선 쓰고, 없을 때만 예전 추측 방식으로 넘어간다.
+const POS_KEY = { TOP: 'top', JUNGLE: 'jungle', MIDDLE: 'mid', BOTTOM: 'adc', UTILITY: 'support' };
+
+// ==========================================
 // 전적 박스 뱃지
 //   1위 판정은 모두 "그 경기 전체 플레이어" 기준이다. (같은 팀이 아니라)
 //   동점이면 여럿에게 붙는다.
@@ -3032,7 +3053,10 @@ function liveChampKorName(championId) {
 }
 
 // 룬이 없는 모드. 관전 API가 기본값을 채워 보내서 그냥 두면 엉뚱한 룬이 뜬다.
-const LIVE_NO_RUNE_QUEUES = new Set([4310]);   // 클래식 5대5
+const LIVE_NO_RUNE_QUEUES = new Set([
+    4310,   // 클래식 5대5
+    2400    // 무작위 총력전: 아수라장 (일반 칼바람은 룬이 있으므로 제외)
+]);
 
 function renderLivePlayer(p, side, showRunes = true) {
     // 스트리머 모드(Riot ID 익명화)를 켠 사람은 riotId가 비어서 온다.
@@ -3082,6 +3106,7 @@ window.searchSummonerFromLive = function (riotId) {
 const LIVE_QUEUE_NAMES = {
     '솔로랭크': '개인/2인 랭크 게임',
     '자유랭크': '자유 랭크 게임',
+    '칼바람': '무작위 총력전',
     '아수라장': '무작위 총력전: 아수라장',
     '아레나': '아레나 3x6',
     '일반(교차)': '일반 (교차 선택)',
@@ -3111,11 +3136,12 @@ function renderLiveArenaSide(teams) {
                         ${t.players.map(p => {
                             const anon = !p.riotId || !p.riotId.trim();
                             const name = anon ? liveChampKorName(p.championId) : p.riotId.split('#')[0];
+                            const tag = anon ? '' : (p.riotId.split('#')[1] || '');
                             const click = anon ? '' : `onclick="searchSummonerFromLive('${(p.riotId || '').replace(/'/g, "\\'")}')"`;
                             return `
                                 <div class="live-arena-player ${anon ? 'anon' : ''}" ${click} title="${anon ? '비공개' : p.riotId}">
                                     <img src="${liveChampIcon(p.championId)}" onerror="this.style.visibility='hidden'">
-                                    <span>${name}</span>
+                                    <span class="live-arena-name">${name}</span>${tag ? `<span class="live-arena-tag">#${tag}</span>` : ''}
                                 </div>`;
                         }).join('')}
                     </div>
@@ -3135,12 +3161,20 @@ function renderLiveGameHtml(g) {
     const hasBans = g.bans.blue.length > 0 || g.bans.red.length > 0;
     const showRunes = !LIVE_NO_RUNE_QUEUES.has(g.queueId);
 
+    // 서버가 추정한 라인 순으로 세운다. 추정이 안 된 모드는 원래 순서를 유지한다.
+    const byLane = (arr) => arr.every(p => p.position && LANE_ORDER[p.position] !== undefined)
+        ? arr.slice().sort((a, b) => LANE_ORDER[a.position] - LANE_ORDER[b.position])
+        : arr;
+
+    const blueTeam = byLane(g.teams.blue);
+    const redTeam = byLane(g.teams.red);
+
     return `
         <div class="live-game-box">
             ${g.isArena && g.subteams
             ? renderLiveArenaSide(g.subteams.slice(0, 3))
             : `<div class="live-team blue">
-                ${g.teams.blue.map(p => renderLivePlayer(p, 'blue', showRunes)).join('')}
+                ${blueTeam.map(p => renderLivePlayer(p, 'blue', showRunes)).join('')}
             </div>`}
 
             <div class="live-center">
@@ -3159,7 +3193,7 @@ function renderLiveGameHtml(g) {
             ${g.isArena && g.subteams
             ? renderLiveArenaSide(g.subteams.slice(3, 6))
             : `<div class="live-team red">
-                ${g.teams.red.map(p => renderLivePlayer(p, 'red', showRunes)).join('')}
+                ${redTeam.map(p => renderLivePlayer(p, 'red', showRunes)).join('')}
             </div>`}
         </div>`;
 }
