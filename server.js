@@ -344,6 +344,7 @@ const QUEUE_MAP = {
     870: "봇전(입문)", 880: "봇전(초보)", 890: "봇전(중급)",   // 현재 봇전
 
     700: "클래시",
+    710: "클래식",        // LoL 클래식 (초창기 협곡 재현, 실측 확인)
     900: "우르프",
     1020: "단일 챔피언",
     1300: "돌격! 넥서스",
@@ -367,6 +368,7 @@ const QUEUE_GROUP = {
 
     450: "칼바람", 720: "칼바람",
     2400: "아수라장",
+    710: "클래식",
 
     830: "봇", 840: "봇", 850: "봇",
     870: "봇", 880: "봇", 890: "봇",
@@ -916,8 +918,29 @@ function extractLiveGame(raw) {
     };
 
     const participants = raw.participants || [];
+
+    // 아레나는 teamId가 100/200뿐이라 그대로 나누면 9명씩 두 덩어리가 된다.
+    // 3인 6팀으로 다시 묶는다. playerSubteamId가 오면 그걸 쓰고,
+    // 없으면 참가자 배열이 팀 순서대로 온다는 점을 이용해 3명씩 끊는다.
+    const isArenaLive = ARENA_QUEUES.has(raw.gameQueueConfigId);
+    let subteams = null;
+
+    if (isArenaLive && participants.length > 0) {
+        const hasSubId = participants.some(p => p.playerSubteamId);
+        const groups = {};
+        participants.forEach((p, i) => {
+            const key = hasSubId ? (p.playerSubteamId || 0) : Math.floor(i / 3) + 1;
+            (groups[key] = groups[key] || []).push(toPlayer(p));
+        });
+        subteams = Object.keys(groups)
+            .sort((a, b) => a - b)
+            .map(k => ({ id: Number(k), players: groups[k] }));
+    }
+
     return {
         gameId: raw.gameId,
+        isArena: isArenaLive,
+        subteams,
         queueId: raw.gameQueueConfigId,
         queueName: QUEUE_MAP[raw.gameQueueConfigId] || '기타',
         mapId: raw.mapId,

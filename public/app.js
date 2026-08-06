@@ -1864,6 +1864,14 @@ function toggleFilter(btn, type) {
 
 function applyMatchFilters() {
     const games = document.querySelectorAll('.match-wrapper');
+
+    // 전적이 아예 없으면 renderMatches가 이미 안내를 그려놨다.
+    // 여기서 또 만들면 같은 문구가 두 번 뜬다.
+    if (games.length === 0) {
+        renderSummaryStats([]);
+        return;
+    }
+
     let visibleCount = 0; let filteredMatches = [];
 
     games.forEach((gameDiv, index) => {
@@ -2860,7 +2868,7 @@ function renderTeamSummaryRow(game) {
         : ids.map(id => {
             // championId가 -1이면 시간 초과로 밴을 못 한 것. 인게임처럼 빈 초상화를 띄운다.
             if (!id || id <= 0) {
-                return `<img class="ts-ban ts-ban-empty" src="${EMPTY_CHAMP_ICON}" title="밴 없음">`;
+                return `<img class="ts-ban ts-ban-empty" src="${EMPTY_CHAMP_ICON}">`;
             }
             const eng = championIdMap[id];
             return `<img class="ts-ban" src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${eng}.png"
@@ -3070,7 +3078,8 @@ window.searchSummonerFromLive = function (riotId) {
 const LIVE_QUEUE_NAMES = {
     '솔로랭크': '개인/2인 랭크 게임',
     '자유랭크': '자유 랭크 게임',
-    '아수라장': '무작위 총력전: 아수라장'
+    '아수라장': '무작위 총력전: 아수라장',
+    '아레나': '아레나 3x6'
 };
 
 const LIVE_MAP_NAMES = {
@@ -3079,26 +3088,56 @@ const LIVE_MAP_NAMES = {
     30: '아레나'
 };
 
+// 같은 mapId라도 모드에 따라 부르는 이름이 다른 경우
+const LIVE_MAP_BY_QUEUE = {
+    710: '소환사의 협곡 (클래식)'
+};
+
+// 아레나는 3인 6팀이라 좌우 세 팀씩 나눠 놓는다.
+function renderLiveArenaSide(teams) {
+    return `
+        <div class="live-arena-side">
+            ${teams.map(t => `
+                <div class="live-arena-team">
+                    <span class="live-arena-no ${placementClass(t.id)}">${t.id}</span>
+                    <div class="live-arena-players">
+                        ${t.players.map(p => {
+                            const anon = !p.riotId || !p.riotId.trim();
+                            const name = anon ? liveChampKorName(p.championId) : p.riotId.split('#')[0];
+                            const click = anon ? '' : `onclick="searchSummonerFromLive('${(p.riotId || '').replace(/'/g, "\\'")}')"`;
+                            return `
+                                <div class="live-arena-player ${anon ? 'anon' : ''}" ${click} title="${anon ? '비공개' : p.riotId}">
+                                    <img src="${liveChampIcon(p.championId)}" onerror="this.style.visibility='hidden'">
+                                    <span>${name}</span>
+                                </div>`;
+                        }).join('')}
+                    </div>
+                </div>`).join('')}
+        </div>`;
+}
+
 function renderLiveGameHtml(g) {
     // 밴이 없는 모드는 줄 자체를 만들지 않는다.
     // 밴 슬롯은 있는데 시간 초과로 못 한 자리(-1)는 빈 초상화로 채운다.
     const banHtml = (ids) => ids.length === 0
         ? ''
         : ids.map(id => (!id || id <= 0)
-            ? `<img class="live-ban live-ban-empty" src="${EMPTY_CHAMP_ICON}" title="밴 없음">`
+            ? `<img class="live-ban live-ban-empty" src="${EMPTY_CHAMP_ICON}">`
             : `<img class="live-ban" src="${liveChampIcon(id)}" onerror="this.src='${EMPTY_CHAMP_ICON}'">`).join('');
 
     const hasBans = g.bans.blue.length > 0 || g.bans.red.length > 0;
 
     return `
         <div class="live-game-box">
-            <div class="live-team blue">
+            ${g.isArena && g.subteams
+            ? renderLiveArenaSide(g.subteams.slice(0, 3))
+            : `<div class="live-team blue">
                 ${g.teams.blue.map(p => renderLivePlayer(p, 'blue')).join('')}
-            </div>
+            </div>`}
 
             <div class="live-center">
                 <div class="live-queue">${LIVE_QUEUE_NAMES[g.queueName] || g.queueName}</div>
-                <div class="live-map">&lt; ${LIVE_MAP_NAMES[g.mapId] || '소환사의 협곡'} &gt;</div>
+                <div class="live-map">&lt; ${LIVE_MAP_BY_QUEUE[g.queueId] || LIVE_MAP_NAMES[g.mapId] || '소환사의 협곡'} &gt;</div>
                 ${hasBans ? `
                 <div class="live-bans">
                     <div class="live-ban-row">${banHtml(g.bans.blue)}</div>
@@ -3107,9 +3146,11 @@ function renderLiveGameHtml(g) {
                 <div class="live-timer" id="live-timer">-</div>
             </div>
 
-            <div class="live-team red">
+            ${g.isArena && g.subteams
+            ? renderLiveArenaSide(g.subteams.slice(3, 6))
+            : `<div class="live-team red">
                 ${g.teams.red.map(p => renderLivePlayer(p, 'red')).join('')}
-            </div>
+            </div>`}
         </div>`;
 }
 
@@ -4131,7 +4172,12 @@ function renderLoadMore(hasMore) {
     if (!area) return;
 
     if (!hasMore) {
-        area.innerHTML = `<div class="load-more-end">더 이상 불러올 전적이 없습니다.</div>`;
+        // 애초에 전적이 0개면 위쪽에 "전적 데이터가 없습니다"가 이미 떠 있다.
+        // "더 이상"은 뭔가 불러온 뒤에나 맞는 말이라 이때는 아무것도 그리지 않는다.
+        const hasAnyMatch = document.querySelector('.match-wrapper');
+        area.innerHTML = hasAnyMatch
+            ? `<div class="load-more-end">더 이상 불러올 전적이 없습니다.</div>`
+            : '';
         return;
     }
     area.innerHTML = `<button class="load-more-btn" id="load-more-btn" onclick="loadMoreMatches()">+ 10게임 더 보기</button>`;
