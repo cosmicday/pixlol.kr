@@ -3317,29 +3317,28 @@ function placeObjectiveMarkers(matchId, chart, gf) {
             return a + (b - a) * (minute - i);
         };
 
-        let prevX = -99, level = 0;
+        // 높이는 딱 두 가지다. 블루는 0선 살짝 위, 레드는 살짝 아래.
+        // 그래프의 "위=블루 / 아래=레드" 의미와도 맞고, 같은 시각에 양 팀이 먹어도 겹치지 않는다.
+        const OFFSET = 9;
 
         events.forEach(ev => {
             const info = OBJ_MARKER_MAP[ev.subType === 'ELDER_DRAGON' ? 'ELDER_DRAGON' : ev.type];
             if (!info) return;   // 포탑·억제기 등은 표시하지 않음
 
             const [label, icon] = info;
+            const isBlue = ev.teamId === 100;
             const x = xPixel(ev.t / 60000);
-
-            // 너무 가까우면 위로 한 칸씩 밀어 겹침을 피한다
-            level = (x - prevX < 16) ? level + 1 : 0;
-            prevX = x;
+            const y = isBlue ? zeroY - OFFSET : zeroY + OFFSET;
 
             const sec = Math.floor(ev.t / 1000);
             const timeText = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
-            const teamName = ev.teamId === 100 ? '블루팀' : '레드팀';
 
             // 바깥은 툴팁 담당, 안쪽은 아이콘 담당.
             // mask는 자식과 ::after까지 잘라내므로, 툴팁을 가진 요소에 mask를 걸면 안 된다.
             layer.insertAdjacentHTML('beforeend', `
-                <span class="tl-obj-marker ${ev.teamId === 100 ? 'blue' : 'red'}"
-                      style="left:${x}px; top:${zeroY - level * 15}px;"
-                      data-tooltip="${teamName} ${label} 처치 (${timeText})">
+                <span class="tl-obj-marker ${isBlue ? 'blue' : 'red'}"
+                      style="left:${x}px; top:${y}px;"
+                      data-tooltip="${isBlue ? '블루팀' : '레드팀'} ${label} 처치 (${timeText})">
                     <span class="tl-obj-marker-icon" style="--obj-icon:url('${OBJECTIVE_ICON_BASE}${icon}.png');"></span>
                 </span>`);
         });
