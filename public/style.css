@@ -878,21 +878,29 @@ body::before {
 }
 
 /* 아이콘에 팀 색을 입히되 검은 디테일은 살린다.
-     background-blend-mode: multiply -> 흰 부분 × 팀색 = 팀색 / 검은 부분 × 팀색 = 검정
-     mask                            -> 투명 배경이 사각형으로 칠해지는 걸 막음
-   두 겹이 다 필요하다. mask만 쓰면 알파만 보고 검은 부분까지 칠해버린다. */
+   원본 아이콘마다 색이 달라서(용은 주황, 전령은 보라...) 그대로 곱하면 결과가 제각각이다.
+   그래서 층을 나눈다:
+     바깥(.ts-obj-icon) : 팀 색 배경 + mask 로 모양 오려내기
+     안쪽(::before)     : 아이콘을 흑백으로 만든 뒤 multiply 로 바깥 색과 곱하기
+   filter를 바깥에 걸면 팀 색까지 흑백이 되므로 반드시 안쪽에만 건다. */
 .ts-obj-icon {
     display: inline-block;
+    position: relative;
     width: 16px;
     height: 16px;
     flex-shrink: 0;
-    background-image: var(--obj-icon);
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-blend-mode: multiply;
+    isolation: isolate;   /* blend가 바깥 요소까지 번지지 않도록 가둔다 */
     -webkit-mask: var(--obj-icon) center / contain no-repeat;
     mask: var(--obj-icon) center / contain no-repeat;
+}
+
+.ts-obj-icon::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--obj-icon) center / contain no-repeat;
+    filter: grayscale(1) brightness(1.15);
+    mix-blend-mode: multiply;
 }
 
 .ts-row.blue .ts-obj-icon {
