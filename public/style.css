@@ -2390,15 +2390,6 @@ body::before {
     text-shadow: none !important;
 }
 
-/* 표 맨 오른쪽 칸(와드)의 툴팁은 가운데 정렬하면 화면 밖으로 나간다.
-   오른쪽 끝을 기준으로 붙여서 안쪽으로 펼쳐지게 한다. */
-.detail-table td:last-child[data-tooltip]::after,
-.detail-table td:last-child [data-tooltip]::after {
-    left: auto !important;
-    right: 0 !important;
-    transform: none !important;
-}
-
 [data-tooltip]:hover::after {
     opacity: 1 !important;
     visibility: visible !important;

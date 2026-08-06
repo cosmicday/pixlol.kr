@@ -2829,7 +2829,6 @@ const EMPTY_CHAMP_ICON = 'https://raw.communitydragon.org/latest/plugins/rcp-be-
 const OBJECTIVE_LABELS = [
     ['baron', '바론', '#a78bfa'],
     ['dragon', '드래곤', '#f97316'],
-    ['atakhan', '아타칸', '#ec4899'],
     ['riftHerald', '전령', '#8b5cf6'],
     ['horde', '유충', '#84cc16'],
     ['tower', '포탑', '#60a5fa'],
