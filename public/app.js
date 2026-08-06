@@ -1330,7 +1330,7 @@ function renderMatches(matches, append = false) {
                 ${isArena ? renderArenaDetail() : `
                 <table class="detail-table">
                     <colgroup>
-                        <col style="width: 150px;"> <col style="width: 55px;"> <col style="width: 30px;"> <col style="width: 90px;"> <col style="width: 40px;"> <col style="width: 105px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 60px;"> </colgroup>
+                        <col style="width: 150px;"> <col style="width: 55px;"> <col style="width: 30px;"> <col style="width: 90px;"> <col style="width: 45px;"> <col style="width: 90px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 70px;"> </colgroup>
                     <thead>
                         <tr class="${blueHeaderClass}">
                             <th style="text-align:left; padding-left:15px;">${blueWon ? '승리' : '패배'} (블루팀)</th>
@@ -2880,8 +2880,8 @@ function renderTeamSummaryRow(game) {
             <tr>
                 <td colspan="10">
                     <div class="ts-box">
-                        ${side(blue, '블루', 'blue')}
-                        ${side(red, '레드', 'red')}
+                        ${side(blue, '블루팀', 'blue')}
+                        ${side(red, '레드팀', 'red')}
                     </div>
                 </td>
             </tr>
