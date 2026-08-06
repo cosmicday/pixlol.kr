@@ -964,6 +964,8 @@ body::before {
 
 .tl-obj-marker {
     position: absolute;
+    /* span은 기본이 inline이라 width/height가 무시된다. 반드시 명시할 것. */
+    display: block;
     width: 17px;
     height: 17px;
     transform: translate(-50%, -50%);
