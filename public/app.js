@@ -3227,8 +3227,16 @@ function renderTimelineTab(body, matchId, gf) {
         }
     });
 
-    // 골드 격차 그래프 위에 오브젝트 처치 표시
-    placeObjectiveMarkers(matchId, diffChart, gf);
+    // 골드 격차 그래프 위에 오브젝트 처치 표시.
+    // 축이 확정된 뒤여야 좌표가 맞아서, 애니메이션 완료 시점과 리사이즈 때 다시 배치한다.
+    const drawObjMarkers = placeObjectiveMarkers(matchId, diffChart, gf);
+    if (drawObjMarkers) {
+        if (diffChart.options.animation) diffChart.options.animation.onComplete = drawObjMarkers;
+        diffChart.options.onResize = () => requestAnimationFrame(drawObjMarkers);
+        diffChart.update('none');   // 애니메이션 없이 즉시 렌더 -> 축 좌표가 바로 확정된다
+        requestAnimationFrame(drawObjMarkers);
+        setTimeout(drawObjMarkers, 1100);   // 애니메이션이 끝난 뒤 한 번 더 보정
+    }
 
     // ---- 3. 챔피언별 골드 ----
     if (players.length > 0) {
@@ -3337,18 +3345,9 @@ function placeObjectiveMarkers(matchId, chart, gf) {
         });
     };
 
-    // 차트가 다 그려진 뒤의 좌표라야 정확하다.
-    // afterDraw는 애니메이션 중에도 계속 불리지만, 위의 key 비교가 중복 렌더를 막는다.
-    chart.options.animation = chart.options.animation || {};
-    chart.options.animation.onComplete = draw;
-
-    if (!chart.$objMarkerHooked) {
-        chart.$objMarkerHooked = true;
-        const origDraw = chart.draw.bind(chart);
-        chart.draw = function () { origDraw(); draw(); };
-    }
-
-    requestAnimationFrame(draw);
+    // 차트가 그려진 뒤의 좌표라야 정확하다.
+    // chart.draw를 덮어쓰면 Chart.js 내부 동작이 깨지므로 건드리지 않는다.
+    return draw;
 }
 
 window.toggleChampLine = function (matchId, pid, kind) {
