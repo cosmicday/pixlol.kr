@@ -886,8 +886,8 @@ body::before {
 .ts-obj-icon {
     display: inline-block;
     position: relative;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     flex-shrink: 0;
     isolation: isolate;   /* blend가 바깥 요소까지 번지지 않도록 가둔다 */
     -webkit-mask: var(--obj-icon) center / contain no-repeat;
@@ -899,7 +899,7 @@ body::before {
     position: absolute;
     inset: 0;
     background: var(--obj-icon) center / contain no-repeat;
-    filter: grayscale(1) brightness(1.15);
+    filter: grayscale(1) brightness(1.45);
     mix-blend-mode: multiply;
 }
 

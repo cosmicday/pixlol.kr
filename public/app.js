@@ -2832,10 +2832,10 @@ const EMPTY_CHAMP_ICON = 'https://raw.communitydragon.org/latest/plugins/rcp-be-
 const OBJECTIVE_ICON_BASE = '/objectives/';
 
 const OBJECTIVE_LABELS = [
-    ['baron', '바론', 'baron'],
+    ['baron', '내셔 남작', 'baron'],
     ['elderDragon', '장로 드래곤', 'dragon_elder'],
-    ['riftHerald', '전령', 'riftherald'],
-    ['horde', '유충', 'grub'],
+    ['riftHerald', '협곡의 전령', 'riftherald'],
+    ['horde', '공허 유충', 'grub'],
     ['dragon', '드래곤', 'dragon'],
     ['tower', '포탑', 'tower'],
     ['inhibitor', '억제기', 'inhibitor']
@@ -2870,7 +2870,7 @@ function renderTeamSummaryRow(game) {
     const objHtml = (t) => OBJECTIVE_LABELS.map(([key, label, icon]) => {
         const n = t.objectives[key] || 0;
         return `
-            <span class="ts-obj ${n === 0 ? 'zero' : ''}" title="${label}">
+            <span class="ts-obj ${n === 0 ? 'zero' : ''}" data-tooltip="${label}">
                 <span class="ts-obj-icon" style="--obj-icon:url('${OBJECTIVE_ICON_BASE}${icon}.png');"></span>
                 <span class="ts-obj-val">${n}</span>
             </span>`;
