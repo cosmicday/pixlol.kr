@@ -506,6 +506,23 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         // 다시하기: 라이엇이 조기 항복 플래그를 주고, 없으면 4분 미만으로 판정.
         // 실제로 플레이한 게임이 아니라 승률·포지션·챔피언 통계에서 전부 제외한다.
         isRemake: !isArena && (p.gameEndedInEarlySurrender === true || durationMin < 4),
+        // 팀 단위 정보 (밴 / 오브젝트). 칼바람·아레나는 밴이 없어 빈 배열로 온다.
+        teamStats: (detail.info.teams || []).map(t => ({
+            teamId: t.teamId,
+            win: t.win === true,
+            // championId -1 은 "시간 초과로 밴 못 함"이라 걸러낸다
+            bans: (t.bans || []).filter(b => b.championId > 0).map(b => b.championId),
+            objectives: {
+                baron: t.objectives?.baron?.kills || 0,
+                dragon: t.objectives?.dragon?.kills || 0,
+                riftHerald: t.objectives?.riftHerald?.kills || 0,
+                horde: t.objectives?.horde?.kills || 0,
+                atakhan: t.objectives?.atakhan?.kills || 0,
+                tower: t.objectives?.tower?.kills || 0,
+                inhibitor: t.objectives?.inhibitor?.kills || 0
+            }
+        })),
+
         subteam: isArena ? subteamIdOf(p) : null,
         placement: isArena ? (placementOf(p) || null) : null,
         augments: isArena ? augmentsOf(p) : [],

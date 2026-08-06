@@ -1330,7 +1330,7 @@ function renderMatches(matches, append = false) {
                 ${isArena ? renderArenaDetail() : `
                 <table class="detail-table">
                     <colgroup>
-                        <col style="width: 150px;"> <col style="width: 55px;"> <col style="width: 30px;"> <col style="width: 90px;"> <col style="width: 45px;"> <col style="width: 105px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 55px;"> </colgroup>
+                        <col style="width: 150px;"> <col style="width: 55px;"> <col style="width: 30px;"> <col style="width: 90px;"> <col style="width: 40px;"> <col style="width: 105px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 60px;"> </colgroup>
                     <thead>
                         <tr class="${blueHeaderClass}">
                             <th style="text-align:left; padding-left:15px;">${blueWon ? '승리' : '패배'} (블루팀)</th>
@@ -1338,6 +1338,7 @@ function renderMatches(matches, append = false) {
                         </tr>
                     </thead>
                     <tbody class="${blueBodyClass}">${game.participants.filter(p => p.teamId === 100).map(p => renderDetailRow(p)).join('')}</tbody>
+                    ${renderTeamSummaryRow(game)}
                     <thead>
                         <tr class="${redHeaderClass}">
                             <th style="text-align:left; padding-left:15px;">${redWon ? '승리' : '패배'} (레드팀)</th>
@@ -2818,6 +2819,73 @@ window.switchDetailTab = async function (event, matchId, tabName) {
         itemBody.innerHTML = itemHtml || `<div style="text-align:center; color:#9aa4af; padding:30px;">데이터가 없습니다.</div>`;
     }
 };
+
+// ==========================================
+// 상세 표 가운데 팀 요약 (밴 / 오브젝트)
+// ==========================================
+const OBJECTIVE_LABELS = [
+    ['baron', '바론', '#a78bfa'],
+    ['dragon', '드래곤', '#f97316'],
+    ['atakhan', '아타칸', '#ec4899'],
+    ['riftHerald', '전령', '#8b5cf6'],
+    ['horde', '유충', '#84cc16'],
+    ['tower', '포탑', '#60a5fa'],
+    ['inhibitor', '억제기', '#f43f5e']
+];
+
+function renderTeamSummaryRow(game) {
+    const stats = game.teamStats || [];
+    if (stats.length === 0) return '';
+
+    const blue = stats.find(t => t.teamId === 100);
+    const red = stats.find(t => t.teamId === 200);
+    if (!blue || !red) return '';
+
+    // 밴도 오브젝트도 전부 0이면(칼바람 등) 줄 자체를 만들지 않는다
+    const totalBans = blue.bans.length + red.bans.length;
+    const totalObj = [blue, red].reduce((sum, t) =>
+        sum + Object.values(t.objectives || {}).reduce((a, b) => a + b, 0), 0);
+    if (totalBans === 0 && totalObj === 0) return '';
+
+    const banHtml = (ids) => ids.length === 0
+        ? `<span class="ts-noban">밴 없음</span>`
+        : ids.map(id => {
+            const eng = championIdMap[id];
+            return `<img class="ts-ban" src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${eng}.png"
+                         title="${(eng && window.korChampMap[eng]) || ''}" onerror="this.style.visibility='hidden'">`;
+        }).join('');
+
+    // 양 팀 모두 0인 오브젝트는 숨겨서 모드별로 알아서 정리되게 한다
+    const shown = OBJECTIVE_LABELS.filter(([key]) =>
+        (blue.objectives[key] || 0) > 0 || (red.objectives[key] || 0) > 0);
+
+    const objHtml = (t) => shown.length === 0
+        ? ''
+        : shown.map(([key, label, color]) => `
+            <span class="ts-obj">
+                <span class="ts-obj-label" style="color:${color};">${label}</span>
+                <span class="ts-obj-val">${t.objectives[key] || 0}</span>
+            </span>`).join('');
+
+    const side = (t, name, cls) => `
+        <div class="ts-row ${cls}">
+            <span class="ts-side">${name}</span>
+            <div class="ts-bans">${banHtml(t.bans)}</div>
+            <div class="ts-objs">${objHtml(t)}</div>
+        </div>`;
+
+    return `
+        <tbody class="team-summary">
+            <tr>
+                <td colspan="10">
+                    <div class="ts-box">
+                        ${side(blue, '블루', 'blue')}
+                        ${side(red, '레드', 'red')}
+                    </div>
+                </td>
+            </tr>
+        </tbody>`;
+}
 
 // ==========================================
 // 전적 박스 뱃지

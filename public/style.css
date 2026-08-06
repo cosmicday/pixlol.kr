@@ -800,6 +800,103 @@ body::before {
 }
 
 /* =========================================
+   5-1-b. 상세 표 팀 요약 (밴 / 오브젝트)
+   ========================================= */
+.team-summary td {
+    padding: 0 !important;
+    background: rgba(0, 0, 0, 0.25);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ts-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 15px;
+}
+
+.ts-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ts-side {
+    width: 32px;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.ts-row.blue .ts-side {
+    color: #5383e8;
+}
+
+.ts-row.red .ts-side {
+    color: #e84057;
+}
+
+.ts-bans {
+    display: flex;
+    gap: 3px;
+    width: 120px;
+    flex-shrink: 0;
+}
+
+.ts-ban {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    filter: grayscale(0.6);
+    opacity: 0.8;
+}
+
+.ts-ban:hover {
+    filter: none;
+    opacity: 1;
+}
+
+.ts-noban {
+    font-size: 11px;
+    color: #666;
+    line-height: 20px;
+}
+
+.ts-objs {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ts-obj {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+}
+
+.ts-obj-label {
+    font-weight: bold;
+}
+
+.ts-obj-val {
+    color: #eee;
+    min-width: 10px;
+}
+
+@media (max-width: 768px) {
+    .ts-bans {
+        width: auto;
+    }
+
+    .ts-objs {
+        gap: 8px;
+    }
+}
+
+/* =========================================
    5-2. 타임라인 탭 (팀 골드 / 골드 격차 / 챔피언별 골드)
    ========================================= */
 .tl-chart-title {
