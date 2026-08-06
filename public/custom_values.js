@@ -111,7 +111,7 @@ const customValues = {
             "cooldown": "5",
             "cost": "-",
             "stats": {
-                "범위": null,
+                "": null,
                 "시전시간": null
             }
         },
