@@ -1497,14 +1497,14 @@ function renderAramSummaryHtml(matches) {
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="width: 235px; display: flex; flex-direction: column; justify-content: center;">
+            <div style="width: 244px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${total}게임)</div>
                 ${champsHtml}
             </div>
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="display: flex; flex-direction: column; justify-content: center; width: 190px;">
+            <div style="display: flex; flex-direction: column; justify-content: center; width: 181px;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">칼바람 지표 (평균)</div>
                 ${metric('분당 피해량', avgDpm.toLocaleString())}
                 ${metric('분당 받은 피해', avgTpm.toLocaleString())}
@@ -1623,14 +1623,14 @@ function renderArenaSummaryHtml(matches) {
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="width: 235px; display: flex; flex-direction: column; justify-content: center;">
+            <div style="width: 244px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${total}게임)</div>
                 ${champsHtml}
             </div>
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="display: flex; flex-direction: column; justify-content: center; width: 185px;">
+            <div style="display: flex; flex-direction: column; justify-content: center; width: 176px;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">등수 분포</div>
                 <div style="display: flex; justify-content: center; gap: 8px; align-items: flex-end;">
                     ${bars}
@@ -1830,14 +1830,14 @@ function renderSummaryStats(matchesToCalc) {
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="width: 235px; display: flex; flex-direction: column; justify-content: center;">
+            <div style="width: 244px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${totalGames}게임)</div>
                 ${champsHtml}
             </div>
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="display: flex; flex-direction: column; justify-content: center; width: 185px;">
+            <div style="display: flex; flex-direction: column; justify-content: center; width: 176px;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">선호 포지션 (랭크)</div>
                 <div style="display: flex; justify-content: center; gap: 10px; align-items: flex-end;">
                     ${posOrder.map(renderBar).join('')}
