@@ -170,7 +170,7 @@ const customLore = {
     "KogMaw": "", // 코그모
     "Corki": "", // 코르키
     "Quinn": "", // 퀸
-    "Ksante": "", // 크산테
+    "KSante": "", // 크산테
     "Kled": "", // 클레드
     "Qiyana": "", // 키아나
     "Kindred": "", // 킨드레드
