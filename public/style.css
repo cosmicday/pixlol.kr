@@ -877,13 +877,20 @@ body::before {
     cursor: help;
 }
 
-/* 미니맵 아이콘은 흰색 실루엣이라 mask로 팀 색을 입힌다.
-   filter 조합과 달리 원하는 색이 정확히 나온다. */
+/* 아이콘에 팀 색을 입히되 검은 디테일은 살린다.
+     background-blend-mode: multiply -> 흰 부분 × 팀색 = 팀색 / 검은 부분 × 팀색 = 검정
+     mask                            -> 투명 배경이 사각형으로 칠해지는 걸 막음
+   두 겹이 다 필요하다. mask만 쓰면 알파만 보고 검은 부분까지 칠해버린다. */
 .ts-obj-icon {
     display: inline-block;
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
     flex-shrink: 0;
+    background-image: var(--obj-icon);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: multiply;
     -webkit-mask: var(--obj-icon) center / contain no-repeat;
     mask: var(--obj-icon) center / contain no-repeat;
 }

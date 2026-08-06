@@ -2829,7 +2829,7 @@ const EMPTY_CHAMP_ICON = 'https://raw.communitydragon.org/latest/plugins/rcp-be-
 // 아이콘은 미니맵 실루엣이라 원본 색이 흰색이다.
 // CSS mask로 팀 색을 입히므로 여기서는 파일 이름만 갖는다.
 // 나중에 public/ 로 옮기려면 이 상수만 '/objectives/' 로 바꾸면 된다.
-const OBJECTIVE_ICON_BASE = 'https://raw.communitydragon.org/latest/game/assets/ux/minimap/icons/';
+const OBJECTIVE_ICON_BASE = '/objectives/';
 
 const OBJECTIVE_LABELS = [
     ['baron', '바론', 'baron'],
