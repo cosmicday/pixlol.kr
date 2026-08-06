@@ -911,8 +911,11 @@ body::before {
     background-color: #e84057;
 }
 
-/* 0개는 흐리게 */
-.ts-obj.zero {
+/* 0개는 흐리게.
+   컨테이너에 opacity를 주면 ::after로 그리는 툴팁까지 같이 흐려지므로
+   아이콘과 숫자에만 건다. */
+.ts-obj.zero .ts-obj-icon,
+.ts-obj.zero .ts-obj-val {
     opacity: 0.35;
 }
 

@@ -3180,6 +3180,9 @@ function renderTimelineTab(body, matchId, gf) {
                 borderWidth: 2,
                 tension: 0.3,
                 pointRadius: 1,
+                // 점은 segment 설정을 안 따르고 borderColor를 쓴다. 따로 지정해야 한다.
+                pointBackgroundColor: (ctx) => (diff[ctx.dataIndex] ?? 0) >= 0 ? '#5383e8' : '#e84057',
+                pointBorderColor: (ctx) => (diff[ctx.dataIndex] ?? 0) >= 0 ? '#5383e8' : '#e84057',
                 // 구간별로 0 위/아래를 판정해 선 색을 바꾼다
                 segment: {
                     borderColor: (ctx) => {
