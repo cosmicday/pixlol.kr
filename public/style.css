@@ -962,9 +962,13 @@ body::before {
     pointer-events: none;   /* 레이어 자체는 차트 조작을 막지 않는다 */
 }
 
-/* 바깥: 위치와 툴팁만 담당. mask를 걸면 ::after 툴팁까지 잘리므로 절대 걸지 않는다. */
-.tl-obj-marker {
-    position: absolute;
+/* 바깥: 위치와 툴팁만 담당. mask를 걸면 ::after 툴팁까지 잘리므로 절대 걸지 않는다.
+   선택자를 .tl-obj-layer로 한 겹 감싼 이유:
+   파일 뒤쪽의 [data-tooltip] { position: relative } 와 우선순위가 같아서
+   그대로 두면 나중에 선언된 relative가 이겨버린다. absolute가 풀리면
+   top/left가 "흐름 위치에서의 이동량"으로 해석돼 마커가 계단처럼 쌓인다. */
+.tl-obj-layer .tl-obj-marker {
+    position: absolute !important;
     display: block;
     width: 17px;
     height: 17px;
