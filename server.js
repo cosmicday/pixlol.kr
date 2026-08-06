@@ -202,29 +202,52 @@ async function updateArenaAugments() {
     }
 }
 
+// 티어별로 마지막에 성공한 명단을 따로 들고 있는다.
+//   한 티어가 실패했다고 그 구간을 통째로 비우면 랭킹 페이지가 중간에서 끊긴다.
+//   (마스터는 1만 명이라 응답이 커서 504 게이트웨이 타임아웃이 유독 자주 났다)
+const RANK_TIERS = ['challengerleagues', 'grandmasterleagues', 'masterleagues'];
+const rankListByTier = { challengerleagues: [], grandmasterleagues: [], masterleagues: [] };
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+// 504 같은 일시적 오류는 잠시 뒤 다시 하면 대개 성공한다.
+async function fetchRankTier(tier, tries = 3) {
+    for (let attempt = 1; attempt <= tries; attempt++) {
+        try {
+            const res = await riotApi.get(`https://kr.api.riotgames.com/lol/league/v4/${tier}/by-queue/RANKED_SOLO_5x5`);
+            const entries = res.data?.entries || [];
+            if (entries.length > 0) return entries;
+            console.warn(`[Task] ${tier} 빈 응답 (${attempt}/${tries})`);
+        } catch (e) {
+            console.warn(`[Task] ${tier} 조회 실패 ${e.response?.status || e.message} (${attempt}/${tries})`);
+        }
+        if (attempt < tries) await sleep(3000 * attempt);
+    }
+    return null;   // 세 번 다 실패
+}
+
 async function updateChallengerList() {
     try {
-        const tiers = ['challengerleagues', 'grandmasterleagues', 'masterleagues'];
+        const results = await Promise.all(RANK_TIERS.map(tier => fetchRankTier(tier)));
 
-        const results = await Promise.all(
-            tiers.map(tier =>
-                riotApi.get(`https://kr.api.riotgames.com/lol/league/v4/${tier}/by-queue/RANKED_SOLO_5x5`)
-                    .catch(e => {
-                        console.error(`[Task Error] ${tier} 조회 실패:`, e.response?.status || e.message);
-                        return { data: null };
-                    })
-            )
-        );
-
-        results.forEach((res, i) => {
-            console.log(`[Task] ${tiers[i]}: ${res.data?.entries?.length || 0}명`);
+        results.forEach((entries, i) => {
+            const tier = RANK_TIERS[i];
+            if (entries) {
+                rankListByTier[tier] = entries;
+                console.log(`[Task] ${tier}: ${entries.length}명`);
+            } else {
+                // 실패한 티어는 이전 명단을 그대로 쓴다
+                console.error(`[Task Error] ${tier} 갱신 실패 — 기존 ${rankListByTier[tier].length}명 유지`);
+            }
         });
 
-        const combinedEntries = results.flatMap(res => res.data?.entries || []);
+        const combinedEntries = RANK_TIERS.flatMap(tier => rankListByTier[tier]);
 
         if (combinedEntries.length > 0) {
             challengerList = combinedEntries.sort((a, b) => b.leaguePoints - a.leaguePoints);
             console.log(`[Task] 랭킹 명단 갱신 완료 (총 ${challengerList.length}명)`);
+        } else {
+            console.error("[Task Error] 랭킹 명단이 비어 있어 갱신하지 않음");
         }
     } catch (err) {
         console.error("[Task Error] 랭킹 명단 갱신 실패:", err.message);
@@ -339,6 +362,7 @@ const QUEUE_MAP = {
     450: "칼바람",
     720: "칼바람",        // 칼바람 클래시
     2400: "아수라장",     // 무작위 총력전: 아수라장 (실측 확인)
+    2450: "아수라장(클래식)",  // 아수라장 클래식 스타일 — 관전 API 실측 (mapId 12)
 
     830: "봇전(입문)", 840: "봇전(초보)", 850: "봇전(중급)",   // 구버전 봇전
     870: "봇전(입문)", 880: "봇전(초보)", 890: "봇전(중급)",   // 현재 봇전
@@ -368,6 +392,7 @@ const QUEUE_GROUP = {
 
     450: "칼바람", 720: "칼바람",
     2400: "아수라장",
+    2450: "아수라장",
     4310: "클래식",
 
     830: "봇", 840: "봇", 850: "봇",
