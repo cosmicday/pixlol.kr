@@ -874,15 +874,37 @@ body::before {
     align-items: center;
     gap: 4px;
     font-size: 11px;
+    cursor: help;
 }
 
-.ts-obj-label {
-    font-weight: bold;
+/* 미니맵 아이콘은 흰색 실루엣이라 mask로 팀 색을 입힌다.
+   filter 조합과 달리 원하는 색이 정확히 나온다. */
+.ts-obj-icon {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    -webkit-mask: var(--obj-icon) center / contain no-repeat;
+    mask: var(--obj-icon) center / contain no-repeat;
+}
+
+.ts-row.blue .ts-obj-icon {
+    background-color: #5383e8;
+}
+
+.ts-row.red .ts-obj-icon {
+    background-color: #e84057;
+}
+
+/* 0개는 흐리게 */
+.ts-obj.zero {
+    opacity: 0.35;
 }
 
 .ts-obj-val {
     color: #eee;
-    min-width: 10px;
+    min-width: 8px;
+    font-weight: bold;
 }
 
 @media (max-width: 768px) {

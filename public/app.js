@@ -2826,14 +2826,19 @@ window.switchDetailTab = async function (event, matchId, tabName) {
 // 밴을 안 한 자리에 쓰는 빈 초상화 (인게임 밴 슬롯과 같은 이미지)
 const EMPTY_CHAMP_ICON = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/-1.png';
 
+// 아이콘은 미니맵 실루엣이라 원본 색이 흰색이다.
+// CSS mask로 팀 색을 입히므로 여기서는 파일 이름만 갖는다.
+// 나중에 public/ 로 옮기려면 이 상수만 '/objectives/' 로 바꾸면 된다.
+const OBJECTIVE_ICON_BASE = 'https://raw.communitydragon.org/latest/game/assets/ux/minimap/icons/';
+
 const OBJECTIVE_LABELS = [
-    ['baron', '바론', '#a78bfa'],
-    ['elderDragon', '장로', '#22d3ee'],
-    ['riftHerald', '전령', '#8b5cf6'],
-    ['horde', '유충', '#84cc16'],
-    ['dragon', '드래곤', '#f97316'],
-    ['tower', '포탑', '#60a5fa'],
-    ['inhibitor', '억제기', '#f43f5e']
+    ['baron', '바론', 'baron'],
+    ['elderDragon', '장로 드래곤', 'dragon_elder'],
+    ['riftHerald', '전령', 'riftherald'],
+    ['horde', '유충', 'grub'],
+    ['dragon', '드래곤', 'dragon'],
+    ['tower', '포탑', 'tower'],
+    ['inhibitor', '억제기', 'inhibitor']
 ];
 
 function renderTeamSummaryRow(game) {
@@ -2862,11 +2867,14 @@ function renderTeamSummaryRow(game) {
                          title="${(eng && window.korChampMap[eng]) || ''}" onerror="this.src='${EMPTY_CHAMP_ICON}'">`;
         }).join('');
 
-    const objHtml = (t) => OBJECTIVE_LABELS.map(([key, label, color]) => `
-            <span class="ts-obj">
-                <span class="ts-obj-label" style="color:${color};">${label}</span>
-                <span class="ts-obj-val">${t.objectives[key] || 0}</span>
-            </span>`).join('');
+    const objHtml = (t) => OBJECTIVE_LABELS.map(([key, label, icon]) => {
+        const n = t.objectives[key] || 0;
+        return `
+            <span class="ts-obj ${n === 0 ? 'zero' : ''}" title="${label}">
+                <span class="ts-obj-icon" style="--obj-icon:url('${OBJECTIVE_ICON_BASE}${icon}.png');"></span>
+                <span class="ts-obj-val">${n}</span>
+            </span>`;
+    }).join('');
 
     const side = (t, name, cls) => `
         <div class="ts-row ${cls}">
