@@ -1270,6 +1270,12 @@ body::before {
     opacity: 0.75;
 }
 
+.live-ban-empty {
+    filter: none;
+    opacity: 0.55;
+    background: rgba(0, 0, 0, 0.35);
+}
+
 .live-no-ban {
     font-size: 10px;
     color: #666;

@@ -3066,10 +3066,29 @@ window.searchSummonerFromLive = function (riotId) {
     document.getElementById('search-btn').click();
 };
 
+// 인게임 패널은 공간이 넉넉해서 전적 목록보다 정식 명칭을 쓴다.
+const LIVE_QUEUE_NAMES = {
+    '솔로랭크': '개인/2인 랭크 게임',
+    '자유랭크': '자유 랭크 게임',
+    '아수라장': '무작위 총력전: 아수라장'
+};
+
+const LIVE_MAP_NAMES = {
+    11: '소환사의 협곡',
+    12: '무작위 맵',
+    30: '아레나'
+};
+
 function renderLiveGameHtml(g) {
+    // 밴이 없는 모드는 줄 자체를 만들지 않는다.
+    // 밴 슬롯은 있는데 시간 초과로 못 한 자리(-1)는 빈 초상화로 채운다.
     const banHtml = (ids) => ids.length === 0
-        ? '<span class="live-no-ban">밴 없음</span>'
-        : ids.map(id => `<img class="live-ban" src="${liveChampIcon(id)}" onerror="this.style.visibility='hidden'">`).join('');
+        ? ''
+        : ids.map(id => (!id || id <= 0)
+            ? `<img class="live-ban live-ban-empty" src="${EMPTY_CHAMP_ICON}" title="밴 없음">`
+            : `<img class="live-ban" src="${liveChampIcon(id)}" onerror="this.src='${EMPTY_CHAMP_ICON}'">`).join('');
+
+    const hasBans = g.bans.blue.length > 0 || g.bans.red.length > 0;
 
     return `
         <div class="live-game-box">
@@ -3078,12 +3097,13 @@ function renderLiveGameHtml(g) {
             </div>
 
             <div class="live-center">
-                <div class="live-queue">${g.queueName}</div>
-                <div class="live-map">&lt; ${g.mapId === 12 ? '칼바람 나락' : '소환사의 협곡'} &gt;</div>
+                <div class="live-queue">${LIVE_QUEUE_NAMES[g.queueName] || g.queueName}</div>
+                <div class="live-map">&lt; ${LIVE_MAP_NAMES[g.mapId] || '소환사의 협곡'} &gt;</div>
+                ${hasBans ? `
                 <div class="live-bans">
                     <div class="live-ban-row">${banHtml(g.bans.blue)}</div>
                     <div class="live-ban-row">${banHtml(g.bans.red)}</div>
-                </div>
+                </div>` : ''}
                 <div class="live-timer" id="live-timer">-</div>
             </div>
 

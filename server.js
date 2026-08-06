@@ -885,9 +885,21 @@ const liveGameCache = new Map();       // puuid -> { at, payload }
 const LIVE_CACHE_MS = 30 * 1000;       // 실시간성이 중요해서 짧게만 캐싱
 
 function extractLiveGame(raw) {
+    // 미등록 큐 발견 로그 (인게임판).
+    //   buildHistoryEntry의 로그는 전적 목록을 만들 때만 돈다. 그래서 클래식·아수라장처럼
+    //   match-v5로 전적이 안 내려오는 모드는 영영 발견되지 않는다.
+    //   관전 정보는 내려오므로 여기서 잡으면 그 모드들의 큐ID도 알 수 있다.
+    const qid = raw.gameQueueConfigId;
+    if (!QUEUE_MAP[qid] && !seenUnknownQueues.has(`live-${qid}`)) {
+        seenUnknownQueues.add(`live-${qid}`);
+        console.log(`[미등록 큐/인게임] queueId=${qid} mapId=${raw.mapId} gameId=${raw.gameId}`);
+    }
+
+    // championId -1(시간 초과로 밴 못 함)도 자리를 유지해야 인게임처럼 빈 초상화가 뜬다.
+    // 밴이 아예 없는 모드(칼바람 등)는 배열이 비어 있고, 프론트에서 그 줄을 통째로 생략한다.
     const bans = { blue: [], red: [] };
     (raw.bannedChampions || []).forEach(b => {
-        if (b.championId > 0) (b.teamId === 100 ? bans.blue : bans.red).push(b.championId);
+        (b.teamId === 100 ? bans.blue : bans.red).push(b.championId);
     });
 
     const toPlayer = (p) => {
