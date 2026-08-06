@@ -3134,7 +3134,10 @@ function renderTimelineTab(body, matchId, gf) {
         <div class="tl-chart"><canvas id="gold-chart-${matchId}"></canvas></div>
 
         <h4 class="tl-chart-title">골드 격차</h4>
-        <div class="tl-chart"><canvas id="golddiff-chart-${matchId}"></canvas></div>
+        <div class="tl-chart">
+            <canvas id="golddiff-chart-${matchId}"></canvas>
+            <div class="tl-obj-layer" id="golddiff-objs-${matchId}"></div>
+        </div>
 
         ${players.length === 0 ? '' : `
         <h4 class="tl-chart-title">챔피언별 골드</h4>
@@ -3169,7 +3172,7 @@ function renderTimelineTab(body, matchId, gf) {
 
     // ---- 2. 골드 격차 (블루 - 레드) ----
     const diff = gf.blue.map((v, i) => v - (gf.red[i] || 0));
-    new Chart(body.querySelector(`#golddiff-chart-${matchId}`), {
+    const diffChart = new Chart(body.querySelector(`#golddiff-chart-${matchId}`), {
         type: 'line',
         data: {
             labels: gf.labels,
@@ -3224,6 +3227,9 @@ function renderTimelineTab(body, matchId, gf) {
         }
     });
 
+    // 골드 격차 그래프 위에 오브젝트 처치 표시
+    placeObjectiveMarkers(matchId, diffChart, gf);
+
     // ---- 3. 챔피언별 골드 ----
     if (players.length > 0) {
         const makeChart = (canvasId, unit) => new Chart(body.querySelector(canvasId), {
@@ -3260,6 +3266,71 @@ function renderTimelineTab(body, matchId, gf) {
 }
 
 // kind('gold' | 'xp')별로 독립 동작한다. 두 그래프는 서로 영향을 주지 않는다.
+// 골드 격차 그래프의 0선 위에 오브젝트 처치 아이콘을 얹는다.
+//   캔버스에 직접 그리지 않고 HTML을 겹치는 이유:
+//   팀 색 마스크와 data-tooltip을 그대로 재사용할 수 있고, 클릭·호버 판정이 공짜다.
+const OBJ_MARKER_MAP = {
+    BARON_NASHOR: ['내셔 남작', 'baron'],
+    RIFTHERALD: ['협곡의 전령', 'riftherald'],
+    HORDE: ['공허 유충', 'grub'],
+    DRAGON: ['드래곤', 'dragon'],
+    ELDER_DRAGON: ['장로 드래곤', 'dragon_elder']
+};
+
+function placeObjectiveMarkers(matchId, chart, gf) {
+    const layer = document.getElementById(`golddiff-objs-${matchId}`);
+    if (!layer) return;
+
+    const events = (gf.objectives || []).slice().sort((a, b) => a.t - b.t);
+    if (events.length === 0) return;
+
+    const draw = () => {
+        layer.innerHTML = '';
+        const xs = chart.scales.x, ys = chart.scales.y;
+        if (!xs || !ys) return;
+
+        const lastIdx = gf.labels.length - 1;
+        const zeroY = ys.getPixelForValue(0);
+
+        // 분 단위 소수 위치를 픽셀로. 라벨이 1분 간격이라 두 눈금 사이를 비례 배분한다.
+        const xPixel = (minute) => {
+            const i = Math.min(Math.floor(minute), lastIdx);
+            const a = xs.getPixelForValue(i);
+            const b = xs.getPixelForValue(Math.min(i + 1, lastIdx));
+            return a + (b - a) * (minute - i);
+        };
+
+        let prevX = -99, level = 0;
+
+        events.forEach(ev => {
+            const key = ev.subType === 'ELDER_DRAGON' ? 'ELDER_DRAGON' : ev.type;
+            const info = OBJ_MARKER_MAP[key];
+            if (!info) return;   // 포탑·억제기 등은 표시하지 않음
+
+            const [label, icon] = info;
+            const minute = ev.t / 60000;
+            const x = xPixel(minute);
+
+            // 너무 가까우면 위로 한 칸씩 밀어 겹침을 피한다
+            level = (x - prevX < 16) ? level + 1 : 0;
+            prevX = x;
+
+            const sec = Math.floor(ev.t / 1000);
+            const timeText = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+            const teamName = ev.teamId === 100 ? '블루팀' : '레드팀';
+
+            layer.insertAdjacentHTML('beforeend', `
+                <span class="tl-obj-marker ${ev.teamId === 100 ? 'blue' : 'red'}"
+                      style="left:${x}px; top:${zeroY - level * 15}px; --obj-icon:url('${OBJECTIVE_ICON_BASE}${icon}.png');"
+                      data-tooltip="${teamName} ${label} 처치 (${timeText})"></span>`);
+        });
+    };
+
+    // 캔버스 크기가 잡힌 뒤에 그려야 좌표가 맞는다
+    requestAnimationFrame(draw);
+    window.addEventListener('resize', () => requestAnimationFrame(draw));
+}
+
 window.toggleChampLine = function (matchId, pid, kind) {
     const ctx = window.champGoldCharts[matchId];
     if (!ctx) return;

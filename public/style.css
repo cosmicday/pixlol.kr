@@ -955,6 +955,46 @@ body::before {
     height: 230px;
 }
 
+/* 골드 격차 그래프 위 오브젝트 마커 */
+.tl-obj-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;   /* 레이어 자체는 차트 조작을 막지 않는다 */
+}
+
+.tl-obj-marker {
+    position: absolute;
+    width: 17px;
+    height: 17px;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;   /* 아이콘만 호버를 받는다 */
+    cursor: help;
+    isolation: isolate;
+    -webkit-mask: var(--obj-icon) center / contain no-repeat;
+    mask: var(--obj-icon) center / contain no-repeat;
+}
+
+.tl-obj-marker::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--obj-icon) center / contain no-repeat;
+    filter: grayscale(1) brightness(1.45);
+    mix-blend-mode: multiply;
+}
+
+.tl-obj-marker.blue {
+    background-color: #5383e8;
+}
+
+.tl-obj-marker.red {
+    background-color: #e84057;
+}
+
+.tl-obj-marker:hover {
+    transform: translate(-50%, -50%) scale(1.25);
+}
+
 .tl-chart-hint {
     text-align: center;
     font-size: 11px;

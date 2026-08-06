@@ -800,6 +800,9 @@ function extractTimeline(timeline, detail, targetPuuid = null) {
     const goldFrames = { labels: [], blue: [], red: [], players: [] };
     let myTimeline = { skills: [], items: [] };
 
+    // 골드 격차 그래프에 표시할 오브젝트 처치 기록
+    const objectiveEvents = [];
+
     if (detail?.info?.participants) {
         detail.info.participants.forEach(p => {
             goldFrames.players.push({
@@ -838,6 +841,23 @@ function extractTimeline(timeline, detail, targetPuuid = null) {
         goldFrames.blue.push(blueGold);
         goldFrames.red.push(redGold);
 
+        // 오브젝트 처치 (프레임 안의 events 전체를 훑는다)
+        frame.events?.forEach(event => {
+            if (event.type !== 'ELITE_MONSTER_KILL') return;
+
+            // killerTeamId가 없는 옛 타임라인은 killerId(1~5 블루, 6~10 레드)로 판정
+            let teamId = event.killerTeamId || 0;
+            if (!teamId && event.killerId) teamId = event.killerId <= 5 ? 100 : 200;
+            if (!teamId) return;   // 몬스터끼리 죽인 경우 등
+
+            objectiveEvents.push({
+                t: event.timestamp,                       // ms
+                teamId,
+                type: event.monsterType || '',            // BARON_NASHOR / DRAGON / RIFTHERALD / HORDE
+                subType: event.monsterSubType || ''       // ELDER_DRAGON, FIRE_DRAGON ...
+            });
+        });
+
         if (myParticipantId) {
             frame.events?.forEach(event => {
                 if (event.participantId === myParticipantId) {
@@ -852,6 +872,7 @@ function extractTimeline(timeline, detail, targetPuuid = null) {
         }
     });
 
+    goldFrames.objectives = objectiveEvents;
     return { goldFrames, myTimeline: myParticipantId ? myTimeline : null };
 }
 
