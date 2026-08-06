@@ -3735,6 +3735,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             img: `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/passive/${champ.passive.image.full}`,
             img2: (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id]['P'] && customValues[champ.id]['P'].img2) || null,
             stats: (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id]['P'] && customValues[champ.id]['P'].stats) || null, // ★ 스탯 추가
+            values: (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id]['P']) || null, // ★ 피해량/계수 (v1, v2)
             isPassive: true
         };
 
@@ -3748,11 +3749,13 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             let customImg2 = null;
             let customStats = null; // ★ 스탯 변수 추가
 
+            let customVals = null;
             if (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id][spellSlotsKey[i]]) {
                 if (customValues[champ.id][spellSlotsKey[i]].cooldown) customCd = customValues[champ.id][spellSlotsKey[i]].cooldown;
                 if (customValues[champ.id][spellSlotsKey[i]].cost) customCost = customValues[champ.id][spellSlotsKey[i]].cost;
                 if (customValues[champ.id][spellSlotsKey[i]].img2) customImg2 = customValues[champ.id][spellSlotsKey[i]].img2;
                 if (customValues[champ.id][spellSlotsKey[i]].stats) customStats = customValues[champ.id][spellSlotsKey[i]].stats; // ★ 스탯 가져오기
+                customVals = customValues[champ.id][spellSlotsKey[i]];
             }
             return {
                 id: spellSlotsId[i],
@@ -3764,6 +3767,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 img: `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${s.image.full}`,
                 img2: customImg2,
                 stats: customStats, // ★ 데이터에 스탯 저장
+                values: customVals, // ★ 피해량/계수 (v1, v2)
                 isPassive: false
             };
         });
@@ -3792,6 +3796,8 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 font-size: 12px; font-weight: normal; line-height: 1.5; opacity: 0; transition: opacity 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.8);
             }
             .custom-footnote:hover .footnote-text { visibility: visible; opacity: 1; }
+            .skill-damage-line { color: #ddd; font-size: 14px; line-height: 1.7; }
+            .skill-damage-line + .skill-damage-line { margin-top: 6px; }
         </style>
         <div style="display: flex; gap: 30px; height: 100%;">
             <div style="display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
@@ -3813,9 +3819,10 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                             </div>
                             <h3 id="champ-skill-name-header" style="color: #fff; font-size: 18px; font-weight: bold; margin: 0;"></h3>
                         </div>
-                        <div style="text-align: right; color: #aaa; font-size: 13px; font-weight: bold;">
+                        <div style="text-align: right; color: #aaa; font-size: 13px; font-weight: bold; line-height: 1.7;">
                             <div id="champ-skill-cooldown-header" style="color:#ddd;"></div>
                             <div id="champ-skill-cost-header" style="color: #ddd;"></div>
+                            <div id="champ-skill-stats-header" style="color: #9aa4af; font-weight: normal; font-size: 12px; margin-top: 4px;"></div>
                         </div>
                         
                     </div>
@@ -3924,26 +3931,36 @@ window.playSkill = function (index) {
     const descTextEl = document.getElementById('champ-skill-desc-text-body');
     if (descTextEl) descTextEl.innerHTML = skill.desc;
 
-    // ★ 커스텀 스탯(사거리, 시전속도 등) 렌더링 로직
+    // ★ 우상단: 사거리·시전시간 등 판정 수치
+    //   키를 직접 정해서 넣으므로 순서대로 그대로 뿌린다. 빈 키나 빈 값은 건너뛴다.
+    const statsHeaderEl = document.getElementById('champ-skill-stats-header');
+    if (statsHeaderEl) {
+        let lines = '';
+        for (let key in (skill.stats || {})) {
+            const v = skill.stats[key];
+            if (!key.trim() || v === null || v === undefined || v === '') continue;
+            lines += `<div>${key} <span style="color:#ddd; font-weight:bold;">${v}</span></div>`;
+        }
+        statsHeaderEl.innerHTML = lines;
+    }
+
+    // ★ 하단: 피해량과 계수 (구분선 아래)
     const bottomHrEl = document.getElementById('champ-skill-bottom-hr');
     const customBottomEl = document.getElementById('champ-skill-custom-bottom');
 
-    if (skill.stats) {
-        // 스탯이 있으면 예쁜 박스로 그려주고 갈색 선 표시
-        let statsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 10px;">`;
-        for (let key in skill.stats) {
-            statsHtml += `
-                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 8px 12px; display: flex; gap: 10px; align-items: center;">
-                    <span style="color: #9aa4af; font-size: 13px;">${key}</span>
-                    <span style="color: #fff; font-size: 13px; font-weight: bold;">${skill.stats[key]}</span>
-                </div>
-            `;
+    const vals = skill.values || {};
+    const damageLines = ['v1', 'v2']
+        .map(k => vals[k])
+        .filter(v => v !== null && v !== undefined && String(v).trim() !== '');
+
+    if (damageLines.length > 0) {
+        if (customBottomEl) {
+            customBottomEl.innerHTML = damageLines
+                .map(v => `<div class="skill-damage-line">${v}</div>`)
+                .join('');
         }
-        statsHtml += `</div>`;
-        if (customBottomEl) customBottomEl.innerHTML = statsHtml;
         if (bottomHrEl) bottomHrEl.style.display = 'block';
     } else {
-        // 스탯이 없으면 깔끔하게 비우고 갈색 선 숨김
         if (customBottomEl) customBottomEl.innerHTML = '';
         if (bottomHrEl) bottomHrEl.style.display = 'none';
     }

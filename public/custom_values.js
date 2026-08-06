@@ -111,52 +111,43 @@ const customValues = {
             "cooldown": "5",
             "cost": "-",
             "stats": {
-                "": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -164,56 +155,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -221,56 +202,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -278,56 +249,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -335,56 +296,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -394,56 +345,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -451,56 +392,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -508,56 +439,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -565,56 +486,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -622,56 +533,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -679,56 +580,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -736,56 +627,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -793,56 +674,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -850,56 +721,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -907,56 +768,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -966,56 +817,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1023,56 +864,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1080,56 +911,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1139,56 +960,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1196,56 +1007,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1253,56 +1054,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1310,56 +1101,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1367,56 +1148,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1424,56 +1195,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1481,56 +1242,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1538,56 +1289,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1595,56 +1336,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1652,56 +1383,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1709,56 +1430,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1766,56 +1477,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1823,56 +1524,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1880,56 +1571,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1937,56 +1618,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -1994,56 +1665,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2051,56 +1712,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2108,56 +1759,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2167,56 +1808,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2224,56 +1855,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2281,56 +1902,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2338,56 +1949,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2395,56 +1996,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2452,56 +2043,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2509,56 +2090,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2566,56 +2137,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2623,56 +2184,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2680,56 +2231,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2739,56 +2280,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2796,56 +2327,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2853,56 +2374,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2910,56 +2421,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -2967,56 +2468,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3024,56 +2515,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3081,56 +2562,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3138,56 +2609,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3195,56 +2656,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3252,56 +2703,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3309,56 +2750,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3366,56 +2797,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3423,56 +2844,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3480,56 +2891,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3537,56 +2938,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3594,56 +2985,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3651,56 +3032,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3710,56 +3081,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3767,56 +3128,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3824,56 +3175,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3881,56 +3222,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3938,56 +3269,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -3995,56 +3316,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4052,56 +3363,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4109,56 +3410,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4166,56 +3457,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4223,56 +3504,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4280,56 +3551,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4337,56 +3598,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4394,56 +3645,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4451,56 +3692,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4508,56 +3739,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4565,56 +3786,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4622,56 +3833,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4679,56 +3880,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4736,56 +3927,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4793,56 +3974,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4852,56 +4023,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4909,56 +4070,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -4966,56 +4117,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5023,56 +4164,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5080,56 +4211,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5137,56 +4258,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5194,56 +4305,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5251,56 +4352,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5308,56 +4399,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5365,56 +4446,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5422,56 +4493,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5479,56 +4540,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5536,56 +4587,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5593,56 +4634,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5650,56 +4681,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5707,56 +4728,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5764,56 +4775,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5821,56 +4822,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5878,56 +4869,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5935,56 +4916,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -5992,56 +4963,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6049,56 +5010,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6106,56 +5057,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6163,56 +5104,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6220,56 +5151,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6277,56 +5198,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6334,56 +5245,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6391,56 +5292,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6448,56 +5339,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6505,56 +5386,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6562,56 +5433,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6619,56 +5480,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6676,56 +5527,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6735,56 +5576,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6792,56 +5623,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6849,56 +5670,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6906,56 +5717,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -6963,56 +5764,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7020,56 +5811,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7077,56 +5858,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7134,56 +5905,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7191,56 +5952,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7248,56 +5999,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7305,56 +6046,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7362,56 +6093,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7419,56 +6140,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7476,56 +6187,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7533,56 +6234,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7590,56 +6281,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7649,56 +6330,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7706,56 +6377,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7763,56 +6424,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7820,56 +6471,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7877,56 +6518,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7934,56 +6565,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -7991,56 +6612,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8048,56 +6659,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8105,56 +6706,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8162,56 +6753,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8219,56 +6800,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8276,56 +6847,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8333,56 +6894,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8390,56 +6941,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8447,56 +6988,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8504,56 +7035,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8561,56 +7082,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8618,56 +7129,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8675,56 +7176,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8732,56 +7223,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8789,56 +7270,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8848,56 +7319,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8905,56 +7366,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -8962,56 +7413,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9019,56 +7460,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9076,56 +7507,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9133,56 +7554,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9190,56 +7601,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9247,56 +7648,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9304,56 +7695,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9361,56 +7742,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9418,56 +7789,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9475,56 +7836,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9532,56 +7883,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9589,56 +7930,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9646,56 +7977,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9703,56 +8024,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9760,56 +8071,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     },
@@ -9817,56 +8118,46 @@ const customValues = {
         "P": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "Q": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "W": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "E": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         },
         "R": {
             "v1": "",
             "v2": "",
-            "v3": "",
             "cooldown": "",
             "cost": "",
             "stats": {
-                "범위": null,
-                "시전시간": null
+                "사거리": ""
             }
         }
     }
