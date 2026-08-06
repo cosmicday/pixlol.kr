@@ -3284,13 +3284,22 @@ function placeObjectiveMarkers(matchId, chart, gf) {
     const events = (gf.objectives || []).slice().sort((a, b) => a.t - b.t);
     if (events.length === 0) return;
 
+    let lastKey = '';
+
     const draw = () => {
-        layer.innerHTML = '';
         const xs = chart.scales.x, ys = chart.scales.y;
-        if (!xs || !ys) return;
+        if (!xs || !ys || !chart.chartArea) return;
 
         const lastIdx = gf.labels.length - 1;
         const zeroY = ys.getPixelForValue(0);
+
+        // 축이 그대로면 다시 그리지 않는다.
+        // 매 프레임 새로 만들면 마우스를 올린 요소가 사라져 툴팁이 깜빡인다.
+        const key = `${Math.round(zeroY)}|${Math.round(chart.chartArea.left)}|${Math.round(chart.chartArea.right)}`;
+        if (key === lastKey) return;
+        lastKey = key;
+
+        layer.innerHTML = '';
 
         // 분 단위 소수 위치를 픽셀로. 라벨이 1분 간격이라 두 눈금 사이를 비례 배분한다.
         const xPixel = (minute) => {
@@ -3303,13 +3312,11 @@ function placeObjectiveMarkers(matchId, chart, gf) {
         let prevX = -99, level = 0;
 
         events.forEach(ev => {
-            const key = ev.subType === 'ELDER_DRAGON' ? 'ELDER_DRAGON' : ev.type;
-            const info = OBJ_MARKER_MAP[key];
+            const info = OBJ_MARKER_MAP[ev.subType === 'ELDER_DRAGON' ? 'ELDER_DRAGON' : ev.type];
             if (!info) return;   // 포탑·억제기 등은 표시하지 않음
 
             const [label, icon] = info;
-            const minute = ev.t / 60000;
-            const x = xPixel(minute);
+            const x = xPixel(ev.t / 60000);
 
             // 너무 가까우면 위로 한 칸씩 밀어 겹침을 피한다
             level = (x - prevX < 16) ? level + 1 : 0;
@@ -3319,16 +3326,29 @@ function placeObjectiveMarkers(matchId, chart, gf) {
             const timeText = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
             const teamName = ev.teamId === 100 ? '블루팀' : '레드팀';
 
+            // 바깥은 툴팁 담당, 안쪽은 아이콘 담당.
+            // mask는 자식과 ::after까지 잘라내므로, 툴팁을 가진 요소에 mask를 걸면 안 된다.
             layer.insertAdjacentHTML('beforeend', `
                 <span class="tl-obj-marker ${ev.teamId === 100 ? 'blue' : 'red'}"
-                      style="left:${x}px; top:${zeroY - level * 15}px; --obj-icon:url('${OBJECTIVE_ICON_BASE}${icon}.png');"
-                      data-tooltip="${teamName} ${label} 처치 (${timeText})"></span>`);
+                      style="left:${x}px; top:${zeroY - level * 15}px;"
+                      data-tooltip="${teamName} ${label} 처치 (${timeText})">
+                    <span class="tl-obj-marker-icon" style="--obj-icon:url('${OBJECTIVE_ICON_BASE}${icon}.png');"></span>
+                </span>`);
         });
     };
 
-    // 캔버스 크기가 잡힌 뒤에 그려야 좌표가 맞는다
+    // 차트가 다 그려진 뒤의 좌표라야 정확하다.
+    // afterDraw는 애니메이션 중에도 계속 불리지만, 위의 key 비교가 중복 렌더를 막는다.
+    chart.options.animation = chart.options.animation || {};
+    chart.options.animation.onComplete = draw;
+
+    if (!chart.$objMarkerHooked) {
+        chart.$objMarkerHooked = true;
+        const origDraw = chart.draw.bind(chart);
+        chart.draw = function () { origDraw(); draw(); };
+    }
+
     requestAnimationFrame(draw);
-    window.addEventListener('resize', () => requestAnimationFrame(draw));
 }
 
 window.toggleChampLine = function (matchId, pid, kind) {

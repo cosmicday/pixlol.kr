@@ -962,21 +962,29 @@ body::before {
     pointer-events: none;   /* 레이어 자체는 차트 조작을 막지 않는다 */
 }
 
+/* 바깥: 위치와 툴팁만 담당. mask를 걸면 ::after 툴팁까지 잘리므로 절대 걸지 않는다. */
 .tl-obj-marker {
     position: absolute;
-    /* span은 기본이 inline이라 width/height가 무시된다. 반드시 명시할 것. */
     display: block;
     width: 17px;
     height: 17px;
     transform: translate(-50%, -50%);
-    pointer-events: auto;   /* 아이콘만 호버를 받는다 */
+    pointer-events: auto;   /* 레이어는 통과, 아이콘만 호버를 받는다 */
     cursor: help;
+}
+
+/* 안쪽: 아이콘 모양과 팀 색 담당 */
+.tl-obj-marker-icon {
+    position: absolute;
+    inset: 0;
+    display: block;
     isolation: isolate;
     -webkit-mask: var(--obj-icon) center / contain no-repeat;
     mask: var(--obj-icon) center / contain no-repeat;
+    transition: transform 0.12s;
 }
 
-.tl-obj-marker::before {
+.tl-obj-marker-icon::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -985,16 +993,16 @@ body::before {
     mix-blend-mode: multiply;
 }
 
-.tl-obj-marker.blue {
+.tl-obj-marker.blue .tl-obj-marker-icon {
     background-color: #5383e8;
 }
 
-.tl-obj-marker.red {
+.tl-obj-marker.red .tl-obj-marker-icon {
     background-color: #e84057;
 }
 
-.tl-obj-marker:hover {
-    transform: translate(-50%, -50%) scale(1.25);
+.tl-obj-marker:hover .tl-obj-marker-icon {
+    transform: scale(1.3);
 }
 
 .tl-chart-hint {
