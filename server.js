@@ -458,6 +458,12 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         }
     }
 
+    // 장로용 처치 수. challenges는 팀 전체 값을 참가자마다 실어주므로 한 명만 보면 된다.
+    const elderKillsOf = (teamId) => {
+        const p = detail.info.participants.find(x => x.teamId === teamId && x.challenges);
+        return p?.challenges?.teamElderDragonKills || 0;
+    };
+
     const placementOf = (x) => {
         const tid = subteamIdOf(x);
         return placementByTeam[tid] || Number(x.subteamPlacement) || 0;
@@ -506,7 +512,10 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         // 다시하기: 라이엇이 조기 항복 플래그를 주고, 없으면 4분 미만으로 판정.
         // 실제로 플레이한 게임이 아니라 승률·포지션·챔피언 통계에서 전부 제외한다.
         isRemake: !isArena && (p.gameEndedInEarlySurrender === true || durationMin < 4),
+        // (헬퍼는 아래 elderKillsOf 참고)
         // 팀 단위 정보 (밴 / 오브젝트). 칼바람·아레나는 밴이 없어 빈 배열로 온다.
+        //   objectives.dragon.kills는 장로까지 합산된 값이라 그것만으론 구분이 안 된다.
+        //   challenges.teamElderDragonKills(팀 전체 값이 참가자마다 실려 온다)를 빼서 나눈다.
         teamStats: (detail.info.teams || []).map(t => ({
             teamId: t.teamId,
             win: t.win === true,
@@ -514,7 +523,8 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
             bans: (t.bans || []).map(b => b.championId),
             objectives: {
                 baron: t.objectives?.baron?.kills || 0,
-                dragon: t.objectives?.dragon?.kills || 0,
+                elderDragon: elderKillsOf(t.teamId),
+                dragon: Math.max(0, (t.objectives?.dragon?.kills || 0) - elderKillsOf(t.teamId)),
                 riftHerald: t.objectives?.riftHerald?.kills || 0,
                 horde: t.objectives?.horde?.kills || 0,
                 atakhan: t.objectives?.atakhan?.kills || 0,
