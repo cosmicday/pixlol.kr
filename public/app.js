@@ -2823,6 +2823,9 @@ window.switchDetailTab = async function (event, matchId, tabName) {
 // ==========================================
 // 상세 표 가운데 팀 요약 (밴 / 오브젝트)
 // ==========================================
+// 밴을 안 한 자리에 쓰는 빈 초상화 (인게임 밴 슬롯과 같은 이미지)
+const EMPTY_CHAMP_ICON = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/-1.png';
+
 const OBJECTIVE_LABELS = [
     ['baron', '바론', '#a78bfa'],
     ['dragon', '드래곤', '#f97316'],
@@ -2850,18 +2853,16 @@ function renderTeamSummaryRow(game) {
     const banHtml = (ids) => ids.length === 0
         ? `<span class="ts-noban">밴 없음</span>`
         : ids.map(id => {
+            // championId가 -1이면 시간 초과로 밴을 못 한 것. 인게임처럼 빈 초상화를 띄운다.
+            if (!id || id <= 0) {
+                return `<img class="ts-ban ts-ban-empty" src="${EMPTY_CHAMP_ICON}" title="밴 없음">`;
+            }
             const eng = championIdMap[id];
             return `<img class="ts-ban" src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${eng}.png"
-                         title="${(eng && window.korChampMap[eng]) || ''}" onerror="this.style.visibility='hidden'">`;
+                         title="${(eng && window.korChampMap[eng]) || ''}" onerror="this.src='${EMPTY_CHAMP_ICON}'">`;
         }).join('');
 
-    // 양 팀 모두 0인 오브젝트는 숨겨서 모드별로 알아서 정리되게 한다
-    const shown = OBJECTIVE_LABELS.filter(([key]) =>
-        (blue.objectives[key] || 0) > 0 || (red.objectives[key] || 0) > 0);
-
-    const objHtml = (t) => shown.length === 0
-        ? ''
-        : shown.map(([key, label, color]) => `
+    const objHtml = (t) => OBJECTIVE_LABELS.map(([key, label, color]) => `
             <span class="ts-obj">
                 <span class="ts-obj-label" style="color:${color};">${label}</span>
                 <span class="ts-obj-val">${t.objectives[key] || 0}</span>

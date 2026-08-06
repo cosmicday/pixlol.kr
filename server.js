@@ -510,8 +510,8 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         teamStats: (detail.info.teams || []).map(t => ({
             teamId: t.teamId,
             win: t.win === true,
-            // championId -1 은 "시간 초과로 밴 못 함"이라 걸러낸다
-            bans: (t.bans || []).filter(b => b.championId > 0).map(b => b.championId),
+            // championId -1 은 "시간 초과로 밴 못 함". 자리를 유지해야 빈 밴 표시가 되므로 그대로 보낸다.
+            bans: (t.bans || []).map(b => b.championId),
             objectives: {
                 baron: t.objectives?.baron?.kills || 0,
                 dragon: t.objectives?.dragon?.kills || 0,

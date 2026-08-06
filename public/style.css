@@ -857,6 +857,12 @@ body::before {
     opacity: 1;
 }
 
+.ts-ban-empty {
+    filter: none;
+    opacity: 0.55;
+    background: rgba(0, 0, 0, 0.35);
+}
+
 .ts-noban {
     font-size: 11px;
     color: #666;
