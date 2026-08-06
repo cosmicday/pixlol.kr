@@ -2863,8 +2863,9 @@ function renderTeamSummaryRow(game) {
         sum + Object.values(t.objectives || {}).reduce((a, b) => a + b, 0), 0);
     if (totalBans === 0 && totalObj === 0) return '';
 
+    // 밴이 아예 없는 모드(칼바람·신속대전 등)는 자리만 비운다. 안내 문구도 넣지 않는다.
     const banHtml = (ids) => ids.length === 0
-        ? `<span class="ts-noban">밴 없음</span>`
+        ? ''
         : ids.map(id => {
             // championId가 -1이면 시간 초과로 밴을 못 한 것. 인게임처럼 빈 초상화를 띄운다.
             if (!id || id <= 0) {
@@ -3030,7 +3031,10 @@ function liveChampKorName(championId) {
     return (engName && window.korChampMap[engName]) || engName || '알 수 없음';
 }
 
-function renderLivePlayer(p, side) {
+// 룬이 없는 모드. 관전 API가 기본값을 채워 보내서 그냥 두면 엉뚱한 룬이 뜬다.
+const LIVE_NO_RUNE_QUEUES = new Set([4310]);   // 클래식 5대5
+
+function renderLivePlayer(p, side, showRunes = true) {
     // 스트리머 모드(Riot ID 익명화)를 켠 사람은 riotId가 비어서 온다.
     // 이름 자리를 챔피언 이름으로 채운다. (포우·op.gg도 같은 방식)
     const anon = !p.riotId || !p.riotId.trim();
@@ -3043,7 +3047,7 @@ function renderLivePlayer(p, side) {
             ${spellImg(p.spell1)}
             ${spellImg(p.spell2)}
         </div>`;
-    const runes = `
+    const runes = !showRunes ? '' : `
         <div class="live-runes">
             ${p.mainRune ? `<img src="${liveRuneIcon(p.mainRune)}" onerror="this.style.visibility='hidden'">` : '<span></span>'}
             ${p.subStyle ? `<img src="${liveRuneIcon(p.subStyle)}" onerror="this.style.visibility='hidden'">` : '<span></span>'}
@@ -3080,8 +3084,8 @@ const LIVE_QUEUE_NAMES = {
     '자유랭크': '자유 랭크 게임',
     '아수라장': '무작위 총력전: 아수라장',
     '아레나': '아레나 3x6',
-    '일반(교차)': '일반 (교차선택)',
-    '일반(신속)': '일반 (신속대전)'
+    '일반(교차)': '일반 (교차 선택)',
+    '일반(신속)': '일반 (신속 대전)'
 };
 
 const LIVE_MAP_NAMES = {
@@ -3129,30 +3133,33 @@ function renderLiveGameHtml(g) {
             : `<img class="live-ban" src="${liveChampIcon(id)}" onerror="this.src='${EMPTY_CHAMP_ICON}'">`).join('');
 
     const hasBans = g.bans.blue.length > 0 || g.bans.red.length > 0;
+    const showRunes = !LIVE_NO_RUNE_QUEUES.has(g.queueId);
 
     return `
         <div class="live-game-box">
             ${g.isArena && g.subteams
             ? renderLiveArenaSide(g.subteams.slice(0, 3))
             : `<div class="live-team blue">
-                ${g.teams.blue.map(p => renderLivePlayer(p, 'blue')).join('')}
+                ${g.teams.blue.map(p => renderLivePlayer(p, 'blue', showRunes)).join('')}
             </div>`}
 
             <div class="live-center">
                 <div class="live-queue">${LIVE_QUEUE_NAMES[g.queueName] || g.queueName}</div>
                 <div class="live-map">&lt; ${LIVE_MAP_BY_QUEUE[g.queueId] || LIVE_MAP_NAMES[g.mapId] || '소환사의 협곡'} &gt;</div>
-                ${hasBans ? `
-                <div class="live-bans">
+                ${!hasBans ? '' : (g.isArena
+                    // 아레나는 18명이라 한 줄로 늘어놓으면 너무 길다. 3개씩 끊는다.
+                    ? `<div class="live-bans arena">${banHtml(g.bans.blue.concat(g.bans.red))}</div>`
+                    : `<div class="live-bans">
                     <div class="live-ban-row">${banHtml(g.bans.blue)}</div>
                     <div class="live-ban-row">${banHtml(g.bans.red)}</div>
-                </div>` : ''}
+                </div>`)}
                 <div class="live-timer" id="live-timer">-</div>
             </div>
 
             ${g.isArena && g.subteams
             ? renderLiveArenaSide(g.subteams.slice(3, 6))
             : `<div class="live-team red">
-                ${g.teams.red.map(p => renderLivePlayer(p, 'red')).join('')}
+                ${g.teams.red.map(p => renderLivePlayer(p, 'red', showRunes)).join('')}
             </div>`}
         </div>`;
 }

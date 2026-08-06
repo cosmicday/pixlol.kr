@@ -1330,6 +1330,14 @@ body::before {
     margin: 4px 0;
 }
 
+/* 아레나: 밴 18개를 3개씩 6줄로 */
+.live-bans.arena {
+    display: grid;
+    grid-template-columns: repeat(3, 20px);
+    gap: 3px;
+    justify-content: center;
+}
+
 .live-ban-row {
     display: flex;
     gap: 3px;
