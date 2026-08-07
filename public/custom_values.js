@@ -98,38 +98,6 @@ const customValues = {
             }
         }
     }, // 가렌 (직접 작성)
-    "Jade_Garen": { // 가렌
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // MovementSpeedDuration
-            "v2": "?", // MovementSpeedAmount*100
-            "v3": "?", // TotalDamage
-            "v4": "?", // SilenceDuration
-            "cooldown": "8",
-            "cost": "-",
-            "stats": "사거리 300"
-        },
-        "W": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // DamageReduction*100
-            "cooldown": "24 / 23 / 22 / 21 / 20",
-            "cost": "-"
-        },
-        "E": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalDamage
-            "cooldown": "13 / 12 / 11 / 10 / 9",
-            "cost": "-",
-            "stats": "사거리 325"
-        },
-        "R": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // ExecuteDamage
-            "cooldown": "160 / 120 / 80",
-            "cost": "-",
-            "stats": "사거리 400"
-        },
-    },
     "Galio": { // 갈리오
         "P": {
             "v1": "15 ~ 115 (레벨에 따라)" +
@@ -185,5370 +153,5929 @@ const customValues = {
     "Gangplank": { // 갱플랭크
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // GameModeInteger
+            "p1": "?", // GameModeInteger
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4.5",
             "cost": "50 / 45 / 40 / 35 / 30",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
         "W": {
-            "v1": "?", // BaseHealth
-            "v2": "?", // PercentHeal
+            "p1": "?", // BaseHealth
+            "p2": "?", // PercentHeal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 20 / 18 / 16 / 14",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "E": {
-            "v1": "?", // BarrelDuration
-            "v2": "?", // DebuffDuration
-            "v3": "?", // FinalSlowAmount
-            "v4": "?", // BarrelArmorPenetration
-            "v5": "?", // BonusDamageToChampions
-            "v6": "?", // BarrelDecayTime
+            "p1": "?", // BarrelDuration
+            "p2": "?", // DebuffDuration
+            "p3": "?", // FinalSlowAmount
+            "p4": "?", // BarrelArmorPenetration
+            "p5": "?", // BonusDamageToChampions
+            "p6": "?", // BarrelDecayTime
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "-",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "R": {
-            "v1": "?", // ZoneDuration
-            "v2": "?", // TotalWavesTooltip
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowPercent
-            "v5": "?", // OneWaveDamage
-            "v6": "?", // TotalDamageTooltip
-            "v7": "?", // DeathsDaughterDamage
-            "v8": "?", // DeathsDaughterSlowDuration
-            "v9": "?", // DeathsDaughterSlow
-            "v10": "?", // RaiseMoraleHasteDuration
-            "v11": "?", // RaiseMoraleHaste
+            "p1": "?", // ZoneDuration
+            "p2": "?", // TotalWavesTooltip
+            "p3": "?", // SlowDuration
+            "p4": "?", // SlowPercent
+            "p5": "?", // OneWaveDamage
+            "p6": "?", // TotalDamageTooltip
+            "p7": "?", // DeathsDaughterDamage
+            "p8": "?", // DeathsDaughterSlowDuration
+            "p9": "?", // DeathsDaughterSlow
+            "p10": "?", // RaiseMoraleHasteDuration
+            "p11": "?", // RaiseMoraleHaste
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "160 / 140 / 120",
             "cost": "100",
-            "stats": "사거리 30000"
-        },
-    },
-    "Jade_Gangplank": { // 갱플랭크
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // ShotDamage
-            "v2": "?", // GoldGain
-            "v3": "?", // f2
-            "cooldown": "5",
-            "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 625"
-        },
-        "W": {
-            "v1": "?", // TotalHeal
-            "cooldown": "22 / 21 / 20 / 19 / 18",
-            "cost": "65",
-            "stats": "사거리 20"
-        },
-        "E": {
-            "v1": "?", // PassiveAD
-            "v2": "?", // PassiveMS*100
-            "v3": "?", // Duration
-            "v4": "?", // ActiveAD
-            "v5": "?", // ActiveMS*100
-            "v6": "?", // AllyActiveAD
-            "v7": "?", // AllyActiveMS*100
-            "cooldown": "20",
-            "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1200"
-        },
-        "R": {
-            "v1": "?", // Duration
-            "v2": "?", // Slow*100
-            "v3": "?", // TotalDamage
-            "cooldown": "120 / 115 / 110",
-            "cost": "100",
-            "stats": "사거리 20000"
+            "stats": {
+                "사거리": "30000"
+            }
         },
     },
     "Gragas": { // 그라가스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BarrelMaxDuration
-            "v2": "?", // MinDamage
-            "v3": "?", // MaxDamage
-            "v4": "?", // SlowDuration
-            "v5": "?", // SlowPercent
-            "v6": "?", // SlowPercent*1.5
+            "p1": "?", // BarrelMaxDuration
+            "p2": "?", // MinDamage
+            "p3": "?", // MaxDamage
+            "p4": "?", // SlowDuration
+            "p5": "?", // SlowPercent
+            "p6": "?", // SlowPercent*1.5
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "80",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "W": {
-            "v1": "?", // DefenseDuration
-            "v2": "?", // DamageReduction
-            "v3": "?", // TotalDamage
-            "v4": "?", // MaxHPPercentDamage
+            "p1": "?", // DefenseDuration
+            "p2": "?", // DamageReduction
+            "p3": "?", // TotalDamage
+            "p4": "?", // MaxHPPercentDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5",
             "cost": "30",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "E": {
-            "v1": "?", // StunDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // CooldownRefund*100
+            "p1": "?", // StunDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // CooldownRefund*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13.5 / 13 / 12.5 / 12",
             "cost": "50",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "R": {
-            "v1": "?", // DamageDone
+            "p1": "?", // DamageDone
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
-            "stats": "사거리 1000"
-        },
-    },
-    "Jade_Gragas": { // 그라가스
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // BarrelDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // DebuffDuration
-            "v4": "?", // ASDebuff*-100
-            "cooldown": "11.5 / 10.5 / 9.5 / 8.5 / 7.5",
-            "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 1100"
-        },
-        "W": {
-            "v1": "?", // ManaRestored
-            "v2": "?", // Duration
-            "v3": "?", // DamageIncrease
-            "v4": "?", // DamageReduction*100
-            "cooldown": "25",
-            "cost": "",
-            "stats": "사거리 20"
-        },
-        "E": {
-            "v1": "?", // SplitDamageCalc
-            "v2": "?", // SlowDuration
-            "v3": "?", // Slow*-100
-            "cooldown": "7",
-            "cost": "75",
-            "stats": "사거리 600"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "cooldown": "100 / 90 / 80",
-            "cost": "100 / 125 / 150",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
     },
     "Graves": { // 그레이브즈
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TotalDetonationDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // TotalDetonationDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 11.25 / 9.5 / 7.75 / 6",
             "cost": "80",
-            "stats": "사거리 925"
+            "stats": {
+                "사거리": "925"
+            }
         },
         "W": {
-            "v1": "?", // Effect2Amount
-            "v2": "?", // ImpactDamage
+            "p1": "?", // Effect2Amount
+            "p2": "?", // ImpactDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "26 / 24 / 22 / 20 / 18",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "E": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // MaxStacks
-            "v3": "?", // ArmorPerStack
-            "v4": "?", // MRGrant
-            "v5": "?", // CooldownPerHit
+            "p1": "?", // BuffDuration
+            "p2": "?", // MaxStacks
+            "p3": "?", // ArmorPerStack
+            "p4": "?", // MRGrant
+            "p5": "?", // CooldownPerHit
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "40",
-            "stats": "사거리 425"
+            "stats": {
+                "사거리": "425"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // FalloffDamage
+            "p1": "?", // Damage
+            "p2": "?", // FalloffDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 80 / 60",
             "cost": "100",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
     },
     "Gwen": { // 그웬
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // MiniSwipeDamage
-            "v3": "?", // FinalSwipeDamage
-            "v4": "?", // TrueDamageConversion*100
-            "v5": "?", // MinionMod*100
-            "v6": "?", // ExecuteThreshold*100
-            "v7": "?", // ExecuteBonus
+            "p1": "?", // BuffDuration
+            "p2": "?", // MiniSwipeDamage
+            "p3": "?", // FinalSwipeDamage
+            "p4": "?", // TrueDamageConversion*100
+            "p5": "?", // MinionMod*100
+            "p6": "?", // ExecuteThreshold*100
+            "p7": "?", // ExecuteBonus
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6.5 / 5.75 / 5 / 4.25 / 3.5",
             "cost": "40",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "W": {
-            "v1": "?", // ZoneDuration
-            "v2": "?", // TotalResists
+            "p1": "?", // ZoneDuration
+            "p2": "?", // TotalResists
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "60"
         },
         "E": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // BonusAttackSpeed
-            "v3": "?", // OnHitDamage
-            "v4": "?", // BonusAttackRange
-            "v5": "?", // CDRefund*100
+            "p1": "?", // BuffDuration
+            "p2": "?", // BonusAttackSpeed
+            "p3": "?", // OnHitDamage
+            "p4": "?", // BonusAttackRange
+            "p5": "?", // CDRefund*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12.5 / 12 / 11.5 / 11",
             "cost": "35",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // DebuffDuration
-            "v3": "?", // InitialSlow*-100
-            "v4": "?", // LockoutTime
-            "v5": "?", // TotalDamage3
-            "v6": "?", // TotalDamage5
+            "p1": "?", // TotalDamage
+            "p2": "?", // DebuffDuration
+            "p3": "?", // InitialSlow*-100
+            "p4": "?", // LockoutTime
+            "p5": "?", // TotalDamage3
+            "p6": "?", // TotalDamage5
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
     },
     "Gnar": { // 나르
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
             "cost": "-",
-            "stats": "사거리 1100"
+            "stats": {
+                "사거리": "1100"
+            }
         },
         "W": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "-"
         },
         "E": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 19.5 / 17 / 14.5 / 12",
             "cost": "-",
-            "stats": "사거리 475"
+            "stats": {
+                "사거리": "475"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // RCCDuration
-            "v3": "?", // RSlowPercent
-            "v4": "?", // WallDamage
+            "p1": "?", // Damage
+            "p2": "?", // RCCDuration
+            "p3": "?", // RSlowPercent
+            "p4": "?", // WallDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "90 / 60 / 30",
             "cost": "-",
-            "stats": "사거리 590"
+            "stats": {
+                "사거리": "590"
+            }
         },
     },
     "Nami": { // 나미
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // StunDuration
-            "v2": "?", // TotalDamageTT
+            "p1": "?", // StunDuration
+            "p2": "?", // TotalDamageTT
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "60",
-            "stats": "사거리 875"
+            "stats": {
+                "사거리": "875"
+            }
         },
         "W": {
-            "v1": "?", // MaxTargets
-            "v2": "?", // TotalHeal
-            "v3": "?", // TotalDamage
-            "v4": "?", // BounceScaling
+            "p1": "?", // MaxTargets
+            "p2": "?", // TotalHeal
+            "p3": "?", // TotalDamage
+            "p4": "?", // BounceScaling
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 725"
+            "stats": {
+                "사거리": "725"
+            }
         },
         "E": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // HitCount
-            "v3": "?", // SlowDuration
-            "v4": "?", // TotalSlow
-            "v5": "?", // TotalDamage
+            "p1": "?", // BuffDuration
+            "p2": "?", // HitCount
+            "p3": "?", // SlowDuration
+            "p4": "?", // TotalSlow
+            "p5": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11",
             "cost": "55 / 60 / 65 / 70 / 75",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
-            "v1": "?", // SlowAmount
-            "v2": "?", // TotalDamage
-            "v3": "?", // MaxSlowDuration
+            "p1": "?", // SlowAmount
+            "p2": "?", // TotalDamage
+            "p3": "?", // MaxSlowDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 110 / 100",
             "cost": "100",
-            "stats": "사거리 2550"
+            "stats": {
+                "사거리": "2550"
+            }
         },
     },
     "Nasus": { // 나서스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // BasicStacks
-            "v3": "?", // BigStacks
+            "p1": "?", // TotalDamage
+            "p2": "?", // BasicStacks
+            "p3": "?", // BigStacks
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7.5 / 6.5 / 5.5 / 4.5 / 3.5",
             "cost": "20",
-            "stats": "사거리 255"
+            "stats": {
+                "사거리": "255"
+            }
         },
         "W": {
-            "v1": "?", // SlowBase
-            "v2": "?", // Duration
-            "v3": "?", // MaxSlowTooltipOnly
-            "v4": "?", // AttackSpeedSlowMult*100
+            "p1": "?", // SlowBase
+            "p2": "?", // Duration
+            "p3": "?", // MaxSlowTooltipOnly
+            "p4": "?", // AttackSpeedSlowMult*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "80",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "E": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // ArmorShredPercent*-100
-            "v3": "?", // Duration
-            "v4": "?", // TotalDotDamage
+            "p1": "?", // InitialDamage
+            "p2": "?", // ArmorShredPercent*-100
+            "p3": "?", // Duration
+            "p4": "?", // TotalDotDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // BonusHealth
-            "v2": "?", // InitialResistGain
-            "v3": "?", // DamageCalc
-            "v4": "?", // QCDR*100
+            "p1": "?", // BonusHealth
+            "p2": "?", // InitialResistGain
+            "p3": "?", // DamageCalc
+            "p4": "?", // QCDR*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 400"
-        },
-    },
-    "Jade_Nasus": { // 나서스
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // BasicStacks
-            "v3": "?", // BigStacks
-            "cooldown": "8 / 7 / 6 / 5 / 4",
-            "cost": "20",
-            "stats": "사거리 255"
-        },
-        "W": {
-            "v1": "?", // Duration
-            "v2": "?", // SlowBase
-            "v3": "?", // AttackSpeedBaseTotal
-            "v4": "?", // MaxSlowTooltipOnly
-            "v5": "?", // AttackSpeedMaxTotal
-            "cooldown": "15 / 14 / 13 / 12 / 11",
-            "cost": "80",
-            "stats": "사거리 700"
-        },
-        "E": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // Duration
-            "v3": "?", // TotalArmorShred
-            "v4": "?", // TickDotDamage
-            "cooldown": "12",
-            "cost": "70 / 85 / 100 / 115 / 130",
-            "stats": "사거리 650"
-        },
-        "R": {
-            "v1": "?", // BonusHealth
-            "v2": "?", // AttackRangeIncrease
-            "v3": "?", // DamageCalc
-            "v4": "?", // MaxDamageCap
-            "cooldown": "120",
-            "cost": "100",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
     },
     "Naafiri": { // 나피리
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "W": {
-            "v1": "?", // UntargetableDuration
-            "v2": "?", // PackmatesToAdd
-            "v3": "?", // Duration
-            "v4": "?", // BonusAD
-            "v5": "?", // MoveSpeedAmount*100
+            "p1": "?", // UntargetableDuration
+            "p2": "?", // PackmatesToAdd
+            "p3": "?", // Duration
+            "p4": "?", // BonusAD
+            "p5": "?", // MoveSpeedAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "26 / 24 / 22 / 20 / 18",
             "cost": "60",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamageFirstSlash
-            "v2": "?", // TotalDamageSecondSlash
+            "p1": "?", // TotalDamageFirstSlash
+            "p2": "?", // TotalDamageSecondSlash
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "40",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // PackmateDamage
-            "v3": "?", // TakedownWindow
-            "v4": "?", // ShieldDuration
-            "v5": "?", // ShieldTotal
+            "p1": "?", // TotalDamage
+            "p2": "?", // PackmateDamage
+            "p3": "?", // TakedownWindow
+            "p4": "?", // ShieldDuration
+            "p5": "?", // ShieldTotal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 95 / 80",
             "cost": "100",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
     },
     "Nautilus": { // 노틸러스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // QDamageCalc
+            "p1": "?", // QDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "60",
-            "stats": "사거리 1150"
+            "stats": {
+                "사거리": "1150"
+            }
         },
         "W": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // ShieldCalc
-            "v3": "?", // DotDamageCalc
+            "p1": "?", // ShieldDuration
+            "p2": "?", // ShieldCalc
+            "p3": "?", // DotDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "60",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "E": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercent*100
+            "p1": "?", // DamageCalc
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "R": {
-            "v1": "?", // PrimaryTargetDamage
-            "v2": "?", // StunDuration
-            "v3": "?", // SecondaryTargetDamage
+            "p1": "?", // PrimaryTargetDamage
+            "p2": "?", // StunDuration
+            "p3": "?", // SecondaryTargetDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 825"
+            "stats": {
+                "사거리": "825"
+            }
         },
     },
     "Nocturne": { // 녹턴
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TrailDuration
-            "v3": "?", // MoveSpeed
-            "v4": "?", // BonusTrailAD
+            "p1": "?", // TotalDamage
+            "p2": "?", // TrailDuration
+            "p3": "?", // MoveSpeed
+            "p4": "?", // BonusTrailAD
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 1125"
+            "stats": {
+                "사거리": "1125"
+            }
         },
         "W": {
-            "v1": "?", // ActiveAS
-            "v2": "?", // DoubleASDuration
-            "v3": "?", // ActiveAS*2
+            "p1": "?", // ActiveAS
+            "p2": "?", // DoubleASDuration
+            "p3": "?", // ActiveAS*2
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "50",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "E": {
-            "v1": "?", // TooltipFearMS*100
-            "v2": "?", // LeashDuration
-            "v3": "?", // TotalDamage
-            "v4": "?", // CCDuration
+            "p1": "?", // TooltipFearMS*100
+            "p2": "?", // LeashDuration
+            "p3": "?", // TotalDamage
+            "p4": "?", // CCDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 425"
+            "stats": {
+                "사거리": "425"
+            }
         },
         "R": {
-            "v1": "?", // ParanoiaDuration
-            "v2": "?", // Damage
+            "p1": "?", // ParanoiaDuration
+            "p2": "?", // Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 115 / 90",
             "cost": "100",
-            "stats": "사거리 2500 / 3250 / 4000"
+            "stats": {
+                "사거리": "2500 / 3250 / 4000"
+            }
         },
     },
     "Nunu": { // 누누와 윌럼프
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MonsterMinionDamage
-            "v2": "?", // MonsterHealing
-            "v3": "?", // TotalChampionDamage
-            "v4": "?", // ChampionHealing
-            "v5": "?", // LowHealthThreshhold*100
-            "v6": "?", // LowHealthHealingScalar*100
+            "p1": "?", // MonsterMinionDamage
+            "p2": "?", // MonsterHealing
+            "p3": "?", // TotalChampionDamage
+            "p4": "?", // ChampionHealing
+            "p5": "?", // LowHealthThreshhold*100
+            "p6": "?", // LowHealthHealingScalar*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "60",
-            "stats": "사거리 125"
+            "stats": {
+                "사거리": "125"
+            }
         },
         "W": {
-            "v1": "?", // NoImpactSnowballDamage
-            "v2": "?", // MaximumSnowballDamage
-            "v3": "?", // BaseKnockupDuration
-            "v4": "?", // MaximumStunDuration
+            "p1": "?", // NoImpactSnowballDamage
+            "p2": "?", // MaximumSnowballDamage
+            "p3": "?", // BaseKnockupDuration
+            "p4": "?", // MaximumStunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 7500"
+            "stats": {
+                "사거리": "7500"
+            }
         },
         "E": {
-            "v1": "?", // TotalSnowballDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*-100
-            "v4": "?", // TotalSpellDuration
-            "v5": "?", // RootDuration
-            "v6": "?", // TotalRootDamage
+            "p1": "?", // TotalSnowballDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*-100
+            "p4": "?", // TotalSpellDuration
+            "p5": "?", // RootDuration
+            "p6": "?", // TotalRootDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
         "R": {
-            "v1": "?", // ChannelDuration
-            "v2": "?", // SlowStartAmount*-100
-            "v3": "?", // MaxSlowAmount*-100
-            "v4": "?", // TotalShieldAmount
-            "v5": "?", // ShieldDecayDuration
-            "v6": "?", // MaximumDamage
+            "p1": "?", // ChannelDuration
+            "p2": "?", // SlowStartAmount*-100
+            "p3": "?", // MaxSlowAmount*-100
+            "p4": "?", // TotalShieldAmount
+            "p5": "?", // ShieldDecayDuration
+            "p6": "?", // MaximumDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 100 / 90",
             "cost": "100",
-            "stats": "사거리 650"
-        },
-    },
-    "Jade_Nunu": { // 누누와 윌럼프
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // TotalHealing
-            "v3": "?", // ConsumeDuration
-            "cooldown": "17 / 15 / 13 / 11 / 9",
-            "cost": "60",
-            "stats": "사거리 125"
-        },
-        "W": {
-            "v1": "?", // MoveSpeed*100
-            "v2": "?", // AttackSpeed*100
-            "cooldown": "15",
-            "cost": "50",
-            "stats": "사거리 700"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowAmount*-100
-            "cooldown": "6",
-            "cost": "75 / 85 / 95 / 105 / 115",
-            "stats": "사거리 550"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "cooldown": "110 / 100 / 90",
-            "cost": "100",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
     },
     "Nidalee": { // 니달리
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // HumanMinimumDamage
-            "v2": "?", // HumanMaximumDamage
+            "p1": "?", // HumanMinimumDamage
+            "p2": "?", // HumanMaximumDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1500"
+            "stats": {
+                "사거리": "1500"
+            }
         },
         "W": {
-            "v1": "?", // Effect3Amount
-            "v2": "?", // DamagePerSecond
-            "v3": "?", // MaxTraps
+            "p1": "?", // Effect3Amount
+            "p2": "?", // DamagePerSecond
+            "p3": "?", // MaxTraps
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "30 / 35 / 40 / 45 / 50",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "E": {
-            "v1": "?", // TotalHealing
-            "v2": "?", // MaxHealing
-            "v3": "?", // ASDuration
-            "v4": "?", // BonusAS*100
+            "p1": "?", // TotalHealing
+            "p2": "?", // MaxHealing
+            "p3": "?", // ASDuration
+            "p4": "?", // BonusAS*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "R": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3",
             "cost": "-",
-            "stats": "사거리 20"
-        },
-    },
-    "Jade_Nidalee": { // 니달리
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // StartingDamage
-            "v2": "?", // MaxDamage
-            "cooldown": "6",
-            "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 1500"
-        },
-        "W": {
-            "v1": "?", // DamagePerSecond
-            "v2": "?", // ResistDecreases*100
-            "cooldown": "18",
-            "cost": "60 / 75 / 90 / 105 / 120",
-            "stats": "사거리 900"
-        },
-        "E": {
-            "v1": "?", // TotalHealing
-            "v2": "?", // BonusAS*100
-            "cooldown": "10",
-            "cost": "60 / 80 / 100 / 120 / 140",
-            "stats": "사거리 900"
-        },
-        "R": {
-            "cooldown": "4",
-            "cost": "",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
     },
     "Neeko": { // 니코
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // ExplosionDamage
-            "v2": "?", // SecondDamage
+            "p1": "?", // ExplosionDamage
+            "p2": "?", // SecondDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "W": {
-            "v1": "?", // PassiveBonusDamageCalc
-            "v2": "?", // PassiveHasteDuration
-            "v3": "?", // PassiveHaste
-            "v4": "?", // StealthDuration
-            "v5": "?", // CloneDuration
-            "v6": "?", // HasteDuration
-            "v7": "?", // Haste
+            "p1": "?", // PassiveBonusDamageCalc
+            "p2": "?", // PassiveHasteDuration
+            "p3": "?", // PassiveHaste
+            "p4": "?", // StealthDuration
+            "p5": "?", // CloneDuration
+            "p6": "?", // HasteDuration
+            "p7": "?", // Haste
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "-",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "E": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // MinRootDuration
-            "v3": "?", // MaxRootDuration
+            "p1": "?", // BaseDamage
+            "p2": "?", // MinRootDuration
+            "p3": "?", // MaxRootDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "R": {
-            "v1": "?", // DelayUntilExplosion
-            "v2": "?", // TotalDamage
-            "v3": "?", // StunDuration
-            "v4": "?", // DelayBeforePassiveRemoval
+            "p1": "?", // DelayUntilExplosion
+            "p2": "?", // TotalDamage
+            "p3": "?", // StunDuration
+            "p4": "?", // DelayBeforePassiveRemoval
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 105 / 90",
             "cost": "100",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
     },
     "Nilah": { // 닐라
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // CritArmorPen
-            "v2": "?", // CritLifesteal
-            "v3": "?", // ShieldDuration
-            "v4": "?", // DamageCalc
-            "v5": "?", // BonusAttackSpeedCalc
-            "v6": "?", // BuffDuration
+            "p1": "?", // CritArmorPen
+            "p2": "?", // CritLifesteal
+            "p3": "?", // ShieldDuration
+            "p4": "?", // DamageCalc
+            "p5": "?", // BonusAttackSpeedCalc
+            "p6": "?", // BuffDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "30",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // BaseDuration
-            "v2": "?", // MoveSpeedPercent*100
-            "v3": "?", // MagicDamageReduction*100
-            "v4": "?", // ShareBaseDuration
+            "p1": "?", // BaseDuration
+            "p2": "?", // MoveSpeedPercent*100
+            "p3": "?", // MagicDamageReduction*100
+            "p4": "?", // ShareBaseDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "26 / 25 / 24 / 23 / 22",
             "cost": "60 / 45 / 30 / 15 / 0",
-            "stats": "사거리 150"
+            "stats": {
+                "사거리": "150"
+            }
         },
         "E": {
-            "v1": "?", // DashDamage
+            "p1": "?", // DashDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.5",
             "cost": "40",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "R": {
-            "v1": "?", // DamagePerTickCalcTooltip
-            "v2": "?", // DamageCalc
-            "v3": "?", // ChampHealingPercent
-            "v4": "?", // Duration
+            "p1": "?", // DamagePerTickCalcTooltip
+            "p2": "?", // DamageCalc
+            "p3": "?", // ChampHealingPercent
+            "p4": "?", // Duration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 95 / 80",
             "cost": "100",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
     },
     "Darius": { // 다리우스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BladeDamage
-            "v2": "?", // HandleDamage
-            "v3": "?", // MissingHealthHeal
-            "v4": "?", // MissingHealPercent
+            "p1": "?", // BladeDamage
+            "p2": "?", // HandleDamage
+            "p3": "?", // MissingHealthHeal
+            "p4": "?", // MissingHealPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "25 / 30 / 35 / 40 / 45",
-            "stats": "사거리 1"
+            "stats": {
+                "사거리": "1"
+            }
         },
         "W": {
-            "v1": "?", // EmpoweredAttackDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercent
-            "v4": "?", // PercentCDRefund
+            "p1": "?", // EmpoweredAttackDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercent
+            "p4": "?", // PercentCDRefund
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5",
             "cost": "40",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "E": {
-            "v1": "?", // PassivePercentArmorPen
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercent
+            "p1": "?", // PassivePercentArmorPen
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "26 / 23.5 / 21 / 18.5 / 16",
             "cost": "70 / 60 / 50 / 40 / 30",
-            "stats": "사거리 535"
+            "stats": {
+                "사거리": "535"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // RDamagePercentPerHemoStack*100
-            "v3": "?", // MaximumDamage
-            "v4": "?", // RRecastDuration
+            "p1": "?", // Damage
+            "p2": "?", // RDamagePercentPerHemoStack*100
+            "p3": "?", // MaximumDamage
+            "p4": "?", // RRecastDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100 / 100 / 0",
-            "stats": "사거리 460"
+            "stats": {
+                "사거리": "460"
+            }
         },
     },
     "Diana": { // 다이애나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // MoonlightDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // MoonlightDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "50",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "W": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // TotalMaxDamage
-            "v4": "?", // ShieldValue
+            "p1": "?", // ShieldDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // TotalMaxDamage
+            "p4": "?", // ShieldValue
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 13.5 / 12 / 10.5 / 9",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 20 / 18 / 16 / 14",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 825"
+            "stats": {
+                "사거리": "825"
+            }
         },
         "R": {
-            "v1": "?", // SlowDuration
-            "v2": "?", // SlowTooltip
-            "v3": "?", // RExplosionDamage
-            "v4": "?", // RMultihitAmplification
-            "v5": "?", // MaxDamage
+            "p1": "?", // SlowDuration
+            "p2": "?", // SlowTooltip
+            "p3": "?", // RExplosionDamage
+            "p4": "?", // RMultihitAmplification
+            "p5": "?", // MaxDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 90 / 80",
             "cost": "100",
-            "stats": "사거리 475"
+            "stats": {
+                "사거리": "475"
+            }
         },
     },
     "Draven": { // 드레이븐
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "45",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "W": {
-            "v1": "?", // Temp_MSMod
-            "v2": "?", // Temp_MSDuration
-            "v3": "?", // Temp_ASDuration
-            "v4": "?", // Temp_AS
+            "p1": "?", // Temp_MSMod
+            "p2": "?", // Temp_MSDuration
+            "p3": "?", // Temp_ASDuration
+            "p4": "?", // Temp_AS
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "40 / 35 / 30 / 25 / 20",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "70",
-            "stats": "사거리 1050"
+            "stats": {
+                "사거리": "1050"
+            }
         },
         "R": {
-            "v1": "?", // RCalculatedDamage
-            "v2": "?", // RDamageReductionPerHit*100
-            "v3": "?", // RMinDamagePercent
-            "v4": "?", // RPassiveTrueDamage
-            "v5": "?", // RPassiveStacksCoefficient*100
+            "p1": "?", // RCalculatedDamage
+            "p2": "?", // RDamageReductionPerHit*100
+            "p3": "?", // RMinDamagePercent
+            "p4": "?", // RPassiveTrueDamage
+            "p5": "?", // RPassiveStacksCoefficient*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 90 / 80",
             "cost": "100",
-            "stats": "사거리 20000"
+            "stats": {
+                "사거리": "20000"
+            }
         },
     },
     "Ryze": { // 라이즈
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // RuneDuration
-            "v2": "?", // MaximumRunes
-            "v3": "?", // QDamageCalc
-            "v4": "?", // MovementSpeedDuration
-            "v5": "?", // MovementSpeedAmount
+            "p1": "?", // RuneDuration
+            "p2": "?", // MaximumRunes
+            "p3": "?", // QDamageCalc
+            "p4": "?", // MovementSpeedDuration
+            "p5": "?", // MovementSpeedAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5",
             "cost": "40 / 38 / 36 / 34 / 32",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "W": {
-            "v1": "?", // WDamageCalc
-            "v2": "?", // CCDuration
-            "v3": "?", // SlowAmount*100
+            "p1": "?", // WDamageCalc
+            "p2": "?", // CCDuration
+            "p3": "?", // SlowAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10.5 / 10 / 9.5 / 9",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 615"
+            "stats": {
+                "사거리": "615"
+            }
         },
         "E": {
-            "v1": "?", // EDamageCalc
-            "v2": "?", // DebuffDuration
+            "p1": "?", // EDamageCalc
+            "p2": "?", // DebuffDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3.5 / 3.25 / 3 / 2.75 / 2.5",
             "cost": "35 / 45 / 55 / 65 / 75",
-            "stats": "사거리 615"
+            "stats": {
+                "사거리": "615"
+            }
         },
         "R": {
-            "v1": "?", // OverloadDamageBonus
-            "v2": "?", // ChargeTimeTooltip
+            "p1": "?", // OverloadDamageBonus
+            "p2": "?", // ChargeTimeTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "180 / 160 / 140",
             "cost": "100",
-            "stats": "사거리 3000"
-        },
-    },
-    "Jade_Ryze": { // 라이즈
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // PassiveCooldown*100
-            "v2": "?", // DamageCalc
-            "cooldown": "3.5",
-            "cost": "60",
-            "stats": "사거리 600"
-        },
-        "W": {
-            "v1": "?", // CCDuration
-            "v2": "?", // DamageCalc
-            "cooldown": "14",
-            "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 615"
-        },
-        "E": {
-            "v1": "?", // MaximumHits
-            "v2": "?", // DamageCalc
-            "v3": "?", // ResistShred
-            "cooldown": "14",
-            "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 615"
-        },
-        "R": {
-            "v1": "?", // Duration
-            "v2": "?", // AreaDamageMod*100
-            "v3": "?", // SpellVamp*100
-            "v4": "?", // MovementSpeed
-            "cooldown": "70 / 60 / 50",
-            "cost": "-",
-            "stats": "사거리 3000"
+            "stats": {
+                "사거리": "3000"
+            }
         },
     },
     "Rakan": { // 라칸
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // HealDelay
-            "v3": "?", // TotalHeal
+            "p1": "?", // TotalDamage
+            "p2": "?", // HealDelay
+            "p3": "?", // TotalHeal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "45",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "W": {
-            "v1": "?", // KnockupDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // KnockupDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalShield
-            "v3": "?", // RecastWindow
+            "p1": "?", // Duration
+            "p2": "?", // TotalShield
+            "p3": "?", // RecastWindow
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // Duration
-            "v2": "?", // InitialCastSpeed
-            "v3": "?", // TotalDamageTooltip
-            "v4": "?", // CharmDuration
-            "v5": "?", // TouchSpeed
+            "p1": "?", // Duration
+            "p2": "?", // InitialCastSpeed
+            "p3": "?", // TotalDamageTooltip
+            "p4": "?", // CharmDuration
+            "p5": "?", // TouchSpeed
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 110 / 90",
             "cost": "100",
-            "stats": "사거리 150"
+            "stats": {
+                "사거리": "150"
+            }
         },
     },
     "Rammus": { // 람머스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MinimumMoveSpeed
-            "v2": "?", // RollDuration
-            "v3": "?", // MaximumMoveSpeed
-            "v4": "?", // PowerBallDamage
-            "v5": "?", // SlowDuration
-            "v6": "?", // SlowPercent
+            "p1": "?", // MinimumMoveSpeed
+            "p2": "?", // RollDuration
+            "p3": "?", // MaximumMoveSpeed
+            "p4": "?", // PowerBallDamage
+            "p5": "?", // SlowDuration
+            "p6": "?", // SlowPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 10.5 / 9 / 7.5 / 6",
             "cost": "60",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "W": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // BonusArmorTooltip
-            "v3": "?", // BonusMRTooltip
-            "v4": "?", // ReturnDamageCalc
+            "p1": "?", // BuffDuration
+            "p2": "?", // BonusArmorTooltip
+            "p3": "?", // BonusMRTooltip
+            "p4": "?", // ReturnDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "40",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "E": {
-            "v1": "?", // Duration
-            "v2": "?", // MonsterDamageCalc
+            "p1": "?", // Duration
+            "p2": "?", // MonsterDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "50",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "R": {
-            "v1": "?", // InitialDamageCalc
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // KnockupDuration
-            "v5": "?", // BuffDuration
-            "v6": "?", // NumberOfPulses
+            "p1": "?", // InitialDamageCalc
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "p4": "?", // KnockupDuration
+            "p5": "?", // BuffDuration
+            "p6": "?", // NumberOfPulses
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 105 / 90",
             "cost": "100",
-            "stats": "사거리 25000"
-        },
-    },
-    "Jade_Rammus": { // 람머스
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowPercent*-100
-            "cooldown": "10",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 300"
-        },
-        "W": {
-            "v1": "?", // Armour
-            "v2": "?", // TotalDamage
-            "cooldown": "14",
-            "cost": "40",
-            "stats": "사거리 300"
-        },
-        "E": {
-            "v1": "?", // Duration
-            "v2": "?", // ArmourReduction*-1
-            "cooldown": "12",
-            "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 325"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "cooldown": "60",
-            "cost": "120",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Lux": { // 럭스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // RootDuration
-            "v2": "?", // TotalDamageTT
+            "p1": "?", // RootDuration
+            "p2": "?", // TotalDamageTT
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "50",
-            "stats": "사거리 1175"
+            "stats": {
+                "사거리": "1175"
+            }
         },
         "W": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // TotalShieldTT
+            "p1": "?", // ShieldDuration
+            "p2": "?", // TotalShieldTT
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 1150"
+            "stats": {
+                "사거리": "1150"
+            }
         },
         "E": {
-            "v1": "?", // SlowPercent
-            "v2": "?", // SlowZoneDuration
-            "v3": "?", // TotalDamageTT
-            "v4": "?", // SlowLingerDuration
+            "p1": "?", // SlowPercent
+            "p2": "?", // SlowZoneDuration
+            "p3": "?", // TotalDamageTT
+            "p4": "?", // SlowLingerDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 1100"
+            "stats": {
+                "사거리": "1100"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "60 / 50 / 40",
             "cost": "100",
-            "stats": "사거리 3340"
-        },
-    },
-    "Jade_Lux": { // 럭스
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamageTT
-            "v2": "?", // HalfTotalDamageTT
-            "cooldown": "15 / 14 / 13 / 12 / 11",
-            "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 1175"
-        },
-        "W": {
-            "v1": "?", // TotalShieldTT
-            "cooldown": "14 / 13 / 12 / 11 / 10",
-            "cost": "60",
-            "stats": "사거리 1150"
-        },
-        "E": {
-            "v1": "?", // SlowPercent
-            "v2": "?", // TotalDamageTT
-            "cooldown": "10",
-            "cost": "70 / 85 / 100 / 115 / 130",
-            "stats": "사거리 1000"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "cooldown": "80 / 65 / 50",
-            "cost": "100",
-            "stats": "사거리 3340"
+            "stats": {
+                "사거리": "3340"
+            }
         },
     },
     "Rumble": { // 럼블
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // FlamespitterDuration
-            "v2": "?", // FlatDamage
-            "v3": "?", // HealthDamage*100
-            "v4": "?", // MinionMod*100
-            "v5": "?", // EmpoweredDamage
-            "v6": "?", // EmpoweredHealth
-            "v7": "?", // MonsterCap
+            "p1": "?", // FlamespitterDuration
+            "p2": "?", // FlatDamage
+            "p3": "?", // HealthDamage*100
+            "p4": "?", // MinionMod*100
+            "p5": "?", // EmpoweredDamage
+            "p6": "?", // EmpoweredHealth
+            "p7": "?", // MonsterCap
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // ShieldDuration.1
-            "v2": "?", // TotalShield
-            "v3": "?", // MoveSpeedDuration
-            "v4": "?", // MoveSpeed*100
-            "v5": "?", // EmpoweredShield
-            "v6": "?", // EmpoweredMS
+            "p1": "?", // ShieldDuration.1
+            "p2": "?", // TotalShield
+            "p3": "?", // MoveSpeedDuration
+            "p4": "?", // MoveSpeed*100
+            "p5": "?", // EmpoweredShield
+            "p6": "?", // EmpoweredMS
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // BaseSlowAmount
-            "v4": "?", // ShredDuration
-            "v5": "?", // PercMagicPen*100
-            "v6": "?", // EmpoweredSlowAmount
-            "v7": "?", // EnhancedMagicPen*100
-            "v8": "?", // EmpDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // BaseSlowAmount
+            "p4": "?", // ShredDuration
+            "p5": "?", // PercMagicPen*100
+            "p6": "?", // EmpoweredSlowAmount
+            "p7": "?", // EnhancedMagicPen*100
+            "p8": "?", // EmpDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.5",
             "cost": "",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "R": {
-            "v1": "?", // TrailDuration
-            "v2": "?", // SlowAmount
-            "v3": "?", // DamagePerSecond
+            "p1": "?", // TrailDuration
+            "p2": "?", // SlowAmount
+            "p3": "?", // DamagePerSecond
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 105 / 80",
             "cost": "-",
-            "stats": "사거리 1750"
+            "stats": {
+                "사거리": "1750"
+            }
         },
     },
     "Renata": { // 레나타 글라스크
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // RootDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // StunDuration
+            "p1": "?", // RootDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16",
             "cost": "80",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "W": {
-            "v1": "?", // ASCalc
-            "v2": "?", // MSCalc
-            "v3": "?", // Duration
-            "v4": "?", // FinalASCalc
-            "v5": "?", // FinalMSCalc
-            "v6": "?", // TriumphPercent
+            "p1": "?", // ASCalc
+            "p2": "?", // MSCalc
+            "p3": "?", // Duration
+            "p4": "?", // FinalASCalc
+            "p5": "?", // FinalMSCalc
+            "p6": "?", // TriumphPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "28 / 27 / 26 / 25 / 24",
             "cost": "80",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // ShieldDuration
-            "v4": "?", // ShieldCalc
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // ShieldDuration
+            "p4": "?", // ShieldCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
-            "v1": "?", // BerserkDuration
-            "v2": "?", // BonusAttackSpeed*100
+            "p1": "?", // BerserkDuration
+            "p2": "?", // BonusAttackSpeed*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "150 / 130 / 110",
             "cost": "100",
-            "stats": "사거리 2000"
+            "stats": {
+                "사거리": "2000"
+            }
         },
     },
     "Renekton": { // 레넥톤
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BasicDamage
-            "v2": "?", // NonChampHealing
-            "v3": "?", // ChampHealing
-            "v4": "?", // MinionFuryGain
-            "v5": "?", // ChampionFuryGain
-            "v6": "?", // EmpDamage
-            "v7": "?", // EmpNonChampHealing
-            "v8": "?", // EmpChampHealing
+            "p1": "?", // BasicDamage
+            "p2": "?", // NonChampHealing
+            "p3": "?", // ChampHealing
+            "p4": "?", // MinionFuryGain
+            "p5": "?", // ChampionFuryGain
+            "p6": "?", // EmpDamage
+            "p7": "?", // EmpNonChampHealing
+            "p8": "?", // EmpChampHealing
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "-",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "W": {
-            "v1": "?", // StunDuration
-            "v2": "?", // BasicTotalDamage
-            "v3": "?", // BonusFuryVsChamps
-            "v4": "?", // EmpTotalDamage
-            "v5": "?", // EnragedStunDuration
+            "p1": "?", // StunDuration
+            "p2": "?", // BasicTotalDamage
+            "p3": "?", // BonusFuryVsChamps
+            "p4": "?", // EmpTotalDamage
+            "p5": "?", // EnragedStunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14 / 12 / 10 / 8",
             "cost": "-",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "E": {
-            "v1": "?", // BasicDamage
-            "v2": "?", // MinionRageGeneration
-            "v3": "?", // ChampionRageGeneration
-            "v4": "?", // DiceTimer
-            "v5": "?", // EmpDamage
-            "v6": "?", // ShredTimer
-            "v7": "?", // EnragedArmorShred
+            "p1": "?", // BasicDamage
+            "p2": "?", // MinionRageGeneration
+            "p3": "?", // ChampionRageGeneration
+            "p4": "?", // DiceTimer
+            "p5": "?", // EmpDamage
+            "p6": "?", // ShredTimer
+            "p7": "?", // EnragedArmorShred
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
             "cost": "-",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "R": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // HealthGain
-            "v3": "?", // FuryOnCast
-            "v4": "?", // TotalDamagePerSecond
-            "v5": "?", // FuryPerSecond
+            "p1": "?", // BuffDuration
+            "p2": "?", // HealthGain
+            "p3": "?", // FuryOnCast
+            "p4": "?", // TotalDamagePerSecond
+            "p5": "?", // FuryPerSecond
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "-",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
     },
     "Leona": { // 레오나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // StunDuration
-            "v2": "?", // TotalDamageTooltip
+            "p1": "?", // StunDuration
+            "p2": "?", // TotalDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5",
             "cost": "30 / 35 / 40 / 45 / 50",
-            "stats": "사거리 100"
+            "stats": {
+                "사거리": "100"
+            }
         },
         "W": {
-            "v1": "?", // FlatDamageReduction
-            "v2": "?", // ArmorMRDuration
-            "v3": "?", // BonusArmorTooltip
-            "v4": "?", // BonusMRTooltip
-            "v5": "?", // TotalDamageTooltip
+            "p1": "?", // FlatDamageReduction
+            "p2": "?", // ArmorMRDuration
+            "p3": "?", // BonusArmorTooltip
+            "p4": "?", // BonusMRTooltip
+            "p5": "?", // TotalDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "60",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamageTooltip
-            "v2": "?", // RootDuration
+            "p1": "?", // TotalDamageTooltip
+            "p2": "?", // RootDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 10.5 / 9 / 7.5 / 6",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 875"
+            "stats": {
+                "사거리": "875"
+            }
         },
         "R": {
-            "v1": "?", // ExplosionCalculatedDamage
-            "v2": "?", // CCDuration
-            "v3": "?", // SlowPercent
+            "p1": "?", // ExplosionCalculatedDamage
+            "p2": "?", // CCDuration
+            "p3": "?", // SlowPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "90 / 75 / 60",
             "cost": "100",
-            "stats": "사거리 1200"
-        },
-    },
-    "Jade_Leona": { // 레오나
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamageTooltip
-            "cooldown": "11 / 10 / 9 / 8 / 7",
-            "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 100"
-        },
-        "W": {
-            "v1": "?", // BonusARMR
-            "v2": "?", // TotalDamageTooltip
-            "cooldown": "14",
-            "cost": "60",
-            "stats": "사거리 450"
-        },
-        "E": {
-            "v1": "?", // TotalDamageTooltip
-            "cooldown": "13 / 12 / 11 / 10 / 9",
-            "cost": "60",
-            "stats": "사거리 875"
-        },
-        "R": {
-            "v1": "?", // ExplosionCalculatedDamage
-            "v2": "?", // CCDuration
-            "v3": "?", // SlowPercent
-            "cooldown": "90 / 75 / 60",
-            "cost": "100 / 150 / 200",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
     },
     "RekSai": { // 렉사이
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // AttackSpeed*100
-            "v3": "?", // TotalDamageTooltip
+            "p1": "?", // BuffDuration
+            "p2": "?", // AttackSpeed*100
+            "p3": "?", // TotalDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4 / 3.5 / 3 / 2.5 / 2",
             "cost": "-",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "W": {
-            "v1": "?", // BurrowedMoveSpeed
-            "v2": "?", // VisionRadiusMod*-100
+            "p1": "?", // BurrowedMoveSpeed
+            "p2": "?", // VisionRadiusMod*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "-",
-            "stats": "사거리 1650"
+            "stats": {
+                "사거리": "1650"
+            }
         },
         "E": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "-",
-            "stats": "사거리 250"
+            "stats": {
+                "사거리": "250"
+            }
         },
         "R": {
-            "v1": "?", // PreyMarkDuration
-            "v2": "?", // RBaseDamageCalc
-            "v3": "?", // PercentHealthDamage
+            "p1": "?", // PreyMarkDuration
+            "p2": "?", // RBaseDamageCalc
+            "p3": "?", // PercentHealthDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "-",
-            "stats": "사거리 1500"
+            "stats": {
+                "사거리": "1500"
+            }
         },
     },
     "Rell": { // 렐
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // StunDuration
-            "v2": "?", // Damage
+            "p1": "?", // StunDuration
+            "p2": "?", // Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10.5 / 10 / 9.5 / 9",
             "cost": "50",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "40",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "E": {
-            "v1": "?", // Duration
-            "v2": "?", // MinMS*100
-            "v3": "?", // MaxMS*100
-            "v4": "?", // MaxHealthDamageCalc
+            "p1": "?", // Duration
+            "p2": "?", // MinMS*100
+            "p3": "?", // MaxMS*100
+            "p4": "?", // MaxHealthDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "40",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
         "R": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalDamage
+            "p1": "?", // Duration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 200"
+            "stats": {
+                "사거리": "200"
+            }
         },
     },
     "Rengar": { // 렝가
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // ASBonus
-            "v2": "?", // QTotalDamage
-            "v3": "?", // EmpoweredQTotalDamage
-            "v4": "?", // ASDuration
-            "v5": "?", // EmpoweredQAS
+            "p1": "?", // ASBonus
+            "p2": "?", // QTotalDamage
+            "p3": "?", // EmpoweredQTotalDamage
+            "p4": "?", // ASDuration
+            "p5": "?", // EmpoweredQAS
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.25",
             "cost": "",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // HealingWindow
-            "v3": "?", // DamagePercentageHealed
-            "v4": "?", // TotalDamageEmpowered
+            "p1": "?", // TotalDamage
+            "p2": "?", // HealingWindow
+            "p3": "?", // DamagePercentageHealed
+            "p4": "?", // TotalDamageEmpowered
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.25",
             "cost": "",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // CCDuration
-            "v3": "?", // SlowAmount
-            "v4": "?", // TotalEmpoweredDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // CCDuration
+            "p3": "?", // SlowAmount
+            "p4": "?", // TotalEmpoweredDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.25",
             "cost": "",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "R": {
-            "v1": "?", // StealthDuration
-            "v2": "?", // StealthMS
-            "v3": "?", // FadeTime
-            "v4": "?", // BonusDamage
-            "v5": "?", // ArmorShredDuration
-            "v6": "?", // ArmorShred
+            "p1": "?", // StealthDuration
+            "p2": "?", // StealthMS
+            "p3": "?", // FadeTime
+            "p4": "?", // BonusDamage
+            "p5": "?", // ArmorShredDuration
+            "p6": "?", // ArmorShred
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 90 / 80",
             "cost": "-",
-            "stats": "사거리 2500 / 3000 / 3500"
+            "stats": {
+                "사거리": "2500 / 3000 / 3500"
+            }
         },
     },
     "Locke": { // 로크
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MissileDamage
-            "v2": "?", // SlowDuration1
-            "v3": "?", // SlowDuration2
-            "v4": "?", // SlowDuration3
-            "v5": "?", // SlowAmount1*100
-            "v6": "?", // SlowAmount2*100
-            "v7": "?", // SlowAmount3*100
-            "v8": "?", // NailDamage
-            "v9": "?", // TwoMarkBonusPercent
-            "v10": "?", // ThreeMarkBonusPercent
+            "p1": "?", // MissileDamage
+            "p2": "?", // SlowDuration1
+            "p3": "?", // SlowDuration2
+            "p4": "?", // SlowDuration3
+            "p5": "?", // SlowAmount1*100
+            "p6": "?", // SlowAmount2*100
+            "p7": "?", // SlowAmount3*100
+            "p8": "?", // NailDamage
+            "p9": "?", // TwoMarkBonusPercent
+            "p10": "?", // ThreeMarkBonusPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "70",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "W": {
-            "v1": "?", // AttackSpeed
-            "v2": "?", // MoveSpeed
-            "v3": "?", // DecayTimeHelper
-            "v4": "?", // BaseDuration
-            "v5": "?", // HealthCost*100
-            "v6": "?", // DamageRestoreAmount
-            "v7": "?", // AdditionalHeal
-            "v8": "?", // MaxHealingThreshold
+            "p1": "?", // AttackSpeed
+            "p2": "?", // MoveSpeed
+            "p3": "?", // DecayTimeHelper
+            "p4": "?", // BaseDuration
+            "p5": "?", // HealthCost*100
+            "p6": "?", // DamageRestoreAmount
+            "p7": "?", // AdditionalHeal
+            "p8": "?", // MaxHealingThreshold
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 250"
+            "stats": {
+                "사거리": "250"
+            }
         },
         "E": {
-            "v1": "?", // OnHitDamage
-            "v2": "?", // DashDamage
+            "p1": "?", // OnHitDamage
+            "p2": "?", // DashDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "30 / 40 / 50 / 60 / 70",
-            "stats": "사거리 425"
+            "stats": {
+                "사거리": "425"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // SlowAmount*100
-            "v3": "?", // SlowDuration
-            "v4": "?", // Duration
-            "v5": "?", // ExecutionThreshold*100
-            "v6": "?", // ExecuteThresholdPerStack*100
-            "v7": "?", // CooldownReduction
+            "p1": "?", // Damage
+            "p2": "?", // SlowAmount*100
+            "p3": "?", // SlowDuration
+            "p4": "?", // Duration
+            "p5": "?", // ExecutionThreshold*100
+            "p6": "?", // ExecuteThresholdPerStack*100
+            "p7": "?", // CooldownReduction
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
     },
     "Lucian": { // 루시안
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "48 / 56 / 64 / 72 / 80",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // MoveSpeedAmount
+            "p1": "?", // TotalDamage
+            "p2": "?", // MoveSpeedAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "60",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "E": {
-            "v1": "?", // CDRefundBase
-            "v2": "?", // CDRefundChampion
+            "p1": "?", // CDRefundBase
+            "p2": "?", // CDRefundChampion
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15.5 / 15 / 14.5 / 14",
             "cost": "32 / 24 / 16 / 8 / 0",
-            "stats": "사거리 445"
+            "stats": {
+                "사거리": "445"
+            }
         },
         "R": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalNumShots
-            "v3": "?", // DamagePerBullet
-            "v4": "?", // TotalDamage
+            "p1": "?", // Duration
+            "p2": "?", // TotalNumShots
+            "p3": "?", // DamagePerBullet
+            "p4": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 100 / 90",
             "cost": "100",
-            "stats": "사거리 1400"
+            "stats": {
+                "사거리": "1400"
+            }
         },
     },
     "Lulu": { // 룰루
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowAmount*-100
-            "v3": "?", // SlowDuration
-            "v4": "?", // BonusMissileDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowAmount*-100
+            "p3": "?", // SlowDuration
+            "p4": "?", // BonusMissileDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 925"
+            "stats": {
+                "사거리": "925"
+            }
         },
         "W": {
-            "v1": "?", // Effect5Amount
-            "v2": "?", // TotalMS
-            "v3": "?", // Effect7Amount*100
-            "v4": "?", // Effect3Amount
+            "p1": "?", // Effect5Amount
+            "p2": "?", // TotalMS
+            "p3": "?", // Effect7Amount*100
+            "p4": "?", // Effect3Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18",
             "cost": "65",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "E": {
-            "v1": "?", // Effect1Amount
-            "v2": "?", // Effect7Amount
-            "v3": "?", // TotalShield
-            "v4": "?", // TotalDamage
-            "v5": "?", // Effect6Amount
+            "p1": "?", // Effect1Amount
+            "p2": "?", // Effect7Amount
+            "p3": "?", // TotalShield
+            "p4": "?", // TotalDamage
+            "p5": "?", // Effect6Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // KnockbackDuration
-            "v2": "?", // BuffDuration
-            "v3": "?", // TotalBonusHealth
-            "v4": "?", // SlowPercent
+            "p1": "?", // KnockbackDuration
+            "p2": "?", // BuffDuration
+            "p3": "?", // TotalBonusHealth
+            "p4": "?", // SlowPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 900"
-        },
-    },
-    "Jade_Lulu": { // 룰루
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*-100
-            "cooldown": "7",
-            "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 925"
-        },
-        "W": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // MSBoost*100
-            "v3": "?", // APBoost
-            "v4": "?", // PolymorphDuration
-            "cooldown": "18 / 16.5 / 15 / 13.5 / 12",
-            "cost": "65 / 70 / 75 / 80 / 85",
-            "stats": "사거리 650"
-        },
-        "E": {
-            "v1": "?", // TotalShield
-            "v2": "?", // TotalDamage
-            "cooldown": "10",
-            "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 650"
-        },
-        "R": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // TotalBonusHealth
-            "v3": "?", // SlowPercent
-            "cooldown": "110 / 95 / 80",
-            "cost": "150",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
     },
     "Leblanc": { // 르블랑
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Damage
-            "v2": "?", // MarkDuration
-            "v3": "?", // MarkDamage
-            "v4": "?", // ManaRefund*100
-            "v5": "?", // CooldownRefund*100
-            "v6": "?", // BonusMinionDamage
+            "p1": "?", // Damage
+            "p2": "?", // MarkDuration
+            "p3": "?", // MarkDamage
+            "p4": "?", // ManaRefund*100
+            "p5": "?", // CooldownRefund*100
+            "p6": "?", // BonusMinionDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "50",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SnapbackTimeAllowed
+            "p1": "?", // TotalDamage
+            "p2": "?", // SnapbackTimeAllowed
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 13.75 / 12.5 / 11.25 / 10",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // TetherDuration
-            "v3": "?", // RootDuration
-            "v4": "?", // DelayedDamage
+            "p1": "?", // InitialDamage
+            "p2": "?", // TetherDuration
+            "p3": "?", // RootDuration
+            "p4": "?", // DelayedDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13.25 / 12.5 / 11.75 / 11",
             "cost": "50",
-            "stats": "사거리 925"
+            "stats": {
+                "사거리": "925"
+            }
         },
         "R": {
-            "v1": "?", // RQ1Damage
-            "v2": "?", // RQ2Damage
-            "v3": "?", // RWDamage
-            "v4": "?", // RE1Damage
-            "v5": "?", // RE2Damage
+            "p1": "?", // RQ1Damage
+            "p2": "?", // RQ2Damage
+            "p3": "?", // RWDamage
+            "p4": "?", // RE1Damage
+            "p5": "?", // RE2Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "45 / 35 / 25",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "LeeSin": { // 리 신
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // ReactivateTime
-            "v3": "?", // RecastDamage
-            "v4": "?", // EmpoweredDamage
+            "p1": "?", // InitialDamage
+            "p2": "?", // ReactivateTime
+            "p3": "?", // RecastDamage
+            "p4": "?", // EmpoweredDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "50",
-            "stats": "사거리 1100"
+            "stats": {
+                "사거리": "1100"
+            }
         },
         "W": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // ShieldAmount
-            "v3": "?", // W1ReactivateTime
-            "v4": "?", // LifestealAndSpellVampTime
-            "v5": "?", // LifestealAndSpellVamp
+            "p1": "?", // ShieldDuration
+            "p2": "?", // ShieldAmount
+            "p3": "?", // W1ReactivateTime
+            "p4": "?", // LifestealAndSpellVampTime
+            "p5": "?", // LifestealAndSpellVamp
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "50",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "E": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // ReactivateTime
-            "v4": "?", // SlowAmount
+            "p1": "?", // InitialDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // ReactivateTime
+            "p4": "?", // SlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8",
             "cost": "50",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // PercentHPCarryThrough
+            "p1": "?", // Damage
+            "p2": "?", // PercentHPCarryThrough
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 85 / 60",
             "cost": "-",
-            "stats": "사거리 375"
-        },
-    },
-    "Jade_LeeSin": { // 리 신
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // RecastDamage
-            "cooldown": "11 / 10 / 9 / 8 / 7",
-            "cost": "50",
-            "stats": "사거리 1100"
-        },
-        "W": {
-            "v1": "?", // ShieldAmount
-            "v2": "?", // LifestealAndSpellVamp
-            "v3": "?", // ArmorBonus
-            "cooldown": "9",
-            "cost": "50",
-            "stats": "사거리 700"
-        },
-        "E": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // SlowAmount
-            "cooldown": "10",
-            "cost": "50",
-            "stats": "사거리 425"
-        },
-        "R": {
-            "v1": "?", // Damage
-            "cooldown": "90 / 75 / 60",
-            "cost": "",
-            "stats": "사거리 375"
+            "stats": {
+                "사거리": "375"
+            }
         },
     },
     "Riven": { // 리븐
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // FirstSlashDamage
+            "p1": "?", // FirstSlashDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13",
             "cost": "-",
-            "stats": "사거리 275"
+            "stats": {
+                "사거리": "275"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // StunDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "-",
-            "stats": "사거리 260"
+            "stats": {
+                "사거리": "260"
+            }
         },
         "E": {
-            "v1": "?", // TotalShield
+            "p1": "?", // TotalShield
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "-",
-            "stats": "사거리 250"
+            "stats": {
+                "사거리": "250"
+            }
         },
         "R": {
-            "v1": "?", // Duration
-            "v2": "?", // BonusAD
-            "v3": "?", // MinDamage
-            "v4": "?", // MaxDamage
+            "p1": "?", // Duration
+            "p2": "?", // BonusAD
+            "p3": "?", // MinDamage
+            "p4": "?", // MaxDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 90 / 60",
             "cost": "-",
-            "stats": "사거리 200"
+            "stats": {
+                "사거리": "200"
+            }
         },
     },
     "Lissandra": { // 리산드라
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercentage*-100
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercentage*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
             "cost": "55 / 60 / 65 / 70 / 75",
-            "stats": "사거리 725"
+            "stats": {
+                "사거리": "725"
+            }
         },
         "W": {
-            "v1": "?", // SnareDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // SnareDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "40",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "24 / 21 / 18 / 15 / 12",
             "cost": "80 / 85 / 90 / 95 / 100",
-            "stats": "사거리 1050"
+            "stats": {
+                "사거리": "1050"
+            }
         },
         "R": {
-            "v1": "?", // EnemyCastDuration
-            "v2": "?", // SelfCastDuration
-            "v3": "?", // HealAmount
-            "v4": "?", // SelfCastMissingHPPerAbove
-            "v5": "?", // SelfCastMissingHPRatio
-            "v6": "?", // CalculatedDamage
-            "v7": "?", // SlowDuration
-            "v8": "?", // SlowAmount*-100
+            "p1": "?", // EnemyCastDuration
+            "p2": "?", // SelfCastDuration
+            "p3": "?", // HealAmount
+            "p4": "?", // SelfCastMissingHPPerAbove
+            "p5": "?", // SelfCastMissingHPRatio
+            "p6": "?", // CalculatedDamage
+            "p7": "?", // SlowDuration
+            "p8": "?", // SlowAmount*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
     },
     "Lillia": { // 릴리아
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // PranceDuration
-            "v2": "?", // PranceSpeed
-            "v3": "?", // PranceMaxStacks
-            "v4": "?", // TotalDamage
-            "v5": "?", // BonusTrueDamage
+            "p1": "?", // PranceDuration
+            "p2": "?", // PranceSpeed
+            "p3": "?", // PranceMaxStacks
+            "p4": "?", // TotalDamage
+            "p5": "?", // BonusTrueDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6 / 5.5 / 5 / 4.5 / 4",
             "cost": "65",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "W": {
-            "v1": "?", // FlatDamage
-            "v2": "?", // FlatDamageSweetSpot
+            "p1": "?", // FlatDamage
+            "p2": "?", // FlatDamageSweetSpot
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "50",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
         "E": {
-            "v1": "?", // ImpactDamageTotal
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
+            "p1": "?", // ImpactDamageTotal
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "70",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "R": {
-            "v1": "?", // DrowsyDuration
-            "v2": "?", // SleepDuration
-            "v3": "?", // TotalDamage
+            "p1": "?", // DrowsyDuration
+            "p2": "?", // SleepDuration
+            "p3": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "150 / 130 / 110",
             "cost": "50",
-            "stats": "사거리 1600"
+            "stats": {
+                "사거리": "1600"
+            }
         },
     },
     "MasterYi": { // 마스터 이
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // AlphaStrikeBounces
-            "v2": "?", // TotalDamage
-            "v3": "?", // SubsequentHitMultiplier*100
-            "v4": "?", // SubesquentDamage
-            "v5": "?", // SingleTotalDamage
+            "p1": "?", // AlphaStrikeBounces
+            "p2": "?", // TotalDamage
+            "p3": "?", // SubsequentHitMultiplier*100
+            "p4": "?", // SubesquentDamage
+            "p5": "?", // SingleTotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 19.5 / 19 / 18.5 / 18",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // HealDuration
-            "v2": "?", // TotalHeal
-            "v3": "?", // MaxMissingHealthPercent*100
-            "v4": "?", // DRLinger
-            "v5": "?", // InitialDR
-            "v6": "?", // InitialExtraDRDuration
-            "v7": "?", // DamageReduction*100
+            "p1": "?", // HealDuration
+            "p2": "?", // TotalHeal
+            "p3": "?", // MaxMissingHealthPercent*100
+            "p4": "?", // DRLinger
+            "p5": "?", // InitialDR
+            "p6": "?", // InitialExtraDRDuration
+            "p7": "?", // DamageReduction*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "40",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "E": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalDamage
+            "p1": "?", // Duration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14",
             "cost": "-",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "R": {
-            "v1": "?", // RCooldownRefund*100
-            "v2": "?", // RDuration
-            "v3": "?", // RMSBonus
-            "v4": "?", // RASBonus
-            "v5": "?", // RKillAssistExtension
+            "p1": "?", // RCooldownRefund*100
+            "p2": "?", // RDuration
+            "p3": "?", // RMSBonus
+            "p4": "?", // RASBonus
+            "p5": "?", // RKillAssistExtension
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "85",
             "cost": "100",
-            "stats": "사거리 1"
-        },
-    },
-    "Jade_MasterYi": { // 마스터 이
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // MonsterDamageProcChance*100
-            "v3": "?", // TotalMonsterDamage
-            "cooldown": "18 / 16 / 14 / 12 / 10",
-            "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 600"
-        },
-        "W": {
-            "v1": "?", // TotalHeal
-            "v2": "?", // DefenseStat
-            "cooldown": "35",
-            "cost": "50 / 65 / 80 / 95 / 110",
-            "stats": "사거리 20"
-        },
-        "E": {
-            "v1": "?", // PassiveAD
-            "v2": "?", // Duration
-            "v3": "?", // PassiveAD*2
-            "cooldown": "25 / 23 / 21 / 19 / 17",
-            "cost": "40",
-            "stats": "사거리 20"
-        },
-        "R": {
-            "v1": "?", // RMSBonus*100
-            "v2": "?", // RASBonus*100
-            "v3": "?", // RDuration
-            "cooldown": "75",
-            "cost": "100",
-            "stats": "사거리 1"
+            "stats": {
+                "사거리": "1"
+            }
         },
     },
     "Maokai": { // 마오카이
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // BasePercentHealth*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // BasePercentHealth*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
             "cost": "40",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // RootDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // RootDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "60",
-            "stats": "사거리 525"
+            "stats": {
+                "사거리": "525"
+            }
         },
         "E": {
-            "v1": "?", // SaplingDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowAmount*100
-            "v5": "?", // EmpoweredSaplingDuration
-            "v6": "?", // TotalEmpoweredDamage
-            "v7": "?", // EmpoweredDoTDuration
-            "v8": "?", // EmpoweredSlowAmount
+            "p1": "?", // SaplingDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // SlowDuration
+            "p4": "?", // SlowAmount*100
+            "p5": "?", // EmpoweredSaplingDuration
+            "p6": "?", // TotalEmpoweredDamage
+            "p7": "?", // EmpoweredDoTDuration
+            "p8": "?", // EmpoweredSlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 1100"
+            "stats": {
+                "사거리": "1100"
+            }
         },
         "R": {
-            "v1": "?", // MinRootDuration
-            "v2": "?", // MaxRootDuration
-            "v3": "?", // TotalDamage
-            "v4": "?", // MoveHaste*100
-            "v5": "?", // HasteDuration
+            "p1": "?", // MinRootDuration
+            "p2": "?", // MaxRootDuration
+            "p3": "?", // TotalDamage
+            "p4": "?", // MoveHaste*100
+            "p5": "?", // HasteDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 110 / 90",
             "cost": "100",
-            "stats": "사거리 3000"
+            "stats": {
+                "사거리": "3000"
+            }
         },
     },
     "Malzahar": { // 말자하
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamageTooltip
-            "v2": "?", // SilenceDuration
+            "p1": "?", // TotalDamageTooltip
+            "p2": "?", // SilenceDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "W": {
-            "v1": "?", // StackCap
-            "v2": "?", // VoidlingDuration
-            "v3": "?", // VoidlingBonusDamageTooltip
+            "p1": "?", // StackCap
+            "p2": "?", // VoidlingDuration
+            "p3": "?", // VoidlingBonusDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 150"
+            "stats": {
+                "사거리": "150"
+            }
         },
         "E": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalDamage
-            "v3": "?", // ManaRestore
-            "v4": "?", // MinionExecuteThreshold
+            "p1": "?", // Duration
+            "p2": "?", // TotalDamage
+            "p3": "?", // ManaRestore
+            "p4": "?", // MinionExecuteThreshold
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // CCDuration
-            "v2": "?", // TotalDamageTooltip
-            "v3": "?", // PoolDuration
-            "v4": "?", // ZoneDamageTooltip
+            "p1": "?", // CCDuration
+            "p2": "?", // TotalDamageTooltip
+            "p3": "?", // PoolDuration
+            "p4": "?", // ZoneDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 110 / 80",
             "cost": "100",
-            "stats": "사거리 700"
-        },
-    },
-    "Jade_Malzahar": { // 말자하
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SilenceDuration
-            "cooldown": "9",
-            "cost": "80 / 85 / 90 / 95 / 100",
-            "stats": "사거리 900"
-        },
-        "W": {
-            "v1": "?", // ZoneDuration
-            "v2": "?", // TotalDamage
-            "cooldown": "14",
-            "cost": "90 / 95 / 100 / 105 / 110",
-            "stats": "사거리 800"
-        },
-        "E": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalDamage
-            "v3": "?", // ManaRestore
-            "cooldown": "15 / 13 / 11 / 9 / 7",
-            "cost": "60 / 75 / 90 / 105 / 120",
-            "stats": "사거리 650"
-        },
-        "R": {
-            "v1": "?", // SuppressDuration
-            "v2": "?", // TotalDamage
-            "cooldown": "120 / 100 / 80",
-            "cost": "150",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
     },
     "Malphite": { // 말파이트
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // QDamageCalc
-            "v2": "?", // SlowDuration
-            "v3": "?", // SpeedSteal
+            "p1": "?", // QDamageCalc
+            "p2": "?", // SlowDuration
+            "p3": "?", // SpeedSteal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
         "W": {
-            "v1": "?", // BonusArmorPassive*100
-            "v2": "?", // f1
-            "v3": "?", // BonusArmorPassive*300
-            "v4": "?", // f2
-            "v5": "?", // TotalBonusDamage
-            "v6": "?", // ThunderclapSplash
-            "v7": "?", // ThunderclapBuffDuration
+            "p1": "?", // BonusArmorPassive*100
+            "p2": "?", // f1
+            "p3": "?", // BonusArmorPassive*300
+            "p4": "?", // f2
+            "p5": "?", // TotalBonusDamage
+            "p6": "?", // ThunderclapSplash
+            "p7": "?", // ThunderclapBuffDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "30 / 35 / 40 / 45 / 50",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "E": {
-            "v1": "?", // EDamageCalc
-            "v2": "?", // Duration
-            "v3": "?", // ASReduction
+            "p1": "?", // EDamageCalc
+            "p2": "?", // Duration
+            "p3": "?", // ASReduction
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "R": {
-            "v1": "?", // KnockupDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // KnockupDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 115 / 100",
             "cost": "100",
-            "stats": "사거리 1000"
-        },
-    },
-    "Jade_Malphite": { // 말파이트
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // QDamageCalc
-            "v2": "?", // SlowDuration
-            "v3": "?", // SpeedSteal
-            "cooldown": "8",
-            "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 625"
-        },
-        "W": {
-            "v1": "?", // Jade_MalphiteObduracyPercentDamage*100
-            "v2": "?", // ArmorBonus*100
-            "cooldown": "14",
-            "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 400"
-        },
-        "E": {
-            "v1": "?", // EDamageCalc
-            "v2": "?", // Duration
-            "v3": "?", // ASReduction*-100
-            "v4": "?", // ArmorScaling_Jade*100
-            "cooldown": "7",
-            "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 400"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // KnockupDuration
-            "cooldown": "130 / 115 / 100",
-            "cost": "100",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
     },
     "Mel": { // 멜
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // ExplosionCount
-            "v2": "?", // InitialExplosionDamage
-            "v3": "?", // TotalExplosionDamage
-            "v4": "?", // AllDamageHit
+            "p1": "?", // ExplosionCount
+            "p2": "?", // InitialExplosionDamage
+            "p3": "?", // TotalExplosionDamage
+            "p4": "?", // AllDamageHit
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "W": {
-            "v1": "?", // Duration
-            "v2": "?", // ShieldAmount
-            "v3": "?", // MoveSpeedDuration
-            "v4": "?", // MoveSpeed*100
-            "v5": "?", // DamagePercent
+            "p1": "?", // Duration
+            "p2": "?", // ShieldAmount
+            "p3": "?", // MoveSpeedDuration
+            "p4": "?", // MoveSpeed*100
+            "p5": "?", // DamagePercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "38 / 35 / 33 / 29 / 26",
             "cost": "80 / 60 / 40 / 20 / 0",
-            "stats": "사거리 250"
+            "stats": {
+                "사거리": "250"
+            }
         },
         "E": {
-            "v1": "?", // RootDuration
-            "v2": "?", // Damage
-            "v3": "?", // AreaSlowAmount*100
-            "v4": "?", // AreaDamagePerSecond
+            "p1": "?", // RootDuration
+            "p2": "?", // Damage
+            "p3": "?", // AreaSlowAmount*100
+            "p4": "?", // AreaDamagePerSecond
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10.5 / 10 / 9.5 / 9",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "R": {
-            "v1": "?", // PassiveFlatDamage
-            "v2": "?", // PassiveStackDamage
-            "v3": "?", // UltFlatDamage
-            "v4": "?", // UltStackDamage
+            "p1": "?", // PassiveFlatDamage
+            "p2": "?", // PassiveStackDamage
+            "p3": "?", // UltFlatDamage
+            "p4": "?", // UltStackDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Mordekaiser": { // 모데카이저
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // QDamage
-            "v2": "?", // EmpoweredDamageTooltip
+            "p1": "?", // QDamage
+            "p2": "?", // EmpoweredDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7 / 6 / 5 / 4",
             "cost": "-",
-            "stats": "사거리 675"
+            "stats": {
+                "사거리": "675"
+            }
         },
         "W": {
-            "v1": "?", // DamageConversion*100
-            "v2": "?", // DamageTakenConversion*100
-            "v3": "?", // HealingPercent*100
-            "v4": "?", // MinHealthTooltip
-            "v5": "?", // MaxHealthTooltip
+            "p1": "?", // DamageConversion*100
+            "p2": "?", // DamageTakenConversion*100
+            "p3": "?", // HealingPercent*100
+            "p4": "?", // MinHealthTooltip
+            "p5": "?", // MaxHealthTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14 / 12 / 10 / 8",
             "cost": "-",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "R": {
-            "v1": "?", // SpiritRealmDuration
-            "v2": "?", // StatStealPercentScalar*100
+            "p1": "?", // SpiritRealmDuration
+            "p2": "?", // StatStealPercentScalar*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "-",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
     },
     "Morgana": { // 모르가나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // RootDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // RootDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1250"
+            "stats": {
+                "사거리": "1250"
+            }
         },
         "W": {
-            "v1": "?", // WDuration
-            "v2": "?", // TotalMinDamage
-            "v3": "?", // TotalMaxDamage
-            "v4": "?", // CDRefundPercent*100
+            "p1": "?", // WDuration
+            "p2": "?", // TotalMinDamage
+            "p3": "?", // TotalMaxDamage
+            "p4": "?", // CDRefundPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "E": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // TotalShieldStrength
+            "p1": "?", // ShieldDuration
+            "p2": "?", // TotalShieldStrength
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "26 / 23.5 / 21 / 18.5 / 16",
             "cost": "80",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowPercent
-            "v3": "?", // ChainDuration
-            "v4": "?", // StunDuration
-            "v5": "?", // HastePercent
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowPercent
+            "p3": "?", // ChainDuration
+            "p4": "?", // StunDuration
+            "p5": "?", // HastePercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 110 / 100",
             "cost": "100",
-            "stats": "사거리 625"
-        },
-    },
-    "Jade_Morgana": { // 모르가나
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // RootDuration
-            "v2": "?", // TotalDamage
-            "cooldown": "11",
-            "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 1175"
-        },
-        "W": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalDamage
-            "v3": "?", // MRShredTooltip
-            "cooldown": "10",
-            "cost": "70 / 85 / 100 / 115 / 130",
-            "stats": "사거리 900"
-        },
-        "E": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // TotalShieldStrength
-            "cooldown": "23 / 21 / 19 / 17 / 15",
-            "cost": "50",
-            "stats": "사거리 750"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // ChainDuration
-            "v3": "?", // StunDuration
-            "cooldown": "120 / 110 / 100",
-            "cost": "100",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
     },
     "DrMundo": { // 문도 박사
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // CurrentHealthDamage*100
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // HealthRestoreOnHitChampionMonster
-            "v5": "?", // HealthRestoreOnHitMinion
+            "p1": "?", // CurrentHealthDamage*100
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "p4": "?", // HealthRestoreOnHitChampionMonster
+            "p5": "?", // HealthRestoreOnHitMinion
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "",
-            "stats": "사거리 975"
+            "stats": {
+                "사거리": "975"
+            }
         },
         "W": {
-            "v1": "?", // Duration
-            "v2": "?", // DamagePerTick*4
-            "v3": "?", // GrayHealthInitialDuration
-            "v4": "?", // GrayHealthStorageInitial
-            "v5": "?", // GrayHealthStorage*100
-            "v6": "?", // TotalDamage
-            "v7": "?", // GrayHealthBigMod*100
-            "v8": "?", // GrayHealthSmallMod*100
+            "p1": "?", // Duration
+            "p2": "?", // DamagePerTick*4
+            "p3": "?", // GrayHealthInitialDuration
+            "p4": "?", // GrayHealthStorageInitial
+            "p5": "?", // GrayHealthStorage*100
+            "p6": "?", // TotalDamage
+            "p7": "?", // GrayHealthBigMod*100
+            "p8": "?", // GrayHealthSmallMod*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "17 / 16.5 / 16 / 15.5 / 15",
             "cost": "",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "E": {
-            "v1": "?", // PassiveBonusAD
-            "v2": "?", // AdditionalDamage
-            "v3": "?", // MaxDamageAmpTooltip
+            "p1": "?", // PassiveBonusAD
+            "p2": "?", // AdditionalDamage
+            "p3": "?", // MaxDamageAmpTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8.25 / 7.5 / 6.75 / 6",
             "cost": ""
         },
         "R": {
-            "v1": "?", // MissingHealthHeal*100
-            "v2": "?", // SpeedBoostAmount*100
-            "v3": "?", // Duration
-            "v4": "?", // MaxHealthHoT*100
-            "v5": "?", // BonusPerNearbyChampion*100
+            "p1": "?", // MissingHealthHeal*100
+            "p2": "?", // SpeedBoostAmount*100
+            "p3": "?", // Duration
+            "p4": "?", // MaxHealthHoT*100
+            "p5": "?", // BonusPerNearbyChampion*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120",
             "cost": "-",
-            "stats": "사거리 20"
-        },
-    },
-    "Jade_DrMundo": { // 문도 박사
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // DamageMod*100
-            "v2": "?", // MinDamage
-            "cooldown": "4",
-            "cost": "",
-            "stats": "사거리 975"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // DurationMod*100
-            "cooldown": "1",
-            "cost": "",
-            "stats": "사거리 325"
-        },
-        "E": {
-            "v1": "?", // BaseIncrease
-            "v2": "?", // DamageMod
-            "cooldown": "7",
-            "cost": ""
-        },
-        "R": {
-            "v1": "?", // MaximumHealthRegen
-            "v2": "?", // SpeedMod*100
-            "cooldown": "75",
-            "cost": "",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
     },
     "MissFortune": { // 미스 포츈
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamageTooltip
-            "v2": "?", // TotalDamageCrit
+            "p1": "?", // TotalDamageTooltip
+            "p2": "?", // TotalDamageCrit
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
             "cost": "40",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "W": {
-            "v1": "?", // PassiveBaseMSOOC
-            "v2": "?", // PassiveBaseMS
-            "v3": "?", // PassiveMaxMSExtraOOC
-            "v4": "?", // PassiveMaxMS
-            "v5": "?", // ActiveDuration
-            "v6": "?", // ActiveAS*100
-            "v7": "?", // LoveTapRefund
+            "p1": "?", // PassiveBaseMSOOC
+            "p2": "?", // PassiveBaseMS
+            "p3": "?", // PassiveMaxMSExtraOOC
+            "p4": "?", // PassiveMaxMS
+            "p5": "?", // ActiveDuration
+            "p6": "?", // ActiveAS*100
+            "p7": "?", // LoveTapRefund
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "45",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // BaseDuration
-            "v2": "?", // TotalSlowAmount
-            "v3": "?", // TotalDamagePerSecond
-            "v4": "?", // TotalDamage
+            "p1": "?", // BaseDuration
+            "p2": "?", // TotalSlowAmount
+            "p3": "?", // TotalDamagePerSecond
+            "p4": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "80",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "R": {
-            "v1": "?", // BaseChannelDuration
-            "v2": "?", // BaseWaves
-            "v3": "?", // PhysicalDamagePerWave
-            "v4": "?", // TotalPhysicalDamage
-            "v5": "?", // CritDamagePerWave
+            "p1": "?", // BaseChannelDuration
+            "p2": "?", // BaseWaves
+            "p3": "?", // PhysicalDamagePerWave
+            "p4": "?", // TotalPhysicalDamage
+            "p5": "?", // CritDamagePerWave
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 110 / 100",
             "cost": "100",
-            "stats": "사거리 25000"
-        },
-    },
-    "Jade_MissFortune": { // 미스 포츈
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TotalRicochetDamage
-            "cooldown": "9 / 8 / 7 / 6 / 5",
-            "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 650"
-        },
-        "W": {
-            "v1": "?", // TotalDamageOnHIt
-            "v2": "?", // MaxStacks
-            "v3": "?", // MaximumTotalDamageOnHit
-            "v4": "?", // ASMod
-            "cooldown": "16",
-            "cost": "50",
-            "stats": "사거리 600"
-        },
-        "E": {
-            "v1": "?", // TotalDamagePerSecond
-            "v2": "?", // TotalSlowAmount
-            "cooldown": "15",
-            "cost": "80",
-            "stats": "사거리 800"
-        },
-        "R": {
-            "v1": "?", // PhysicalDamagePerWave
-            "v2": "?", // TotalDamage
-            "cooldown": "120 / 110 / 100",
-            "cost": "100",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Milio": { // 밀리오
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Damage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmountPercent
-            "v4": "?", // RefundRatio*100
+            "p1": "?", // Damage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmountPercent
+            "p4": "?", // RefundRatio*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
         "W": {
-            "v1": "?", // ZoneDuration
-            "v2": "?", // RangePercent
-            "v3": "?", // HealingOverTime
-            "v4": "?", // HealFrequencySeconds
+            "p1": "?", // ZoneDuration
+            "p2": "?", // RangePercent
+            "p3": "?", // HealingOverTime
+            "p4": "?", // HealFrequencySeconds
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "29 / 27 / 25 / 23 / 21",
             "cost": "90 / 100 / 110 / 120 / 130",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "E": {
-            "v1": "?", // ShieldCalc
-            "v2": "?", // MoveSpeedDuration
-            "v3": "?", // MoveSpeedAmount*100
+            "p1": "?", // ShieldCalc
+            "p2": "?", // MoveSpeedDuration
+            "p3": "?", // MoveSpeedAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.5",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // HealCalc
-            "v2": "?", // TenacityDuration
-            "v3": "?", // TenacityAmount*100
+            "p1": "?", // HealCalc
+            "p2": "?", // TenacityDuration
+            "p3": "?", // TenacityAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "160 / 145 / 130",
             "cost": "100",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
     },
     "Bard": { // 바드
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmountPercentage
-            "v4": "?", // StunDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmountPercentage
+            "p4": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "60",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "W": {
-            "v1": "?", // MoveSpeed_Duration
-            "v2": "?", // Calc_MoveSpeed
-            "v3": "?", // InitialHeal
-            "v4": "?", // ChargeupTime
-            "v5": "?", // MaxHeal
-            "v6": "?", // MaxPacks
-            "v7": "?", // Ammo_Limit
-            "v8": "?", // f1
-            "v9": "?", // f2
+            "p1": "?", // MoveSpeed_Duration
+            "p2": "?", // Calc_MoveSpeed
+            "p3": "?", // InitialHeal
+            "p4": "?", // ChargeupTime
+            "p5": "?", // MaxHeal
+            "p6": "?", // MaxPacks
+            "p7": "?", // Ammo_Limit
+            "p8": "?", // f1
+            "p9": "?", // f2
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "70",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "E": {
-            "v1": "?", // DoorDuration
+            "p1": "?", // DoorDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 20.5 / 19 / 17.5 / 16",
             "cost": "30",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "R": {
-            "v1": "?", // RStasisDuration
+            "p1": "?", // RStasisDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 95 / 80",
             "cost": "100",
-            "stats": "사거리 3400"
+            "stats": {
+                "사거리": "3400"
+            }
         },
     },
     "Varus": { // 바루스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MoveSpeedMod*-100
-            "v2": "?", // MaxChannelDuration
-            "v3": "?", // ManaRefund*100
-            "v4": "?", // TotalDamageMinTooltip
-            "v5": "?", // FalloffPercent*100
-            "v6": "?", // MinDamagePercent*100
-            "v7": "?", // MaxChargeAmp*100
-            "v8": "?", // TotalDamageMax
+            "p1": "?", // MoveSpeedMod*-100
+            "p2": "?", // MaxChannelDuration
+            "p3": "?", // ManaRefund*100
+            "p4": "?", // TotalDamageMinTooltip
+            "p5": "?", // FalloffPercent*100
+            "p6": "?", // MinDamagePercent*100
+            "p7": "?", // MaxChargeAmp*100
+            "p8": "?", // TotalDamageMax
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 925"
+            "stats": {
+                "사거리": "925"
+            }
         },
         "W": {
-            "v1": "?", // OnHitDamage
-            "v2": "?", // DebuffDuration
-            "v3": "?", // MaxStacks
-            "v4": "?", // PercentHPPerStack
-            "v5": "?", // MaxPercentHPPerStack
-            "v6": "?", // CDRPerBlightStack*100
-            "v7": "?", // QEmpowerPercentHP
-            "v8": "?", // MaxQEmpowerPercentHP
+            "p1": "?", // OnHitDamage
+            "p2": "?", // DebuffDuration
+            "p3": "?", // MaxStacks
+            "p4": "?", // PercentHPPerStack
+            "p5": "?", // MaxPercentHPPerStack
+            "p6": "?", // CDRPerBlightStack*100
+            "p7": "?", // QEmpowerPercentHP
+            "p8": "?", // MaxQEmpowerPercentHP
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "40",
             "cost": "-",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // GroundDuration
-            "v3": "?", // SlowPercent*-100
-            "v4": "?", // GrievousAmount*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // GroundDuration
+            "p3": "?", // SlowPercent*-100
+            "p4": "?", // GrievousAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 16 / 14 / 12 / 10",
             "cost": "90",
-            "stats": "사거리 925"
+            "stats": {
+                "사거리": "925"
+            }
         },
         "R": {
-            "v1": "?", // RootDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // PassiveStacks
+            "p1": "?", // RootDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // PassiveStacks
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 80 / 60",
             "cost": "100",
-            "stats": "사거리 1300"
+            "stats": {
+                "사거리": "1300"
+            }
         },
     },
     "Vi": { // 바이
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // SelfSlow
-            "v2": "?", // TotalDamage
-            "v3": "?", // MaxDamageTooltip
+            "p1": "?", // SelfSlow
+            "p2": "?", // TotalDamage
+            "p3": "?", // MaxDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 10.5 / 9 / 7.5 / 6",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 250"
+            "stats": {
+                "사거리": "250"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamageTooltip
-            "v2": "?", // SharedBuffsDuration
-            "v3": "?", // ShredAmount
-            "v4": "?", // AttackSpeed
+            "p1": "?", // TotalDamageTooltip
+            "p2": "?", // SharedBuffsDuration
+            "p3": "?", // ShredAmount
+            "p4": "?", // AttackSpeed
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamageTooltip
-            "v2": "?", // AmmoRechargeTime
+            "p1": "?", // TotalDamageTooltip
+            "p2": "?", // AmmoRechargeTime
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "1",
             "cost": "26 / 32 / 38 / 44 / 50",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "R": {
-            "v1": "?", // RStunDuration
-            "v2": "?", // Damage
-            "v3": "?", // SecondaryTargetStunDuration
+            "p1": "?", // RStunDuration
+            "p2": "?", // Damage
+            "p3": "?", // SecondaryTargetStunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 115 / 90",
             "cost": "100",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
     },
     "Veigar": { // 베이가
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6 / 5.5 / 5 / 4.5 / 4",
             "cost": "30 / 35 / 40 / 45 / 50",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "E": {
-            "v1": "?", // StunDuration
+            "p1": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18.5 / 17 / 15.5 / 14",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 725"
+            "stats": {
+                "사거리": "725"
+            }
         },
         "R": {
-            "v1": "?", // MinDamage
-            "v2": "?", // MaxDamage
+            "p1": "?", // MinDamage
+            "p2": "?", // MaxDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 90 / 60",
             "cost": "100",
-            "stats": "사거리 650"
-        },
-    },
-    "Jade_Veigar": { // 베이가
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // APPerStack
-            "v3": "?", // APPerKill
-            "v4": "?", // f1
-            "cooldown": "8 / 7 / 6 / 5 / 4",
-            "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 650"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "cooldown": "10",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 950"
-        },
-        "E": {
-            "v1": "?", // StunDuration
-            "cooldown": "20 / 19 / 18 / 17 / 16",
-            "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 725"
-        },
-        "R": {
-            "v1": "?", // MinDamage
-            "cooldown": "130 / 110 / 90",
-            "cost": "125 / 175 / 225",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
     },
     "Vayne": { // 베인
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // ADRatioBonus
+            "p1": "?", // ADRatioBonus
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6 / 5 / 4 / 3 / 2",
             "cost": "30",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // EmpoweredDamageTT
-            "v3": "?", // StunDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // EmpoweredDamageTT
+            "p3": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "90",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "R": {
-            "v1": "?", // BaseDuration
-            "v2": "?", // BonusAttackDamage
-            "v3": "?", // DamagedMarkerDuration
-            "v4": "?", // DurationToAdd
-            "v5": "?", // MovementSpeed
-            "v6": "?", // TumbleCDReduction
-            "v7": "?", // TumbleStealthDuration
+            "p1": "?", // BaseDuration
+            "p2": "?", // BonusAttackDamage
+            "p3": "?", // DamagedMarkerDuration
+            "p4": "?", // DurationToAdd
+            "p5": "?", // MovementSpeed
+            "p6": "?", // TumbleCDReduction
+            "p7": "?", // TumbleStealthDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "80",
-            "stats": "사거리 1"
-        },
-    },
-    "Jade_Vayne": { // 베인
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // ScalingDamageTotal
-            "cooldown": "6 / 5 / 4 / 3 / 2",
-            "cost": "30",
-            "stats": "사거리 300"
-        },
-        "W": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // MaxHealthRatio*100
-            "cooldown": "0",
-            "cost": "",
-            "stats": "사거리 750"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TotalDamagewithSpell
-            "cooldown": "20 / 18 / 16 / 14 / 12",
-            "cost": "90",
-            "stats": "사거리 550"
-        },
-        "R": {
-            "v1": "?", // Duration
-            "v2": "?", // ADMod
-            "cooldown": "100 / 85 / 70",
-            "cost": "80",
-            "stats": "사거리 1"
+            "stats": {
+                "사거리": "1"
+            }
         },
     },
     "Vex": { // 벡스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // QDamageCalc
+            "p1": "?", // QDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7 / 6 / 5 / 4",
             "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
         "W": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // ShieldCalc
-            "v3": "?", // WDamageCalc
+            "p1": "?", // ShieldDuration
+            "p2": "?", // ShieldCalc
+            "p3": "?", // WDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "75",
-            "stats": "사거리 475"
+            "stats": {
+                "사거리": "475"
+            }
         },
         "E": {
-            "v1": "?", // EDamageCalc
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // GloomCDNonChampTooltip*100
+            "p1": "?", // EDamageCalc
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "p4": "?", // GloomCDNonChampTooltip*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "100",
-            "stats": "사거리 2000 / 2500 / 3000"
+            "stats": {
+                "사거리": "2000 / 2500 / 3000"
+            }
         },
     },
     "Belveth": { // 벨베스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // f1
+            "p1": "?", // BaseDamage
+            "p2": "?", // f1
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4 / 3.25 / 2.5 / 1.75 / 1",
             "cost": "-",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "W": {
-            "v1": "?", // Damage
-            "v2": "?", // Duration
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowPercent*100
+            "p1": "?", // Damage
+            "p2": "?", // Duration
+            "p3": "?", // SlowDuration
+            "p4": "?", // SlowPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "-",
-            "stats": "사거리 715"
+            "stats": {
+                "사거리": "715"
+            }
         },
         "E": {
-            "v1": "?", // TotalDuration
-            "v2": "?", // DRPercent*100
-            "v3": "?", // TotalLifesteal
-            "v4": "?", // f2.0
-            "v5": "?", // DamagePerStrike
-            "v6": "?", // MaxDamagePerStrikeTooltip
+            "p1": "?", // TotalDuration
+            "p2": "?", // DRPercent*100
+            "p3": "?", // TotalLifesteal
+            "p4": "?", // f2.0
+            "p5": "?", // DamagePerStrike
+            "p6": "?", // MaxDamagePerStrikeTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "24 / 21 / 18 / 15 / 12",
             "cost": "-",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
         "R": {
-            "v1": "?", // FinalOnHitDamage
-            "v2": "?", // PassiveStacksOnDevour
-            "v3": "?", // TotalExplosionDamage
-            "v4": "?", // MissingHealthDamage*100
-            "v5": "?", // MaxHealthOnDevour
-            "v6": "?", // BonusAARange
-            "v7": "?", // TotalASMod*100
-            "v8": "?", // SteroidDuration
-            "v9": "?", // StackThresholdForUpgrade
-            "v10": "?", // SteroidDurationUpgrade
-            "v11": "?", // StackThresholdForPermanent
+            "p1": "?", // FinalOnHitDamage
+            "p2": "?", // PassiveStacksOnDevour
+            "p3": "?", // TotalExplosionDamage
+            "p4": "?", // MissingHealthDamage*100
+            "p5": "?", // MaxHealthOnDevour
+            "p6": "?", // BonusAARange
+            "p7": "?", // TotalASMod*100
+            "p8": "?", // SteroidDuration
+            "p9": "?", // StackThresholdForUpgrade
+            "p10": "?", // SteroidDurationUpgrade
+            "p11": "?", // StackThresholdForPermanent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "1",
             "cost": "-",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
     },
     "Velkoz": { // 벨코즈
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowAmount*100
-            "v3": "?", // SlowDuration
-            "v4": "?", // TooltipManaRefund
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowAmount*100
+            "p3": "?", // SlowDuration
+            "p4": "?", // TooltipManaRefund
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 1050"
+            "stats": {
+                "사거리": "1050"
+            }
         },
         "W": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // SecondaryDamage
-            "v3": "?", // AmmoRechargeTime
+            "p1": "?", // InitialDamage
+            "p2": "?", // SecondaryDamage
+            "p3": "?", // AmmoRechargeTime
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "1.5",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1050"
+            "stats": {
+                "사거리": "1050"
+            }
         },
         "E": {
-            "v1": "?", // StunDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // StunDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 810"
+            "stats": {
+                "사거리": "810"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // Effect3Amount
+            "p1": "?", // TotalDamage
+            "p2": "?", // Effect3Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 90 / 80",
             "cost": "100",
-            "stats": "사거리 1575"
+            "stats": {
+                "사거리": "1575"
+            }
         },
     },
     "Volibear": { // 볼리베어
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Duration
-            "v2": "?", // MinSpeedCalc
-            "v3": "?", // MaxSpeedCalc
-            "v4": "?", // CalculatedDamage
-            "v5": "?", // StunDuration
+            "p1": "?", // Duration
+            "p2": "?", // MinSpeedCalc
+            "p3": "?", // MaxSpeedCalc
+            "p4": "?", // CalculatedDamage
+            "p5": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "50",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // MarkDuration
-            "v3": "?", // EmpoweredDamage
-            "v4": "?", // BaseHeal
-            "v5": "?", // PercentMissingHealthHealingRatio
+            "p1": "?", // TotalDamage
+            "p2": "?", // MarkDuration
+            "p3": "?", // EmpoweredDamage
+            "p4": "?", // BaseHeal
+            "p5": "?", // PercentMissingHealthHealingRatio
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5",
             "cost": "20 / 25 / 30 / 35 / 40",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamageTooltip
-            "v2": "?", // PercentDamage*100
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowAmount*100
-            "v5": "?", // ShieldDuration
-            "v6": "?", // ShieldAPRatioTooltip
-            "v7": "?", // ShieldAmount*100
+            "p1": "?", // TotalDamageTooltip
+            "p2": "?", // PercentDamage*100
+            "p3": "?", // SlowDuration
+            "p4": "?", // SlowAmount*100
+            "p5": "?", // ShieldDuration
+            "p6": "?", // ShieldAPRatioTooltip
+            "p7": "?", // ShieldAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16",
             "cost": "50",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
         "R": {
-            "v1": "?", // TransformDuration
-            "v2": "?", // HealthAmount
-            "v3": "?", // BonusAttackRange
-            "v4": "?", // TowerDisableDuration
-            "v5": "?", // TowerDamageTooltip
-            "v6": "?", // SlowAmount*100
-            "v7": "?", // SweetSpotDamageTooltip
+            "p1": "?", // TransformDuration
+            "p2": "?", // HealthAmount
+            "p3": "?", // BonusAttackRange
+            "p4": "?", // TowerDisableDuration
+            "p5": "?", // TowerDamageTooltip
+            "p6": "?", // SlowAmount*100
+            "p7": "?", // SweetSpotDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "160 / 135 / 110",
             "cost": "100",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
     },
     "Braum": { // 브라움
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // InitialSlow
-            "v3": "?", // SlowDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // InitialSlow
+            "p3": "?", // SlowDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "W": {
-            "v1": "?", // Duration
-            "v2": "?", // GrantedAllyArmor
-            "v3": "?", // GrantedAllyMR
-            "v4": "?", // GrantedBraumArmor
-            "v5": "?", // GrantedBraumMR
+            "p1": "?", // Duration
+            "p2": "?", // GrantedAllyArmor
+            "p3": "?", // GrantedAllyMR
+            "p4": "?", // GrantedBraumArmor
+            "p5": "?", // GrantedBraumMR
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "40",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "E": {
-            "v1": "?", // ShieldHoldDuration
-            "v2": "?", // ShieldFacingDRAmount
-            "v3": "?", // MoveSpeedPercent
+            "p1": "?", // ShieldHoldDuration
+            "p2": "?", // ShieldFacingDRAmount
+            "p3": "?", // MoveSpeedPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14 / 12 / 10 / 8",
             "cost": "30 / 35 / 40 / 45 / 50",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // MinKnockup
-            "v3": "?", // MaxKnockup
-            "v4": "?", // SlowZoneDuration
-            "v5": "?", // MoveSpeedMod
+            "p1": "?", // TotalDamage
+            "p2": "?", // MinKnockup
+            "p3": "?", // MaxKnockup
+            "p4": "?", // SlowZoneDuration
+            "p5": "?", // MoveSpeedMod
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 115 / 100",
             "cost": "100",
-            "stats": "사거리 1250"
+            "stats": {
+                "사거리": "1250"
+            }
         },
     },
     "Briar": { // 브라이어
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // StunDuration
-            "v3": "?", // ShredDuration
-            "v4": "?", // ShredPercent*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // StunDuration
+            "p3": "?", // ShredDuration
+            "p4": "?", // ShredPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "",
-            "stats": "사거리 475"
+            "stats": {
+                "사거리": "475"
+            }
         },
         "W": {
-            "v1": "?", // BerserkDuration
-            "v2": "?", // BerserkAS*100
-            "v3": "?", // BerserkMS*100
-            "v4": "?", // TotalAoEDamage
-            "v5": "?", // TotalAttackBonusDamage
-            "v6": "?", // TotalAttackPercentMissingHealth
-            "v7": "?", // AttackMaxHPHeal
-            "v8": "?", // AttackHealPercent*100
+            "p1": "?", // BerserkDuration
+            "p2": "?", // BerserkAS*100
+            "p3": "?", // BerserkMS*100
+            "p4": "?", // TotalAoEDamage
+            "p5": "?", // TotalAttackBonusDamage
+            "p6": "?", // TotalAttackPercentMissingHealth
+            "p7": "?", // AttackMaxHPHeal
+            "p8": "?", // AttackHealPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "E": {
-            "v1": "?", // PercentMaxHPHeal
-            "v2": "?", // DRPercent
-            "v3": "?", // Damage
-            "v4": "?", // SlowDuration
-            "v5": "?", // SlowPercent*100
-            "v6": "?", // WallHitDamage
-            "v7": "?", // WallStunDuration
+            "p1": "?", // PercentMaxHPHeal
+            "p2": "?", // DRPercent
+            "p3": "?", // Damage
+            "p4": "?", // SlowDuration
+            "p5": "?", // SlowPercent*100
+            "p6": "?", // WallHitDamage
+            "p7": "?", // WallStunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16",
             "cost": "",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // FearDuration
-            "v3": "?", // TotalResists
-            "v4": "?", // LifeStealPercent*100
-            "v5": "?", // ExtraMoveSpeedPercent*100
+            "p1": "?", // Damage
+            "p2": "?", // FearDuration
+            "p3": "?", // TotalResists
+            "p4": "?", // LifeStealPercent*100
+            "p5": "?", // ExtraMoveSpeedPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "",
-            "stats": "사거리 12000"
+            "stats": {
+                "사거리": "12000"
+            }
         },
     },
     "Brand": { // 브랜드
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // StunDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "70",
-            "stats": "사거리 1050"
+            "stats": {
+                "사거리": "1050"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // EmpoweredDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // EmpoweredDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "E": {
-            "v1": "?", // EDamageCalc
+            "p1": "?", // EDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "90",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowAmount
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 90 / 80",
             "cost": "100",
-            "stats": "사거리 750"
-        },
-    },
-    "Jade_Brand": { // 브랜드
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
-            "cost": "50",
-            "stats": "사거리 1050"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // EmpoweredDamage
-            "cooldown": "10",
-            "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 900"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "cooldown": "12 / 11 / 10 / 9 / 8",
-            "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 625"
-        },
-        "R": {
-            "v1": "?", // Bounces
-            "v2": "?", // TotalDamage
-            "cooldown": "105 / 90 / 75",
-            "cost": "100",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
     },
     "Vladimir": { // 블라디미르
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BaseDamageTooltip
-            "v2": "?", // BaseHealTooltip
-            "v3": "?", // MovementSpeedOnQ2
-            "v4": "?", // Effect8Amount
-            "v5": "?", // EmpoweredDamageTooltip
-            "v6": "?", // EmpoweredHealTooltip
-            "v7": "?", // EmpoweredHealPercentTooltip
+            "p1": "?", // BaseDamageTooltip
+            "p2": "?", // BaseHealTooltip
+            "p3": "?", // MovementSpeedOnQ2
+            "p4": "?", // Effect8Amount
+            "p5": "?", // EmpoweredDamageTooltip
+            "p6": "?", // EmpoweredHealTooltip
+            "p7": "?", // EmpoweredHealPercentTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 7.9 / 6.8 / 5.7 / 4.6",
             "cost": "-",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // HasteBoost*100
-            "v2": "?", // HasteDuration
-            "v3": "?", // MoveSpeedMod*-100
-            "v4": "?", // TotalDamage
-            "v5": "?", // TotalHeal
+            "p1": "?", // HasteBoost*100
+            "p2": "?", // HasteDuration
+            "p3": "?", // MoveSpeedMod*-100
+            "p4": "?", // TotalDamage
+            "p5": "?", // TotalHeal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "28 / 25 / 22 / 19 / 16",
             "cost": "",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "E": {
-            "v1": "?", // ChargeHealthTooltip
-            "v2": "?", // MinDamageTooltip
-            "v3": "?", // MaxDamageTooltip
-            "v4": "?", // SlowPercent
+            "p1": "?", // ChargeHealthTooltip
+            "p2": "?", // MinDamageTooltip
+            "p3": "?", // MaxDamageTooltip
+            "p4": "?", // SlowPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 11 / 9 / 7 / 5",
             "cost": "",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "R": {
-            "v1": "?", // Effect4Amount
-            "v2": "?", // Effect2Amount
-            "v3": "?", // Damage
-            "v4": "?", // SecondaryHealingTooltip
+            "p1": "?", // Effect4Amount
+            "p2": "?", // Effect2Amount
+            "p3": "?", // Damage
+            "p4": "?", // SecondaryHealingTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120",
             "cost": "-",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
     },
     "Blitzcrank": { // 블리츠크랭크
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 19 / 18 / 17 / 16",
             "cost": "100",
-            "stats": "사거리 1079"
+            "stats": {
+                "사거리": "1079"
+            }
         },
         "W": {
-            "v1": "?", // Duration
-            "v2": "?", // MoveSpeedMod*100
-            "v3": "?", // AttackSpeedMod*100
-            "v4": "?", // SlowDuration
-            "v5": "?", // MoveSpeedModReduction*100
+            "p1": "?", // Duration
+            "p2": "?", // MoveSpeedMod*100
+            "p3": "?", // AttackSpeedMod*100
+            "p4": "?", // SlowDuration
+            "p5": "?", // MoveSpeedModReduction*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15",
             "cost": "75",
-            "stats": "사거리 1"
+            "stats": {
+                "사거리": "1"
+            }
         },
         "E": {
-            "v1": "?", // CCDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // CCDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
             "cost": "25",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "R": {
-            "v1": "?", // PassiveDamage
-            "v2": "?", // ActiveDamage
-            "v3": "?", // SilenceDuration
+            "p1": "?", // PassiveDamage
+            "p2": "?", // ActiveDamage
+            "p3": "?", // SilenceDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "60 / 40 / 20",
             "cost": "100",
-            "stats": "사거리 600"
-        },
-    },
-    "Jade_Blitzcrank": { // 블리츠크랭크
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "cooldown": "20 / 19 / 18 / 17 / 16",
-            "cost": "120",
-            "stats": "사거리 1079"
-        },
-        "W": {
-            "v1": "?", // duration
-            "v2": "?", // MoveSpeedMod*100
-            "v3": "?", // AttackSpeedMod*100
-            "cooldown": "15",
-            "cost": "75",
-            "stats": "사거리 1"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // CCDuration
-            "cooldown": "9 / 8 / 7 / 6 / 5",
-            "cost": "25",
-            "stats": "사거리 300"
-        },
-        "R": {
-            "v1": "?", // PassiveDamage
-            "v2": "?", // ActiveDamage
-            "cooldown": "30",
-            "cost": "150",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
     },
     "Viego": { // 비에고
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalPercentHealthOnHit
-            "v2": "?", // SecondAttackDamage
-            "v3": "?", // HealModVsChamps*100
-            "v4": "?", // TotalDamage
+            "p1": "?", // TotalPercentHealthOnHit
+            "p2": "?", // SecondAttackDamage
+            "p3": "?", // HealModVsChamps*100
+            "p4": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5 / 4.5 / 4 / 3.5 / 3",
             "cost": "-",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // SelfSlowPercent*100
-            "v2": "?", // TotalDamage
-            "v3": "?", // Stunduration
-            "v4": "?", // MaxStunTT
+            "p1": "?", // SelfSlowPercent*100
+            "p2": "?", // TotalDamage
+            "p3": "?", // Stunduration
+            "p4": "?", // MaxStunTT
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8",
             "cost": "-",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "E": {
-            "v1": "?", // MistDuration
-            "v2": "?", // TotalMoveSpeed
-            "v3": "?", // AttackSpeed*100
+            "p1": "?", // MistDuration
+            "p2": "?", // TotalMoveSpeed
+            "p3": "?", // AttackSpeed*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 12 / 10 / 8 / 6",
             "cost": "-",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "R": {
-            "v1": "?", // SlowPercent*100
-            "v2": "?", // TotalDamage
-            "v3": "?", // TotalPercentHealth
+            "p1": "?", // SlowPercent*100
+            "p2": "?", // TotalDamage
+            "p3": "?", // TotalPercentHealth
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "-",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
     },
     "Viktor": { // 빅토르
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalMissileDamage
-            "v2": "?", // BuffDuration
-            "v3": "?", // ShieldLevelScaling
-            "v4": "?", // AttackTotalDMG
-            "v5": "?", // TotalAugmentedShieldValue
-            "v6": "?", // AugmentMoveSpeedBonus
+            "p1": "?", // TotalMissileDamage
+            "p2": "?", // BuffDuration
+            "p3": "?", // ShieldLevelScaling
+            "p4": "?", // AttackTotalDMG
+            "p5": "?", // TotalAugmentedShieldValue
+            "p6": "?", // AugmentMoveSpeedBonus
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // FieldDuration
-            "v2": "?", // SlowPotency*-1
-            "v3": "?", // StunDuration
-            "v4": "?", // AugmentSlow
+            "p1": "?", // FieldDuration
+            "p2": "?", // SlowPotency*-1
+            "p3": "?", // StunDuration
+            "p4": "?", // AugmentSlow
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "17 / 16 / 15 / 14 / 13",
             "cost": "65",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "E": {
-            "v1": "?", // LaserDamage
-            "v2": "?", // AftershockDamage
+            "p1": "?", // LaserDamage
+            "p2": "?", // AftershockDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 525"
+            "stats": {
+                "사거리": "525"
+            }
         },
         "R": {
-            "v1": "?", // StormDuration
-            "v2": "?", // InitialBurstDamage
-            "v3": "?", // SubsequentBurstDamage
-            "v4": "?", // AugmentBoost*100
-            "v5": "?", // Tooltip_DurationExtension
-            "v6": "?", // MaxGrowths
+            "p1": "?", // StormDuration
+            "p2": "?", // InitialBurstDamage
+            "p3": "?", // SubsequentBurstDamage
+            "p4": "?", // AugmentBoost*100
+            "p5": "?", // Tooltip_DurationExtension
+            "p6": "?", // MaxGrowths
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
     },
     "Poppy": { // 뽀삐
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // HealthDamagePercent
-            "v3": "?", // Slow_
-            "v4": "?", // DelayBetweenTwoHits
+            "p1": "?", // BaseDamage
+            "p2": "?", // HealthDamagePercent
+            "p3": "?", // Slow_
+            "p4": "?", // DelayBetweenTwoHits
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7 / 6 / 5 / 4",
             "cost": "35 / 40 / 45 / 50 / 55",
-            "stats": "사거리 430"
+            "stats": {
+                "사거리": "430"
+            }
         },
         "W": {
-            "v1": "?", // BonusArmor
-            "v2": "?", // BonusMR
-            "v3": "?", // PassiveEmpoweredHealthPercent*100
-            "v4": "?", // Haste
-            "v5": "?", // Duration
-            "v6": "?", // GroundingDuration
-            "v7": "?", // SlowAmount*-100
-            "v8": "?", // InterruptDamage
+            "p1": "?", // BonusArmor
+            "p2": "?", // BonusMR
+            "p3": "?", // PassiveEmpoweredHealthPercent*100
+            "p4": "?", // Haste
+            "p5": "?", // Duration
+            "p6": "?", // GroundingDuration
+            "p7": "?", // SlowAmount*-100
+            "p8": "?", // InterruptDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "50",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "E": {
-            "v1": "?", // TackleDamage
-            "v2": "?", // StunDuration
+            "p1": "?", // TackleDamage
+            "p2": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "70",
-            "stats": "사거리 475"
+            "stats": {
+                "사거리": "475"
+            }
         },
         "R": {
-            "v1": "?", // ChannelMaxDuration
-            "v2": "?", // SelfSlow
-            "v3": "?", // Damage
-            "v4": "?", // HalfDamage
-            "v5": "?", // KnockupDurationSnap
+            "p1": "?", // ChannelMaxDuration
+            "p2": "?", // SelfSlow
+            "p3": "?", // Damage
+            "p4": "?", // HalfDamage
+            "p5": "?", // KnockupDurationSnap
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "100",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
     },
     "Samira": { // 사미라
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // DamageCalc
+            "p1": "?", // DamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6 / 5 / 4 / 3 / 2",
             "cost": "30",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "W": {
-            "v1": "?", // SlashDuration
-            "v2": "?", // DamageCalc
+            "p1": "?", // SlashDuration
+            "p2": "?", // DamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "30 / 28 / 26 / 24 / 22",
             "cost": "60",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "E": {
-            "v1": "?", // DashDamage
-            "v2": "?", // AttackSpeedDuration
-            "v3": "?", // BonusAttackSpeed*100
+            "p1": "?", // DashDamage
+            "p2": "?", // AttackSpeedDuration
+            "p3": "?", // BonusAttackSpeed*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "40",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "R": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // LifestealMod*100
+            "p1": "?", // DamageCalc
+            "p2": "?", // LifestealMod*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5",
             "cost": "",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
     },
     "Sion": { // 사이온
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MinDamageTotal
-            "v2": "?", // MaxDamageTotal
-            "v3": "?", // BaseStunTime
+            "p1": "?", // MinDamageTotal
+            "p2": "?", // MaxDamageTotal
+            "p3": "?", // BaseStunTime
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "45",
-            "stats": "사거리 10000"
+            "stats": {
+                "사거리": "10000"
+            }
         },
         "W": {
-            "v1": "?", // HPPerKill
-            "v2": "?", // HPPerChampKill
-            "v3": "?", // TotalShield
-            "v4": "?", // DetonateRecastCooldown
-            "v5": "?", // TotalDamage
-            "v6": "?", // MaxHPDamageRatio
+            "p1": "?", // HPPerKill
+            "p2": "?", // HPPerChampKill
+            "p3": "?", // TotalShield
+            "p4": "?", // DetonateRecastCooldown
+            "p5": "?", // TotalDamage
+            "p6": "?", // MaxHPDamageRatio
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "75 / 80 / 85 / 90 / 95",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount
-            "v4": "?", // ArmorShredDuration
-            "v5": "?", // ArmorShred
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount
+            "p4": "?", // ArmorShredDuration
+            "p5": "?", // ArmorShred
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "35 / 40 / 45 / 50 / 55",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
-            "v1": "?", // MinDamageTotal
-            "v2": "?", // MaxDamageTotal
-            "v3": "?", // MinStunDuration
-            "v4": "?", // MaxStunDuration
-            "v5": "?", // SlowAmount
+            "p1": "?", // MinDamageTotal
+            "p2": "?", // MaxDamageTotal
+            "p3": "?", // MinStunDuration
+            "p4": "?", // MaxStunDuration
+            "p5": "?", // SlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 100 / 60",
             "cost": "100",
-            "stats": "사거리 7500"
-        },
-    },
-    "Jade_Sion": { // 사이온
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "cooldown": "12 / 11 / 10 / 9 / 8",
-            "cost": "100",
-            "stats": "사거리 550"
-        },
-        "W": {
-            "v1": "?", // TotalShield
-            "v2": "?", // TotalDamage
-            "cooldown": "8",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 100"
-        },
-        "E": {
-            "v1": "?", // BonusDamage
-            "v2": "?", // HPGainReduced
-            "v3": "?", // f1
-            "cooldown": "0",
-            "cost": ""
-        },
-        "R": {
-            "v1": "?", // LifestealPercent*100
-            "v2": "?", // AttackSpeedMod*100
-            "v3": "?", // HealPercent*100
-            "cooldown": "90",
-            "cost": "100",
-            "stats": "사거리 100"
+            "stats": {
+                "사거리": "7500"
+            }
         },
     },
     "Sylas": { // 사일러스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Damage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmountCalc
-            "v4": "?", // ExplosionDamage
+            "p1": "?", // Damage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmountCalc
+            "p4": "?", // ExplosionDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "55",
-            "stats": "사거리 775"
+            "stats": {
+                "사거리": "775"
+            }
         },
         "W": {
-            "v1": "?", // MinDamage
-            "v2": "?", // MinHealing
-            "v3": "?", // MaxHealing
-            "v4": "?", // MaxExecuteThreshold*100
+            "p1": "?", // MinDamage
+            "p2": "?", // MinHealing
+            "p3": "?", // MaxHealing
+            "p4": "?", // MaxExecuteThreshold*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 10.5 / 9 / 7.5 / 6",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "E": {
-            "v1": "?", // Damage
-            "v2": "?", // KnockUpDuration
+            "p1": "?", // Damage
+            "p2": "?", // KnockUpDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "65",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "R": {
-            "v1": "?", // PerTargetCooldown
-            "v2": "?", // MinimumEnemyCooldown
+            "p1": "?", // PerTargetCooldown
+            "p2": "?", // MinimumEnemyCooldown
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "80 / 55 / 30",
             "cost": "75",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
     },
     "Shaco": { // 샤코
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // StealthDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // QCritDamageMod
+            "p1": "?", // StealthDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // QCritDamageMod
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12.5 / 12 / 11.5 / 11",
             "cost": "40",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "W": {
-            "v1": "?", // ArmTime
-            "v2": "?", // TrapDuration
-            "v3": "?", // FearDuration
-            "v4": "?", // MinionFearDuration
-            "v5": "?", // AoEDamage
-            "v6": "?", // STDamage
-            "v7": "?", // MonsterBonusDamage
+            "p1": "?", // ArmTime
+            "p2": "?", // TrapDuration
+            "p3": "?", // FearDuration
+            "p4": "?", // MinionFearDuration
+            "p5": "?", // AoEDamage
+            "p6": "?", // STDamage
+            "p7": "?", // MonsterBonusDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15",
             "cost": "70 / 65 / 60 / 55 / 50",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
         "E": {
-            "v1": "?", // SlowDurationPassive
-            "v2": "?", // SlowAmount*-100
-            "v3": "?", // TotalDamage
-            "v4": "?", // SlowDurationActive
-            "v5": "?", // ExecuteHealthThreshold*100
-            "v6": "?", // TotalExecuteDamage
+            "p1": "?", // SlowDurationPassive
+            "p2": "?", // SlowAmount*-100
+            "p3": "?", // TotalDamage
+            "p4": "?", // SlowDurationActive
+            "p5": "?", // ExecuteHealthThreshold*100
+            "p6": "?", // TotalExecuteDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8",
             "cost": "75",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
         "R": {
-            "v1": "?", // CloneLifetime
-            "v2": "?", // ExplosionTotalDamage
-            "v3": "?", // CloneAADamagePercent*100
-            "v4": "?", // CloneIncomingDamagePercent*100
-            "v5": "?", // AoEDamage
-            "v6": "?", // STDamage
-            "v7": "?", // BoxFearDuration
+            "p1": "?", // CloneLifetime
+            "p2": "?", // ExplosionTotalDamage
+            "p3": "?", // CloneAADamagePercent*100
+            "p4": "?", // CloneIncomingDamagePercent*100
+            "p5": "?", // AoEDamage
+            "p6": "?", // STDamage
+            "p7": "?", // BoxFearDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 90 / 80",
             "cost": "100",
-            "stats": "사거리 200"
-        },
-    },
-    "Jade_Shaco": { // 샤코
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // EnhancedAttackDuration
-            "v2": "?", // ModifiedQCritDamageTooltip
-            "cooldown": "11",
-            "cost": "90 / 80 / 70 / 60 / 50",
-            "stats": "사거리 400"
-        },
-        "W": {
-            "v1": "?", // StealthTImer
-            "v2": "?", // TrapDuration
-            "v3": "?", // FearDuration
-            "v4": "?", // TrapTriggeredLifetime
-            "v5": "?", // BoxTotalDamage_Jade
-            "cooldown": "16",
-            "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 425"
-        },
-        "E": {
-            "v1": "?", // SlowDurationPassive
-            "v2": "?", // SlowAmount*-100
-            "v3": "?", // MissChance*100
-            "v4": "?", // TotalDamage
-            "v5": "?", // SlowDurationActive
-            "cooldown": "8",
-            "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 625"
-        },
-        "R": {
-            "v1": "?", // CloneLifetime
-            "v2": "?", // CloneAADamagePercent*100
-            "v3": "?", // Jade_ShacoDamageTakenTooltip*100
-            "v4": "?", // ExplosionTotalDamage
-            "cooldown": "100 / 90 / 80",
-            "cost": "100",
-            "stats": "사거리 200"
+            "stats": {
+                "사거리": "200"
+            }
         },
     },
     "Senna": { // 세나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // TotalSlow
-            "v4": "?", // TotalHeal
-            "v5": "?", // CDReductionOnHit
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // TotalSlow
+            "p4": "?", // TotalHeal
+            "p5": "?", // CDReductionOnHit
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15",
             "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // Damage
-            "v2": "?", // DelayTime
-            "v3": "?", // RootDuration
+            "p1": "?", // Damage
+            "p2": "?", // DelayTime
+            "p3": "?", // RootDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1250"
+            "stats": {
+                "사거리": "1250"
+            }
         },
         "E": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // TotalMS
+            "p1": "?", // BuffDuration
+            "p2": "?", // TotalMS
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "26 / 24.5 / 23 / 21.5 / 20",
             "cost": "70",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // ShieldDuration
-            "v3": "?", // TotalShield
+            "p1": "?", // TotalDamage
+            "p2": "?", // ShieldDuration
+            "p3": "?", // TotalShield
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "100",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Seraphine": { // 세라핀
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // ExplosionDamage
-            "v2": "?", // ExecuteThreshold*100
-            "v3": "?", // TotalEmpoweredDamage
+            "p1": "?", // ExplosionDamage
+            "p2": "?", // ExecuteThreshold*100
+            "p3": "?", // TotalEmpoweredDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "W": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // HasteValueAllies
-            "v3": "?", // WMSBonusTotal
-            "v4": "?", // ShieldValueSeraphine
-            "v5": "?", // WHealSplitDelay
-            "v6": "?", // WMissingHPHeal
+            "p1": "?", // ShieldDuration
+            "p2": "?", // HasteValueAllies
+            "p3": "?", // WMSBonusTotal
+            "p4": "?", // ShieldValueSeraphine
+            "p5": "?", // WHealSplitDelay
+            "p6": "?", // WMissingHPHeal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "E": {
-            "v1": "?", // FinalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowValue
+            "p1": "?", // FinalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowValue
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10.5 / 10 / 9.5 / 9",
             "cost": "60",
-            "stats": "사거리 1300"
+            "stats": {
+                "사거리": "1300"
+            }
         },
         "R": {
-            "v1": "?", // RChannelDuration
-            "v2": "?", // R1TotalDamage
+            "p1": "?", // RChannelDuration
+            "p2": "?", // R1TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "160 / 140 / 120",
             "cost": "100",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Sejuani": { // 세주아니
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamageTooltip
-            "v2": "?", // KnockupDurationTOOLTIPONLY
+            "p1": "?", // TotalDamageTooltip
+            "p2": "?", // KnockupDurationTOOLTIPONLY
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 16.5 / 15 / 13.5 / 12",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "W": {
-            "v1": "?", // FirstHitDamageTooltip
-            "v2": "?", // SecondHitDamageTooltip
+            "p1": "?", // FirstHitDamageTooltip
+            "p2": "?", // SecondHitDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "60",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // CCDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // CCDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "1.5",
             "cost": "20",
-            "stats": "사거리 560"
+            "stats": {
+                "사거리": "560"
+            }
         },
         "R": {
-            "v1": "?", // BaseStunDuration
-            "v2": "?", // MinorDamageTooltip
-            "v3": "?", // EmpoweredStunDuration
-            "v4": "?", // ZoneDuration
-            "v5": "?", // ExplosionSlowAmount
-            "v6": "?", // TotalDamageTooltip
+            "p1": "?", // BaseStunDuration
+            "p2": "?", // MinorDamageTooltip
+            "p3": "?", // EmpoweredStunDuration
+            "p4": "?", // ZoneDuration
+            "p5": "?", // ExplosionSlowAmount
+            "p6": "?", // TotalDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 105 / 90",
             "cost": "100",
-            "stats": "사거리 1300"
+            "stats": {
+                "사거리": "1300"
+            }
         },
     },
     "Sett": { // 세트
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MSDuration
-            "v2": "?", // MSAmount*100
-            "v3": "?", // BaseDamage
-            "v4": "?", // MaxHealthDamageCalc
+            "p1": "?", // MSDuration
+            "p2": "?", // MSAmount*100
+            "p3": "?", // BaseDamage
+            "p4": "?", // MaxHealthDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "-"
         },
         "W": {
-            "v1": "?", // DamageStored*100
-            "v2": "?", // MaxGrit
-            "v3": "?", // AdrenalineStorageWindow
-            "v4": "?", // ShieldConversion*100
-            "v5": "?", // ShieldMaxDuration
-            "v6": "?", // DamageCalc
-            "v7": "?", // DamageConversion
-            "v8": "?", // f1
+            "p1": "?", // DamageStored*100
+            "p2": "?", // MaxGrit
+            "p3": "?", // AdrenalineStorageWindow
+            "p4": "?", // ShieldConversion*100
+            "p5": "?", // ShieldMaxDuration
+            "p6": "?", // DamageCalc
+            "p7": "?", // DamageConversion
+            "p8": "?", // f1
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 16.5 / 15 / 13.5 / 12",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "E": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // StunDuration
+            "p1": "?", // DamageCalc
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "p4": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
             "cost": "-",
-            "stats": "사거리 490"
+            "stats": {
+                "사거리": "490"
+            }
         },
         "R": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // MaxHealthDamage*100
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowAmount*100
+            "p1": "?", // DamageCalc
+            "p2": "?", // MaxHealthDamage*100
+            "p3": "?", // SlowDuration
+            "p4": "?", // SlowAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "-",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
     },
     "Sona": { // 소나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // AuraDuration
-            "v3": "?", // OnHitDuration
-            "v4": "?", // TotalOnHitDamage
-            "v5": "?", // TotalStaccatoDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // AuraDuration
+            "p3": "?", // OnHitDuration
+            "p4": "?", // TotalOnHitDamage
+            "p5": "?", // TotalStaccatoDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 825"
+            "stats": {
+                "사거리": "825"
+            }
         },
         "W": {
-            "v1": "?", // TotalHeal
-            "v2": "?", // AuraDuration
-            "v3": "?", // ShieldDuration
-            "v4": "?", // TotalShield
-            "v5": "?", // AccelerandoShieldBreakpoint
-            "v6": "?", // DiminuendoDuration
-            "v7": "?", // TotalDiminuendoWeakenPercent
+            "p1": "?", // TotalHeal
+            "p2": "?", // AuraDuration
+            "p3": "?", // ShieldDuration
+            "p4": "?", // TotalShield
+            "p5": "?", // AccelerandoShieldBreakpoint
+            "p6": "?", // DiminuendoDuration
+            "p7": "?", // TotalDiminuendoWeakenPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "80 / 85 / 90 / 95 / 100",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "E": {
-            "v1": "?", // SelfMovementSpeedDurationMin
-            "v2": "?", // TotalSelfMovementSpeed
-            "v3": "?", // SelfMovementSpeedDurationMax
-            "v4": "?", // AuraDuration
-            "v5": "?", // AllyMovementSpeedDuration
-            "v6": "?", // TotalAllyMovementSpeed
-            "v7": "?", // TempoDuration
-            "v8": "?", // TotalTempoMoveSpeedSlow
+            "p1": "?", // SelfMovementSpeedDurationMin
+            "p2": "?", // TotalSelfMovementSpeed
+            "p3": "?", // SelfMovementSpeedDurationMax
+            "p4": "?", // AuraDuration
+            "p5": "?", // AllyMovementSpeedDuration
+            "p6": "?", // TotalAllyMovementSpeed
+            "p7": "?", // TempoDuration
+            "p8": "?", // TotalTempoMoveSpeedSlow
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14",
             "cost": "65",
-            "stats": "사거리 430"
+            "stats": {
+                "사거리": "430"
+            }
         },
         "R": {
-            "v1": "?", // StunDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // StunDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "100",
-            "stats": "사거리 900"
-        },
-    },
-    "Jade_Sona": { // 소나
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // APADBoost
-            "v2": "?", // EnemiesToHit
-            "v3": "?", // TotalDamage
-            "cooldown": "7",
-            "cost": "65 / 70 / 75 / 80 / 85",
-            "stats": "사거리 825"
-        },
-        "W": {
-            "v1": "?", // ARMRBoost
-            "v2": "?", // Healing
-            "cooldown": "7",
-            "cost": "65 / 70 / 75 / 80 / 85",
-            "stats": "사거리 1000"
-        },
-        "E": {
-            "v1": "?", // MSBoost
-            "v2": "?", // ActiveSpeedDuration
-            "v3": "?", // MoveSpeedMod*100
-            "cooldown": "7",
-            "cost": "65 / 70 / 75 / 80 / 85",
-            "stats": "사거리 1000"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "cooldown": "170 / 150 / 130",
-            "cost": "100",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
     },
     "Soraka": { // 소라카
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // MoveSpeedSlow*100
-            "v4": "?", // HoTDuration
-            "v5": "?", // TotalHoT
-            "v6": "?", // MoveSpeedHaste*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // MoveSpeedSlow*100
+            "p4": "?", // HoTDuration
+            "p5": "?", // TotalHoT
+            "p6": "?", // MoveSpeedHaste*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7 / 6 / 5 / 4",
             "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 810"
+            "stats": {
+                "사거리": "810"
+            }
         },
         "W": {
-            "v1": "?", // TotalHeal
-            "v2": "?", // PercentHealthCostRefund*100
+            "p1": "?", // TotalHeal
+            "p2": "?", // PercentHealthCostRefund*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6 / 5 / 4 / 3 / 2",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // RootDelay
-            "v3": "?", // RootDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // RootDelay
+            "p3": "?", // RootDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 19 / 18 / 17 / 16",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 925"
+            "stats": {
+                "사거리": "925"
+            }
         },
         "R": {
-            "v1": "?", // HealingCalc
-            "v2": "?", // AmpedHealing
+            "p1": "?", // HealingCalc
+            "p2": "?", // AmpedHealing
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "150 / 135 / 120",
             "cost": "100",
-            "stats": "사거리 25000"
-        },
-    },
-    "Jade_Soraka": { // 소라카
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // DebuffDuration
-            "v3": "?", // Shred*-1
-            "v4": "?", // MaxStacks
-            "cooldown": "2.5",
-            "cost": "20 / 35 / 50 / 65 / 80",
-            "stats": "사거리 625"
-        },
-        "W": {
-            "v1": "?", // TotalHeal
-            "v2": "?", // Armour
-            "cooldown": "20",
-            "cost": "80 / 110 / 140 / 170 / 200",
-            "stats": "사거리 750"
-        },
-        "E": {
-            "v1": "?", // Mana
-            "v2": "?", // TotalDamage
-            "v3": "?", // Duration
-            "cooldown": "10",
-            "cost": "",
-            "stats": "사거리 725"
-        },
-        "R": {
-            "v1": "?", // HealingCalc
-            "cooldown": "160 / 145 / 130",
-            "cost": "100 / 175 / 250",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Shen": { // 쉔
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // SlowDuration
-            "v2": "?", // SlowPercent
-            "v3": "?", // NumEnhancedAttacks
-            "v4": "?", // BaseFlatDamage
-            "v5": "?", // BasePercentHealth
-            "v6": "?", // EmpPercentHealth
-            "v7": "?", // SteroidAS
+            "p1": "?", // SlowDuration
+            "p2": "?", // SlowPercent
+            "p3": "?", // NumEnhancedAttacks
+            "p4": "?", // BaseFlatDamage
+            "p5": "?", // BasePercentHealth
+            "p6": "?", // EmpPercentHealth
+            "p7": "?", // SteroidAS
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.25 / 6.5 / 5.75 / 5",
             "cost": "140 / 130 / 120 / 110 / 100",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "W": {
-            "v1": "?", // ZoneDuration
-            "v2": "?", // ZoneDelay
+            "p1": "?", // ZoneDuration
+            "p2": "?", // ZoneDelay
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
             "cost": "40",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "E": {
-            "v1": "?", // EnergyRefund
-            "v2": "?", // CCDuration
-            "v3": "?", // TauntDamage
+            "p1": "?", // EnergyRefund
+            "p2": "?", // CCDuration
+            "p3": "?", // TauntDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 16 / 14 / 12 / 10",
             "cost": "150",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "R": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // Shield
-            "v3": "?", // MaxShield
-            "v4": "?", // ChannelDuration
+            "p1": "?", // ShieldDuration
+            "p2": "?", // Shield
+            "p3": "?", // MaxShield
+            "p4": "?", // ChannelDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "200 / 180 / 160",
             "cost": "-",
-            "stats": "사거리 35000"
+            "stats": {
+                "사거리": "35000"
+            }
         },
     },
     "Shyvana": { // 쉬바나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Calc_Max_Health_Damage
-            "v2": "?", // Cooldown_Reduction
-            "v3": "?", // Calc_Damage
-            "v4": "?", // RecastDuration
-            "v5": "?", // Calc_Dragon_Form_Damage
+            "p1": "?", // Calc_Max_Health_Damage
+            "p2": "?", // Cooldown_Reduction
+            "p3": "?", // Calc_Damage
+            "p4": "?", // RecastDuration
+            "p5": "?", // Calc_Dragon_Form_Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "W": {
-            "v1": "?", // Duration
-            "v2": "?", // Calc_Shield
-            "v3": "?", // Calc_Shield_Per_Nearby_Champion
-            "v4": "?", // MoveSpeed
-            "v5": "?", // MoveSpeedTowardsEnemies
-            "v6": "?", // Damage
-            "v7": "?", // Calc_Base_Heal
-            "v8": "?", // Calc_Missing_Health_Heal
+            "p1": "?", // Duration
+            "p2": "?", // Calc_Shield
+            "p3": "?", // Calc_Shield_Per_Nearby_Champion
+            "p4": "?", // MoveSpeed
+            "p5": "?", // MoveSpeedTowardsEnemies
+            "p6": "?", // Damage
+            "p7": "?", // Calc_Base_Heal
+            "p8": "?", // Calc_Missing_Health_Heal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12.25 / 11.5 / 10.75 / 10",
             "cost": "-",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "E": {
-            "v1": "?", // Damage
-            "v2": "?", // Calc_Max_Health_Damage
-            "v3": "?", // SlowDuration
-            "v4": "?", // Calc_Slow
-            "v5": "?", // Calc_Dragon_Damage
-            "v6": "?", // Calc_Max_Health_Dragon_Damage
-            "v7": "?", // Calc_Slow_Dragon
-            "v8": "?", // GroundLingerDuration
-            "v9": "?", // DamagePerSecond
+            "p1": "?", // Damage
+            "p2": "?", // Calc_Max_Health_Damage
+            "p3": "?", // SlowDuration
+            "p4": "?", // Calc_Slow
+            "p5": "?", // Calc_Dragon_Damage
+            "p6": "?", // Calc_Max_Health_Dragon_Damage
+            "p7": "?", // Calc_Slow_Dragon
+            "p8": "?", // GroundLingerDuration
+            "p9": "?", // DamagePerSecond
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "-",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
-            "v1": "?", // Fury_Generation
-            "v2": "?", // TT_Fury_Mult
-            "v3": "?", // TT_Fury_AoE_Penalty
-            "v4": "?", // Damage
-            "v5": "?", // FearDuration
-            "v6": "?", // Calc_Bonus_Health
+            "p1": "?", // Fury_Generation
+            "p2": "?", // TT_Fury_Mult
+            "p3": "?", // TT_Fury_AoE_Penalty
+            "p4": "?", // Damage
+            "p5": "?", // FearDuration
+            "p6": "?", // Calc_Bonus_Health
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "",
-            "stats": "사거리 1050"
+            "stats": {
+                "사거리": "1050"
+            }
         },
     },
     "Smolder": { // 스몰더
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // ManaRestore
-            "v3": "?", // StackTier1
-            "v4": "?", // StackTier2
-            "v5": "?", // Tier2_BlowbackPercentageDamage
-            "v6": "?", // Tier2_NumberOfBlowback
-            "v7": "?", // StackTier3
-            "v8": "?", // Tier3_DotLength
-            "v9": "?", // Tier3_Burn
-            "v10": "?", // Tier3_ExecuteThreshold
+            "p1": "?", // TotalDamage
+            "p2": "?", // ManaRestore
+            "p3": "?", // StackTier1
+            "p4": "?", // StackTier2
+            "p5": "?", // Tier2_BlowbackPercentageDamage
+            "p6": "?", // Tier2_NumberOfBlowback
+            "p7": "?", // StackTier3
+            "p8": "?", // Tier3_DotLength
+            "p9": "?", // Tier3_Burn
+            "p10": "?", // Tier3_ExecuteThreshold
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5.5 / 5 / 4.5 / 4 / 3.5",
             "cost": "25",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "W": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // ExplosionDamage
+            "p1": "?", // InitialDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "p4": "?", // ExplosionDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1500"
+            "stats": {
+                "사거리": "1500"
+            }
         },
         "E": {
-            "v1": "?", // Duration
-            "v2": "?", // MoveSpeed*100
-            "v3": "?", // TotalNumberOfAttacks
-            "v4": "?", // DamagePerHit
+            "p1": "?", // Duration
+            "p2": "?", // MoveSpeed*100
+            "p3": "?", // TotalNumberOfAttacks
+            "p4": "?", // DamagePerHit
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "24 / 22 / 20 / 18 / 16",
             "cost": "65",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TooltipOnly_TotalSweetspotDamage
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowAmount*100
-            "v5": "?", // MomHealCalc
+            "p1": "?", // TotalDamage
+            "p2": "?", // TooltipOnly_TotalSweetspotDamage
+            "p3": "?", // SlowDuration
+            "p4": "?", // SlowAmount*100
+            "p5": "?", // MomHealCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 110 / 100",
             "cost": "100",
-            "stats": "사거리 4200"
+            "stats": {
+                "사거리": "4200"
+            }
         },
     },
     "Swain": { // 스웨인
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // ExtraBoltDamage
-            "v3": "?", // MaxDamage
+            "p1": "?", // InitialDamage
+            "p2": "?", // ExtraBoltDamage
+            "p3": "?", // MaxDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // Slow*-100
-            "v4": "?", // RevealDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // Slow*-100
+            "p4": "?", // RevealDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 5500 / 6000 / 6500 / 7000 / 7500"
+            "stats": {
+                "사거리": "5500 / 6000 / 6500 / 7000 / 7500"
+            }
         },
         "E": {
-            "v1": "?", // SecondaryDamage
-            "v2": "?", // RootDuration
+            "p1": "?", // SecondaryDamage
+            "p2": "?", // RootDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "R": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // HealingCalc
-            "v3": "?", // DemonflareCastDelay
-            "v4": "?", // DemonflareCooldownTooltip
-            "v5": "?", // DemonflareDamageTotal
-            "v6": "?", // DemonflareSlowAmount*100
-            "v7": "?", // DemonflareSlowDuration
+            "p1": "?", // DamageCalc
+            "p2": "?", // HealingCalc
+            "p3": "?", // DemonflareCastDelay
+            "p4": "?", // DemonflareCooldownTooltip
+            "p5": "?", // DemonflareDamageTotal
+            "p6": "?", // DemonflareSlowAmount*100
+            "p7": "?", // DemonflareSlowDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120",
             "cost": "100",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
     },
     "Skarner": { // 스카너
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // AttackSpeed*100
-            "v2": "?", // AbilityDamage
-            "v3": "?", // MaxHPPercent*100
-            "v4": "?", // SlowDuration
-            "v5": "?", // SlowPercent*100
+            "p1": "?", // AttackSpeed*100
+            "p2": "?", // AbilityDamage
+            "p3": "?", // MaxHPPercent*100
+            "p4": "?", // SlowDuration
+            "p5": "?", // SlowPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 6.75 / 5.5 / 4.25 / 3",
             "cost": "30",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "W": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // InitialShield
-            "v3": "?", // Damage
-            "v4": "?", // SlowDuration
-            "v5": "?", // SlowEffect*-100
+            "p1": "?", // ShieldDuration
+            "p2": "?", // InitialShield
+            "p3": "?", // Damage
+            "p4": "?", // SlowDuration
+            "p5": "?", // SlowEffect*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "E": {
-            "v1": "?", // PinDamage
-            "v2": "?", // StunDuration
+            "p1": "?", // PinDamage
+            "p2": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1700"
+            "stats": {
+                "사거리": "1700"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // Duration
-            "v3": "?", // SpeedBoostDuration
-            "v4": "?", // SpeedBoostAmount*100
+            "p1": "?", // Damage
+            "p2": "?", // Duration
+            "p3": "?", // SpeedBoostDuration
+            "p4": "?", // SpeedBoostAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 105 / 90",
             "cost": "100",
-            "stats": "사거리 625"
-        },
-    },
-    "Jade_Skarner": { // 스카너
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalBaseDamage
-            "v2": "?", // TotalProcDamage
-            "v3": "?", // SlowPercent*-100
-            "cooldown": "3.5",
-            "cost": "20 / 22 / 24 / 26 / 28",
-            "stats": "사거리 325"
-        },
-        "W": {
-            "v1": "?", // BlockDamage
-            "v2": "?", // ASBonus*100
-            "v3": "?", // MSBonus*100
-            "cooldown": "18",
-            "cost": "60",
-            "stats": "사거리 700"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TotalHealing
-            "cooldown": "10",
-            "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 800"
-        },
-        "R": {
-            "v1": "?", // TotaDamage
-            "cooldown": "130 / 120 / 110",
-            "cost": "100 / 125 / 150",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "625"
+            }
         },
     },
     "Sivir": { // 시비르
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // FallOffMinimum*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // FallOffMinimum*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "55 / 60 / 65 / 70 / 75",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
         "W": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // RicochetAttackSpeed*100
-            "v3": "?", // BounceDamage
-            "v4": "?", // MaxBounces
+            "p1": "?", // BuffDuration
+            "p2": "?", // RicochetAttackSpeed*100
+            "p3": "?", // BounceDamage
+            "p4": "?", // MaxBounces
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "60",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "E": {
-            "v1": "?", // SpellShieldDuration
-            "v2": "?", // TotalHeal
+            "p1": "?", // SpellShieldDuration
+            "p2": "?", // TotalHeal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "24 / 22.5 / 21 / 19.5 / 18",
             "cost": "",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "R": {
-            "v1": "?", // UltDuration
-            "v2": "?", // MaxMS*100
-            "v3": "?", // AttackCooldownRefund
+            "p1": "?", // UltDuration
+            "p2": "?", // MaxMS*100
+            "p3": "?", // AttackCooldownRefund
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 1000"
-        },
-    },
-    "Jade_Sivir": { // 시비르
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // FallOffRatio*100
-            "v3": "?", // FallOffMinimum*100
-            "cooldown": "9",
-            "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 1200"
-        },
-        "W": {
-            "v1": "?", // MaxBounces
-            "v2": "?", // FallOffRatio*100
-            "cooldown": "0.5",
-            "cost": "",
-            "stats": "사거리 20"
-        },
-        "E": {
-            "v1": "?", // Duration
-            "v2": "?", // ManaReturn
-            "cooldown": "22 / 19 / 16 / 13 / 10",
-            "cost": "75",
-            "stats": "사거리 20"
-        },
-        "R": {
-            "v1": "?", // UltDuration
-            "v2": "?", // HuntAttackSpeed*100
-            "v3": "?", // MS*100
-            "v4": "?", // AlliedEffectiveness*100
-            "cooldown": "100 / 90 / 80",
-            "cost": "100",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
     },
     "XinZhao": { // 신 짜오
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BonusDamage
-            "v2": "?", // KnockUpDuration
+            "p1": "?", // BonusDamage
+            "p2": "?", // KnockUpDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
             "cost": "30",
-            "stats": "사거리 375"
+            "stats": {
+                "사거리": "375"
+            }
         },
         "W": {
-            "v1": "?", // SlashDamage
-            "v2": "?", // ThrustDamage
-            "v3": "?", // TotalSlowDuration
-            "v4": "?", // Effect6Amount*-100
-            "v5": "?", // MarkDuration
+            "p1": "?", // SlashDamage
+            "p2": "?", // ThrustDamage
+            "p3": "?", // TotalSlowDuration
+            "p4": "?", // Effect6Amount*-100
+            "p5": "?", // MarkDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "60",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "E": {
-            "v1": "?", // ChargeDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount
-            "v4": "?", // ASDuration
-            "v5": "?", // f1
+            "p1": "?", // ChargeDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount
+            "p4": "?", // ASDuration
+            "p5": "?", // f1
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11",
             "cost": "60",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // MarkDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // PercentCurrentHealthDamage*100
-            "v4": "?", // MissileDefenseBaseDuration
+            "p1": "?", // MarkDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // PercentCurrentHealthDamage*100
+            "p4": "?", // MissileDefenseBaseDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 110 / 100",
             "cost": "100",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
     },
     "Syndra": { // 신드라
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SphereDuration
-            "v3": "?", // Upgrade1MaxAmmo
+            "p1": "?", // TotalDamage
+            "p2": "?", // SphereDuration
+            "p3": "?", // Upgrade1MaxAmmo
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "W": {
-            "v1": "?", // ThrowDamage
-            "v2": "?", // f2
-            "v3": "?", // TotalSlowAmount
-            "v4": "?", // TOOLTIPONLYPassiveBonusPercent
+            "p1": "?", // ThrowDamage
+            "p2": "?", // f2
+            "p3": "?", // TotalSlowAmount
+            "p4": "?", // TOOLTIPONLYPassiveBonusPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 925"
+            "stats": {
+                "사거리": "925"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // StunDuration
-            "v3": "?", // UpgradedSlowDuration
-            "v4": "?", // UpgradedSlowAmount*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // StunDuration
+            "p3": "?", // UpgradedSlowDuration
+            "p4": "?", // UpgradedSlowAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15",
             "cost": "50",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // QHastePerRank
-            "v2": "?", // DamageCalc
-            "v3": "?", // MaxDamageCalc
-            "v4": "?", // UpgradeExecuteThreshold*100
+            "p1": "?", // QHastePerRank
+            "p2": "?", // DamageCalc
+            "p3": "?", // MaxDamageCalc
+            "p4": "?", // UpgradeExecuteThreshold*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 675"
+            "stats": {
+                "사거리": "675"
+            }
         },
     },
     "Singed": { // 신지드
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // DamagePerSecond
+            "p1": "?", // DamagePerSecond
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "13",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "W": {
-            "v1": "?", // WDuration
-            "v2": "?", // SlowPercent
+            "p1": "?", // WDuration
+            "p2": "?", // SlowPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "17 / 16 / 15 / 14 / 13",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "E": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // MaxHPDamage
-            "v3": "?", // RootDuration
+            "p1": "?", // BaseDamage
+            "p2": "?", // MaxHPDamage
+            "p3": "?", // RootDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 125"
+            "stats": {
+                "사거리": "125"
+            }
         },
         "R": {
-            "v1": "?", // Duration
-            "v2": "?", // StatAmount
-            "v3": "?", // GrievousDuration
-            "v4": "?", // GrievousAmount*100
+            "p1": "?", // Duration
+            "p2": "?", // StatAmount
+            "p3": "?", // GrievousDuration
+            "p4": "?", // GrievousAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100",
             "cost": "100",
-            "stats": "사거리 20"
-        },
-    },
-    "Jade_Singed": { // 신지드
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // DamagePerSecond
-            "cooldown": "0",
-            "cost": "13",
-            "stats": "사거리 20"
-        },
-        "W": {
-            "v1": "?", // SlowPercent
-            "cooldown": "14",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 1000"
-        },
-        "E": {
-            "v1": "?", // Damage
-            "cooldown": "10",
-            "cost": "100 / 110 / 120 / 130 / 140",
-            "stats": "사거리 125"
-        },
-        "R": {
-            "v1": "?", // Duration
-            "v2": "?", // StatAmount
-            "cooldown": "100",
-            "cost": "150",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
     },
     "Thresh": { // 쓰레쉬
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TauntLength
-            "v2": "?", // TotalDamage
-            "v3": "?", // HitBonusCooldown
+            "p1": "?", // TauntLength
+            "p2": "?", // TotalDamage
+            "p3": "?", // HitBonusCooldown
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "19 / 16.5 / 14 / 11.5 / 9",
             "cost": "70",
-            "stats": "사거리 1075"
+            "stats": {
+                "사거리": "1075"
+            }
         },
         "W": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // TotalShield
+            "p1": "?", // ShieldDuration
+            "p2": "?", // TotalShield
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "21 / 20 / 19 / 18 / 17",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "E": {
-            "v1": "?", // PAttackDamageMin
-            "v2": "?", // PAttackDamageMax
-            "v3": "?", // SlowDuration
-            "v4": "?", // ActiveSlowPercentage
-            "v5": "?", // TotalDamage
+            "p1": "?", // PAttackDamageMin
+            "p2": "?", // PAttackDamageMax
+            "p3": "?", // SlowDuration
+            "p4": "?", // ActiveSlowPercentage
+            "p5": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12.25 / 11.5 / 10.75 / 10",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
         "R": {
-            "v1": "?", // SlowDuration
-            "v2": "?", // SlowAmount
-            "v3": "?", // TotalDamage
+            "p1": "?", // SlowDuration
+            "p2": "?", // SlowAmount
+            "p3": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
     },
     "Ahri": { // 아리
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "55 / 65 / 75 / 85 / 95",
-            "stats": "사거리 970"
+            "stats": {
+                "사거리": "970"
+            }
         },
         "W": {
-            "v1": "?", // SingleFireDamage
-            "v2": "?", // MultiFireDamage
-            "v3": "?", // MovementSpeed*100
-            "v4": "?", // MovementSpeedDuration
+            "p1": "?", // SingleFireDamage
+            "p2": "?", // MultiFireDamage
+            "p3": "?", // MovementSpeed*100
+            "p4": "?", // MovementSpeedDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "30",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "E": {
-            "v1": "?", // CharmDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // CharmDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "60",
-            "stats": "사거리 975"
+            "stats": {
+                "사거리": "975"
+            }
         },
         "R": {
-            "v1": "?", // RMaxTargetsPerCast
-            "v2": "?", // RCalculatedDamage
-            "v3": "?", // RRecastWindow
-            "v4": "?", // RMaxCasts
-            "v5": "?", // PDurationExtension
+            "p1": "?", // RMaxTargetsPerCast
+            "p2": "?", // RCalculatedDamage
+            "p3": "?", // RRecastWindow
+            "p4": "?", // RMaxCasts
+            "p5": "?", // PDurationExtension
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "100",
-            "stats": "사거리 450"
-        },
-    },
-    "Jade_Ahri": { // 아리
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "cooldown": "7",
-            "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 970"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // HalfDamage
-            "cooldown": "9 / 8 / 7 / 6 / 5",
-            "cost": "50",
-            "stats": "사거리 700"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // CharmDuration
-            "v3": "?", // DamageAmpDuration
-            "v4": "?", // DamageAmp
-            "cooldown": "12",
-            "cost": "50 / 65 / 80 / 95 / 110",
-            "stats": "사거리 975"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "cooldown": "110 / 95 / 80",
-            "cost": "100",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
     },
     "Amumu": { // 아무무
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // StunDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // StunDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3",
             "cost": "50",
-            "stats": "사거리 1100"
+            "stats": {
+                "사거리": "1100"
+            }
         },
         "W": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // TotalHealthDamage
+            "p1": "?", // BaseDamage
+            "p2": "?", // TotalHealthDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "1",
             "cost": "8",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "E": {
-            "v1": "?", // DamageReduction
-            "v2": "?", // CDROnHit
-            "v3": "?", // TantrumDamage
+            "p1": "?", // DamageReduction
+            "p2": "?", // CDROnHit
+            "p3": "?", // TantrumDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "35",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "R": {
-            "v1": "?", // RDuration
-            "v2": "?", // RCalculatedDamage
+            "p1": "?", // RDuration
+            "p2": "?", // RCalculatedDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "150 / 125 / 100",
             "cost": "100 / 150 / 200",
-            "stats": "사거리 550"
-        },
-    },
-    "Jade_Amumu": { // 아무무
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // StunDuration
-            "v2": "?", // TotalDamage
-            "cooldown": "16 / 14 / 12 / 10 / 8",
-            "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 1100"
-        },
-        "W": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // TotalHealthDamage
-            "cooldown": "1",
-            "cost": "8",
-            "stats": "사거리 300"
-        },
-        "E": {
-            "v1": "?", // PassiveDamageReduction
-            "v2": "?", // TantrumDamage
-            "v3": "?", // CooldownReduction
-            "cooldown": "10 / 9 / 8 / 7 / 6",
-            "cost": "35",
-            "stats": "사거리 350"
-        },
-        "R": {
-            "v1": "?", // DebuffDuration
-            "v2": "?", // RCalculatedDamage
-            "cooldown": "150 / 130 / 110",
-            "cost": "100 / 150 / 200",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
     },
     "AurelionSol": { // 아우렐리온 솔
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MaxChannelDuration
-            "v2": "?", // DamagePerSecond
-            "v3": "?", // AOEModifier*100
-            "v4": "?", // BurstDamage
-            "v5": "?", // BurstBonusTrueDamageToChamps
-            "v6": "?", // QMassStolen
+            "p1": "?", // MaxChannelDuration
+            "p2": "?", // DamagePerSecond
+            "p3": "?", // AOEModifier*100
+            "p4": "?", // BurstDamage
+            "p5": "?", // BurstBonusTrueDamageToChamps
+            "p6": "?", // QMassStolen
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3",
             "cost": "35 / 40 / 45 / 50 / 55",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "W": {
-            "v1": "?", // TrueDamageBonus*100
-            "v2": "?", // ResetWindow
-            "v3": "?", // TooltipTakedownCooldownMultiplier
+            "p1": "?", // TrueDamageBonus*100
+            "p2": "?", // ResetWindow
+            "p3": "?", // TooltipTakedownCooldownMultiplier
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 20.5 / 19 / 17.5 / 16",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1500"
+            "stats": {
+                "사거리": "1500"
+            }
         },
         "E": {
-            "v1": "?", // DamagePerSecond
-            "v2": "?", // Duration
-            "v3": "?", // CurrentExecutionThreshold
+            "p1": "?", // DamagePerSecond
+            "p2": "?", // Duration
+            "p3": "?", // CurrentExecutionThreshold
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "90",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "R": {
-            "v1": "?", // MaxDamageTooltip
-            "v2": "?", // StunDuration
-            "v3": "?", // MassStolen
-            "v4": "?", // CalamityStacks
-            "v5": "?", // R2Damage
-            "v6": "?", // ShockwaveDamage
-            "v7": "?", // ShockwaveSlow*100
+            "p1": "?", // MaxDamageTooltip
+            "p2": "?", // StunDuration
+            "p3": "?", // MassStolen
+            "p4": "?", // CalamityStacks
+            "p5": "?", // R2Damage
+            "p6": "?", // ShockwaveDamage
+            "p7": "?", // ShockwaveSlow*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 110 / 100",
             "cost": "100",
-            "stats": "사거리 1250"
+            "stats": {
+                "사거리": "1250"
+            }
         },
     },
     "Ivern": { // 아이번
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // RootDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // RootDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "60",
-            "stats": "사거리 1125"
+            "stats": {
+                "사거리": "1125"
+            }
         },
         "W": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // AllyBuffDuration
-            "v4": "?", // TotalAllyDamage
-            "v5": "?", // RevealDuration
-            "v6": "?", // MaxBrushDuration
+            "p1": "?", // BuffDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // AllyBuffDuration
+            "p4": "?", // TotalAllyDamage
+            "p5": "?", // RevealDuration
+            "p6": "?", // MaxBrushDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.5",
             "cost": "30",
-            "stats": "사거리 1150"
+            "stats": {
+                "사거리": "1150"
+            }
         },
         "E": {
-            "v1": "?", // TotalShield
-            "v2": "?", // ShieldDuration
-            "v3": "?", // TotalDamage
-            "v4": "?", // SlowDuration
-            "v5": "?", // SlowAmount*100
+            "p1": "?", // TotalShield
+            "p2": "?", // ShieldDuration
+            "p3": "?", // TotalDamage
+            "p4": "?", // SlowDuration
+            "p5": "?", // SlowAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "70",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "R": {
-            "v1": "?", // DaisyDuration
-            "v2": "?", // TotalShockwaveDamage
-            "v3": "?", // ShockwaveCCDuration
-            "v4": "?", // ShockwaveCD
+            "p1": "?", // DaisyDuration
+            "p2": "?", // TotalShockwaveDamage
+            "p3": "?", // ShockwaveCCDuration
+            "p4": "?", // ShockwaveCD
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 130 / 120",
             "cost": "100",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
     },
     "Azir": { // 아지르
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowAmount*-100
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowAmount*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 12 / 10 / 8 / 6",
             "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 740"
+            "stats": {
+                "사거리": "740"
+            }
         },
         "W": {
-            "v1": "?", // Effect1Amount
-            "v2": "?", // TotalDamage
-            "v3": "?", // MaxAmmo
+            "p1": "?", // Effect1Amount
+            "p2": "?", // TotalDamage
+            "p3": "?", // MaxAmmo
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "1.5",
             "cost": "40 / 35 / 30 / 25 / 20",
-            "stats": "사거리 525"
+            "stats": {
+                "사거리": "525"
+            }
         },
         "E": {
-            "v1": "?", // Effect6Amount
-            "v2": "?", // TotalShield
-            "v3": "?", // TotalDamage
+            "p1": "?", // Effect6Amount
+            "p2": "?", // TotalShield
+            "p3": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 20.5 / 19 / 17.5 / 16",
             "cost": "60",
-            "stats": "사거리 1100"
+            "stats": {
+                "사거리": "1100"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // Effect4Amount
+            "p1": "?", // TotalDamage
+            "p2": "?", // Effect4Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 105 / 90",
             "cost": "100",
-            "stats": "사거리 250"
+            "stats": {
+                "사거리": "250"
+            }
         },
     },
     "Akali": { // 아칼리
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Damage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercentage*100
+            "p1": "?", // Damage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercentage*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "1.5",
             "cost": "110 / 100 / 90 / 80 / 70",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "W": {
-            "v1": "?", // BaseDuration
-            "v2": "?", // MovementSpeed
-            "v3": "?", // MovementSpeedDuration
-            "v4": "?", // EnergyRestore
+            "p1": "?", // BaseDuration
+            "p2": "?", // MovementSpeed
+            "p3": "?", // MovementSpeedDuration
+            "p4": "?", // EnergyRestore
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 19 / 18 / 17 / 16",
             "cost": "",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "E": {
-            "v1": "?", // E1Damage
-            "v2": "?", // E2DamageCalc
+            "p1": "?", // E1Damage
+            "p2": "?", // E2DamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
             "cost": "30",
-            "stats": "사거리 825"
+            "stats": {
+                "사거리": "825"
+            }
         },
         "R": {
-            "v1": "?", // Cast1Damage
-            "v2": "?", // CooldownBetweenCasts
-            "v3": "?", // Cast2DamageMin
-            "v4": "?", // Cast2DamageMax
+            "p1": "?", // Cast1Damage
+            "p2": "?", // CooldownBetweenCasts
+            "p3": "?", // Cast2DamageMin
+            "p4": "?", // Cast2DamageMax
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 90 / 60",
             "cost": "-",
-            "stats": "사거리 675"
+            "stats": {
+                "사거리": "675"
+            }
         },
     },
     "Akshan": { // 아크샨
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // FinalDamage
-            "v2": "?", // TotalHaste
-            "v3": "?", // HasteDuration
+            "p1": "?", // FinalDamage
+            "p2": "?", // TotalHaste
+            "p3": "?", // HasteDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "W": {
-            "v1": "?", // GameModeInteger
+            "p1": "?", // GameModeInteger
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 14 / 10 / 6 / 2",
             "cost": "40 / 30 / 20 / 10 / 0",
-            "stats": "사거리 5500"
+            "stats": {
+                "사거리": "5500"
+            }
         },
         "E": {
-            "v1": "?", // DamageToDeal
+            "p1": "?", // DamageToDeal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 16.5 / 15 / 13.5 / 12",
             "cost": "70",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
-            "v1": "?", // ChannelDuration
-            "v2": "?", // NumberOfBullets
-            "v3": "?", // DamagePerBulletWithCrit
-            "v4": "?", // MaxDamagePerBullet
+            "p1": "?", // ChannelDuration
+            "p2": "?", // NumberOfBullets
+            "p3": "?", // DamagePerBulletWithCrit
+            "p4": "?", // MaxDamagePerBullet
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
-            "stats": "사거리 2500"
+            "stats": {
+                "사거리": "2500"
+            }
         },
     },
     "Aatrox": { // 아트록스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // QDamage
-            "v2": "?", // QEdgeDamage
+            "p1": "?", // QDamage
+            "p2": "?", // QEdgeDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 12 / 10 / 8 / 6",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "W": {
-            "v1": "?", // WSlowDuration
-            "v2": "?", // WSlowPercentage*-100
-            "v3": "?", // WDamage
+            "p1": "?", // WSlowDuration
+            "p2": "?", // WSlowPercentage*-100
+            "p3": "?", // WDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "-",
-            "stats": "사거리 825"
+            "stats": {
+                "사거리": "825"
+            }
         },
         "E": {
-            "v1": "?", // TotalEVamp
+            "p1": "?", // TotalEVamp
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "R": {
-            "v1": "?", // RMinionFearDuration
-            "v2": "?", // RMovementSpeedBonus*100
-            "v3": "?", // RDuration
-            "v4": "?", // RTotalADAmp*100
-            "v5": "?", // RHealingAmp*100
-            "v6": "?", // RExtension
+            "p1": "?", // RMinionFearDuration
+            "p2": "?", // RMovementSpeedBonus*100
+            "p3": "?", // RDuration
+            "p4": "?", // RTotalADAmp*100
+            "p5": "?", // RHealingAmp*100
+            "p6": "?", // RExtension
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Aphelios": { // 아펠리오스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9",
             "cost": "60",
-            "stats": "사거리 1450"
+            "stats": {
+                "사거리": "1450"
+            }
         },
         "W": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.8",
             "cost": "-",
-            "stats": "사거리 250"
+            "stats": {
+                "사거리": "250"
+            }
         },
         "E": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "R": {
-            "v1": "?", // MaxDamage
-            "v2": "?", // f1
+            "p1": "?", // MaxDamage
+            "p2": "?", // f1
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 110 / 100",
             "cost": "100",
-            "stats": "사거리 1300"
+            "stats": {
+                "사거리": "1300"
+            }
         },
     },
     "Alistar": { // 알리스타
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // KnockupDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // KnockupDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 365"
+            "stats": {
+                "사거리": "365"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "E": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalDamage
-            "v3": "?", // MaxStacks
-            "v4": "?", // StunDuration
-            "v5": "?", // AttackBonusDamage
+            "p1": "?", // Duration
+            "p2": "?", // TotalDamage
+            "p3": "?", // MaxStacks
+            "p4": "?", // StunDuration
+            "p5": "?", // AttackBonusDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "R": {
-            "v1": "?", // RDuration
-            "v2": "?", // RDamageReduction
+            "p1": "?", // RDuration
+            "p2": "?", // RDamageReduction
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 1"
-        },
-    },
-    "Jade_Alistar": { // 알리스타
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // KnockupDuration
-            "v2": "?", // TotalDamage
-            "cooldown": "17 / 16 / 15 / 14 / 13",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 365"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "cooldown": "14 / 13 / 12 / 11 / 10",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 650"
-        },
-        "E": {
-            "v1": "?", // TotalHeal
-            "v2": "?", // AllyHeal
-            "v3": "?", // NearbyDeathCDR
-            "cooldown": "12",
-            "cost": "40 / 50 / 60 / 70 / 80",
-            "stats": "사거리 575"
-        },
-        "R": {
-            "v1": "?", // BonusDamage
-            "v2": "?", // RDuration
-            "v3": "?", // RDamageReduction
-            "cooldown": "120 / 100 / 80",
-            "cost": "100",
-            "stats": "사거리 1"
+            "stats": {
+                "사거리": "1"
+            }
         },
     },
     "Ambessa": { // 암베사
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Calc_Damage_1_Max
-            "v2": "?", // Calc_Damage_1_Percent_Max
-            "v3": "?", // Calc_Damage_1_Min_Ratio
-            "v4": "?", // Calc_Damage_2_Max
-            "v5": "?", // Calc_Damage_2_Percent_Max
-            "v6": "?", // Calc_Damage_2_Min_Ratio
+            "p1": "?", // Calc_Damage_1_Max
+            "p2": "?", // Calc_Damage_1_Percent_Max
+            "p3": "?", // Calc_Damage_1_Min_Ratio
+            "p4": "?", // Calc_Damage_2_Max
+            "p5": "?", // Calc_Damage_2_Percent_Max
+            "p6": "?", // Calc_Damage_2_Min_Ratio
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "70",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "W": {
-            "v1": "?", // Shield_Duration
-            "v2": "?", // Calc_Shield
-            "v3": "?", // Buff_Duration
-            "v4": "?", // Calc_Damage_Low
-            "v5": "?", // Calc_Damage_High
+            "p1": "?", // Shield_Duration
+            "p2": "?", // Calc_Shield
+            "p3": "?", // Buff_Duration
+            "p4": "?", // Calc_Damage_Low
+            "p5": "?", // Calc_Damage_High
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "70",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "E": {
-            "v1": "?", // Calc_Damage_Flat
-            "v2": "?", // Slow_Amount*100
-            "v3": "?", // Slow_Duration
+            "p1": "?", // Calc_Damage_Flat
+            "p2": "?", // Slow_Amount*100
+            "p3": "?", // Slow_Duration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "70",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "R": {
-            "v1": "?", // Armor_Penetration*100
-            "v2": "?", // Calc_Omnivamp
-            "v3": "?", // Suppress_Duration
-            "v4": "?", // Calc_Damage
-            "v5": "?", // Stun_Duration
+            "p1": "?", // Armor_Penetration*100
+            "p2": "?", // Calc_Omnivamp
+            "p3": "?", // Suppress_Duration
+            "p4": "?", // Calc_Damage
+            "p5": "?", // Stun_Duration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 115 / 100",
             "cost": "-",
-            "stats": "사거리 1250"
+            "stats": {
+                "사거리": "1250"
+            }
         },
     },
     "Annie": { // 애니
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // ShieldBlockTotal
-            "v3": "?", // MoveSpeedCalc
-            "v4": "?", // MovementSpeedDuration
-            "v5": "?", // DamageReturn
+            "p1": "?", // ShieldDuration
+            "p2": "?", // ShieldBlockTotal
+            "p3": "?", // MoveSpeedCalc
+            "p4": "?", // MovementSpeedDuration
+            "p5": "?", // DamageReturn
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
-            "v1": "?", // RPercentPenBuff*100
-            "v2": "?", // InitialBurstDamage
-            "v3": "?", // TibbersLifetime
-            "v4": "?", // TibbersAuraDamage
+            "p1": "?", // RPercentPenBuff*100
+            "p2": "?", // InitialBurstDamage
+            "p3": "?", // TibbersLifetime
+            "p4": "?", // TibbersAuraDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 115 / 100",
             "cost": "100",
-            "stats": "사거리 600"
-        },
-    },
-    "Jade_Annie": { // 애니
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "cooldown": "4",
-            "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 625"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "cooldown": "8",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 600"
-        },
-        "E": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // Resistances
-            "v3": "?", // DamageReturn
-            "cooldown": "10",
-            "cost": "20",
-            "stats": "사거리 800"
-        },
-        "R": {
-            "v1": "?", // InitialBurstDamage
-            "v2": "?", // TibbersLifetime
-            "v3": "?", // TibbersAuraDamage
-            "cooldown": "120",
-            "cost": "100",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
     },
     "Anivia": { // 애니비아
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalPassthroughDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // StunDuration
-            "v4": "?", // TotalExplosionDamage
+            "p1": "?", // TotalPassthroughDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // StunDuration
+            "p4": "?", // TotalExplosionDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "80 / 85 / 90 / 95 / 100",
-            "stats": "사거리 1075"
+            "stats": {
+                "사거리": "1075"
+            }
         },
         "W": {
-            "v1": "?", // WallWidth
-            "v2": "?", // WallDuration
+            "p1": "?", // WallWidth
+            "p2": "?", // WallDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "17",
             "cost": "70",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // EmpoweredDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // EmpoweredDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "50",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // GrowthTime
-            "v2": "?", // TotalDamagePerSecond
-            "v3": "?", // SlowAmount
-            "v4": "?", // SlowPercentEmpoweredTT
-            "v5": "?", // EmpoweredDamagePerSecondTooltipOnly
+            "p1": "?", // GrowthTime
+            "p2": "?", // TotalDamagePerSecond
+            "p3": "?", // SlowAmount
+            "p4": "?", // SlowPercentEmpoweredTT
+            "p5": "?", // EmpoweredDamagePerSecondTooltipOnly
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4 / 3 / 2",
             "cost": "60",
-            "stats": "사거리 750"
-        },
-    },
-    "Jade_Anivia": { // 애니비아
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalPassthroughDamage
-            "v2": "?", // TotalExplosionDamage
-            "v3": "?", // StunDuration
-            "cooldown": "12 / 11 / 10 / 9 / 8",
-            "cost": "80 / 100 / 120 / 140 / 160",
-            "stats": "사거리 1075"
-        },
-        "W": {
-            "v1": "?", // WallWidth
-            "v2": "?", // WallDuration
-            "cooldown": "25",
-            "cost": "70 / 90 / 110 / 130 / 150",
-            "stats": "사거리 1000"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // EmpoweredDamage
-            "cooldown": "5",
-            "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 650"
-        },
-        "R": {
-            "v1": "?", // TotalDamagePerSecond
-            "v2": "?", // SlowAmount
-            "cooldown": "6",
-            "cost": "75",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "750"
+            }
         },
     },
     "Ashe": { // 애쉬
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // StackDuration
-            "v2": "?", // MaxStacks
-            "v3": "?", // BuffDuration
-            "v4": "?", // BonusAS
-            "v5": "?", // EmpoweredDamage
+            "p1": "?", // StackDuration
+            "p2": "?", // MaxStacks
+            "p3": "?", // BuffDuration
+            "p4": "?", // BonusAS
+            "p5": "?", // EmpoweredDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "30",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "W": {
-            "v1": "?", // NumberOfArrowsTooltip
-            "v2": "?", // TotalDamage
+            "p1": "?", // NumberOfArrowsTooltip
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 14.5 / 11 / 7.5 / 4",
             "cost": "75 / 70 / 65 / 60 / 55",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
         "E": {
-            "v1": "?", // ChargeCooldown
+            "p1": "?", // ChargeCooldown
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "R": {
-            "v1": "?", // RMainDamage
-            "v2": "?", // MaxStunDuration
+            "p1": "?", // RMainDamage
+            "p2": "?", // MaxStunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 80 / 60",
             "cost": "100",
-            "stats": "사거리 25000"
-        },
-    },
-    "Jade_Ashe": { // 애쉬
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // SlowDuration
-            "v2": "?", // SlowPercent*-100
-            "cooldown": "1",
-            "cost": "",
-            "stats": "사거리 400"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "cooldown": "16 / 13 / 10 / 7 / 4",
-            "cost": "60",
-            "stats": "사거리 1200"
-        },
-        "E": {
-            "v1": "?", // AdditionalGold
-            "cooldown": "60",
-            "cost": "",
-            "stats": "사거리 2500 / 3250 / 4000 / 4750 / 5500"
-        },
-        "R": {
-            "v1": "?", // RMainDamage
-            "v2": "?", // MaxStunDuration
-            "v3": "?", // RMainDamageSplashTooltip
-            "cooldown": "100 / 90 / 80",
-            "cost": "150",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Yasuo": { // 야스오
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // GatheringStormDuration
-            "v3": "?", // KnockUpDurationTOOLTIPONLY
+            "p1": "?", // TotalDamage
+            "p2": "?", // GatheringStormDuration
+            "p3": "?", // KnockUpDurationTOOLTIPONLY
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "-",
-            "stats": "사거리 475"
+            "stats": {
+                "사거리": "475"
+            }
         },
         "W": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "25 / 23 / 21 / 19 / 17",
             "cost": "-",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // StackDuration
-            "v3": "?", // BonusDamagePerStack
-            "v4": "?", // MaxStacks
-            "v5": "?", // Effect2Amount
+            "p1": "?", // TotalDamage
+            "p2": "?", // StackDuration
+            "p3": "?", // BonusDamagePerStack
+            "p4": "?", // MaxStacks
+            "p5": "?", // Effect2Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.5 / 0.4 / 0.3 / 0.2 / 0.1",
             "cost": "-",
-            "stats": "사거리 475"
+            "stats": {
+                "사거리": "475"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // RKnockupDuration
-            "v3": "?", // RBuffDuration
-            "v4": "?", // RPercentArmorPen
+            "p1": "?", // Damage
+            "p2": "?", // RKnockupDuration
+            "p3": "?", // RBuffDuration
+            "p4": "?", // RPercentArmorPen
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "70 / 50 / 30",
             "cost": "-",
-            "stats": "사거리 1400"
+            "stats": {
+                "사거리": "1400"
+            }
         },
     },
     "Ekko": { // 에코
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // SlowPercent*-100
-            "v3": "?", // RecallDamage
+            "p1": "?", // InitialDamage
+            "p2": "?", // SlowPercent*-100
+            "p3": "?", // RecallDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 1075"
+            "stats": {
+                "사거리": "1075"
+            }
         },
         "W": {
-            "v1": "?", // BelowHealthThreshold*100
-            "v2": "?", // MissingHealthPercent
-            "v3": "?", // SlowZoneDuration
-            "v4": "?", // SlowPercent
-            "v5": "?", // StunDuration
-            "v6": "?", // TotalShield
+            "p1": "?", // BelowHealthThreshold*100
+            "p2": "?", // MissingHealthPercent
+            "p3": "?", // SlowZoneDuration
+            "p4": "?", // SlowPercent
+            "p5": "?", // StunDuration
+            "p6": "?", // TotalShield
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 20 / 18 / 16 / 14",
             "cost": "30 / 35 / 40 / 45 / 50",
-            "stats": "사거리 1600"
+            "stats": {
+                "사거리": "1600"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TotalBaseHeal
-            "v3": "?", // PercentHealAmpPerPercentMissingHealth
+            "p1": "?", // TotalDamage
+            "p2": "?", // TotalBaseHeal
+            "p3": "?", // PercentHealAmpPerPercentMissingHealth
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 80 / 50",
             "cost": "100",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
     },
     "Elise": { // 엘리스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // HumanPercentHealth
+            "p1": "?", // BaseDamage
+            "p2": "?", // HumanPercentHealth
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "80 / 85 / 90 / 95 / 100",
-            "stats": "사거리 615"
+            "stats": {
+                "사거리": "615"
+            }
         },
         "W": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "E": {
-            "v1": "?", // TotalStunDuration
+            "p1": "?", // TotalStunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "50",
-            "stats": "사거리 1075"
+            "stats": {
+                "사거리": "1075"
+            }
         },
         "R": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3",
             "cost": "-",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
     },
     "MonkeyKing": { // 오공
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // AttackRangeBonus
-            "v2": "?", // BonusDamageTT
-            "v3": "?", // ShredDuration
-            "v4": "?", // ArmorShredPercent*100
-            "v5": "?", // CooldownDecrease
+            "p1": "?", // AttackRangeBonus
+            "p2": "?", // BonusDamageTT
+            "p3": "?", // ShredDuration
+            "p4": "?", // ArmorShredPercent*100
+            "p5": "?", // CooldownDecrease
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "20",
-            "stats": "사거리 250 / 275 / 300 / 325 / 350"
+            "stats": {
+                "사거리": "250 / 275 / 300 / 325 / 350"
+            }
         },
         "W": {
-            "v1": "?", // StealthDuration
-            "v2": "?", // CloneDuration
-            "v3": "?", // CloneDamageMod*100
+            "p1": "?", // StealthDuration
+            "p2": "?", // CloneDuration
+            "p3": "?", // CloneDamageMod*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "60 / 55 / 50 / 45 / 40",
-            "stats": "사거리 275"
+            "stats": {
+                "사거리": "275"
+            }
         },
         "E": {
-            "v1": "?", // ExtraTargets
-            "v2": "?", // TotalDamage
-            "v3": "?", // AttackSpeedDuration
-            "v4": "?", // AttackSpeed*100
+            "p1": "?", // ExtraTargets
+            "p2": "?", // TotalDamage
+            "p3": "?", // AttackSpeedDuration
+            "p4": "?", // AttackSpeed*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.25 / 8.5 / 7.75 / 7",
             "cost": "30 / 35 / 40 / 45 / 50",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // MoveSpeed*100
-            "v2": "?", // SpinDuration
-            "v3": "?", // KnockupDuration
-            "v4": "?", // TotalDamageTT
-            "v5": "?", // PercentHPDamageTT
-            "v6": "?", // RecastWindow
+            "p1": "?", // MoveSpeed*100
+            "p2": "?", // SpinDuration
+            "p3": "?", // KnockupDuration
+            "p4": "?", // TotalDamageTT
+            "p5": "?", // PercentHPDamageTT
+            "p6": "?", // RecastWindow
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 110 / 90",
             "cost": "100",
-            "stats": "사거리 315"
-        },
-    },
-    "Jade_Wukong": { // 오공
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // BonusAttackRange
-            "v2": "?", // TotalDamage
-            "v3": "?", // ShredDuration
-            "v4": "?", // ArmorShredPercent*-100
-            "cooldown": "9 / 8 / 7 / 6 / 5",
-            "cost": "40",
-            "stats": "사거리 250 / 275 / 300 / 325 / 350"
-        },
-        "W": {
-            "v1": "?", // StealthDuration
-            "v2": "?", // CloneDuration
-            "v3": "?", // TotalDamage
-            "cooldown": "18 / 16 / 14 / 12 / 10",
-            "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 275"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // AttackSpeedDuration
-            "v3": "?", // AttackSpeed*100
-            "cooldown": "8",
-            "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 650"
-        },
-        "R": {
-            "v1": "?", // DamagePerSecondTotal
-            "v2": "?", // SpinDuration
-            "cooldown": "120 / 105 / 90",
-            "cost": "100",
-            "stats": "사거리 315"
+            "stats": {
+                "사거리": "315"
+            }
         },
     },
     "Aurora": { // 오로라
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // damage
-            "v2": "?", // MarkDuration
-            "v3": "?", // Q2DamageMax
+            "p1": "?", // damage
+            "p2": "?", // MarkDuration
+            "p3": "?", // Q2DamageMax
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "60",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "W": {
-            "v1": "?", // InvisDuration
-            "v2": "?", // MoveSpeedBonus
+            "p1": "?", // InvisDuration
+            "p2": "?", // MoveSpeedBonus
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "80",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "E": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // SlowPercent*-100
-            "v3": "?", // SlowDuration
+            "p1": "?", // DamageCalc
+            "p2": "?", // SlowPercent*-100
+            "p3": "?", // SlowDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "80",
-            "stats": "사거리 825"
+            "stats": {
+                "사거리": "825"
+            }
         },
         "R": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // SlowPercent*-100
-            "v3": "?", // AreaDuration
-            "v4": "?", // RBuffDuration
-            "v5": "?", // StunDuration
-            "v6": "?", // ExitSlowPercent*-100
+            "p1": "?", // DamageCalc
+            "p2": "?", // SlowPercent*-100
+            "p3": "?", // AreaDuration
+            "p4": "?", // RBuffDuration
+            "p5": "?", // StunDuration
+            "p6": "?", // ExitSlowPercent*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "100",
-            "stats": "사거리 250"
+            "stats": {
+                "사거리": "250"
+            }
         },
     },
     "Ornn": { // 오른
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount
-            "v4": "?", // PillarDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount
+            "p4": "?", // PillarDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "45",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "W": {
-            "v1": "?", // BreathDuration
-            "v2": "?", // MaxPercentHPPerTickTooltip
-            "v3": "?", // BrittleDuration
-            "v4": "?", // BrittlePercentMaxHPCalc
+            "p1": "?", // BreathDuration
+            "p2": "?", // MaxPercentHPPerTickTooltip
+            "p3": "?", // BrittleDuration
+            "p4": "?", // BrittlePercentMaxHPCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // KnockupDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // KnockupDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13.5 / 13 / 12.5 / 12",
             "cost": "35 / 40 / 45 / 50 / 55",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "R": {
-            "v1": "?", // RDamageCalc
-            "v2": "?", // BrittleDurationTOOLTIPONLY
-            "v3": "?", // RSlowPercentBasePreMath
-            "v4": "?", // RStunDuration
-            "v5": "?", // MinStun
+            "p1": "?", // RDamageCalc
+            "p2": "?", // BrittleDurationTOOLTIPONLY
+            "p3": "?", // RSlowPercentBasePreMath
+            "p4": "?", // RStunDuration
+            "p5": "?", // MinStun
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "100",
-            "stats": "사거리 2500"
+            "stats": {
+                "사거리": "2500"
+            }
         },
     },
     "Orianna": { // 오리아나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamageTooltip
-            "v2": "?", // ReducedDamagePercent
+            "p1": "?", // TotalDamageTooltip
+            "p2": "?", // ReducedDamagePercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
             "cost": "35",
-            "stats": "사거리 815"
+            "stats": {
+                "사거리": "815"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // FieldDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // HasteAmount*100
-            "v5": "?", // SlowAndHasteDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // FieldDuration
+            "p3": "?", // SlowAmount*100
+            "p4": "?", // HasteAmount*100
+            "p5": "?", // SlowAndHasteDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 225"
+            "stats": {
+                "사거리": "225"
+            }
         },
         "E": {
-            "v1": "?", // DefenseBonus
-            "v2": "?", // ShieldDuration
-            "v3": "?", // TotalShieldTooltip
-            "v4": "?", // TotalDamageTooltip
+            "p1": "?", // DefenseBonus
+            "p2": "?", // ShieldDuration
+            "p3": "?", // TotalShieldTooltip
+            "p4": "?", // TotalDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9",
             "cost": "60",
-            "stats": "사거리 1095"
+            "stats": {
+                "사거리": "1095"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 95 / 80",
             "cost": "100",
-            "stats": "사거리 410"
+            "stats": {
+                "사거리": "410"
+            }
         },
     },
     "Olaf": { // 올라프
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // MaxSlowDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // DebuffDuration
-            "v5": "?", // ShredAmount*100
-            "v6": "?", // TooltipCDRefund
+            "p1": "?", // TotalDamage
+            "p2": "?", // MaxSlowDuration
+            "p3": "?", // SlowAmount*100
+            "p4": "?", // DebuffDuration
+            "p5": "?", // ShredAmount*100
+            "p6": "?", // TooltipCDRefund
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "W": {
-            "v1": "?", // Duration
-            "v2": "?", // Attackspeed*100
-            "v3": "?", // ShieldDuration
-            "v4": "?", // BaseShield
-            "v5": "?", // ShieldPercMissingHP*100
-            "v6": "?", // ThresholdForMax*100
-            "v7": "?", // MaxShieldCalc
+            "p1": "?", // Duration
+            "p2": "?", // Attackspeed*100
+            "p3": "?", // ShieldDuration
+            "p4": "?", // BaseShield
+            "p5": "?", // ShieldPercMissingHP*100
+            "p6": "?", // ThresholdForMax*100
+            "p7": "?", // MaxShieldCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "50",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "R": {
-            "v1": "?", // Resists
-            "v2": "?", // Duration
-            "v3": "?", // AD
-            "v4": "?", // DurationExtension
-            "v5": "?", // HasteDuration
-            "v6": "?", // Haste*100
+            "p1": "?", // Resists
+            "p2": "?", // Duration
+            "p3": "?", // AD
+            "p4": "?", // DurationExtension
+            "p5": "?", // HasteDuration
+            "p6": "?", // Haste*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 90 / 80",
             "cost": "100",
-            "stats": "사거리 400"
-        },
-    },
-    "Jade_Olaf": { // 올라프
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // DebuffDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // CooldownRefund
-            "cooldown": "8",
-            "cost": "55 / 60 / 65 / 70 / 75",
-            "stats": "사거리 1000"
-        },
-        "W": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalADGain
-            "v3": "?", // LifeStealAmount*100
-            "cooldown": "16",
-            "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 700"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "cooldown": "9 / 8 / 7 / 6 / 5",
-            "cost": "",
-            "stats": "사거리 325"
-        },
-        "R": {
-            "v1": "?", // Duration
-            "v2": "?", // Resists
-            "v3": "?", // ArmorPen
-            "cooldown": "100",
-            "cost": "100 / 75 / 50",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
     },
     "Yone": { // 요네
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // QDamage
-            "v2": "?", // BuffDuration
-            "v3": "?", // Q3KnockupDuration
+            "p1": "?", // QDamage
+            "p2": "?", // BuffDuration
+            "p3": "?", // Q3KnockupDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "-",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "W": {
-            "v1": "?", // BaseDamage*0.5
-            "v2": "?", // MaxHealthDamage*50
-            "v3": "?", // ShieldDuration
-            "v4": "?", // WShield
+            "p1": "?", // BaseDamage*0.5
+            "p2": "?", // MaxHealthDamage*50
+            "p3": "?", // ShieldDuration
+            "p4": "?", // WShield
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14",
             "cost": "-",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "E": {
-            "v1": "?", // ReturnTimer
-            "v2": "?", // StartingMS*100
-            "v3": "?", // MovementSpeed*100
-            "v4": "?", // DeathmarkPercent*100
+            "p1": "?", // ReturnTimer
+            "p2": "?", // StartingMS*100
+            "p3": "?", // MovementSpeed*100
+            "p4": "?", // DeathmarkPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 19 / 16 / 13 / 10",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "R": {
-            "v1": "?", // TooltipDamage
+            "p1": "?", // TooltipDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "-",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
     },
     "Yorick": { // 요릭
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BonusDamage
-            "v2": "?", // QHeal
-            "v3": "?", // MissingHealthRatio
-            "v4": "?", // HealReduction
+            "p1": "?", // BonusDamage
+            "p2": "?", // QHeal
+            "p3": "?", // MissingHealthRatio
+            "p4": "?", // HealReduction
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6 / 5.5 / 5 / 4.5 / 4",
             "cost": "20"
         },
         "W": {
-            "v1": "?", // WallHealthTooltip
-            "v2": "?", // CircleDuration
+            "p1": "?", // WallHealthTooltip
+            "p2": "?", // CircleDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "70",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // Calc_HealthDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // Calc_Slow
-            "v4": "?", // MarkDuration
-            "v5": "?", // ArmorShred*100
-            "v6": "?", // HasteAmount*100
+            "p1": "?", // Calc_HealthDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // Calc_Slow
+            "p4": "?", // MarkDuration
+            "p5": "?", // ArmorShred*100
+            "p6": "?", // HasteAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "R": {
-            "v1": "?", // YorickBigGhoulHealth
-            "v2": "?", // YorickBigGhoulDamage
-            "v3": "?", // RGhoulNumbers
-            "v4": "?", // RMarkDamagePercent
+            "p1": "?", // YorickBigGhoulHealth
+            "p2": "?", // YorickBigGhoulDamage
+            "p3": "?", // RGhoulNumbers
+            "p4": "?", // RMarkDamagePercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "160 / 130 / 100",
             "cost": "100",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
     },
     "Udyr": { // 우디르
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // AttackSpeedDurationBase
-            "v2": "?", // AttackSpeedBase*100
-            "v3": "?", // OnHitDamage
-            "v4": "?", // MaxHPOnHit1
-            "v5": "?", // AttackRange
-            "v6": "?", // EmpoweredTotalAS
-            "v7": "?", // Q2TotalOnHitHPDamage
-            "v8": "?", // EmpoweredLightningBonusMax
+            "p1": "?", // AttackSpeedDurationBase
+            "p2": "?", // AttackSpeedBase*100
+            "p3": "?", // OnHitDamage
+            "p4": "?", // MaxHPOnHit1
+            "p5": "?", // AttackRange
+            "p6": "?", // EmpoweredTotalAS
+            "p7": "?", // Q2TotalOnHitHPDamage
+            "p8": "?", // EmpoweredLightningBonusMax
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "20",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // TotalShield
-            "v3": "?", // LifeSteal*100
-            "v4": "?", // LifeOnHit
-            "v5": "?", // RecastShield
-            "v6": "?", // RecastHeal
-            "v7": "?", // LifeSteal*200
-            "v8": "?", // LifeOnHitAwakened
+            "p1": "?", // ShieldDuration
+            "p2": "?", // TotalShield
+            "p3": "?", // LifeSteal*100
+            "p4": "?", // LifeOnHit
+            "p5": "?", // RecastShield
+            "p6": "?", // RecastHeal
+            "p7": "?", // LifeSteal*200
+            "p8": "?", // LifeOnHitAwakened
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "40"
         },
         "E": {
-            "v1": "?", // MoveSpeed
-            "v2": "?", // MoveSpeedDuration
-            "v3": "?", // StunDuration
-            "v4": "?", // ICD
-            "v5": "?", // UnstoppableDuration
-            "v6": "?", // MoveSpeedBonus
+            "p1": "?", // MoveSpeed
+            "p2": "?", // MoveSpeedDuration
+            "p3": "?", // StunDuration
+            "p4": "?", // ICD
+            "p5": "?", // UnstoppableDuration
+            "p6": "?", // MoveSpeedBonus
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "40",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "R": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // StormDamage
-            "v3": "?", // SlowPotency*100
-            "v4": "?", // PulseDamage
-            "v5": "?", // PercentHPBlast
-            "v6": "?", // EmpoweredSlow
+            "p1": "?", // BuffDuration
+            "p2": "?", // StormDamage
+            "p3": "?", // SlowPotency*100
+            "p4": "?", // PulseDamage
+            "p5": "?", // PercentHPBlast
+            "p6": "?", // EmpoweredSlow
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "40",
-            "stats": "사거리 370"
+            "stats": {
+                "사거리": "370"
+            }
         },
     },
     "Urgot": { // 우르곳
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "70",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "W": {
-            "v1": "?", // WAttacksPerSecond
-            "v2": "?", // DamagePerShot
-            "v3": "?", // SlowResistance
-            "v4": "?", // MoveSpeedMod
+            "p1": "?", // WAttacksPerSecond
+            "p2": "?", // DamagePerShot
+            "p3": "?", // SlowResistance
+            "p4": "?", // MoveSpeedMod
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 9 / 6 / 3 / 0",
             "cost": "40 / 30 / 20 / 10 / 0",
-            "stats": "사거리 490"
+            "stats": {
+                "사거리": "490"
+            }
         },
         "E": {
-            "v1": "?", // EShieldDuration
-            "v2": "?", // ETotalShieldHealth
-            "v3": "?", // StunDuration
-            "v4": "?", // EDamage
+            "p1": "?", // EShieldDuration
+            "p2": "?", // ETotalShieldHealth
+            "p3": "?", // StunDuration
+            "p4": "?", // EDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15.5 / 15 / 14.5 / 14",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 475"
+            "stats": {
+                "사거리": "475"
+            }
         },
         "R": {
-            "v1": "?", // RCalculatedDamage
-            "v2": "?", // RSlowDuration
-            "v3": "?", // RMoveSpeedMod
-            "v4": "?", // RHealthThreshold
-            "v5": "?", // RFearDuration
+            "p1": "?", // RCalculatedDamage
+            "p2": "?", // RSlowDuration
+            "p3": "?", // RMoveSpeedMod
+            "p4": "?", // RHealthThreshold
+            "p5": "?", // RFearDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
-            "stats": "사거리 2500"
+            "stats": {
+                "사거리": "2500"
+            }
         },
     },
     "Warwick": { // 워윅
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BaseBiteDamage
-            "v2": "?", // TargetPercentHPDamage
-            "v3": "?", // LifestealPercent
+            "p1": "?", // BaseBiteDamage
+            "p2": "?", // TargetPercentHPDamage
+            "p3": "?", // LifestealPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "80 / 85 / 90 / 95 / 100",
-            "stats": "사거리 365"
+            "stats": {
+                "사거리": "365"
+            }
         },
         "W": {
-            "v1": "?", // PassiveMSBonus
-            "v2": "?", // PassiveASBonus
+            "p1": "?", // PassiveMSBonus
+            "p2": "?", // PassiveASBonus
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "80 / 70 / 60 / 50 / 40",
             "cost": "55",
-            "stats": "사거리 4000"
+            "stats": {
+                "사거리": "4000"
+            }
         },
         "E": {
-            "v1": "?", // DRDuration
-            "v2": "?", // DRAmount
-            "v3": "?", // FearDuration
+            "p1": "?", // DRDuration
+            "p2": "?", // DRAmount
+            "p3": "?", // FearDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "40",
-            "stats": "사거리 375"
+            "stats": {
+                "사거리": "375"
+            }
         },
         "R": {
-            "v1": "?", // RDuration
-            "v2": "?", // DamageCumulative
+            "p1": "?", // RDuration
+            "p2": "?", // DamageCumulative
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 90 / 70",
             "cost": "100",
-            "stats": "사거리 25000"
-        },
-    },
-    "Jade_Warwick": { // 워윅
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalFlatDamage
-            "v2": "?", // MaxHealthDamage*100
-            "v3": "?", // APDamage
-            "v4": "?", // HealingRatio*100
-            "cooldown": "10 / 9 / 8 / 7 / 6",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 400"
-        },
-        "W": {
-            "v1": "?", // AttackSpeedDuration
-            "v2": "?", // AttackSpeedMod*100
-            "v3": "?", // AllyAttackSpeedMod*100
-            "cooldown": "24 / 22 / 20 / 18 / 16",
-            "cost": "35",
-            "stats": "사거리 1250"
-        },
-        "E": {
-            "v1": "?", // Range
-            "v2": "?", // MSBonus*100
-            "cooldown": "0",
-            "cost": "",
-            "stats": "사거리 1500 / 2300 / 3100 / 3900 / 4700"
-        },
-        "R": {
-            "v1": "?", // RDuration
-            "v2": "?", // NumberOfHits
-            "v3": "?", // TotalDamage
-            "v4": "?", // BonusLifesteal*100
-            "cooldown": "90 / 80 / 70",
-            "cost": "100 / 125 / 150",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Yunara": { // 유나라
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Calc_Passive_Damage
-            "v2": "?", // Resource_Nonchampion
-            "v3": "?", // Resource_Champion
-            "v4": "?", // Resource_Max
-            "v5": "?", // Buff_Duration
-            "v6": "?", // Calc_Attack_Speed
-            "v7": "?", // Calc_Damage
-            "v8": "?", // Calc_Damage_Spread
+            "p1": "?", // Calc_Passive_Damage
+            "p2": "?", // Resource_Nonchampion
+            "p3": "?", // Resource_Champion
+            "p4": "?", // Resource_Max
+            "p5": "?", // Buff_Duration
+            "p6": "?", // Calc_Attack_Speed
+            "p7": "?", // Calc_Damage
+            "p8": "?", // Calc_Damage_Spread
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "30"
         },
         "W": {
-            "v1": "?", // Calc_Damage_Initial
-            "v2": "?", // Calc_Slow
-            "v3": "?", // Slow_Duration
-            "v4": "?", // Calc_Damage_Per_Second
+            "p1": "?", // Calc_Damage_Initial
+            "p2": "?", // Calc_Slow
+            "p3": "?", // Slow_Duration
+            "p4": "?", // Calc_Damage_Per_Second
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "60",
-            "stats": "사거리 1150"
+            "stats": {
+                "사거리": "1150"
+            }
         },
         "E": {
-            "v1": "?", // Buff_Duration
-            "v2": "?", // Calc_Move_Speed
-            "v3": "?", // Calc_Move_Speed_Enhanced
+            "p1": "?", // Buff_Duration
+            "p2": "?", // Calc_Move_Speed
+            "p3": "?", // Calc_Move_Speed_Enhanced
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9",
             "cost": "40"
         },
         "R": {
-            "v1": "?", // Buff_Duration
+            "p1": "?", // Buff_Duration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 90 / 80",
             "cost": "100"
         },
@@ -5556,2966 +6083,3185 @@ const customValues = {
     "Yuumi": { // 유미
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalMissileDamage
-            "v2": "?", // SlowAmount
-            "v3": "?", // TotalMissileDamageEmpowered
-            "v4": "?", // EmpoweredSlowDuration
-            "v5": "?", // EmpoweredSlowAmount
-            "v6": "?", // BuffDuration
-            "v7": "?", // OnHitDamageCalc
-            "v8": "?", // AllyCritChanceMaxAmp*100
+            "p1": "?", // TotalMissileDamage
+            "p2": "?", // SlowAmount
+            "p3": "?", // TotalMissileDamageEmpowered
+            "p4": "?", // EmpoweredSlowDuration
+            "p5": "?", // EmpoweredSlowAmount
+            "p6": "?", // BuffDuration
+            "p7": "?", // OnHitDamageCalc
+            "p8": "?", // AllyCritChanceMaxAmp*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6.5",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "W": {
-            "v1": "?", // HealAndShieldPower*100
-            "v2": "?", // HealthOnHit
-            "v3": "?", // CCAttachLockout
+            "p1": "?", // HealAndShieldPower*100
+            "p2": "?", // HealthOnHit
+            "p3": "?", // CCAttachLockout
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "E": {
-            "v1": "?", // TotalShielding
-            "v2": "?", // MSDuration
-            "v3": "?", // TotalAttackSpeed
-            "v4": "?", // MSAmount
-            "v5": "?", // ManaRestore
-            "v6": "?", // MaxManaPercIncrease*100
+            "p1": "?", // TotalShielding
+            "p2": "?", // MSDuration
+            "p3": "?", // TotalAttackSpeed
+            "p4": "?", // MSAmount
+            "p5": "?", // ManaRestore
+            "p6": "?", // MaxManaPercIncrease*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "R": {
-            "v1": "?", // UltDuration
-            "v2": "?", // NumberOfWaves
-            "v3": "?", // TotalMissileDamage
-            "v4": "?", // CCDuration
-            "v5": "?", // BaseSlow*-100
-            "v6": "?", // BonusSlowPerWave*-100
-            "v7": "?", // TotalHealPerWave
-            "v8": "?", // EnhancedHealPerWave
+            "p1": "?", // UltDuration
+            "p2": "?", // NumberOfWaves
+            "p3": "?", // TotalMissileDamage
+            "p4": "?", // CCDuration
+            "p5": "?", // BaseSlow*-100
+            "p6": "?", // BonusSlowPerWave*-100
+            "p7": "?", // TotalHealPerWave
+            "p8": "?", // EnhancedHealPerWave
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 110 / 100",
             "cost": "100",
-            "stats": "사거리 1100"
+            "stats": {
+                "사거리": "1100"
+            }
         },
     },
     "Irelia": { // 이렐리아
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // ChampionDamage
-            "v2": "?", // HealAmount
-            "v3": "?", // MinionDamage
+            "p1": "?", // ChampionDamage
+            "p2": "?", // HealAmount
+            "p3": "?", // MinionDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "15",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // MaxDuration
-            "v2": "?", // FinalPhysicalDR
-            "v3": "?", // FinalMagicDR
-            "v4": "?", // MinDamageCalc
-            "v5": "?", // MaxDamageCalc
+            "p1": "?", // MaxDuration
+            "p2": "?", // FinalPhysicalDR
+            "p3": "?", // FinalMagicDR
+            "p4": "?", // MinDamageCalc
+            "p5": "?", // MaxDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 825"
+            "stats": {
+                "사거리": "825"
+            }
         },
         "E": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // StunDuration
-            "v3": "?", // TotalDamage
-            "v4": "?", // MarkDuration
+            "p1": "?", // BuffDuration
+            "p2": "?", // StunDuration
+            "p3": "?", // TotalDamage
+            "p4": "?", // MarkDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
             "cost": "50",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "R": {
-            "v1": "?", // MissileDamage
-            "v2": "?", // MarkDuration
-            "v3": "?", // ZoneDuration
-            "v4": "?", // ZoneDamage
-            "v5": "?", // CCDuration
-            "v6": "?", // SlowAmount
+            "p1": "?", // MissileDamage
+            "p2": "?", // MarkDuration
+            "p3": "?", // ZoneDuration
+            "p4": "?", // ZoneDamage
+            "p5": "?", // CCDuration
+            "p6": "?", // SlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "125 / 105 / 85",
             "cost": "100",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
     },
     "Evelynn": { // 이블린
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MissileDamage
-            "v2": "?", // TotalBonusDamage
-            "v3": "?", // QStackCount
+            "p1": "?", // MissileDamage
+            "p2": "?", // TotalBonusDamage
+            "p3": "?", // QStackCount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "W": {
-            "v1": "?", // SlowDuration
-            "v2": "?", // SlowAmount*100
-            "v3": "?", // CharmDuration
-            "v4": "?", // ShredDuration
-            "v5": "?", // MRShred*100
-            "v6": "?", // MonsterCharm
-            "v7": "?", // MonsterDamageTotalTOOLTIP
+            "p1": "?", // SlowDuration
+            "p2": "?", // SlowAmount*100
+            "p3": "?", // CharmDuration
+            "p4": "?", // ShredDuration
+            "p5": "?", // MRShred*100
+            "p6": "?", // MonsterCharm
+            "p7": "?", // MonsterDamageTotalTOOLTIP
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 1200 / 1300 / 1400 / 1500 / 1600"
+            "stats": {
+                "사거리": "1200 / 1300 / 1400 / 1500 / 1600"
+            }
         },
         "E": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // PercentHealthBaseTOOLTIP
-            "v3": "?", // SpeedDuration
-            "v4": "?", // SpeedAmount*100
-            "v5": "?", // EmpoweredDamage
-            "v6": "?", // PercentHealthEmpoweredTOOLTIP
+            "p1": "?", // BaseDamage
+            "p2": "?", // PercentHealthBaseTOOLTIP
+            "p3": "?", // SpeedDuration
+            "p4": "?", // SpeedAmount*100
+            "p5": "?", // EmpoweredDamage
+            "p6": "?", // PercentHealthEmpoweredTOOLTIP
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 210"
+            "stats": {
+                "사거리": "210"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // CritDamage
+            "p1": "?", // Damage
+            "p2": "?", // CritDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 25000"
-        },
-    },
-    "Jade_Evelynn": { // 이블린
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "cooldown": "1.5",
-            "cost": "16 / 22 / 28 / 34 / 40",
-            "stats": "사거리 525"
-        },
-        "W": {
-            "v1": "?", // PassiveDuration
-            "v2": "?", // PassiveMS
-            "v3": "?", // MaxPassiveStacks
-            "v4": "?", // ActiveDuration
-            "v5": "?", // ActiveMS*100
-            "cooldown": "15",
-            "cost": "-"
-        },
-        "E": {
-            "v1": "?", // NumberOfStrikes
-            "v2": "?", // TotalDamageTooltip
-            "v3": "?", // AttackSpeedDuration
-            "v4": "?", // AttackSpeed*100
-            "cooldown": "9",
-            "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 225"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // Slow*100
-            "v4": "?", // ShieldAmount
-            "cooldown": "150 / 120 / 90",
-            "cost": "100",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Ezreal": { // 이즈리얼
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Damage
-            "v2": "?", // CDRefund
+            "p1": "?", // Damage
+            "p2": "?", // CDRefund
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5.5 / 5.25 / 5 / 4.75 / 4.5",
             "cost": "28 / 31 / 34 / 37 / 40",
-            "stats": "사거리 1150"
+            "stats": {
+                "사거리": "1150"
+            }
         },
         "W": {
-            "v1": "?", // DetonationTimeout
-            "v2": "?", // Damage
-            "v3": "?", // ManaReturn
+            "p1": "?", // DetonationTimeout
+            "p2": "?", // Damage
+            "p3": "?", // ManaReturn
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8",
             "cost": "50",
-            "stats": "사거리 1150"
+            "stats": {
+                "사거리": "1150"
+            }
         },
         "E": {
-            "v1": "?", // Damage
+            "p1": "?", // Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "26 / 23 / 20 / 17 / 14",
             "cost": "70",
-            "stats": "사거리 475"
+            "stats": {
+                "사거리": "475"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // DamageMinionMonster
+            "p1": "?", // Damage
+            "p2": "?", // DamageMinionMonster
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 105 / 90",
             "cost": "100",
-            "stats": "사거리 25000"
-        },
-    },
-    "Jade_Ezreal": { // 이즈리얼
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // Damage
-            "cooldown": "6 / 5.5 / 5 / 4.5 / 4",
-            "cost": "30 / 35 / 40 / 45 / 50",
-            "stats": "사거리 1150"
-        },
-        "W": {
-            "v1": "?", // Damage
-            "v2": "?", // AttackSpeed
-            "v3": "?", // TotalHeal
-            "cooldown": "10",
-            "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 1050"
-        },
-        "E": {
-            "v1": "?", // Damage
-            "cooldown": "17 / 15 / 13 / 11 / 9",
-            "cost": "90",
-            "stats": "사거리 475"
-        },
-        "R": {
-            "v1": "?", // Damage
-            "v2": "?", // DamageReductionPerHit*100
-            "v3": "?", // MinimumDamagePercent*100
-            "cooldown": "100",
-            "cost": "150",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Illaoi": { // 일라오이
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "W": {
-            "v1": "?", // HealthPercentTotal
+            "p1": "?", // HealthPercentTotal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "30",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "E": {
-            "v1": "?", // SpiritDuration
-            "v2": "?", // EchoPercent
-            "v3": "?", // VesselDuration
-            "v4": "?", // SlowDuration
-            "v5": "?", // SlowAmount*100
-            "v6": "?", // TimeBetweenVesselTentacleSlams
+            "p1": "?", // SpiritDuration
+            "p2": "?", // EchoPercent
+            "p3": "?", // VesselDuration
+            "p4": "?", // SlowDuration
+            "p5": "?", // SlowAmount*100
+            "p6": "?", // TimeBetweenVesselTentacleSlams
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "35 / 40 / 45 / 50 / 55",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "R": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // Duration
+            "p1": "?", // DamageCalc
+            "p2": "?", // Duration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 95 / 70",
             "cost": "100",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
     },
     "JarvanIV": { // 자르반 4세
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // Effect3Amount
-            "v3": "?", // BaseARShred*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // Effect3Amount
+            "p3": "?", // BaseARShred*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 770"
+            "stats": {
+                "사거리": "770"
+            }
         },
         "W": {
-            "v1": "?", // Effect5Amount
-            "v2": "?", // BaseSlowAmount*100
-            "v3": "?", // TotalShield
-            "v4": "?", // BonusShield
+            "p1": "?", // Effect5Amount
+            "p2": "?", // BaseSlowAmount*100
+            "p3": "?", // TotalShield
+            "p4": "?", // BonusShield
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9",
             "cost": "30",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
         "E": {
-            "v1": "?", // PermanentAttackSpeed*100
-            "v2": "?", // TotalDamage
-            "v3": "?", // Effect4Amount
-            "v4": "?", // BaseAuraAS*100
+            "p1": "?", // PermanentAttackSpeed*100
+            "p2": "?", // TotalDamage
+            "p3": "?", // Effect4Amount
+            "p4": "?", // BaseAuraAS*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "55",
-            "stats": "사거리 860"
+            "stats": {
+                "사거리": "860"
+            }
         },
         "R": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // WallDuration
+            "p1": "?", // DamageCalc
+            "p2": "?", // WallDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 105 / 90",
             "cost": "100",
-            "stats": "사거리 650"
-        },
-    },
-    "Jade_JarvanIV": { // 자르반 4세
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // ArmorShredPercent
-            "cooldown": "10 / 9 / 8 / 7 / 6",
-            "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 770"
-        },
-        "W": {
-            "v1": "?", // ShieldAmount
-            "v2": "?", // ShieldBonus
-            "v3": "?", // SlowAmount
-            "cooldown": "20 / 18 / 16 / 14 / 12",
-            "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 500"
-        },
-        "E": {
-            "v1": "?", // PassiveAttackSpeed*100
-            "v2": "?", // PassiveArmor
-            "v3": "?", // TotalDamage
-            "v4": "?", // Effect4Amount
-            "cooldown": "13",
-            "cost": "55",
-            "stats": "사거리 860"
-        },
-        "R": {
-            "v1": "?", // DamageCalc
-            "cooldown": "120 / 105 / 90",
-            "cost": "100 / 125 / 150",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
     },
     "Xayah": { // 자야
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // MultiHitDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // MultiHitDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "35",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "W": {
-            "v1": "?", // WAttackSpeedDuration
-            "v2": "?", // WAttackSpeedAmount
-            "v3": "?", // BonusDamagePercent
-            "v4": "?", // WMoveSpeedDuration
-            "v5": "?", // WMoveSpeedAmount
+            "p1": "?", // WAttackSpeedDuration
+            "p2": "?", // WAttackSpeedAmount
+            "p3": "?", // BonusDamagePercent
+            "p4": "?", // WMoveSpeedDuration
+            "p5": "?", // WMoveSpeedAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "60 / 55 / 50 / 45 / 40",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "E": {
-            "v1": "?", // FeatherDamage
-            "v2": "?", // FeatherThreshold
-            "v3": "?", // RootDuration
+            "p1": "?", // FeatherDamage
+            "p2": "?", // FeatherThreshold
+            "p3": "?", // RootDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "20",
-            "stats": "사거리 2000"
+            "stats": {
+                "사거리": "2000"
+            }
         },
         "R": {
-            "v1": "?", // Damage
+            "p1": "?", // Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "100",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
     },
     "Zyra": { // 자이라
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // InitialDamage
+            "p1": "?", // InitialDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
             "cost": "55",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "W": {
-            "v1": "?", // SeedDuration
-            "v2": "?", // VisionGranted
-            "v3": "?", // AmmoRechargeTime
-            "v4": "?", // KillAmmoRefundMinion*100
-            "v5": "?", // KillAmmoRefundChamp*100
+            "p1": "?", // SeedDuration
+            "p2": "?", // VisionGranted
+            "p3": "?", // AmmoRechargeTime
+            "p4": "?", // KillAmmoRefundMinion*100
+            "p5": "?", // KillAmmoRefundChamp*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "E": {
-            "v1": "?", // RootDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // SlowDurationPlantAttack
-            "v4": "?", // SlowAmountPlantAttack
-            "v5": "?", // MaxSlowStacks
+            "p1": "?", // RootDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // SlowDurationPlantAttack
+            "p4": "?", // SlowAmountPlantAttack
+            "p5": "?", // MaxSlowStacks
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 1100"
+            "stats": {
+                "사거리": "1100"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // KnockupDuration
-            "v3": "?", // EnragedBonusHealthPercent*100
-            "v4": "?", // PlantDamageBonus
+            "p1": "?", // TotalDamage
+            "p2": "?", // KnockupDuration
+            "p3": "?", // EnragedBonusHealthPercent*100
+            "p4": "?", // PlantDamageBonus
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 100 / 90",
             "cost": "100",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
     },
     "Zac": { // 자크
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 12.5 / 11 / 9.5 / 8",
             "cost": "",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "W": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // DisplayPercentDamage
+            "p1": "?", // BaseDamage
+            "p2": "?", // DisplayPercentDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5",
             "cost": "",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "E": {
-            "v1": "?", // ChannelTime
-            "v2": "?", // MaxStun
-            "v3": "?", // Damage
+            "p1": "?", // ChannelTime
+            "p2": "?", // MaxStun
+            "p3": "?", // Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "21 / 18 / 15 / 12 / 9",
             "cost": "",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "R": {
-            "v1": "?", // Bounces
-            "v2": "?", // DamagePerBounce
-            "v3": "?", // DamagePerSubsequentBounce
-            "v4": "?", // SlowDuration
-            "v5": "?", // SlowAmount*100
-            "v6": "?", // EndingMS*100
+            "p1": "?", // Bounces
+            "p2": "?", // DamagePerBounce
+            "p3": "?", // DamagePerSubsequentBounce
+            "p4": "?", // SlowDuration
+            "p5": "?", // SlowAmount*100
+            "p6": "?", // EndingMS*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 105 / 90",
             "cost": "-",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
     },
     "Zaahen": { // 자헨
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // HealPercent*100
-            "v3": "?", // SecondHitDamage
-            "v4": "?", // KnockUpDuration
+            "p1": "?", // InitialDamage
+            "p2": "?", // HealPercent*100
+            "p3": "?", // SecondHitDamage
+            "p4": "?", // KnockUpDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "25",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "W": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // SecondaryDamage
+            "p1": "?", // InitialDamage
+            "p2": "?", // SecondaryDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13.5 / 13 / 12.5 / 12",
             "cost": "50",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "E": {
-            "v1": "?", // BaseDamageCalc
-            "v2": "?", // BonusDamageCalc
-            "v3": "?", // PercentHPDamage*100
+            "p1": "?", // BaseDamageCalc
+            "p2": "?", // BonusDamageCalc
+            "p3": "?", // PercentHPDamage*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "40",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "R": {
-            "v1": "?", // ArmorPen*100
-            "v2": "?", // DamageReduction*100
-            "v3": "?", // DamageEndCalc
-            "v4": "?", // HealPercent*100
+            "p1": "?", // ArmorPen*100
+            "p2": "?", // DamageReduction*100
+            "p3": "?", // DamageEndCalc
+            "p4": "?", // HealPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 95 / 80",
             "cost": "100",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
     },
     "Janna": { // 잔나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MaxDuration
-            "v2": "?", // MinimumDamage
-            "v3": "?", // MaxDamage
-            "v4": "?", // BaseKnockup
-            "v5": "?", // MaxKnockup
+            "p1": "?", // MaxDuration
+            "p2": "?", // MinimumDamage
+            "p3": "?", // MaxDamage
+            "p4": "?", // BaseKnockup
+            "p5": "?", // MaxKnockup
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14",
             "cost": "90 / 95 / 100 / 105 / 110",
-            "stats": "사거리 1075"
+            "stats": {
+                "사거리": "1075"
+            }
         },
         "W": {
-            "v1": "?", // TotalMS
-            "v2": "?", // SlowDuration
-            "v3": "?", // TotalSlow
-            "v4": "?", // TotalDamage
+            "p1": "?", // TotalMS
+            "p2": "?", // SlowDuration
+            "p3": "?", // TotalSlow
+            "p4": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 -1"
+            "stats": {
+                "사거리": "-1"
+            }
         },
         "E": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // TotalShield
-            "v3": "?", // TotalAD
-            "v4": "?", // ECDRefundforCC*100
+            "p1": "?", // ShieldDuration
+            "p2": "?", // TotalShield
+            "p3": "?", // TotalAD
+            "p4": "?", // ECDRefundforCC*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
-            "v1": "?", // Effect3Amount
-            "v2": "?", // TotalHeal
+            "p1": "?", // Effect3Amount
+            "p2": "?", // TotalHeal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 115 / 100",
             "cost": "100",
-            "stats": "사거리 725"
-        },
-    },
-    "Jade_Janna": { // 잔나
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // MinimumDamage
-            "v2": "?", // ChargeDamage
-            "cooldown": "14 / 13 / 12 / 11 / 10",
-            "cost": "90 / 105 / 120 / 135 / 150",
-            "stats": "사거리 1075"
-        },
-        "W": {
-            "v1": "?", // MSPercent*100
-            "v2": "?", // TotalDamage
-            "v3": "?", // SlowDuration
-            "v4": "?", // MovementSpeedForTooltip
-            "cooldown": "12 / 11 / 10 / 9 / 8",
-            "cost": "40 / 50 / 60 / 70 / 80",
-            "stats": "사거리 -1"
-        },
-        "E": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // TotalShield
-            "v3": "?", // BonusAD
-            "cooldown": "10",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 800"
-        },
-        "R": {
-            "v1": "?", // TotalHeal
-            "cooldown": "150 / 135 / 120",
-            "cost": "100 / 150 / 200",
-            "stats": "사거리 725"
+            "stats": {
+                "사거리": "725"
+            }
         },
     },
     "Jax": { // 잭스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "50",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
             "cost": "30",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "E": {
-            "v1": "?", // DodgeDuration
-            "v2": "?", // AoEDamageReduction
-            "v3": "?", // TotalDamage
-            "v4": "?", // PercentHealthDamage
-            "v5": "?", // StunDuration
-            "v6": "?", // PercentIncreasedPerDodge*100
-            "v7": "?", // MaxDamage
-            "v8": "?", // MaxPercentHealthDamage
+            "p1": "?", // DodgeDuration
+            "p2": "?", // AoEDamageReduction
+            "p3": "?", // TotalDamage
+            "p4": "?", // PercentHealthDamage
+            "p5": "?", // StunDuration
+            "p6": "?", // PercentIncreasedPerDodge*100
+            "p7": "?", // MaxDamage
+            "p8": "?", // MaxPercentHealthDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "17 / 15 / 13 / 11 / 9",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "R": {
-            "v1": "?", // PassiveFallOffTime
-            "v2": "?", // OnHitDamage
-            "v3": "?", // SwingDamageTotal
-            "v4": "?", // BaseArmor
-            "v5": "?", // BaseMR
-            "v6": "?", // Duration
-            "v7": "?", // BonusArmor
-            "v8": "?", // BonusMR
+            "p1": "?", // PassiveFallOffTime
+            "p2": "?", // OnHitDamage
+            "p3": "?", // SwingDamageTotal
+            "p4": "?", // BaseArmor
+            "p5": "?", // BaseMR
+            "p6": "?", // Duration
+            "p7": "?", // BonusArmor
+            "p8": "?", // BonusMR
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 100 / 90",
             "cost": "100",
-            "stats": "사거리 260"
-        },
-    },
-    "Jade_Jax": { // 잭스
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "cooldown": "17 / 14 / 11 / 8 / 5",
-            "cost": "65",
-            "stats": "사거리 700"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "cooldown": "7 / 6 / 5 / 4 / 3",
-            "cost": "35",
-            "stats": "사거리 300"
-        },
-        "E": {
-            "v1": "?", // DodgeDuration
-            "v2": "?", // AoEDamageReduction
-            "v3": "?", // TotalDamage
-            "v4": "?", // StunDuration
-            "v5": "?", // PercentIncreasedPerDodge*100
-            "v6": "?", // MaxDamage
-            "cooldown": "18 / 16 / 14 / 12 / 10",
-            "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 300"
-        },
-        "R": {
-            "v1": "?", // AttackSpeedPerStack*100
-            "v2": "?", // MaxStacks
-            "v3": "?", // OnHitDamage
-            "cooldown": "0",
-            "cost": "",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "260"
+            }
         },
     },
     "Zed": { // 제드
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // PassThroughDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // PassThroughDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "75 / 70 / 65 / 60 / 55",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "W": {
-            "v1": "?", // Effect3Amount
-            "v2": "?", // Effect5Amount
+            "p1": "?", // Effect3Amount
+            "p2": "?", // Effect5Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 19 / 18 / 17 / 16",
             "cost": "40 / 35 / 30 / 25 / 20",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // ShadowHitCDR
-            "v3": "?", // SlowDuration
-            "v4": "?", // MoveSpeedMod*-100
-            "v5": "?", // MoveSpeedModBonus*-100
+            "p1": "?", // TotalDamage
+            "p2": "?", // ShadowHitCDR
+            "p3": "?", // SlowDuration
+            "p4": "?", // MoveSpeedMod*-100
+            "p5": "?", // MoveSpeedModBonus*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5 / 4.5 / 4 / 3.5 / 3",
             "cost": "40",
-            "stats": "사거리 290"
+            "stats": {
+                "사거리": "290"
+            }
         },
         "R": {
-            "v1": "?", // RDeathMarkDuration
-            "v2": "?", // RCalculatedDamage
-            "v3": "?", // RDamageAmp*100
-            "v4": "?", // RShadowDurationDisplayed
+            "p1": "?", // RDeathMarkDuration
+            "p2": "?", // RCalculatedDamage
+            "p3": "?", // RDamageAmp*100
+            "p4": "?", // RShadowDurationDisplayed
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 110 / 100",
             "cost": "-",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
     },
     "Xerath": { // 제라스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TooltipTotalDamage
+            "p1": "?", // TooltipTotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // SweetSpotTotalDamage
-            "v5": "?", // SweetSpotSlowAmount*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "p4": "?", // SweetSpotTotalDamage
+            "p5": "?", // SweetSpotSlowAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "E": {
-            "v1": "?", // MaxStunDuration
-            "v2": "?", // TooltipTotalDamage
+            "p1": "?", // MaxStunDuration
+            "p2": "?", // TooltipTotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12.5 / 12 / 11.5 / 11",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 1050"
+            "stats": {
+                "사거리": "1050"
+            }
         },
         "R": {
-            "v1": "?", // Duration
-            "v2": "?", // NumberOfShots
-            "v3": "?", // TooltipTotalDamage
-            "v4": "?", // RampDamageCalc
+            "p1": "?", // Duration
+            "p2": "?", // NumberOfShots
+            "p3": "?", // TooltipTotalDamage
+            "p4": "?", // RampDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 115 / 100",
             "cost": "100",
-            "stats": "사거리 5000"
+            "stats": {
+                "사거리": "5000"
+            }
         },
     },
     "Zeri": { // 제리
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // NumberOfMissiles
-            "v2": "?", // ActiveDamageThatCanCrit
+            "p1": "?", // NumberOfMissiles
+            "p2": "?", // ActiveDamageThatCanCrit
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "-",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercent*100
-            "v4": "?", // WallDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercent*100
+            "p4": "?", // WallDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 1150"
+            "stats": {
+                "사거리": "1150"
+            }
         },
         "E": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // PenDamagePercent*100
-            "v3": "?", // BonusDamageTotal
-            "v4": "?", // CDReductionPerHit
-            "v5": "?", // CritCDReductionPerHit
+            "p1": "?", // BuffDuration
+            "p2": "?", // PenDamagePercent*100
+            "p3": "?", // BonusDamageTotal
+            "p4": "?", // CDReductionPerHit
+            "p5": "?", // CritCDReductionPerHit
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "24 / 22.5 / 21 / 19.5 / 18",
             "cost": "90 / 85 / 80 / 75 / 70",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "R": {
-            "v1": "?", // TotalActiveDamage
-            "v2": "?", // RDuration
-            "v3": "?", // BaseASPercent*100
-            "v4": "?", // BaseBonusMS*100
-            "v5": "?", // MaxHyperchargeDuration
-            "v6": "?", // MSPercent*100
-            "v7": "?", // ChainPhysicalDamage
+            "p1": "?", // TotalActiveDamage
+            "p2": "?", // RDuration
+            "p3": "?", // BaseASPercent*100
+            "p4": "?", // BaseBonusMS*100
+            "p5": "?", // MaxHyperchargeDuration
+            "p6": "?", // MSPercent*100
+            "p7": "?", // ChainPhysicalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "80 / 75 / 70",
             "cost": "100",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
     },
     "Jayce": { // 제이스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14 / 12 / 10 / 8",
             "cost": "40",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10",
             "cost": "40",
-            "stats": "사거리 285"
+            "stats": {
+                "사거리": "285"
+            }
         },
         "E": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "55",
-            "stats": "사거리 240"
+            "stats": {
+                "사거리": "240"
+            }
         },
         "R": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "-",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
     },
     "Zoe": { // 조이
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamageTooltip
-            "v2": "?", // MaxDamageTooltip
+            "p1": "?", // TotalDamageTooltip
+            "p2": "?", // MaxDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8.5 / 8 / 7.5 / 7 / 6.5",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "W": {
-            "v1": "?", // MSDuration
-            "v2": "?", // MovementSpeed*100
-            "v3": "?", // MissileDamageTooltip
+            "p1": "?", // MSDuration
+            "p2": "?", // MovementSpeed*100
+            "p3": "?", // MissileDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.25",
             "cost": "-",
-            "stats": "사거리 3000 / 4500 / 6000 / 3000 / 3000"
+            "stats": {
+                "사거리": "3000 / 4500 / 6000 / 3000 / 3000"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamageTooltip
-            "v2": "?", // CooldownRefresh*100
-            "v3": "?", // PercentPen*100
-            "v4": "?", // BreakDamageTooltip
+            "p1": "?", // TotalDamageTooltip
+            "p2": "?", // CooldownRefresh*100
+            "p3": "?", // PercentPen*100
+            "p4": "?", // BreakDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "80",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 8 / 5",
             "cost": "40",
-            "stats": "사거리 575"
+            "stats": {
+                "사거리": "575"
+            }
         },
     },
     "Ziggs": { // 직스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6 / 5.5 / 5 / 4.5 / 4",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "W": {
-            "v1": "?", // BombDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // TurretDestroyPercent*100
+            "p1": "?", // BombDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // TurretDestroyPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "80",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // Slow*-100
-            "v4": "?", // MineDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // Slow*-100
+            "p4": "?", // MineDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16",
             "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "R": {
-            "v1": "?", // EmpoweredDamage
-            "v2": "?", // BlastDamage
+            "p1": "?", // EmpoweredDamage
+            "p2": "?", // BlastDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 95 / 70",
             "cost": "100",
-            "stats": "사거리 5000"
+            "stats": {
+                "사거리": "5000"
+            }
         },
     },
     "Jhin": { // 진
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TooltipMaxTargetsHit
-            "v3": "?", // PercentAmpOnKill*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // TooltipMaxTargetsHit
+            "p3": "?", // PercentAmpOnKill*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SpottingDuration
-            "v3": "?", // RootDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // SpottingDuration
+            "p3": "?", // RootDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 3000"
+            "stats": {
+                "사거리": "3000"
+            }
         },
         "E": {
-            "v1": "?", // TrapDuration
-            "v2": "?", // TrapSlowAmount*100
-            "v3": "?", // TrapDetonationTime
-            "v4": "?", // TotalDamage
-            "v5": "?", // AmmoRechargeRateTooltip
+            "p1": "?", // TrapDuration
+            "p2": "?", // TrapSlowAmount*100
+            "p3": "?", // TrapDetonationTime
+            "p4": "?", // TotalDamage
+            "p5": "?", // AmmoRechargeRateTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "2",
             "cost": "30",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "R": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // MaxIncreaseCalc
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowPercent*100
-            "v5": "?", // FourthShotMultiplier*100
+            "p1": "?", // DamageCalc
+            "p2": "?", // MaxIncreaseCalc
+            "p3": "?", // SlowDuration
+            "p4": "?", // SlowPercent*100
+            "p5": "?", // FourthShotMultiplier*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 105 / 90",
             "cost": "100",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Zilean": { // 질리언
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // FuseDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // StunDuration
+            "p1": "?", // FuseDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "W": {
-            "v1": "?", // CooldownReduction
+            "p1": "?", // CooldownReduction
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 12 / 10 / 8 / 6",
             "cost": "35",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // Duration
-            "v2": "?", // SpeedAmount
+            "p1": "?", // Duration
+            "p2": "?", // SpeedAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15",
             "cost": "50",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "R": {
-            "v1": "?", // RDuration
-            "v2": "?", // ReviveStateDuration
-            "v3": "?", // RTotalHeal
+            "p1": "?", // RDuration
+            "p2": "?", // ReviveStateDuration
+            "p3": "?", // RTotalHeal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 90 / 60",
             "cost": "125 / 150 / 175",
-            "stats": "사거리 900"
-        },
-    },
-    "Jade_Zilean": { // 질리언
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // CountdownTimer
-            "v2": "?", // TotalDamage
-            "cooldown": "10",
-            "cost": "70 / 85 / 100 / 115 / 130",
-            "stats": "사거리 650"
-        },
-        "W": {
-            "v1": "?", // CooldownRefund
-            "cooldown": "18 / 15 / 12 / 9 / 6",
-            "cost": "50",
-            "stats": "사거리 600"
-        },
-        "E": {
-            "v1": "?", // Duration
-            "v2": "?", // MoveSpeedMod*100
-            "cooldown": "20",
-            "cost": "80",
-            "stats": "사거리 550"
-        },
-        "R": {
-            "v1": "?", // RDuration
-            "v2": "?", // RTotalHeal
-            "cooldown": "180",
-            "cost": "125 / 150 / 175",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
     },
     "Jinx": { // 징크스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // RocketDamage
-            "v2": "?", // RocketASPDPenalty*100
-            "v3": "?", // RocketBonusRange
-            "v4": "?", // MinigunAttackSpeedDuration
-            "v5": "?", // MinigunAttackSpeedStacks
-            "v6": "?", // MinigunAttackSpeedMax
+            "p1": "?", // RocketDamage
+            "p2": "?", // RocketASPDPenalty*100
+            "p3": "?", // RocketBonusRange
+            "p4": "?", // MinigunAttackSpeedDuration
+            "p5": "?", // MinigunAttackSpeedStacks
+            "p6": "?", // MinigunAttackSpeedMax
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.9",
             "cost": "20",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercent
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7 / 6 / 5 / 4",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 1450"
+            "stats": {
+                "사거리": "1450"
+            }
         },
         "E": {
-            "v1": "?", // GrenadeDuration
-            "v2": "?", // RootDuration
-            "v3": "?", // TotalDamage
+            "p1": "?", // GrenadeDuration
+            "p2": "?", // RootDuration
+            "p3": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "24 / 20.5 / 17 / 13.5 / 10",
             "cost": "90",
-            "stats": "사거리 925"
+            "stats": {
+                "사거리": "925"
+            }
         },
         "R": {
-            "v1": "?", // DamageFloor
-            "v2": "?", // DamageMax
-            "v3": "?", // PercentDamage
-            "v4": "?", // AoEDamageMult*100
-            "v5": "?", // MonsterExecuteMax
+            "p1": "?", // DamageFloor
+            "p2": "?", // DamageMax
+            "p3": "?", // PercentDamage
+            "p4": "?", // AoEDamageMult*100
+            "p5": "?", // MonsterExecuteMax
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "85 / 65 / 45",
             "cost": "100",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Chogath": { // 초가스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Effect5Amount
-            "v2": "?", // TotalDamageTooltip
-            "v3": "?", // Effect3Amount
-            "v4": "?", // Effect2Amount
+            "p1": "?", // Effect5Amount
+            "p2": "?", // TotalDamageTooltip
+            "p3": "?", // Effect3Amount
+            "p4": "?", // Effect2Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "50",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "W": {
-            "v1": "?", // Effect2Amount
-            "v2": "?", // TotalDamageTooltip
+            "p1": "?", // Effect2Amount
+            "p2": "?", // TotalDamageTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10.5 / 10 / 9.5 / 9",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "E": {
-            "v1": "?", // FlatDamageCalc
-            "v2": "?", // MaxHealthPercentCalc
-            "v3": "?", // SlowAmountPercentage
-            "v4": "?", // SlowDuration
+            "p1": "?", // FlatDamageCalc
+            "p2": "?", // MaxHealthPercentCalc
+            "p3": "?", // SlowAmountPercentage
+            "p4": "?", // SlowDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7 / 6 / 5 / 4",
             "cost": "30",
-            "stats": "사거리 40"
+            "stats": {
+                "사거리": "40"
+            }
         },
         "R": {
-            "v1": "?", // RDamage
-            "v2": "?", // RMonsterDamage
-            "v3": "?", // RHealthPerStack
-            "v4": "?", // RMinionMaxStacks
+            "p1": "?", // RDamage
+            "p2": "?", // RMonsterDamage
+            "p3": "?", // RHealthPerStack
+            "p4": "?", // RMinionMaxStacks
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "80 / 70 / 60",
             "cost": "100",
-            "stats": "사거리 175"
-        },
-    },
-    "Jade_Chogath": { // 초가스
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // KnockUpDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowAmountPercentage
-            "cooldown": "9",
-            "cost": "90",
-            "stats": "사거리 950"
-        },
-        "W": {
-            "v1": "?", // SilenceDuration
-            "v2": "?", // TotalDamage
-            "cooldown": "13",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 300"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "cooldown": "0.5",
-            "cost": "-",
-            "stats": "사거리 40"
-        },
-        "R": {
-            "v1": "?", // RDamage
-            "v2": "?", // RMonsterDamage
-            "v3": "?", // RHealthPerStack
-            "cooldown": "60",
-            "cost": "100",
-            "stats": "사거리 175"
+            "stats": {
+                "사거리": "175"
+            }
         },
     },
     "Karma": { // 카르마
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*-100
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "40 / 50 / 60 / 70 / 80",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "W": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // TetherDuration
-            "v3": "?", // RootDuration
+            "p1": "?", // InitialDamage
+            "p2": "?", // TetherDuration
+            "p3": "?", // RootDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 675"
+            "stats": {
+                "사거리": "675"
+            }
         },
         "E": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // TotalShield
-            "v3": "?", // MoveSpeedDuration
-            "v4": "?", // MoveSpeed*100
+            "p1": "?", // ShieldDuration
+            "p2": "?", // TotalShield
+            "p3": "?", // MoveSpeedDuration
+            "p4": "?", // MoveSpeed*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
-            "v1": "?", // RQImpactDamage
-            "v2": "?", // RQFieldDamage
-            "v3": "?", // RWHealAmount
-            "v4": "?", // RWBonusRoot
-            "v5": "?", // REBonusShield
-            "v6": "?", // REBonusShieldArea
-            "v7": "?", // REMoveSpeed*100
+            "p1": "?", // RQImpactDamage
+            "p2": "?", // RQFieldDamage
+            "p3": "?", // RWHealAmount
+            "p4": "?", // RWBonusRoot
+            "p5": "?", // REBonusShield
+            "p6": "?", // REBonusShieldArea
+            "p7": "?", // REMoveSpeed*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "40 / 38 / 36",
             "cost": "-",
-            "stats": "사거리 1100"
+            "stats": {
+                "사거리": "1100"
+            }
         },
     },
     "Camille": { // 카밀
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BonusDamage
-            "v2": "?", // MSDuration
-            "v3": "?", // MSBonus*100
-            "v4": "?", // QTotalRecastTime
-            "v5": "?", // QRampUpTime
-            "v6": "?", // EmpoweredBonusDamage
-            "v7": "?", // DamageConversionPercentage
+            "p1": "?", // BonusDamage
+            "p2": "?", // MSDuration
+            "p3": "?", // MSBonus*100
+            "p4": "?", // QTotalRecastTime
+            "p5": "?", // QRampUpTime
+            "p6": "?", // EmpoweredBonusDamage
+            "p7": "?", // DamageConversionPercentage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "25",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "W": {
-            "v1": "?", // BaseDamageTotal
-            "v2": "?", // SlowPercentage
-            "v3": "?", // SlowDuration
-            "v4": "?", // OuterEdgeTooltip
-            "v5": "?", // OuterConeHealingRatio
+            "p1": "?", // BaseDamageTotal
+            "p2": "?", // SlowPercentage
+            "p3": "?", // SlowDuration
+            "p4": "?", // OuterEdgeTooltip
+            "p5": "?", // OuterConeHealingRatio
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 610"
+            "stats": {
+                "사거리": "610"
+            }
         },
         "E": {
-            "v1": "?", // ASDuration
-            "v2": "?", // ASBuff*100
-            "v3": "?", // TotalDamage
-            "v4": "?", // KnockupDuration
+            "p1": "?", // ASDuration
+            "p2": "?", // ASBuff*100
+            "p3": "?", // TotalDamage
+            "p4": "?", // KnockupDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "70",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "R": {
-            "v1": "?", // RDuration
-            "v2": "?", // RPercentCurrentHPDamage
+            "p1": "?", // RDuration
+            "p2": "?", // RPercentCurrentHPDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 115 / 90",
             "cost": "100",
-            "stats": "사거리 475"
+            "stats": {
+                "사거리": "475"
+            }
         },
     },
     "Kassadin": { // 카사딘
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TotalShield
+            "p1": "?", // TotalDamage
+            "p2": "?", // TotalShield
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "W": {
-            "v1": "?", // OnHitDamage
-            "v2": "?", // ActiveDamage
-            "v3": "?", // MissingManaRatio
-            "v4": "?", // ChampionMissingManaRatio
+            "p1": "?", // OnHitDamage
+            "p2": "?", // ActiveDamage
+            "p3": "?", // MissingManaRatio
+            "p4": "?", // ChampionMissingManaRatio
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "1",
-            "stats": "사거리 1"
+            "stats": {
+                "사거리": "1"
+            }
         },
         "E": {
-            "v1": "?", // ReductionPerSpellCast
-            "v2": "?", // TotalDamage
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowAmount
+            "p1": "?", // ReductionPerSpellCast
+            "p2": "?", // TotalDamage
+            "p3": "?", // SlowDuration
+            "p4": "?", // SlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "21 / 20 / 19 / 18 / 17",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "R": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // RStackDuration
-            "v3": "?", // BonusDamage
-            "v4": "?", // MaxStacks
+            "p1": "?", // BaseDamage
+            "p2": "?", // RStackDuration
+            "p3": "?", // BonusDamage
+            "p4": "?", // MaxStacks
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "5 / 3.5 / 2",
             "cost": "40",
-            "stats": "사거리 500"
-        },
-    },
-    "Jade_Kassadin": { // 카사딘
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SilenceDuration
-            "cooldown": "9",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 650"
-        },
-        "W": {
-            "v1": "?", // ManaGainAmount
-            "v2": "?", // ManaGainAmount*3
-            "v3": "?", // TotalDamage
-            "cooldown": "12",
-            "cost": "25",
-            "stats": "사거리 1"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // MoveSpeedMod*-100
-            "cooldown": "6",
-            "cost": "80",
-            "stats": "사거리 400"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // Damage
-            "cooldown": "7 / 6 / 5",
-            "cost": "100",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "500"
+            }
         },
     },
     "Karthus": { // 카서스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // QDamage
-            "v2": "?", // QSingleTargetDamage
+            "p1": "?", // QDamage
+            "p2": "?", // QSingleTargetDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "20 / 25 / 30 / 35 / 40",
-            "stats": "사거리 875"
+            "stats": {
+                "사거리": "875"
+            }
         },
         "W": {
-            "v1": "?", // WallDuration
-            "v2": "?", // DebuffDuration
-            "v3": "?", // MagicResistShred
-            "v4": "?", // SlowPercent
+            "p1": "?", // WallDuration
+            "p2": "?", // DebuffDuration
+            "p3": "?", // MagicResistShred
+            "p4": "?", // SlowPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15",
             "cost": "70",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "E": {
-            "v1": "?", // ManaRestoreOnKill
-            "v2": "?", // TotalDPS
+            "p1": "?", // ManaRestoreOnKill
+            "p2": "?", // TotalDPS
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.5",
             "cost": "30 / 42 / 54 / 66 / 78",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "R": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "200 / 180 / 160",
             "cost": "100",
-            "stats": "사거리 10000"
-        },
-    },
-    "Jade_Karthus": { // 카서스
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // QDamage
-            "cooldown": "1",
-            "cost": "20 / 26 / 32 / 38 / 44",
-            "stats": "사거리 875"
-        },
-        "W": {
-            "v1": "?", // Duration
-            "v2": "?", // MagicReduction*-100
-            "v3": "?", // Slow*-100
-            "cooldown": "18",
-            "cost": "100",
-            "stats": "사거리 1000"
-        },
-        "E": {
-            "v1": "?", // ManaRestoreOnKill
-            "v2": "?", // TotalDPS
-            "cooldown": "0.5",
-            "cost": "30 / 42 / 54 / 66 / 78",
-            "stats": "사거리 550"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "cooldown": "200 / 180 / 160",
-            "cost": "150 / 175 / 200",
-            "stats": "사거리 10000"
+            "stats": {
+                "사거리": "10000"
+            }
         },
     },
     "Cassiopeia": { // 카시오페아
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // PoisonDuration
-            "v2": "?", // TooltipTotalDamage
-            "v3": "?", // ChampHitMSBonus
-            "v4": "?", // ChampHitMSDuration
+            "p1": "?", // PoisonDuration
+            "p2": "?", // TooltipTotalDamage
+            "p3": "?", // ChampHitMSBonus
+            "p4": "?", // ChampHitMSDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3.5",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "W": {
-            "v1": "?", // CloudDuration
-            "v2": "?", // DamagePerSecond
-            "v3": "?", // SlowPercent
+            "p1": "?", // CloudDuration
+            "p2": "?", // DamagePerSecond
+            "p3": "?", // SlowPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "24 / 22 / 20 / 18 / 16",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "E": {
-            "v1": "?", // BasicDamage
-            "v2": "?", // BonusPoisonedDamage
-            "v3": "?", // HealCalc
-            "v4": "?", // HealCalcMinion
-            "v5": "?", // Cost
+            "p1": "?", // BasicDamage
+            "p2": "?", // BonusPoisonedDamage
+            "p3": "?", // HealCalc
+            "p4": "?", // HealCalcMinion
+            "p5": "?", // Cost
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.75",
             "cost": "40",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "R": {
-            "v1": "?", // RDamage
-            "v2": "?", // RCCDuration
-            "v3": "?", // RSlowPercent
+            "p1": "?", // RDamage
+            "p2": "?", // RCCDuration
+            "p3": "?", // RSlowPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 825"
+            "stats": {
+                "사거리": "825"
+            }
         },
     },
     "Kaisa": { // 카이사
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Effect2Amount
-            "v2": "?", // TotalIndividualMissileDamage
-            "v3": "?", // MaxDamageDisplay
-            "v4": "?", // ExtraHitReduction*100
-            "v5": "?", // Effect7Amount
-            "v6": "?", // f11.1
-            "v7": "?", // Effect6Amount
+            "p1": "?", // Effect2Amount
+            "p2": "?", // TotalIndividualMissileDamage
+            "p3": "?", // MaxDamageDisplay
+            "p4": "?", // ExtraHitReduction*100
+            "p5": "?", // Effect7Amount
+            "p6": "?", // f11.1
+            "p7": "?", // Effect6Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "55",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // Effect4Amount
-            "v3": "?", // Effect5Amount
-            "v4": "?", // Effect3Amount
-            "v5": "?", // f2.1
-            "v6": "?", // Effect2Amount
+            "p1": "?", // TotalDamage
+            "p2": "?", // Effect4Amount
+            "p3": "?", // Effect5Amount
+            "p4": "?", // Effect3Amount
+            "p5": "?", // f2.1
+            "p6": "?", // Effect2Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18.5 / 17 / 15.5 / 14",
             "cost": "55 / 60 / 65 / 70 / 75",
-            "stats": "사거리 3000"
+            "stats": {
+                "사거리": "3000"
+            }
         },
         "E": {
-            "v1": "?", // TotalMoveSpeed
-            "v2": "?", // Effect2Amount
-            "v3": "?", // Effect5Amount*100
-            "v4": "?", // Effect4Amount
-            "v5": "?", // Effect7Amount
-            "v6": "?", // f10.1
-            "v7": "?", // Effect6Amount
+            "p1": "?", // TotalMoveSpeed
+            "p2": "?", // Effect2Amount
+            "p3": "?", // Effect5Amount*100
+            "p4": "?", // Effect4Amount
+            "p5": "?", // Effect7Amount
+            "p6": "?", // f10.1
+            "p7": "?", // Effect6Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
             "cost": "30",
-            "stats": "사거리 1"
+            "stats": {
+                "사거리": "1"
+            }
         },
         "R": {
-            "v1": "?", // RShieldDuration
-            "v2": "?", // RCalculatedShieldValue
+            "p1": "?", // RShieldDuration
+            "p2": "?", // RCalculatedShieldValue
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "130 / 100 / 70",
             "cost": "100",
-            "stats": "사거리 2000 / 2500 / 3000"
+            "stats": {
+                "사거리": "2000 / 2500 / 3000"
+            }
         },
     },
     "Khazix": { // 카직스
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "20",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "W": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // HealAmount
+            "p1": "?", // BaseDamage
+            "p2": "?", // HealAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9",
             "cost": "55 / 60 / 65 / 70 / 75",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "50",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "R": {
-            "v1": "?", // StealthDuration
-            "v2": "?", // BonusMovementSpeedPercent*100
-            "v3": "?", // RecastWindow
-            "v4": "?", // EvolvedStealthDuration
+            "p1": "?", // StealthDuration
+            "p2": "?", // BonusMovementSpeedPercent*100
+            "p3": "?", // RecastWindow
+            "p4": "?", // EvolvedStealthDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Katarina": { // 카타리나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MaxBounces
-            "v2": "?", // TotalDamage
+            "p1": "?", // MaxBounces
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "-",
-            "stats": "사거리 625"
+            "stats": {
+                "사거리": "625"
+            }
         },
         "W": {
-            "v1": "?", // Effect4Amount
-            "v2": "?", // Effect2Amount
+            "p1": "?", // Effect4Amount
+            "p2": "?", // Effect2Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "-",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // DaggerCooldownReduction
-            "v3": "?", // TooltipDaggerReduction
+            "p1": "?", // TotalDamage
+            "p2": "?", // DaggerCooldownReduction
+            "p3": "?", // TooltipDaggerReduction
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "-",
-            "stats": "사거리 725"
+            "stats": {
+                "사거리": "725"
+            }
         },
         "R": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // ADDamageCalc
-            "v3": "?", // GrievousDuration
-            "v4": "?", // GrievousAmount*100
-            "v5": "?", // Duration
-            "v6": "?", // TotalDamageCalc
-            "v7": "?", // TotalADDamageCalc
+            "p1": "?", // DamageCalc
+            "p2": "?", // ADDamageCalc
+            "p3": "?", // GrievousDuration
+            "p4": "?", // GrievousAmount*100
+            "p5": "?", // Duration
+            "p6": "?", // TotalDamageCalc
+            "p7": "?", // TotalADDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "75 / 60 / 45",
             "cost": "-",
-            "stats": "사거리 550"
-        },
-    },
-    "Jade_Katarina": { // 카타리나
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // MaxBounces
-            "v3": "?", // MarkDuration
-            "v4": "?", // TotalDamageMark
-            "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
-            "cost": "-",
-            "stats": "사거리 675"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // BuffDuration
-            "v3": "?", // Haste*100
-            "cooldown": "4",
-            "cost": "-",
-            "stats": "사거리 400"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // DamageReductionDuration
-            "v3": "?", // DamageReduction
-            "cooldown": "12 / 10.5 / 9 / 7.5 / 6",
-            "cost": "-",
-            "stats": "사거리 725"
-        },
-        "R": {
-            "v1": "?", // DamageCalcTooltipOnly
-            "cooldown": "60 / 52.5 / 45",
-            "cost": "-",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
     },
     "Kalista": { // 칼리스타
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 1150"
+            "stats": {
+                "사거리": "1150"
+            }
         },
         "W": {
-            "v1": "?", // MaxHealthDamage*100
-            "v2": "?", // PerTargetCooldown
-            "v3": "?", // MaximumMonsterDamage
-            "v4": "?", // AmmoRechargeTooltip
+            "p1": "?", // MaxHealthDamage*100
+            "p2": "?", // PerTargetCooldown
+            "p3": "?", // MaximumMonsterDamage
+            "p4": "?", // AmmoRechargeTooltip
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "30",
             "cost": "-",
-            "stats": "사거리 5000"
+            "stats": {
+                "사거리": "5000"
+            }
         },
         "E": {
-            "v1": "?", // NormalDamage
-            "v2": "?", // AdditionalDamage
-            "v3": "?", // SlowDuration
-            "v4": "?", // TotalSlowAmount
-            "v5": "?", // ManaRefund
+            "p1": "?", // NormalDamage
+            "p2": "?", // AdditionalDamage
+            "p3": "?", // SlowDuration
+            "p4": "?", // TotalSlowAmount
+            "p5": "?", // ManaRefund
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "30",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "R": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "160 / 140 / 120",
             "cost": "100",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
     },
     "Kennen": { // 케넨
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6.25 / 5.5 / 4.75 / 4",
             "cost": "60 / 55 / 50 / 45 / 40",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamagePassive
-            "v2": "?", // TotalDamageActive
+            "p1": "?", // TotalDamagePassive
+            "p2": "?", // TotalDamageActive
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 11.25 / 9.5 / 7.75 / 6",
             "cost": "40",
-            "stats": "사거리 725"
+            "stats": {
+                "사거리": "725"
+            }
         },
         "E": {
-            "v1": "?", // DurationAsBall
-            "v2": "?", // MovementSpeed*100
-            "v3": "?", // TotalDamage
-            "v4": "?", // EnergyRefund
-            "v5": "?", // DurationAfterBall
-            "v6": "?", // TotalAS*100
-            "v7": "?", // CritDurationBonus
+            "p1": "?", // DurationAsBall
+            "p2": "?", // MovementSpeed*100
+            "p3": "?", // TotalDamage
+            "p4": "?", // EnergyRefund
+            "p5": "?", // DurationAfterBall
+            "p6": "?", // TotalAS*100
+            "p7": "?", // CritDurationBonus
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "80",
-            "stats": "사거리 170"
+            "stats": {
+                "사거리": "170"
+            }
         },
         "R": {
-            "v1": "?", // KennenRTickRate
-            "v2": "?", // PerTickDamageCalculated
-            "v3": "?", // KennenRDuration
-            "v4": "?", // KennenRDefenses
-            "v5": "?", // DamageAmp*100
+            "p1": "?", // KennenRTickRate
+            "p2": "?", // PerTickDamageCalculated
+            "p3": "?", // KennenRDuration
+            "p4": "?", // KennenRDefenses
+            "p5": "?", // DamageAmp*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120",
             "cost": "-",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
     },
     "Caitlyn": { // 케이틀린
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // InitialDamage
-            "v2": "?", // SecondaryDamage
+            "p1": "?", // InitialDamage
+            "p2": "?", // SecondaryDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "55 / 60 / 65 / 70 / 75",
-            "stats": "사거리 1250"
+            "stats": {
+                "사거리": "1250"
+            }
         },
         "W": {
-            "v1": "?", // RootDuration
-            "v2": "?", // TrapDuration
-            "v3": "?", // MaximumTraps
-            "v4": "?", // MaximumCharges
-            "v5": "?", // AmmoRechargeTime
-            "v6": "?", // HeadshotBonusDamage
+            "p1": "?", // RootDuration
+            "p2": "?", // TrapDuration
+            "p3": "?", // MaximumTraps
+            "p4": "?", // MaximumCharges
+            "p5": "?", // AmmoRechargeTime
+            "p6": "?", // HeadshotBonusDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.5",
             "cost": "20",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "E": {
-            "v1": "?", // SlowDuration
-            "v2": "?", // SlowAmount
-            "v3": "?", // NetDamage
+            "p1": "?", // SlowDuration
+            "p2": "?", // SlowAmount
+            "p3": "?", // NetDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14 / 12 / 10 / 8",
             "cost": "75",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "R": {
-            "v1": "?", // RTotalDamage
+            "p1": "?", // RTotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "90",
             "cost": "100",
-            "stats": "사거리 3500"
+            "stats": {
+                "사거리": "3500"
+            }
         },
     },
     "Kayn": { // 케인
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // DarkinFlatDamage
-            "v3": "?", // DarkinPercentDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // DarkinFlatDamage
+            "p3": "?", // DarkinPercentDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
             "cost": "40",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // Effect3Amount*-100
-            "v3": "?", // Effect5Amount
-            "v4": "?", // Effect2Amount
+            "p1": "?", // TotalDamage
+            "p2": "?", // Effect3Amount*-100
+            "p3": "?", // Effect5Amount
+            "p4": "?", // Effect2Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
         "E": {
-            "v1": "?", // Effect2Amount
-            "v2": "?", // Effect1Amount
-            "v3": "?", // TotalHealing
-            "v4": "?", // Effect3Amount
-            "v5": "?", // Effect5Amount
-            "v6": "?", // AssassinCDReduction
+            "p1": "?", // Effect2Amount
+            "p2": "?", // Effect1Amount
+            "p3": "?", // TotalHealing
+            "p4": "?", // Effect3Amount
+            "p5": "?", // Effect5Amount
+            "p6": "?", // AssassinCDReduction
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "21 / 19 / 17 / 15 / 13",
             "cost": "90",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "R": {
-            "v1": "?", // InfestDuration
-            "v2": "?", // Damage
-            "v3": "?", // SlayerDamage
-            "v4": "?", // HealValue
-            "v5": "?", // SlayerHealPercent*100
+            "p1": "?", // InfestDuration
+            "p2": "?", // Damage
+            "p3": "?", // SlayerDamage
+            "p4": "?", // HealValue
+            "p5": "?", // SlayerHealPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
     },
     "Kayle": { // 케일
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercent
-            "v4": "?", // ShredDuration
-            "v5": "?", // ShredPercent
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercent
+            "p4": "?", // ShredDuration
+            "p5": "?", // ShredPercent
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "W": {
-            "v1": "?", // TotalHeal
-            "v2": "?", // HasteDuration
-            "v3": "?", // TotalHaste
+            "p1": "?", // TotalHeal
+            "p2": "?", // HasteDuration
+            "p3": "?", // TotalHaste
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "E": {
-            "v1": "?", // EPassiveTotalDamage
-            "v2": "?", // ActiveTotalExecuteDamage
+            "p1": "?", // EPassiveTotalDamage
+            "p2": "?", // ActiveTotalExecuteDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "-",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "R": {
-            "v1": "?", // InvulnDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // InvulnDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "160 / 120 / 80",
             "cost": "100 / 50 / 0",
-            "stats": "사거리 900"
-        },
-    },
-    "Jade_Kayle": { // 케일
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // Duration
-            "v3": "?", // SlowPercent
-            "v4": "?", // DamageAmp*100
-            "cooldown": "8",
-            "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 625"
-        },
-        "W": {
-            "v1": "?", // Duration
-            "v2": "?", // MoveSpeed*100
-            "v3": "?", // TotalHeal
-            "cooldown": "10",
-            "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 700"
-        },
-        "E": {
-            "v1": "?", // Duration
-            "v2": "?", // BonusRange
-            "v3": "?", // TargetDamage
-            "v4": "?", // SplashDamage
-            "cooldown": "22 / 21 / 20 / 19 / 18",
-            "cost": "65",
-            "stats": "사거리 400"
-        },
-        "R": {
-            "v1": "?", // Duration
-            "cooldown": "90 / 75 / 60",
-            "cost": "100 / 75 / 50",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "900"
+            }
         },
     },
     "KogMaw": { // 코그모
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // AttackSpeed*100
-            "v2": "?", // TotalDamage
-            "v3": "?", // ShredDuration
-            "v4": "?", // ShredAmount
+            "p1": "?", // AttackSpeed*100
+            "p2": "?", // TotalDamage
+            "p3": "?", // ShredDuration
+            "p4": "?", // ShredAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "40",
-            "stats": "사거리 1175"
+            "stats": {
+                "사거리": "1175"
+            }
         },
         "W": {
-            "v1": "?", // Range
-            "v2": "?", // Duration
-            "v3": "?", // TotalHealthDamage
+            "p1": "?", // Range
+            "p2": "?", // Duration
+            "p3": "?", // TotalHealthDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "17",
             "cost": "40",
-            "stats": "사거리 530"
+            "stats": {
+                "사거리": "530"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TrailDuration
-            "v3": "?", // SlowAmount
+            "p1": "?", // TotalDamage
+            "p2": "?", // TrailDuration
+            "p3": "?", // SlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "40 / 55 / 70 / 85 / 100",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
         "R": {
-            "v1": "?", // BaseDamageCalc
-            "v2": "?", // TooltipMissingHealthDamageAmp
-            "v3": "?", // MaxDamageCalc
-            "v4": "?", // ManaCostDuration
-            "v5": "?", // BaseCost
-            "v6": "?", // ManaCostCap
+            "p1": "?", // BaseDamageCalc
+            "p2": "?", // TooltipMissingHealthDamageAmp
+            "p3": "?", // MaxDamageCalc
+            "p4": "?", // ManaCostDuration
+            "p5": "?", // BaseCost
+            "p6": "?", // ManaCostCap
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "2 / 1.5 / 1",
             "cost": "40",
-            "stats": "사거리 1300 / 1550 / 1800"
-        },
-    },
-    "Jade_KogMaw": { // 코그모
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // PassiveAttackSpeed*100
-            "v2": "?", // TotalDamage
-            "v3": "?", // DebuffDuration
-            "v4": "?", // ArmorShred
-            "cooldown": "8",
-            "cost": "60",
-            "stats": "사거리 625"
-        },
-        "W": {
-            "v1": "?", // Duration
-            "v2": "?", // Range
-            "v3": "?", // TotalHealthDamage
-            "cooldown": "17",
-            "cost": "50",
-            "stats": "사거리 530"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TrailDuration
-            "v3": "?", // SlowAmount*100
-            "cooldown": "12",
-            "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 1200"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // VisionDebuffDuration
-            "v3": "?", // ChampionTotalDamage
-            "v4": "?", // ManaCostDuration
-            "v5": "?", // BaseCost
-            "v6": "?", // ManaCostCap
-            "cooldown": "2 / 1.5 / 1",
-            "cost": "40",
-            "stats": "사거리 1400 / 1700 / 2000"
+            "stats": {
+                "사거리": "1300 / 1550 / 1800"
+            }
         },
     },
     "Corki": { // 코르키
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // RevealDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // RevealDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 825"
+            "stats": {
+                "사거리": "825"
+            }
         },
         "W": {
-            "v1": "?", // TrailDuration
-            "v2": "?", // MaximumDamage
+            "p1": "?", // TrailDuration
+            "p2": "?", // MaximumDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
             "cost": "80 / 85 / 90 / 95 / 100",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // SprayDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // ShredMax*-1
+            "p1": "?", // SprayDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // ShredMax*-1
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "R": {
-            "v1": "?", // RSmallMissileDamage
-            "v2": "?", // RBigMissileDamage
-            "v3": "?", // MaxAmmoTOOLTIP
-            "v4": "?", // AttackRefund
+            "p1": "?", // RSmallMissileDamage
+            "p2": "?", // RBigMissileDamage
+            "p3": "?", // MaxAmmoTOOLTIP
+            "p4": "?", // AttackRefund
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "2",
             "cost": "35",
-            "stats": "사거리 1225"
-        },
-    },
-    "Jade_Corki": { // 코르키
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "cooldown": "8",
-            "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 600"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "cooldown": "26 / 23 / 20 / 17 / 14",
-            "cost": "50",
-            "stats": "사거리 600"
-        },
-        "E": {
-            "v1": "?", // TotalDamageTooltipOnly
-            "v2": "?", // ArmorMod*-1
-            "cooldown": "16",
-            "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 600"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // AmmoRechargeTime
-            "v3": "?", // TotalDamageBig
-            "cooldown": "1.2",
-            "cost": "20",
-            "stats": "사거리 1225"
+            "stats": {
+                "사거리": "1225"
+            }
         },
     },
     "Quinn": { // 퀸
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // VisionReductionDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // VisionReductionDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10.5 / 10 / 9.5 / 9",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 1025"
+            "stats": {
+                "사거리": "1025"
+            }
         },
         "W": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // AttackSpeedBonus*100
-            "v3": "?", // MovespeedAmount*100
-            "v4": "?", // VisionDuration
+            "p1": "?", // BuffDuration
+            "p2": "?", // AttackSpeedBonus*100
+            "p3": "?", // MovespeedAmount*100
+            "p4": "?", // VisionDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "50 / 45 / 40 / 35 / 30",
             "cost": "-",
-            "stats": "사거리 2100"
+            "stats": {
+                "사거리": "2100"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowAmount*100
-            "v3": "?", // SlowDecayTime
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowAmount*100
+            "p3": "?", // SlowDecayTime
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "50",
-            "stats": "사거리 675"
+            "stats": {
+                "사거리": "675"
+            }
         },
         "R": {
-            "v1": "?", // MovementSpeedMod*100
-            "v2": "?", // Damage
+            "p1": "?", // MovementSpeedMod*100
+            "p2": "?", // Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3",
             "cost": "50 / 25 / 0",
-            "stats": "사거리 700"
+            "stats": {
+                "사거리": "700"
+            }
         },
     },
     "KSante": { // 크산테
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercent*100
-            "v4": "?", // RecastWindow
-            "v5": "?", // StunDuration
-            "v6": "?", // RCooldownReduction.0*100
+            "p1": "?", // BaseDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercent*100
+            "p4": "?", // RecastWindow
+            "p5": "?", // StunDuration
+            "p6": "?", // RCooldownReduction.0*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3.5",
             "cost": "20",
-            "stats": "사거리 450"
+            "stats": {
+                "사거리": "450"
+            }
         },
         "W": {
-            "v1": "?", // MinDurationTOOLTIP
-            "v2": "?", // MaxDuration.1
-            "v3": "?", // DamageReduction*100
-            "v4": "?", // BaseDamage
-            "v5": "?", // TotalMaxHealthDamage
-            "v6": "?", // MinKnockbackDuration
-            "v7": "?", // MaxKnockbackDuration
-            "v8": "?", // RDamageIncreaseMin*100
-            "v9": "?", // RDamageIncreaseMax*100
-            "v10": "?", // RDamageReduction*100
+            "p1": "?", // MinDurationTOOLTIP
+            "p2": "?", // MaxDuration.1
+            "p3": "?", // DamageReduction*100
+            "p4": "?", // BaseDamage
+            "p5": "?", // TotalMaxHealthDamage
+            "p6": "?", // MinKnockbackDuration
+            "p7": "?", // MaxKnockbackDuration
+            "p8": "?", // RDamageIncreaseMin*100
+            "p9": "?", // RDamageIncreaseMax*100
+            "p10": "?", // RDamageReduction*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // TotalShield
-            "v3": "?", // CooldownModAO*100
+            "p1": "?", // ShieldDuration
+            "p2": "?", // TotalShield
+            "p3": "?", // CooldownModAO*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 525"
+            "stats": {
+                "사거리": "525"
+            }
         },
         "R": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // AllOutDuration
-            "v3": "?", // TotalDamageSlamDown
-            "v4": "?", // AttackSpeed*100
-            "v5": "?", // ArmorPenPercent*100
-            "v6": "?", // Omnivamp*100
-            "v7": "?", // HealthLost*100
-            "v8": "?", // DefensesLost*100
+            "p1": "?", // BaseDamage
+            "p2": "?", // AllOutDuration
+            "p3": "?", // TotalDamageSlamDown
+            "p4": "?", // AttackSpeed*100
+            "p5": "?", // ArmorPenPercent*100
+            "p6": "?", // Omnivamp*100
+            "p7": "?", // HealthLost*100
+            "p8": "?", // DefensesLost*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 250"
+            "stats": {
+                "사거리": "250"
+            }
         },
     },
     "Kled": { // 클레드
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TetherPopTime
-            "v3": "?", // TotalYankDamage
-            "v4": "?", // SlowDuration
-            "v5": "?", // SlowAmount*-100
+            "p1": "?", // TotalDamage
+            "p2": "?", // TetherPopTime
+            "p3": "?", // TotalYankDamage
+            "p4": "?", // SlowDuration
+            "p5": "?", // SlowAmount*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "-",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "W": {
-            "v1": "?", // ActiveDuration
-            "v2": "?", // AttackSpeed*100
-            "v3": "?", // BaseFlatDamage
-            "v4": "?", // PercentDamage
+            "p1": "?", // ActiveDuration
+            "p2": "?", // AttackSpeed*100
+            "p3": "?", // BaseFlatDamage
+            "p4": "?", // PercentDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "-"
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // MoveSpeedDuration
-            "v3": "?", // MoveSpeed*100
-            "v4": "?", // RecastWindow
+            "p1": "?", // TotalDamage
+            "p2": "?", // MoveSpeedDuration
+            "p3": "?", // MoveSpeed*100
+            "p4": "?", // RecastWindow
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "-",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "R": {
-            "v1": "?", // MaximumShield
-            "v2": "?", // MinimumDamageTooltip
-            "v3": "?", // MaximumChargeDamage
+            "p1": "?", // MaximumShield
+            "p2": "?", // MinimumDamageTooltip
+            "p3": "?", // MaximumChargeDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 125 / 110",
             "cost": "-",
-            "stats": "사거리 3500 / 4000 / 4500"
+            "stats": {
+                "사거리": "3500 / 4000 / 4500"
+            }
         },
     },
     "Qiyana": { // 키아나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // VanillaDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPotency*-100
-            "v4": "?", // CritThreshold*100
-            "v5": "?", // TremorDamage
-            "v6": "?", // Haste*100
+            "p1": "?", // VanillaDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPotency*-100
+            "p4": "?", // CritThreshold*100
+            "p5": "?", // TremorDamage
+            "p6": "?", // Haste*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "35",
-            "stats": "사거리 525"
+            "stats": {
+                "사거리": "525"
+            }
         },
         "W": {
-            "v1": "?", // AttackSpeed*100
-            "v2": "?", // OnHitDamage
-            "v3": "?", // PassiveMS*100
+            "p1": "?", // AttackSpeed*100
+            "p2": "?", // OnHitDamage
+            "p3": "?", // PassiveMS*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "25 / 30 / 35 / 40 / 45",
-            "stats": "사거리 1100"
+            "stats": {
+                "사거리": "1100"
+            }
         },
         "E": {
-            "v1": "?", // Damage
+            "p1": "?", // Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // StunDuration
-            "v2": "?", // Damage
-            "v3": "?", // MissingHealthDamageRock
+            "p1": "?", // StunDuration
+            "p2": "?", // Damage
+            "p3": "?", // MissingHealthDamageRock
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120",
             "cost": "100",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
     },
     "Kindred": { // 킨드레드
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // BaseASDuration
-            "v3": "?", // TotalQAttackSpeed
-            "v4": "?", // CDNewValue
+            "p1": "?", // TotalDamage
+            "p2": "?", // BaseASDuration
+            "p3": "?", // TotalQAttackSpeed
+            "p4": "?", // CDNewValue
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9",
             "cost": "35",
-            "stats": "사거리 340"
+            "stats": {
+                "사거리": "340"
+            }
         },
         "W": {
-            "v1": "?", // AttackHeal
-            "v2": "?", // BaseWolfDamage
-            "v3": "?", // PercentWolfDamage
+            "p1": "?", // AttackHeal
+            "p2": "?", // BaseWolfDamage
+            "p3": "?", // PercentWolfDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "40",
-            "stats": "사거리 560"
+            "stats": {
+                "사거리": "560"
+            }
         },
         "E": {
-            "v1": "?", // SlowDuration
-            "v2": "?", // TotalSlow
-            "v3": "?", // TotalDuration
-            "v4": "?", // BaseBiteDamage
-            "v5": "?", // PercentBiteDamage
+            "p1": "?", // SlowDuration
+            "p2": "?", // TotalSlow
+            "p3": "?", // TotalDuration
+            "p4": "?", // BaseBiteDamage
+            "p5": "?", // PercentBiteDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 12.5 / 11 / 9.5 / 8",
             "cost": "",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
         "R": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // HealFlat
+            "p1": "?", // BuffDuration
+            "p2": "?", // HealFlat
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "160 / 140 / 120",
             "cost": "100",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
     },
     "Taric": { // 타릭
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // StackCooldown
-            "v2": "?", // Effect6Amount
-            "v3": "?", // HealingPerStack
-            "v4": "?", // MaxStackHealing
+            "p1": "?", // StackCooldown
+            "p2": "?", // Effect6Amount
+            "p3": "?", // HealingPerStack
+            "p4": "?", // MaxStackHealing
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3",
             "cost": "60",
-            "stats": "사거리 325"
+            "stats": {
+                "사거리": "325"
+            }
         },
         "W": {
-            "v1": "?", // BonusArmor
-            "v2": "?", // Effect3Amount
-            "v3": "?", // Effect2Amount
+            "p1": "?", // BonusArmor
+            "p2": "?", // Effect3Amount
+            "p3": "?", // Effect2Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15",
             "cost": "60",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
         "E": {
-            "v1": "?", // Effect3Amount
-            "v2": "?", // TotalDamage
-            "v3": "?", // Effect2Amount
+            "p1": "?", // Effect3Amount
+            "p2": "?", // TotalDamage
+            "p3": "?", // Effect2Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "40",
-            "stats": "사거리 610"
+            "stats": {
+                "사거리": "610"
+            }
         },
         "R": {
-            "v1": "?", // InitialDelay
-            "v2": "?", // InvulnDuration
+            "p1": "?", // InitialDelay
+            "p2": "?", // InvulnDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "180 / 150 / 120",
             "cost": "100",
-            "stats": "사거리 400"
-        },
-    },
-    "Jade_Taric": { // 타릭
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // HealAmount
-            "v2": "?", // HealAmountSelfTT
-            "cooldown": "20 / 19 / 18 / 17 / 16",
-            "cost": "80 / 95 / 110 / 125 / 140",
-            "stats": "사거리 750"
-        },
-        "W": {
-            "v1": "?", // ArmorBonus
-            "v2": "?", // BonustoAllies
-            "v3": "?", // ArmorBonusCoefficient*100
-            "v4": "?", // TotalDamage
-            "v5": "?", // ArmorShred*-1
-            "cooldown": "10",
-            "cost": "50",
-            "stats": "사거리 400"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // TotalMaxDamageTT
-            "v3": "?", // MinStunLength
-            "v4": "?", // MaxStunLength
-            "cooldown": "14 / 13 / 12 / 11 / 10",
-            "cost": "75",
-            "stats": "사거리 650"
-        },
-        "R": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // DamageIncrease
-            "v3": "?", // AllyBonus
-            "cooldown": "60",
-            "cost": "100",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
     },
     "Talon": { // 탈론
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // LeapDamage
-            "v2": "?", // CriticalDamage
-            "v3": "?", // TotalHealing
-            "v4": "?", // CooldownRefund*100
+            "p1": "?", // LeapDamage
+            "p2": "?", // CriticalDamage
+            "p3": "?", // TotalHealing
+            "p4": "?", // CooldownRefund*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "40",
-            "stats": "사거리 575"
+            "stats": {
+                "사거리": "575"
+            }
         },
         "W": {
-            "v1": "?", // TotalInitialDamage
-            "v2": "?", // TotalReturnDamage
-            "v3": "?", // SlowDuration
-            "v4": "?", // MovespeedSlow*100
+            "p1": "?", // TotalInitialDamage
+            "p2": "?", // TotalReturnDamage
+            "p3": "?", // SlowDuration
+            "p4": "?", // MovespeedSlow*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "E": {
-            "v1": "?", // WallCD
+            "p1": "?", // WallCD
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "-",
-            "stats": "사거리 725"
+            "stats": {
+                "사거리": "725"
+            }
         },
         "R": {
-            "v1": "?", // Damage
-            "v2": "?", // MoveSpeed*100
-            "v3": "?", // Duration
+            "p1": "?", // Damage
+            "p2": "?", // MoveSpeed*100
+            "p3": "?", // Duration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 80 / 60",
             "cost": "100",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
     },
     "Taliyah": { // 탈리야
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // RockDamage
-            "v2": "?", // ExtraMissileReducedDamagePercent
-            "v3": "?", // BigRockManaCost
-            "v4": "?", // WorkedGroundCDR*100
-            "v5": "?", // SlowDuration
-            "v6": "?", // SlowPercent*100
-            "v7": "?", // BigRockDamage
-            "v8": "?", // MonsterStunDuration
+            "p1": "?", // RockDamage
+            "p2": "?", // ExtraMissileReducedDamagePercent
+            "p3": "?", // BigRockManaCost
+            "p4": "?", // WorkedGroundCDR*100
+            "p5": "?", // SlowDuration
+            "p6": "?", // SlowPercent*100
+            "p7": "?", // BigRockDamage
+            "p8": "?", // MonsterStunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
             "cost": "55 / 60 / 65 / 70 / 75",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "W": {
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 12.5 / 11 / 9.5 / 8",
             "cost": "40 / 30 / 20 / 10 / 0",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "E": {
-            "v1": "?", // SlowPercent*100
-            "v2": "?", // ScatterDamage
-            "v3": "?", // StunDuration
-            "v4": "?", // DetonationDamage
+            "p1": "?", // SlowPercent*100
+            "p2": "?", // ScatterDamage
+            "p3": "?", // StunDuration
+            "p4": "?", // DetonationDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14",
             "cost": "90",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "R": {
-            "v1": "?", // WallDuration
-            "v2": "?", // DamageLockoutTime
+            "p1": "?", // WallDuration
+            "p2": "?", // DamageLockoutTime
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "180 / 150 / 120",
             "cost": "100",
-            "stats": "사거리 2500 / 4500 / 6500"
+            "stats": {
+                "사거리": "2500 / 4500 / 6500"
+            }
         },
     },
     "TahmKench": { // 탐 켄치
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // BaseHeal
-            "v5": "?", // PercentHealthHealing*100
-            "v6": "?", // StunDuration
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "p4": "?", // BaseHeal
+            "p5": "?", // PercentHealthHealing*100
+            "p6": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
             "cost": "50 / 46 / 42 / 38 / 34",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // KnockupDuration
-            "v3": "?", // ChampRefund*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // KnockupDuration
+            "p3": "?", // ChampRefund*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "21 / 20 / 19 / 18 / 17",
             "cost": "60 / 75 / 90 / 105 / 120",
-            "stats": "사거리 1000 / 1050 / 1100 / 1150 / 1200"
+            "stats": {
+                "사거리": "1000 / 1050 / 1100 / 1150 / 1200"
+            }
         },
         "E": {
-            "v1": "?", // GreyHealthRatio*100
-            "v2": "?", // EnhancedThreshold
-            "v3": "?", // GreyHealthRatioEnhanced*100
-            "v4": "?", // OOCTimer
-            "v5": "?", // GreyHealthHealingRatio
-            "v6": "?", // ShieldDuration
+            "p1": "?", // GreyHealthRatio*100
+            "p2": "?", // EnhancedThreshold
+            "p3": "?", // GreyHealthRatioEnhanced*100
+            "p4": "?", // OOCTimer
+            "p5": "?", // GreyHealthHealingRatio
+            "p6": "?", // ShieldDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3",
             "cost": "",
-            "stats": "사거리 2400"
+            "stats": {
+                "사거리": "2400"
+            }
         },
         "R": {
-            "v1": "?", // EnemyDuration
-            "v2": "?", // BaseDamage
-            "v3": "?", // PercentHPDamage
-            "v4": "?", // SlowAmount*100
-            "v5": "?", // AllyDuration
-            "v6": "?", // TotalShield
-            "v7": "?", // AllySpeedAmount*100
+            "p1": "?", // EnemyDuration
+            "p2": "?", // BaseDamage
+            "p3": "?", // PercentHPDamage
+            "p4": "?", // SlowAmount*100
+            "p5": "?", // AllyDuration
+            "p6": "?", // TotalShield
+            "p7": "?", // AllySpeedAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "100",
-            "stats": "사거리 25000"
+            "stats": {
+                "사거리": "25000"
+            }
         },
     },
     "Trundle": { // 트런들
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowAmount*100
-            "v3": "?", // SapDebuffDuration
-            "v4": "?", // BonusAD
-            "v5": "?", // SappedAD*-1
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowAmount*100
+            "p3": "?", // SapDebuffDuration
+            "p4": "?", // BonusAD
+            "p5": "?", // SappedAD*-1
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "3.5",
             "cost": "20",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "W": {
-            "v1": "?", // Duration
-            "v2": "?", // MSBonus*100
-            "v3": "?", // ASBonus*100
-            "v4": "?", // HealingBonus*100
+            "p1": "?", // Duration
+            "p2": "?", // MSBonus*100
+            "p3": "?", // ASBonus*100
+            "p4": "?", // HealingBonus*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "40",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "E": {
-            "v1": "?", // PillarDuration
-            "v2": "?", // SlowAmount
+            "p1": "?", // PillarDuration
+            "p2": "?", // SlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "21 / 19.5 / 18 / 16.5 / 15",
             "cost": "75",
-            "stats": "사거리 1000"
+            "stats": {
+                "사거리": "1000"
+            }
         },
         "R": {
-            "v1": "?", // ActualDurationOfDrainBuff
-            "v2": "?", // TotalPercentHPDamage
-            "v3": "?", // ArmorMRShred*100
+            "p1": "?", // ActualDurationOfDrainBuff
+            "p2": "?", // TotalPercentHPDamage
+            "p3": "?", // ArmorMRShred*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
     },
     "Tristana": { // 트리스타나
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // AttackSpeedMod*100
+            "p1": "?", // BuffDuration
+            "p2": "?", // AttackSpeedMod*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 19 / 18 / 17 / 16",
             "cost": "15 / 20 / 25 / 30 / 35",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "W": {
-            "v1": "?", // LandingDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowMod*-100
+            "p1": "?", // LandingDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowMod*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 20 / 18 / 16 / 14",
             "cost": "30 / 35 / 40 / 45 / 50",
-            "stats": "사거리 900"
+            "stats": {
+                "사거리": "900"
+            }
         },
         "E": {
-            "v1": "?", // PassiveDamage
-            "v2": "?", // ActiveDuration
-            "v3": "?", // ActiveDamage
-            "v4": "?", // ActivePerStackAmp*100
-            "v5": "?", // ActiveMaxStacks
-            "v6": "?", // ActiveMaxDamage
+            "p1": "?", // PassiveDamage
+            "p2": "?", // ActiveDuration
+            "p3": "?", // ActiveDamage
+            "p4": "?", // ActivePerStackAmp*100
+            "p5": "?", // ActiveMaxStacks
+            "p6": "?", // ActiveMaxDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 15.5 / 15 / 14.5 / 14",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "R": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // StunDuration
+            "p1": "?", // DamageCalc
+            "p2": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100",
             "cost": "100",
-            "stats": "사거리 550"
-        },
-    },
-    "Jade_Tristana": { // 트리스타나
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // AttackSpeedMod*100
-            "cooldown": "20",
-            "cost": "50",
-            "stats": "사거리 20"
-        },
-        "W": {
-            "v1": "?", // LandingDamage
-            "cooldown": "22 / 20 / 18 / 16 / 14",
-            "cost": "80",
-            "stats": "사거리 900"
-        },
-        "E": {
-            "v1": "?", // PassiveDamage
-            "v2": "?", // ActiveDamageTTOnly
-            "cooldown": "16",
-            "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 550"
-        },
-        "R": {
-            "v1": "?", // DamageCalc
-            "v2": "?", // KnockbackDistance
-            "cooldown": "60",
-            "cost": "100",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
     },
     "Tryndamere": { // 트린다미어
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MaximumBonusAD
-            "v2": "?", // BaseHeal
-            "v3": "?", // HealPerFury
-            "v4": "?", // MaximumHeal
+            "p1": "?", // MaximumBonusAD
+            "p2": "?", // BaseHeal
+            "p3": "?", // HealPerFury
+            "p4": "?", // MaximumHeal
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12",
             "cost": "-",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "W": {
-            "v1": "?", // ReductionDuration
-            "v2": "?", // ADReduction*-1
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowPotency*-100
+            "p1": "?", // ReductionDuration
+            "p2": "?", // ADReduction*-1
+            "p3": "?", // SlowDuration
+            "p4": "?", // SlowPotency*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14",
             "cost": "-",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // NonChampFuryGain
-            "v3": "?", // ChampFuryGain
-            "v4": "?", // NonChampCDRefund
-            "v5": "?", // ChampCDRefund
+            "p1": "?", // TotalDamage
+            "p2": "?", // NonChampFuryGain
+            "p3": "?", // ChampFuryGain
+            "p4": "?", // NonChampCDRefund
+            "p5": "?", // ChampCDRefund
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "-",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "R": {
-            "v1": "?", // TryndRDuration
-            "v2": "?", // TryndRMinHealth
-            "v3": "?", // TryndRFuryGain
+            "p1": "?", // TryndRDuration
+            "p2": "?", // TryndRMinHealth
+            "p3": "?", // TryndRFuryGain
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "-",
-            "stats": "사거리 400"
-        },
-    },
-    "Jade_Tryndamere": { // 트린다미어
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // ADPerStack
-            "v2": "?", // CritDamagePerStack*100
-            "v3": "?", // InitialHeal
-            "v4": "?", // HealPerFury
-            "v5": "?", // MaxHealTooltip
-            "cooldown": "12 / 11 / 10 / 9 / 8",
-            "cost": "",
-            "stats": "사거리 400"
-        },
-        "W": {
-            "v1": "?", // DebuffDuration
-            "v2": "?", // ADReduction*-1
-            "v3": "?", // SlowPotency*-100
-            "cooldown": "14",
-            "cost": "",
-            "stats": "사거리 800"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "cooldown": "8",
-            "cost": "",
-            "stats": "사거리 650"
-        },
-        "R": {
-            "v1": "?", // Duration
-            "v2": "?", // FuryGained
-            "cooldown": "110 / 100 / 90",
-            "cost": "",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
     },
     "TwistedFate": { // 트위스티드 페이트
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
+            "p1": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6 / 5.75 / 5.5 / 5.25 / 5",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 10000"
+            "stats": {
+                "사거리": "10000"
+            }
         },
         "W": {
-            "v1": "?", // BlueDamage
-            "v2": "?", // Effect6Amount
-            "v3": "?", // RedDamage
-            "v4": "?", // Effect2Amount
-            "v5": "?", // GoldDamage
-            "v6": "?", // Effect3Amount
+            "p1": "?", // BlueDamage
+            "p2": "?", // Effect6Amount
+            "p3": "?", // RedDamage
+            "p4": "?", // Effect2Amount
+            "p5": "?", // GoldDamage
+            "p6": "?", // Effect3Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "6",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 200"
+            "stats": {
+                "사거리": "200"
+            }
         },
         "E": {
-            "v1": "?", // AttackSpeedBonus
-            "v2": "?", // BonusDamage
+            "p1": "?", // AttackSpeedBonus
+            "p2": "?", // BonusDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": ""
         },
         "R": {
-            "v1": "?", // Effect1Amount
-            "v2": "?", // Effect4Amount
+            "p1": "?", // Effect1Amount
+            "p2": "?", // Effect4Amount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "170 / 140 / 110",
             "cost": "100",
-            "stats": "사거리 5500"
-        },
-    },
-    "Jade_TwistedFate": { // 트위스티드 페이트
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "cooldown": "6",
-            "cost": "60 / 70 / 80 / 90 / 100",
-            "stats": "사거리 10000"
-        },
-        "W": {
-            "v1": "?", // BlueDamage
-            "v2": "?", // ManaRestore
-            "v3": "?", // RedDamage
-            "v4": "?", // Slow
-            "v5": "?", // GoldDamage
-            "v6": "?", // Stun
-            "cooldown": "6",
-            "cost": "40 / 55 / 70 / 85 / 100",
-            "stats": "사거리 200"
-        },
-        "E": {
-            "v1": "?", // ChannelDuration
-            "cooldown": "120 / 105 / 90 / 75 / 60",
-            "cost": "80",
-            "stats": "사거리 20000"
-        },
-        "R": {
-            "v1": "?", // DebuffDuration
-            "v2": "?", // SlowAmount*100
-            "v3": "?", // ReducedChannelTime
-            "cooldown": "130 / 110 / 90",
-            "cost": "150",
-            "stats": "사거리 20000"
+            "stats": {
+                "사거리": "5500"
+            }
         },
     },
     "Twitch": { // 트위치
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // StealthDuration
-            "v2": "?", // MoveSpeedMod
-            "v3": "?", // HiddenSpeed
-            "v4": "?", // AttackSpeedDuration
-            "v5": "?", // AttackSpeedMod*100
+            "p1": "?", // StealthDuration
+            "p2": "?", // MoveSpeedMod
+            "p3": "?", // HiddenSpeed
+            "p4": "?", // AttackSpeedDuration
+            "p5": "?", // AttackSpeedMod*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16",
             "cost": "40",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "W": {
-            "v1": "?", // Duration
-            "v2": "?", // TotalSlowAmount
+            "p1": "?", // Duration
+            "p2": "?", // TotalSlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "70",
-            "stats": "사거리 950"
+            "stats": {
+                "사거리": "950"
+            }
         },
         "E": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // PhysicalDamagePerStack
-            "v3": "?", // MagicDamagePerStack
-            "v4": "?", // MaxPhysicalDamage
-            "v5": "?", // MaxMagicDamage
+            "p1": "?", // BaseDamage
+            "p2": "?", // PhysicalDamagePerStack
+            "p3": "?", // MagicDamagePerStack
+            "p4": "?", // MaxPhysicalDamage
+            "p5": "?", // MaxMagicDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
         "R": {
-            "v1": "?", // Duration
-            "v2": "?", // BonusRange
-            "v3": "?", // BonusAD
-            "v4": "?", // FallOffDamage*100
-            "v5": "?", // MinimumFallOffDamage*100
+            "p1": "?", // Duration
+            "p2": "?", // BonusRange
+            "p3": "?", // BonusAD
+            "p4": "?", // FallOffDamage*100
+            "p5": "?", // MinimumFallOffDamage*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "90",
             "cost": "100",
-            "stats": "사거리 1200"
-        },
-    },
-    "Jade_Twitch": { // 트위치
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // MaxFadeTime
-            "v2": "?", // MaxDelayTime
-            "v3": "?", // StealthDuration
-            "v4": "?", // MoveSpeedMod*100
-            "v5": "?", // AttackSpeedDuration
-            "v6": "?", // AttackSpeedMod*100
-            "cooldown": "16",
-            "cost": "60",
-            "stats": "사거리 20"
-        },
-        "W": {
-            "v1": "?", // StacksAdded
-            "v2": "?", // Duration
-            "v3": "?", // BaseSlowAmount
-            "cooldown": "13 / 12 / 11 / 10 / 9",
-            "cost": "50",
-            "stats": "사거리 950"
-        },
-        "E": {
-            "v1": "?", // BaseDamage
-            "v2": "?", // TotalStackDamage
-            "cooldown": "12 / 11 / 10 / 9 / 8",
-            "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 1200"
-        },
-        "R": {
-            "v1": "?", // Duration
-            "v2": "?", // BonusRange
-            "v3": "?", // BonusAD
-            "v4": "?", // FallOffDamage*100
-            "v5": "?", // MinimumFallOffDamage*100
-            "cooldown": "120 / 110 / 100",
-            "cost": "100 / 125 / 150",
-            "stats": "사거리 1200"
+            "stats": {
+                "사거리": "1200"
+            }
         },
     },
     "Teemo": { // 티모
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // BlindDuration
-            "v2": "?", // CalculatedDamage
+            "p1": "?", // BlindDuration
+            "p2": "?", // CalculatedDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 680"
+            "stats": {
+                "사거리": "680"
+            }
         },
         "W": {
-            "v1": "?", // PassiveCooldownOnDamageTaken
-            "v2": "?", // PassiveMoveSpeedBonus*100
-            "v3": "?", // ActiveMoveSpeedBuffDuration
-            "v4": "?", // ActiveMoveSpeedBonus*100
+            "p1": "?", // PassiveCooldownOnDamageTaken
+            "p2": "?", // PassiveMoveSpeedBonus*100
+            "p3": "?", // ActiveMoveSpeedBuffDuration
+            "p4": "?", // ActiveMoveSpeedBonus*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14",
             "cost": "40",
-            "stats": "사거리 20"
+            "stats": {
+                "사거리": "20"
+            }
         },
         "E": {
-            "v1": "?", // ImpactCalculatedDamage
-            "v2": "?", // PoisonDuration
-            "v3": "?", // TotalDotDamage
+            "p1": "?", // ImpactCalculatedDamage
+            "p2": "?", // PoisonDuration
+            "p3": "?", // TotalDotDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0",
             "cost": "",
-            "stats": "사거리 680"
+            "stats": {
+                "사거리": "680"
+            }
         },
         "R": {
-            "v1": "?", // DebuffDuration
-            "v2": "?", // SlowAmount
-            "v3": "?", // TotalDamage
-            "v4": "?", // MushroomDuration
-            "v5": "?", // MaxAmmo
-            "v6": "?", // AmmoRechargeTime
+            "p1": "?", // DebuffDuration
+            "p2": "?", // SlowAmount
+            "p3": "?", // TotalDamage
+            "p4": "?", // MushroomDuration
+            "p5": "?", // MaxAmmo
+            "p6": "?", // AmmoRechargeTime
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "0.25",
             "cost": "75 / 55 / 35",
-            "stats": "사거리 600 / 750 / 900"
-        },
-    },
-    "Jade_Teemo": { // 티모
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // CalculatedDamage
-            "v2": "?", // BlindDuration
-            "cooldown": "8",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 680"
-        },
-        "W": {
-            "v1": "?", // PassiveMoveSpeedBonus*100
-            "v2": "?", // ActiveMoveSpeedBonus*100
-            "cooldown": "17",
-            "cost": "40"
-        },
-        "E": {
-            "v1": "?", // ImpactCalculatedDamage
-            "v2": "?", // TickCalculatedDamage
-            "cooldown": "0",
-            "cost": "",
-            "stats": "사거리 680"
-        },
-        "R": {
-            "v1": "?", // SlowAmount
-            "v2": "?", // TotalDamage
-            "v3": "?", // AmmoRechargeTime
-            "cooldown": "1",
-            "cost": "75 / 100 / 125",
-            "stats": "사거리 230"
+            "stats": {
+                "사거리": "600 / 750 / 900"
+            }
         },
     },
     "Pyke": { // 파이크
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
-            "v4": "?", // ManaRefund*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "p4": "?", // ManaRefund*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "W": {
-            "v1": "?", // MoveSpeed
-            "v2": "?", // CamoDuration
+            "p1": "?", // MoveSpeed
+            "p2": "?", // CamoDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "65",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // StunDuration
-            "v2": "?", // TotalDamage
+            "p1": "?", // StunDuration
+            "p2": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "40",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "R": {
-            "v1": "?", // RDamage
-            "v2": "?", // ReducedDamageFinal
-            "v3": "?", // ReducedDamage*100
-            "v4": "?", // RRecastDuration
+            "p1": "?", // RDamage
+            "p2": "?", // ReducedDamageFinal
+            "p3": "?", // ReducedDamage*100
+            "p4": "?", // RRecastDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
     },
     "Pantheon": { // 판테온
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TapDamageCalc
-            "v2": "?", // TapCooldownRefund*100
-            "v3": "?", // HoldDamageCalc
-            "v4": "?", // DamageFalloff*100
-            "v5": "?", // CritHealthThreshold*100
-            "v6": "?", // ExecuteDamageCalcModified
-            "v7": "?", // EmpoweredDamageCalc
+            "p1": "?", // TapDamageCalc
+            "p2": "?", // TapCooldownRefund*100
+            "p3": "?", // HoldDamageCalc
+            "p4": "?", // DamageFalloff*100
+            "p5": "?", // CritHealthThreshold*100
+            "p6": "?", // ExecuteDamageCalcModified
+            "p7": "?", // EmpoweredDamageCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10.25 / 9.5 / 8.75 / 8",
             "cost": "25",
-            "stats": "사거리 575"
+            "stats": {
+                "사거리": "575"
+            }
         },
         "W": {
-            "v1": "?", // StunDuration
-            "v2": "?", // MaxHealthDamageCalc
-            "v3": "?", // EmpoweredNumHits
-            "v4": "?", // EmpoweredDamageMultCalcModified
+            "p1": "?", // StunDuration
+            "p2": "?", // MaxHealthDamageCalc
+            "p3": "?", // EmpoweredNumHits
+            "p4": "?", // EmpoweredDamageMultCalcModified
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "55",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // ShieldDuration
-            "v2": "?", // DamageCalc
-            "v3": "?", // ShieldDamageCalc
-            "v4": "?", // ResistsDuration
-            "v5": "?", // ResistsCalc
-            "v6": "?", // SpeedDuration
-            "v7": "?", // SpeedAmount*100
+            "p1": "?", // ShieldDuration
+            "p2": "?", // DamageCalc
+            "p3": "?", // ShieldDamageCalc
+            "p4": "?", // ResistsDuration
+            "p5": "?", // ResistsCalc
+            "p6": "?", // SpeedDuration
+            "p7": "?", // SpeedAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "80",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "R": {
-            "v1": "?", // ArmorPenetration*100
-            "v2": "?", // SpearSlowDuration
-            "v3": "?", // SpearSlow*100
-            "v4": "?", // DamageCalc
-            "v5": "?", // EdgeDamageReduction*100
+            "p1": "?", // ArmorPenetration*100
+            "p2": "?", // SpearSlowDuration
+            "p3": "?", // SpearSlow*100
+            "p4": "?", // DamageCalc
+            "p5": "?", // EdgeDamageReduction*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "180 / 165 / 150",
             "cost": "100",
-            "stats": "사거리 5500"
-        },
-    },
-    "Jade_Pantheon": { // 판테온
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // TotalDamage
-            "cooldown": "4",
-            "cost": "45",
-            "stats": "사거리 600"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // StunDuration
-            "cooldown": "13 / 12 / 11 / 10 / 9",
-            "cost": "55",
-            "stats": "사거리 600"
-        },
-        "E": {
-            "v1": "?", // PassiveCritThreshold*100
-            "v2": "?", // NumberOfStrikes
-            "v3": "?", // TotalDamage
-            "v4": "?", // MaximumDamageTooltip
-            "cooldown": "10 / 9 / 8 / 7 / 6",
-            "cost": "45 / 50 / 55 / 60 / 65",
-            "stats": "사거리 400"
-        },
-        "R": {
-            "v1": "?", // MaxDamage
-            "v2": "?", // MinDamage
-            "v3": "?", // SlowDuration
-            "v4": "?", // SlowAmount*100
-            "cooldown": "150 / 135 / 120",
-            "cost": "100",
-            "stats": "사거리 5500"
+            "stats": {
+                "사거리": "5500"
+            }
         },
     },
     "FiddleSticks": { // 피들스틱
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // FearDuration
-            "v2": "?", // TotalPercentHealthDamage
-            "v3": "?", // TotalPercentHealthDamageFeared
+            "p1": "?", // FearDuration
+            "p2": "?", // TotalPercentHealthDamage
+            "p3": "?", // TotalPercentHealthDamageFeared
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "15 / 14.5 / 14 / 13.5 / 13",
             "cost": "65",
-            "stats": "사거리 575"
+            "stats": {
+                "사거리": "575"
+            }
         },
         "W": {
-            "v1": "?", // DrainDamageCalc
-            "v2": "?", // PercentForTooltip
-            "v3": "?", // VampPercentage
+            "p1": "?", // DrainDamageCalc
+            "p2": "?", // PercentForTooltip
+            "p3": "?", // VampPercentage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "stats": "사거리 650"
+            "stats": {
+                "사거리": "650"
+            }
         },
         "E": {
-            "v1": "?", // Damage
-            "v2": "?", // SilenceDuration
-            "v3": "?", // SlowAmount*-100
+            "p1": "?", // Damage
+            "p2": "?", // SilenceDuration
+            "p3": "?", // SlowAmount*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "40 / 45 / 50 / 55 / 60",
-            "stats": "사거리 850"
+            "stats": {
+                "사거리": "850"
+            }
         },
         "R": {
-            "v1": "?", // ChannelTime
-            "v2": "?", // Duration
-            "v3": "?", // TotalDamage
+            "p1": "?", // ChannelTime
+            "p2": "?", // Duration
+            "p3": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 110 / 80",
             "cost": "100",
-            "stats": "사거리 800"
-        },
-    },
-    "Jade_Fiddlesticks": { // 피들스틱
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // FearDuration
-            "cooldown": "15 / 14 / 13 / 12 / 11",
-            "cost": "65 / 75 / 85 / 95 / 105",
-            "stats": "사거리 575"
-        },
-        "W": {
-            "v1": "?", // DrainDuration
-            "v2": "?", // TotalDamagePerSecond
-            "v3": "?", // VampPercentage*100
-            "cooldown": "10 / 9 / 8 / 7 / 6",
-            "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 650"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // SilenceDuration
-            "cooldown": "15 / 14 / 13 / 12 / 11",
-            "cost": "50 / 70 / 90 / 110 / 130",
-            "stats": "사거리 750"
-        },
-        "R": {
-            "v1": "?", // ChannelTime
-            "v2": "?", // Duration
-            "v3": "?", // TotalDamage
-            "cooldown": "150 / 140 / 130",
-            "cost": "150 / 200 / 250",
-            "stats": "사거리 800"
+            "stats": {
+                "사거리": "800"
+            }
         },
     },
     "Fiora": { // 피오라
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // CDRefundPercent*100
+            "p1": "?", // TotalDamage
+            "p2": "?", // CDRefundPercent*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "13 / 11.25 / 9.5 / 7.75 / 6",
             "cost": "20",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "W": {
-            "v1": "?", // ParryDuration
-            "v2": "?", // StabDamage
-            "v3": "?", // CCDuration
-            "v4": "?", // MSSlowPercent*-100
-            "v5": "?", // AttackSlowPercent*-100
+            "p1": "?", // ParryDuration
+            "p2": "?", // StabDamage
+            "p3": "?", // CCDuration
+            "p4": "?", // MSSlowPercent*-100
+            "p5": "?", // AttackSlowPercent*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "24 / 22 / 20 / 18 / 16",
             "cost": "50",
-            "stats": "사거리 750"
+            "stats": {
+                "사거리": "750"
+            }
         },
         "E": {
-            "v1": "?", // ASPercent*100
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercent*-100
-            "v4": "?", // AttackTwopercentTAD*100
+            "p1": "?", // ASPercent*100
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercent*-100
+            "p4": "?", // AttackTwopercentTAD*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "40",
-            "stats": "사거리 425"
+            "stats": {
+                "사거리": "425"
+            }
         },
         "R": {
-            "v1": "?", // PercentMS*100
-            "v2": "?", // MarkDuration
-            "v3": "?", // HealDuration
-            "v4": "?", // HealPerSecondCalc
+            "p1": "?", // PercentMS*100
+            "p2": "?", // MarkDuration
+            "p3": "?", // HealDuration
+            "p4": "?", // HealPerSecondCalc
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "110 / 90 / 70",
             "cost": "100",
-            "stats": "사거리 500"
+            "stats": {
+                "사거리": "500"
+            }
         },
     },
     "Fizz": { // 피즈
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // QDamage
+            "p1": "?", // TotalDamage
+            "p2": "?", // QDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "50",
-            "stats": "사거리 550"
+            "stats": {
+                "사거리": "550"
+            }
         },
         "W": {
-            "v1": "?", // BleedDuration
-            "v2": "?", // DoTDamage
-            "v3": "?", // ActiveDamage
-            "v4": "?", // OnKillManaRefund
-            "v5": "?", // OnKillNewCooldown
-            "v6": "?", // OnHitBuffDuration
-            "v7": "?", // OnHitBuffDamage
+            "p1": "?", // BleedDuration
+            "p2": "?", // DoTDamage
+            "p3": "?", // ActiveDamage
+            "p4": "?", // OnKillManaRefund
+            "p5": "?", // OnKillNewCooldown
+            "p6": "?", // OnHitBuffDuration
+            "p7": "?", // OnHitBuffDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
             "cost": "30 / 40 / 50 / 60 / 70",
-            "stats": "사거리 600"
+            "stats": {
+                "사거리": "600"
+            }
         },
         "E": {
-            "v1": "?", // EDamage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowAmount*100
+            "p1": "?", // EDamage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowAmount*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "16 / 14 / 12 / 10 / 8",
             "cost": "75 / 80 / 85 / 90 / 95",
-            "stats": "사거리 400"
+            "stats": {
+                "사거리": "400"
+            }
         },
         "R": {
-            "v1": "?", // DetonationTime
-            "v2": "?", // SmallSharkDamage
-            "v3": "?", // BigSharkDamage
+            "p1": "?", // DetonationTime
+            "p2": "?", // SmallSharkDamage
+            "p3": "?", // BigSharkDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 1300"
+            "stats": {
+                "사거리": "1300"
+            }
         },
     },
     "Heimerdinger": { // 하이머딩거
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // MaxTurrets
-            "v2": "?", // MaxKits
+            "p1": "?", // MaxTurrets
+            "p2": "?", // MaxKits
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "1",
             "cost": "20",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "W": {
-            "v1": "?", // Rockets
-            "v2": "?", // Damage
-            "v3": "?", // TotalDamage
+            "p1": "?", // Rockets
+            "p2": "?", // Damage
+            "p3": "?", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "stats": "사거리 1325"
+            "stats": {
+                "사거리": "1325"
+            }
         },
         "E": {
-            "v1": "?", // Damage
-            "v2": "?", // SlowDuration
-            "v3": "?", // SlowPercent.0*100
-            "v4": "?", // StunDuration
+            "p1": "?", // Damage
+            "p2": "?", // SlowDuration
+            "p3": "?", // SlowPercent.0*100
+            "p4": "?", // StunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "11",
             "cost": "85",
-            "stats": "사거리 970"
+            "stats": {
+                "사거리": "970"
+            }
         },
         "R": {
-            "v1": "?", // QUltDamage
-            "v2": "?", // QUltDamageBeam
-            "v3": "?", // WUltDamage
-            "v4": "?", // WUltTotalDamage
-            "v5": "?", // EUltDamage
+            "p1": "?", // QUltDamage
+            "p2": "?", // QUltDamageBeam
+            "p3": "?", // WUltDamage
+            "p4": "?", // WUltTotalDamage
+            "p5": "?", // EUltDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
-            "stats": "사거리 1"
-        },
-    },
-    "Jade_Heimerdinger": { // 하이머딩거
-        "P": { "cooldown": "-", "cost": "-" },
-        "Q": {
-            "v1": "?", // BonusDamage
-            "v2": "?", // MaxAmmo
-            "v3": "?", // AmmoRechargeTime
-            "cooldown": "1",
-            "cost": "70 / 80 / 90 / 100 / 110",
-            "stats": "사거리 350"
-        },
-        "W": {
-            "v1": "?", // TotalDamage
-            "cooldown": "10",
-            "cost": "65 / 85 / 105 / 125 / 145",
-            "stats": "사거리 1100"
-        },
-        "E": {
-            "v1": "?", // TotalDamage
-            "v2": "?", // BlindDuration
-            "cooldown": "13 / 12 / 11 / 10 / 9",
-            "cost": "80 / 90 / 100 / 110 / 120",
-            "stats": "사거리 920"
-        },
-        "R": {
-            "v1": "?", // CooldownBonus*-100
-            "v2": "?", // MovementSpeedMod*-100
-            "cooldown": "120 / 105 / 90",
-            "cost": "90",
-            "stats": "사거리 1"
+            "stats": {
+                "사거리": "1"
+            }
         },
     },
     "Hecarim": { // 헤카림
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Damage
-            "v2": "?", // BuffDuration
-            "v3": "?", // RampageBonusDamagePerc
-            "v4": "?", // RampageCooldownReduction
-            "v5": "?", // MaxStacks
+            "p1": "?", // Damage
+            "p2": "?", // BuffDuration
+            "p3": "?", // RampageBonusDamagePerc
+            "p4": "?", // RampageCooldownReduction
+            "p5": "?", // MaxStacks
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "4",
             "cost": "28 / 26 / 24 / 22 / 20",
-            "stats": "사거리 350"
+            "stats": {
+                "사거리": "350"
+            }
         },
         "W": {
-            "v1": "?", // BuffDuration
-            "v2": "?", // TotalDamage
-            "v3": "?", // ResistAmount
-            "v4": "?", // LeechAmount
-            "v5": "?", // AllyTooltipLeachValue
+            "p1": "?", // BuffDuration
+            "p2": "?", // TotalDamage
+            "p3": "?", // ResistAmount
+            "p4": "?", // LeechAmount
+            "p5": "?", // AllyTooltipLeachValue
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "14",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "stats": "사거리 525"
+            "stats": {
+                "사거리": "525"
+            }
         },
         "E": {
-            "v1": "?", // MinMoveSpeed*100
-            "v2": "?", // Duration
-            "v3": "?", // MaxMoveSpeed*100
-            "v4": "?", // MinDamage
-            "v5": "?", // MaxDamage
+            "p1": "?", // MinMoveSpeed*100
+            "p2": "?", // Duration
+            "p3": "?", // MaxMoveSpeed*100
+            "p4": "?", // MinDamage
+            "p5": "?", // MaxDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "20 / 19 / 18 / 17 / 16",
             "cost": "60",
-            "stats": "사거리 300"
+            "stats": {
+                "사거리": "300"
+            }
         },
         "R": {
-            "v1": "?", // DamageDone
-            "v2": "?", // FearDurationMin
-            "v3": "?", // FearDurationMax
+            "p1": "?", // DamageDone
+            "p2": "?", // FearDurationMin
+            "p3": "?", // FearDurationMax
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "100",
-            "stats": "사거리 50000"
+            "stats": {
+                "사거리": "50000"
+            }
         },
     },
     "Hwei": { // 흐웨이
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
-            "v1": "?", // Tooltip_QQDamage
-            "v2": "?", // Tooltip_QQBonusDamage
-            "v3": "?", // Tooltip_QWDamage
-            "v4": "?", // Tooltip_QWBonusDamage
-            "v5": "?", // Tooltip_QEDamage
-            "v6": "?", // Tooltip_QEDamagePerSecond
+            "p1": "?", // Tooltip_QQDamage
+            "p2": "?", // Tooltip_QQBonusDamage
+            "p3": "?", // Tooltip_QWDamage
+            "p4": "?", // Tooltip_QWBonusDamage
+            "p5": "?", // Tooltip_QEDamage
+            "p6": "?", // Tooltip_QEDamagePerSecond
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "80 / 90 / 100 / 110 / 120"
         },
         "W": {
-            "v1": "?", // Tooltip_WQMoveSpeed
-            "v2": "?", // Tooltip_WWShieldAmount
-            "v3": "?", // Tooltip_WEOnHitDamage
-            "v4": "?", // Tooltip_WEOnHitManaRestore
+            "p1": "?", // Tooltip_WQMoveSpeed
+            "p2": "?", // Tooltip_WWShieldAmount
+            "p3": "?", // Tooltip_WEOnHitDamage
+            "p4": "?", // Tooltip_WEOnHitManaRestore
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "18 / 17.5 / 17 / 16.5 / 16",
             "cost": "90 / 95 / 100 / 105 / 110"
         },
         "E": {
-            "v1": "?", // Tooltip_EQDamage
-            "v2": "?", // Tooltip_EQFleeDuration
-            "v3": "?", // Tooltip_EWRootDuration
-            "v4": "?", // Tooltip_EWDamage
-            "v5": "?", // Tooltip_EEDamage
-            "v6": "?", // Tooltip_EESlowAmount
+            "p1": "?", // Tooltip_EQDamage
+            "p2": "?", // Tooltip_EQFleeDuration
+            "p3": "?", // Tooltip_EWRootDuration
+            "p4": "?", // Tooltip_EWDamage
+            "p5": "?", // Tooltip_EEDamage
+            "p6": "?", // Tooltip_EESlowAmount
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "50 / 55 / 60 / 65 / 70"
         },
         "R": {
-            "v1": "?", // Duration
-            "v2": "?", // SlowPercentPerStack
-            "v3": "?", // DamageOverTime
-            "v4": "?", // Damage
+            "p1": "?", // Duration
+            "p2": "?", // SlowPercentPerStack
+            "p3": "?", // DamageOverTime
+            "p4": "?", // Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "stats": "사거리 1300"
+            "stats": {
+                "사거리": "1300"
+            }
         },
     },
 };

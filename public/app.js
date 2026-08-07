@@ -3645,10 +3645,10 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             const values = (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id][spellKey])
                 ? customValues[champ.id][spellKey] : {};
 
-            // 아직 수치를 안 채운 스킬은 {v1} 자리가 빈칸으로 렌더링되므로
+            // 아직 수치를 안 채운 스킬은 {p1} 자리가 빈칸으로 렌더링되므로
             // 템플릿을 쓰지 않고 라이엇 기본 설명으로 넘긴다
             const unfilled = Object.keys(values).some(
-                k => /^v[0-9]+$/.test(k) && (values[k] === '' || values[k] === '?')
+                k => /^p[0-9]+$/.test(k) && (values[k] === '' || values[k] === '?')
             );
 
             if (tpl && !unfilled) {

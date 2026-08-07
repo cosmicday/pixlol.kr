@@ -133,7 +133,7 @@ function convertDescription(raw, championAlias) {
             names.push(key);
             idx = names.length - 1;
         }
-        return `{v${idx + 1}}`;
+        return `{p${idx + 1}}`;
     });
 
     // 5) 공백 정리
@@ -277,7 +277,7 @@ async function main() {
             const maxRank = (key === 'R') ? 3 : 5;
 
             // 플레이스홀더 자리 (직접 채워야 함)
-            const vLines = names.map((name, i) => `            "v${i + 1}": "?", // ${name}`);
+            const vLines = names.map((name, i) => `            "p${i + 1}": "?", // ${name}`);
 
             // 쿨타임
             const cd = joinLevels(spell.cooldownCoefficients, maxRank) || '-';
@@ -299,9 +299,16 @@ async function main() {
 
             valLines.push(`        "${key}": {`);
             if (vLines.length) valLines.push(vLines.join('\n'));
+            // v1 / v2 는 구분선 아래에 뜨는 피해량 줄이다. 직접 작성하는 칸이라 비워 둔다.
+            valLines.push(`            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)`);
+            valLines.push(`            "v2": "",`);
             valLines.push(`            "cooldown": ${q(cd)},`);
             valLines.push(`            "cost": ${q(cost)}${hasRange ? ',' : ''}`);
-            if (hasRange) valLines.push(`            "stats": ${q('사거리 ' + rangeJoined)}`);
+            if (hasRange) {
+                valLines.push(`            "stats": {`);
+                valLines.push(`                "사거리": ${q(rangeJoined)}`);
+                valLines.push(`            }`);
+            }
             valLines.push(`        },`);
         }
 
@@ -316,7 +323,7 @@ async function main() {
 
     const header = `// 이 파일은 build_champion_data.js 가 생성했습니다.\n` +
         `// 생성 시각: ${new Date().toISOString()}\n` +
-        `// 문장은 CommunityDragon 에서 가져왔고, {v1} {v2} 자리는 직접 채워야 합니다.\n` +
+        `// 문장은 CommunityDragon 에서 가져왔고, {p1} {p2} 자리는 직접 채워야 합니다.\n` +
         `// ${PRESERVE.join(', ')} 는 기존 내용을 그대로 유지했습니다.\n\n`;
 
     fs.writeFileSync(
