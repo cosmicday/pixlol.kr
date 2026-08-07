@@ -3724,6 +3724,18 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             magicdamage { color: #55bced; font-weight: bold; } physicaldamage { color: #ea824d; font-weight: bold; } truedamage { color: #ffffff; font-weight: bold; text-shadow: 0 0 4px rgba(255,255,255,0.4); }
             healing, heal { color: #00ff00; font-weight: bold; } shield { color: #00bfff; font-weight: bold; } scaleap { color: #55bced; } scalead { color: #ea824d; } scalehealth { color: #00ff00; }
             scalearmor, scalemr, scalemana { color: #a78bfa; } keywordmajor, keywordstealth { color: #a78bfa; font-weight: bold; text-decoration: underline; } attention, rules { color: #ff3333; font-weight: bold; } speed { color: #ffff00; font-weight: bold; } status { color: #ffffff; font-weight: bold; text-decoration: underline; } active, passive { display: block; margin-top: 8px; }
+            /* CommunityDragon 툴팁 태그 */
+            spellname, keyword, keywordname, recast, toggle, onhit,
+            tap, hold, charge, release, evolve, scalelevel { color: #a78bfa; font-weight: bold; }
+            gold { color: #ffd700; font-weight: bold; }
+            armorpen { color: #f1c40f; font-weight: bold; }
+            attackspeed { color: #f39c12; font-weight: bold; }
+            lifesteal, omnivamp { color: #2ecc71; font-weight: bold; }
+            danger, specialrules { color: #ff3333; font-weight: bold; }
+            b { font-weight: bold; }
+            i { font-style: italic; }
+            font { display: inline; }
+            slow { color: #ffffff; font-weight: bold; }
             .custom-footnote { position: relative; display: inline-block; cursor: pointer; color: #a78bfa; margin-left: 2px; }
             .custom-footnote .footnote-text {
                 visibility: hidden; width: max-content; max-width: 250px; background-color: #111; color: #fff;

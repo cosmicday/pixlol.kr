@@ -22,6 +22,9 @@ const path = require('path');
 // ------------------------------------------------------------
 
 // 손으로 이미 작성한 챔피언. 여기 적힌 이름은 기존 파일 내용을 그대로 유지한다.
+//
+//  ★ 중요: 수치를 다 채운 챔피언은 반드시 여기에 이름을 추가할 것.
+//     목록에 없으면 다시 실행할 때 "?" 로 되돌아가서 작업이 날아간다.
 const PRESERVE = ['Garen', 'Galio'];
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -45,7 +48,12 @@ const KNOWN_TAGS = new Set([
     'keywordmajor', 'keywordstealth',
     'attention', 'rules', 'speed', 'status',
     'active', 'passive',
-    'br', 'li', 'ul', 'span', 'sup'
+    'br', 'li', 'ul', 'span', 'sup',
+    // 아래는 CD 툴팁에서 나와 app.js <style> 에 추가한 태그들
+    'spellname', 'keyword', 'keywordname', 'recast', 'toggle', 'onhit',
+    'tap', 'hold', 'charge', 'release', 'evolve', 'scalelevel',
+    'gold', 'armorpen', 'attackspeed', 'lifesteal', 'omnivamp',
+    'danger', 'specialrules', 'slow', 'b', 'i', 'font'
 ]);
 
 // CD 태그 -> app.js 가 아는 태그로 바꿔치기
@@ -200,8 +208,21 @@ async function main() {
 
     console.log('[2/4] 챔피언 목록 받는 중...');
     const summary = await getJson(`${CD_BASE}/champion-summary.json`);
+    // 같은 한글 이름이 두 번 나오는 경우가 있다 (클래식 모드용 Jade_ 사본 등).
+    // 키가 겹치진 않지만 읽히지 않는 데이터라 파일만 커지므로 걸러낸다.
+    // id 가 낮은 쪽이 원본이다.
+    const seenName = new Set();
     const champions = summary
         .filter(c => c.id > 0)
+        .sort((a, b) => a.id - b.id)
+        .filter(c => {
+            if (seenName.has(c.name)) {
+                console.log(`  (중복 제외) ${c.name} / alias=${c.alias} / id=${c.id}`);
+                return false;
+            }
+            seenName.add(c.name);
+            return true;
+        })
         .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 
     console.log(`  ${champions.length}명 확인`);
