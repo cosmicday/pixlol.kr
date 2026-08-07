@@ -17,7 +17,6 @@ let globalItemMap = {};
 let globalSpellMap = {};
 let runeDataMap = {};
 
-let merakiDataGlobal = {};
 let arenaAugmentMap = {};
 
 async function fetchArenaAugments() {
@@ -90,15 +89,6 @@ function spellImg(id) {
 }
 window.matchTimelineCache = {};   // ★ 추가
 window.currentPuuid = null;       // ★ 추가
-
-async function fetchMerakiData() {
-    try {
-        const res = await fetch('/api/champions/meraki');
-        if (res.ok) merakiDataGlobal = await res.json();
-    } catch (e) {
-        console.error("Meraki 데이터 로드 실패", e);
-    }
-}
 
 const statRuneMap = {
     5001: "perk-images/StatMods/StatModsHealthScalingIcon.png", 5002: "perk-images/StatMods/StatModsArmorIcon.png", 5003: "perk-images/StatMods/StatModsMagicResIcon.png",
@@ -210,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchRuneMap();
         fetchItemData();
         fetchSpellData();
-        fetchMerakiData();
         fetchArenaAugments();
     });
 
@@ -3649,81 +3638,28 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
 
         window.currentChampPaddedKey = String(champ.key).padStart(4, '0');
 
-        let mkChamp = merakiDataGlobal[champ.id] || merakiDataGlobal[champ.key];
-        if (!mkChamp && merakiDataGlobal.data) {
-            mkChamp = merakiDataGlobal.data[champ.id] || merakiDataGlobal.data[champ.key];
-        }
-        const mkData = mkChamp ? mkChamp.abilities : null;
 
         const renderScalingTable = (spellKey, riotDesc) => {
-            let finalDesc = riotDesc;
-            if (typeof customTemplates !== 'undefined' && customTemplates[champ.id] && customTemplates[champ.id][spellKey]) {
-                let text = customTemplates[champ.id][spellKey];
-                let values = customValues[champ.id] && customValues[champ.id][spellKey] ? customValues[champ.id][spellKey] : {};
+            const tpl = (typeof customTemplates !== 'undefined' && customTemplates[champ.id])
+                ? customTemplates[champ.id][spellKey] : null;
+            const values = (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id][spellKey])
+                ? customValues[champ.id][spellKey] : {};
 
+            // 아직 수치를 안 채운 스킬은 {v1} 자리가 빈칸으로 렌더링되므로
+            // 템플릿을 쓰지 않고 라이엇 기본 설명으로 넘긴다
+            const unfilled = Object.keys(values).some(
+                k => /^v[0-9]+$/.test(k) && (values[k] === '' || values[k] === '?')
+            );
+
+            if (tpl && !unfilled) {
+                let text = tpl;
                 for (let key in values) {
                     text = text.split(`{${key}}`).join(values[key]);
                 }
                 return `<div style="margin-bottom: 10px; color: #ddd; line-height: 1.6; font-size: 14px;">${text}</div>`;
             }
 
-            if (!mkData || !mkData[spellKey] || mkData[spellKey].length === 0) {
-                return `<div style="color: #9aa4af; font-size: 13px; padding: 10px;">데이터를 불러올 수 없어 기본 설명을 표시합니다.<br><br>${riotDesc}</div>`;
-            }
-
-            const ability = mkData[spellKey][0];
-            let tableHtml = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; text-align: left; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05);">`;
-            tableHtml += `<thead><tr style="background: rgba(167, 139, 250, 0.1); border-bottom: 1px solid rgba(255,255,255,0.1);"><th style="padding: 10px; color: #a78bfa; width: 30%;">효과 분류</th><th style="padding: 10px; color: #a78bfa;">상세 수치 및 계수</th></tr></thead><tbody>`;
-
-            if (ability.effects && ability.effects.length > 0) {
-                ability.effects.forEach(effect => {
-                    let effectName = effect.description || "효과";
-                    let scalingText = "";
-
-                    if (effect.leveling && effect.leveling.length > 0) {
-                        effect.leveling.forEach(lvl => {
-                            let mods = lvl.modifiers || [];
-
-                            mods.forEach(mod => {
-                                let unitsArr = Array.isArray(mod.units) ? mod.units : [mod.units];
-                                let unitStr = (unitsArr[0] || "").trim();
-
-                                let valsArr = Array.isArray(mod.values) ? mod.values : [mod.values];
-                                let isAllSame = valsArr.length > 0 && valsArr.every(v => v === valsArr[0]);
-                                let displayVals = isAllSame ? [valsArr[0]] : valsArr;
-
-                                if (unitStr === "") {
-                                    scalingText += `<span style="color:#fff; font-weight:bold; margin-right: 8px;">${displayVals.join(' / ')}</span>`;
-                                } else {
-                                    let formatVals = displayVals.map(v => {
-                                        if (typeof v === 'number' && v < 5 && v > -5 && unitStr.includes('%')) {
-                                            return parseFloat((v * 100).toFixed(1));
-                                        }
-                                        return v;
-                                    });
-
-                                    let color = "#55bced";
-                                    let lowerUnit = unitStr.toLowerCase();
-                                    if (lowerUnit.includes('ad')) color = "#ff9900";
-                                    else if (lowerUnit.includes('health') || lowerUnit.includes('hp')) color = "#2ecc71";
-                                    else if (lowerUnit.includes('armor') || lowerUnit.includes('mr')) color = "#f1c40f";
-
-                                    scalingText += `<span style="color:${color}; margin-right: 8px;">(+ ${formatVals.join(' / ')} ${unitStr})</span>`;
-                                }
-                            });
-                            scalingText += `<br>`;
-                        });
-                    } else {
-                        scalingText = "<span style='color:#777;'>고정 수치</span>";
-                    }
-
-                    tableHtml += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 10px; color: #ddd;">${effectName}</td><td style="padding: 10px; color: #aaa; line-height: 1.8;">${scalingText}</td></tr>`;
-                });
-            } else {
-                tableHtml += `<tr><td colspan="2" style="padding: 10px; text-align: center; color: #777;">상세 수치 데이터가 없습니다.</td></tr>`;
-            }
-            tableHtml += `</tbody></table>`;
-            return `<div style="margin-bottom: 10px; color: #ddd; line-height: 1.6;">${riotDesc}</div>` + tableHtml;
+            return `<div style="margin-bottom: 10px; color: #ddd; line-height: 1.6; font-size: 14px;">${riotDesc}</div>`;
         };
 
         // ★ 패시브 스킬 세팅

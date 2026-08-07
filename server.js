@@ -73,7 +73,6 @@ let resolvedNames = {};
 let failedPuuids = {};        // ★ 추가: 조회 실패한 puuid와 실패 시각
 let isFetchingNames = false;
 let resolvedCountIn10Mins = 0;
-let merakiChampionData = {};
 let arenaAugments = {};
 
 app.use(cors());
@@ -164,16 +163,6 @@ async function updateVersion() {
         console.log(`[Task] Data Dragon 최신 버전 갱신: ${currentVersion}`);
     } catch (e) {
         console.error("[Task] 버전 갱신 실패. 기본값을 사용합니다.");
-    }
-}
-
-async function updateMerakiData() {
-    try {
-        const res = await axios.get('http://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions.json');
-        merakiChampionData = res.data;
-        console.log(`[Task] Meraki 챔피언 세부 스킬 데이터 갱신 완료`);
-    } catch (err) {
-        console.error("[Task] Meraki 데이터 갱신 실패:", err.message);
     }
 }
 
@@ -321,7 +310,6 @@ async function startJobs() {
     await loadResolvedNames();
     await backfillSearchFields();
     await updateVersion();
-    await updateMerakiData();
     await updateArenaAugments();
     await updateChallengerList();
 
@@ -330,7 +318,6 @@ async function startJobs() {
 
     setInterval(updateChallengerList, 600 * 1000);
     setInterval(resolveNamesInBackground, 60 * 1000);
-    setInterval(updateMerakiData, 24 * 60 * 60 * 1000);
     setInterval(updateArenaAugments, 24 * 60 * 60 * 1000);
 
     setInterval(() => {
@@ -1316,15 +1303,6 @@ app.get('/api/ranking', async (req, res) => {
 // 아레나 증강체 데이터
 app.get('/api/arena/augments', (req, res) => {
     res.json(arenaAugments);
-});
-
-// 메라키 챔피언 세부 데이터
-app.get('/api/champions/meraki', (req, res) => {
-    if (Object.keys(merakiChampionData).length > 0) {
-        res.json(merakiChampionData);
-    } else {
-        res.status(503).json({ error: "데이터를 준비 중입니다." });
-    }
 });
 
 // ==========================================
