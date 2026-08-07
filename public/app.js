@@ -1929,8 +1929,6 @@ async function loadChampFilterList() {
         if (isClassicChamp(c.id)) continue;   // 클래식(Jade_) 제외
         list.push({ id: c.id, name: c.name });
     }
-    const newChamps = [{ id: "Mel", name: "멜" }, { id: "Ambessa", name: "암베사" }, { id: "Aurora", name: "오로라" }, { id: "Yunara", name: "유나라" }, { id: "Zaahen", name: "자헨" }];
-    newChamps.forEach(n => { if (!list.find(c => c.id === n.id)) list.push(n); });
 
     list.sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'));
     champFilterCache = list;
@@ -2233,8 +2231,6 @@ async function showStats() {
                 if (isClassicChamp(c.id)) continue;
                 korToEngMap[c.name] = c.id;
             }
-            const newChampsMap = { "멜": "Mel", "암베사": "Ambessa", "오로라": "Aurora", "유나라": "Yunara", "자헨": "Zaahen" };
-            Object.assign(korToEngMap, newChampsMap);
         } catch (e) {
             console.warn("챔피언 이름 변환 데이터 로드 실패", e);
         }
@@ -2551,8 +2547,6 @@ async function showMasters(requestedChampId = null) {
             if (isClassicChamp(c.id)) continue;
             champList.push({ id: c.id, name: c.name });
         }
-        const newChamps = [{ id: "Mel", name: "멜" }, { id: "Ambessa", name: "암베사" }, { id: "Aurora", name: "오로라" }, { id: "Yunara", name: "유나라" }, { id: "Zaahen", name: "자헨" }];
-        newChamps.forEach(newC => { if (!champList.find(c => c.id === newC.id)) champList.push(newC); });
         champList.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 
         mastersContainer.innerHTML = `
@@ -3507,10 +3501,9 @@ async function showChampions(requestedChampId = null, classicMode = false) {
             champList.push({ id: c.id, name: c.name });
         }
 
-        if (!classicMode) {
-            const newChamps = [{ id: "Mel", name: "멜" }, { id: "Ambessa", name: "암베사" }, { id: "Aurora", name: "오로라" }, { id: "Yunara", name: "유나라" }, { id: "Zaahen", name: "자헨" }];
-            newChamps.forEach(newC => { if (!champList.find(c => c.id === newC.id)) champList.push(newC); });
-        }
+        // 예전에는 Data Dragon 이 신규 챔피언을 늦게 올려서 목록에 손으로 넣어 뒀다.
+        // 지금은 champion.json 이 전부 포함하고 있어 그대로 쓴다.
+        // 새 챔피언이 안 보이면 Data Dragon 반영을 기다리면 된다.
 
         champList.sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'));
 
