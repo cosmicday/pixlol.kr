@@ -234,8 +234,8 @@ function resolve(name, spell, maxRank) {
     // 1) DataValues 에 직접 있나
     const d = (spell.DataValues || []).find(x => x.name === clean);
     if (d) {
-        const t = levelsToText(d.values, maxRank, mult);
-        return t === null ? null : (Math.abs(mult) === 100 ? t + '%' : t);
+        // 문장에 이미 % 가 붙어 있으므로 값에는 붙이지 않는다 (50%% 방지)
+        return levelsToText(d.values, maxRank, mult);
     }
 
     // 2) mSpellCalculations 에 있나
@@ -248,7 +248,8 @@ function resolve(name, spell, maxRank) {
         const ea = spell.mEffectAmount[parseInt(em[1]) - 1];
         if (ea && ea.value) {
             const t = levelsToText(ea.value, maxRank, mult);
-            if (t !== null) return Math.abs(mult) === 100 ? t + '%' : t;
+            // 문장에 이미 % 가 붙어 있으므로 값에는 붙이지 않는다
+            if (t !== null) return t;
         }
     }
 
@@ -384,6 +385,24 @@ async function main() {
                 return `            "p${i + 1}": ${q(val === null ? '?' : val)}, // ${name}`;
             });
 
+            // bin 의 최상위 필드 (castRange, mana, cooldownTime ...)
+            // 이쪽은 DataValues 와 달리 0번부터 실제 1랭크다.
+            const lv0 = (arr, r) => {
+                if (!Array.isArray(arr) || !arr.length) return null;
+                const p = arr.slice(0, r).map(tidy);
+                return p.every(x => x === p[0]) ? p[0] : p.join(' / ');
+            };
+            const binRange = spell
+                ? (lv0(spell.castRangeDisplayOverride, maxRank) || lv0(spell.castRange, maxRank))
+                : null;
+            const binMana = spell ? lv0(spell.mana, maxRank) : null;
+            const castTime = (spell && typeof spell.mCastTime === 'number' && spell.mCastTime > 0)
+                ? tidy(spell.mCastTime) : null;
+            const missileSpeed = (spell && typeof spell.missileSpeed === 'number' && spell.missileSpeed > 0)
+                ? tidy(spell.missileSpeed) : null;
+            const lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
+                ? tidy(spell.mLineWidth) : null;
+
             const lv = (arr, r) => {
                 if (!Array.isArray(arr)) return null;
                 const p = arr.slice(0, r).map(tidy);
@@ -391,8 +410,14 @@ async function main() {
             };
             const cd = lv(s.cooldownCoefficients, maxRank) || '-';
             const costJ = lv(s.costCoefficients, maxRank);
-            const cost = (costJ && !/^0( \/ 0)*$/.test(costJ)) ? costJ : (/없음/.test(s.cost || '') ? '-' : '');
-            const rng = lv(s.range, maxRank);
+            let cost = (costJ && !/^0( \/ 0)*$/.test(costJ)) ? costJ : '';
+            if (!cost) {
+                if (binMana && !/^0( \/ 0)*$/.test(binMana)) cost = binMana;
+                else if (/없음/.test(s.cost || '')) cost = '-';
+            }
+            // 사거리는 클라이언트 표시값(castRangeDisplayOverride)을 우선한다
+            const v1Range = lv(s.range, maxRank);
+            const rng = (binRange && !/^0( \/ 0)*$/.test(binRange)) ? binRange : v1Range;
             const hasRange = rng && !/^0( \/ 0)*$/.test(rng);
 
             lines.push(`        "${key}": {`);
@@ -400,8 +425,16 @@ async function main() {
             lines.push(`            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)`);
             lines.push(`            "v2": "",`);
             lines.push(`            "cooldown": ${q(cd)},`);
-            lines.push(`            "cost": ${q(cost)}${hasRange ? ',' : ''}`);
-            if (hasRange) lines.push(`            "stats": {\n                "사거리": ${q(rng)}\n            }`);
+            lines.push(`            "cost": ${q(cost)},`);
+            const statRows = [];
+            if (hasRange) statRows.push(`                "사거리": ${q(rng)}`);
+            if (castTime) statRows.push(`                "시전시간": ${q(castTime)}`);
+            if (missileSpeed) statRows.push(`                "투사체 속도": ${q(missileSpeed)}`);
+            if (lineWidth) statRows.push(`                "스킬 폭": ${q(lineWidth)}`);
+            if (statRows.length) lines.push(`            "stats": {\n${statRows.join(',\n')}\n            }`);
+            // 마지막 항목 뒤 쉼표 제거
+            const last = lines[lines.length - 1];
+            if (last.endsWith(',') && !last.endsWith('},')) lines[lines.length - 1] = last.slice(0, -1);
             lines.push(`        },`);
         }
 

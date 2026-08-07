@@ -3728,7 +3728,8 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             danger, specialrules { color: #ff3333; font-weight: bold; }
             b { font-weight: bold; }
             i { font-style: italic; }
-            font { display: inline; }
+            /* <font> 는 실제 HTML 태그라 size/color 속성이 그대로 먹는다. 무력화한다. */
+            font { display: inline; font-size: inherit !important; color: #a78bfa !important; font-weight: bold; }
             slow { color: #ffffff; font-weight: bold; }
             .custom-footnote { position: relative; display: inline-block; cursor: pointer; color: #a78bfa; margin-left: 2px; }
             .custom-footnote .footnote-text {
