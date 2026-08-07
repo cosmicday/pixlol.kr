@@ -31,25 +31,6 @@ const DELAY = 150;
 const PREVIEW = ['Aatrox', 'Ahri', 'MonkeyKing', 'Locke'];
 
 // ------------------------------------------------------------
-// 손으로 확인한 값. 자동 추출보다 우선한다.
-//
-//   키는 미리보기에 찍히는 "챔피언 스킬 / 이름" 을 그대로 복사해 쓰면 된다.
-//   영문 alias 로 써도 된다:  "MissFortune W / LoveTapRefund"
-//
-//   ★ 이 표에 적어 두면 재실행해도 안 날아간다.
-//     자동 추출이 틀리거나 못 찾은 값을 확인할 때마다 여기에 쌓을 것.
-//     (챔피언 통째로 지키려면 위의 PRESERVE 를 쓴다)
-//
-//   표에 있는데 한 번도 안 쓰인 키는 마지막에 경고로 알려준다. 오타 잡기용.
-// ------------------------------------------------------------
-const MANUAL = {
-    // 자동 추출이 쿨타임 전체(12)를 집어왔다. 실제로는 명중 시 2초 감소.
-    '미스 포츈 W / LoveTapRefund': '2',
-};
-
-const manualUsed = new Set();
-
-// ------------------------------------------------------------
 // mStat 번호 -> 한글 스탯 이름
 //   ★ 이 표는 아트록스 Q(mStat 2 = 총 공격력)만 실제로 확인했고
 //     나머지는 추정이다. 미리보기에서 이상한 게 보이면 여기를 고칠 것.
@@ -69,17 +50,8 @@ const STAT_NAMES = {
     13: '추가 체력',
 };
 
-const unknownStats = new Map();   // 번호 -> { count, where[] }
-const unknownParts = new Map();   // 계산식 조각 종류 -> { count, keys, where[], solved }
-const guessedList = [];           // 필드 모양으로 추측해서 푼 값 (눈으로 검산할 것)
-
-// 지금 어느 챔피언 어느 스킬 어느 자리를 처리 중인지. 미해결 원인 추적용.
-let ctx = '';
-
-// 지금 스킬의 쿨타임 (CD v1 기준 문자열, 예: "18 / 16 / 14 / 12 / 10").
-// CooldownMultiplierCalculationPart 가 이 값을 쓴다.
-// bin 의 cooldownTime 대신 v1 값을 쓰는 이유는 아래 case 주석 참고.
-let currentCooldown = null;
+const unknownStats = new Map();   // 번호 -> 몇 번 나왔나
+const unknownParts = new Map();   // 계산식 조각 종류 -> 몇 번 나왔나
 
 // ------------------------------------------------------------
 
@@ -105,19 +77,11 @@ const levelsToText = (values, maxRank, mult) => {
     return picked.every(v => v === picked[0]) ? picked[0] : picked.join(' / ');
 };
 
-const statName = (id, hint) => {
+const statName = (id) => {
     // mStat 이 0(주문력)이면 JSON 에서 필드가 통째로 빠진다. undefined 는 0 으로 본다.
     if (id === undefined || id === null) id = 0;
     if (STAT_NAMES[id] !== undefined) return STAT_NAMES[id];
-    // 번호만으로는 무슨 스탯인지 알 수 없다. 어디서 나왔는지 같이 남겨서
-    // 인게임 툴팁과 대조할 수 있게 한다. (추측으로 표를 채우면 "?" 보다 나쁘다)
-    if (!unknownStats.has(id)) unknownStats.set(id, { count: 0, where: [] });
-    const e = unknownStats.get(id);
-    e.count++;
-    // 계수 값을 같이 남긴다. 인게임 툴팁의 "OO의 80%" 와 숫자를 맞춰 보면
-    // 이 번호가 무슨 스탯인지 바로 알 수 있다.
-    const line = ctx + (hint ? `   (계수 ${hint})` : '');
-    if (e.where.length < 6 && !e.where.includes(line)) e.where.push(line);
+    unknownStats.set(id, (unknownStats.get(id) || 0) + 1);
     return null;
 };
 
@@ -141,14 +105,14 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
 
         case 'StatByNamedDataValueCalculationPart': {
             const d = dv(part.mDataValue);
-            const ratio = d ? levelsToText(d.values, maxRank, 100) : null;
-            const s = statName(part.mStat, ratio === null ? null : ratio + '%');
+            const s = statName(part.mStat);
             if (!d || s === null) return null;
+            const ratio = levelsToText(d.values, maxRank, 100);
             return `${s}의 ${ratio}%`;
         }
 
         case 'StatByCoefficientCalculationPart': {
-            const s = statName(part.mStat, tidy((part.mCoefficient || 0) * 100) + '%');
+            const s = statName(part.mStat);
             if (s === null) return null;
             return `${s}의 ${tidy((part.mCoefficient || 0) * 100)}%`;
         }
@@ -212,124 +176,10 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             return `${a} ~ ${b} (레벨에 따라)`;
         }
 
-        case 'CooldownMultiplierCalculationPart': {
-            // 필드가 __type 하나뿐이다. 용례가 전부 쿨타임 환급/충전 관련이라
-            // (미스 포츈 W 사랑의 도장 환급, 애쉬 E 충전, 올라프 Q 환급, 사일러스 R 대상별 쿨타임)
-            // 이 스킬의 쿨타임을 가리키는 것으로 본다.
-            //   ★ 추론이다. guessedList 에 남기니 인게임 툴팁과 대조할 것.
-            //   ★ bin 의 cooldownTime 을 쓰면 값이 한 칸씩 밀린 듯한 결과가 나왔다.
-            //     (사일러스 R = 80/80/55, 카타리나 E = 12/12/11/10/9 처럼 첫 값이 겹침)
-            //     그래서 화면에 실제로 찍는 값과 같은 CD v1 쿨타임을 쓴다.
-            if (!currentCooldown || currentCooldown === '-') return null;
-            const picked = currentCooldown.split('/').map(x => tidy(parseFloat(x.trim()) * mult));
-            if (picked.some(x => !isFinite(parseFloat(x)))) return null;
-            const out = picked.every(x => x === picked[0]) ? picked[0] : picked.join(' / ');
-            if (guessedList.length < 40) guessedList.push(`${ctx} = ${out}   [스킬 쿨타임으로 추론]`);
-            return out;
-        }
-
-        default: {
-            // 타입 이름을 모르는 조각. ({ee18a47b} 처럼 CD 가 이름을 못 푼 것들)
-            // 이름 대신 "어떤 필드를 갖고 있나"로 정체를 추측한다.
-            const guessed = guessPart(part, spell, maxRank, mult, depth);
-
-            if (!unknownParts.has(type)) {
-                // 필드 이름이 해시라 뜻을 모를 때는 안에 든 실제 값을 봐야 한다.
-                // 첫 등장 한 건의 내용을 통째로 남긴다.
-                let sample;
-                try {
-                    sample = JSON.stringify(part, (k, v) =>
-                        (Array.isArray(v) && v.length > 8) ? v.slice(0, 8).concat('...') : v);
-                    if (sample.length > 600) sample = sample.slice(0, 600) + ' ...(잘림)';
-                } catch (_) { sample = '(출력 실패)'; }
-                unknownParts.set(type, {
-                    count: 0, keys: Object.keys(part).join(', ') || '(필드 없음)',
-                    where: [], solved: 0, sample
-                });
-            }
-            const e = unknownParts.get(type);
-            e.count++;
-            if (e.where.length < 4 && !e.where.includes(ctx)) e.where.push(ctx);
-            if (guessed !== null) {
-                e.solved++;
-                if (guessedList.length < 40) guessedList.push(`${ctx} = ${guessed}   [${type}]`);
-            }
-            return guessed;
-        }
-    }
-}
-
-// ------------------------------------------------------------
-// 모르는 종류의 조각을 필드 모양으로 추측한다.
-//   ★ 추측이므로 결과를 무조건 믿으면 안 된다.
-//     푼 값은 guessedList 에 모아서 마지막에 전부 출력한다. 눈으로 검산할 것.
-// ------------------------------------------------------------
-function guessPart(part, spell, maxRank, mult, depth) {
-    if (!part || typeof part !== 'object') return null;
-
-    // 필드 두 개가 각각 "레벨1 값" / "레벨18 값" DataValue 의 이름인 모양.
-    //   ({ee18a47b} 가 이 형태. 예: HealCapLevel1Value / HealCapLevel18Value)
-    //   챔피언 레벨에 따라 두 값 사이를 보간하는 조각이다.
-    //   JSON 키 순서가 곧 파일 순서라 앞이 레벨1, 뒤가 레벨18이다.
-    {
-        const fk = Object.keys(part).filter(k => k !== '__type');
-        if (fk.length === 2 && fk.every(k => typeof part[k] === 'string')) {
-            const a = (spell.DataValues || []).find(x => x.name === part[fk[0]]);
-            const b = (spell.DataValues || []).find(x => x.name === part[fk[1]]);
-            if (a && b) {
-                const lo = levelsToText(a.values, 1, mult);
-                const hi = levelsToText(b.values, 1, mult);
-                if (lo !== null && hi !== null) return `${lo} ~ ${hi} (레벨에 따라)`;
-            }
+        default:
+            unknownParts.set(type, (unknownParts.get(type) || 0) + 1);
             return null;
-        }
     }
-
-    // 다른 계산식을 이름으로 가리키는 모양. ({f3cbe7b2} 가 이 형태다)
-    //   필드가 mSpellCalculationKey 하나뿐이라 정체가 뚜렷하다.
-    if (part.mSpellCalculationKey !== undefined) {
-        const ref = (spell.mSpellCalculations || {})[part.mSpellCalculationKey];
-        return ref ? calcToText(ref, spell, maxRank, mult, depth + 1) : null;
-    }
-
-    // 이름 붙은 DataValue 를 가리키는 모양
-    if (part.mDataValue !== undefined) {
-        const d = (spell.DataValues || []).find(x => x.name === part.mDataValue);
-        if (d) {
-            if (part.mStat !== undefined) {
-                const s = statName(part.mStat);
-                if (s !== null) return `${s}의 ${levelsToText(d.values, maxRank, 100)}%`;
-                return null;
-            }
-            return levelsToText(d.values, maxRank, mult);
-        }
-        return null;
-    }
-
-    // 스탯 * 계수 모양
-    if (part.mCoefficient !== undefined && part.mStat !== undefined) {
-        const s = statName(part.mStat);
-        return s === null ? null : `${s}의 ${tidy(part.mCoefficient * 100)}%`;
-    }
-
-    // 상수
-    if (part.mNumber !== undefined) return tidy(part.mNumber * mult);
-
-    // 하위 조각을 품은 모양
-    if (Array.isArray(part.mSubparts)) {
-        const ps = part.mSubparts.map(p => partToText(p, spell, maxRank, mult, depth + 1)).filter(Boolean);
-        if (!ps.length) return null;
-        if (ps.every(p => /^-?[\d.]+$/.test(p))) return tidy(ps.reduce((a, b) => a + parseFloat(b), 0));
-        return ps.join(' + ');
-    }
-    if (part.mPart1 && part.mPart2) {
-        const a = partToText(part.mPart1, spell, maxRank, 1, depth + 1);
-        const b = partToText(part.mPart2, spell, maxRank, 1, depth + 1);
-        return (a && b) ? `${a} x ${b}` : null;
-    }
-    if (part.mSubpart) return partToText(part.mSubpart, spell, maxRank, mult, depth + 1);
-
-    return null;
 }
 
 // mSpellCalculations 항목 하나 -> 문자열
@@ -360,15 +210,10 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
     if (!parts.length || parts.every(p => p === null)) return null;
 
     const base = parts[0];
-    // ★ 기본값을 못 찾으면 실패로 본다.
-    //   예전에는 "? (+ 주문력의 80%)" 같은 반쪽짜리를 돌려줬는데,
-    //   그러면 성공으로 취급돼서 다음 후보 객체를 못 뒤졌다.
-    if (base === null) return null;
-
     // 해석 못 한 계수 조각을 조용히 버리면 "계수 없는 반쪽 값"이 된다.
     // (?) 로 남겨서 미리보기에서 눈에 띄게 한다.
     const rest = parts.slice(1).map(p => p === null ? '(?)' : p);
-    let out = base;
+    let out = base === null ? '?' : base;
     if (calc.mDisplayAsPercent) {
         // "(레벨에 따라)" 같은 꼬리표가 있으면 그 앞에 % 를 넣는다
         const tail = out.match(/\s*\(.*\)$/);
@@ -419,91 +264,25 @@ function resolve(name, spell, maxRank) {
 }
 
 // ------------------------------------------------------------
-// bin 에서 Q/W/E/R 스펠 객체를 찾는다.
-//
-//   ★ 예전에는 스킬 하나당 객체 하나만 봤다. 그런데 투사체·소환물·진화판의
-//     수치는 본체가 아니라 딸린 객체에 들어 있어서 못 찾는 값이 많았다.
-//     (카이사 진화, 크산테 변형, 자이라 씨앗, 하이머딩거 포탑 등)
-//
-//   그래서 키마다 "후보 목록"을 만든다. 앞에 있는 것부터 뒤진다:
-//     1등급 본체  — CharacterRecord 의 spells 앞 4개 (Q,W,E,R 순서 보증)
-//     2등급 계열  — 이름에 {alias}{key} 가 들어간 객체 (KaisaQMissile 등)
-//     3등급 기타  — 같은 챔피언의 나머지 스펠 객체 전부 (최후의 수단)
-//
-//   본체를 항상 먼저 보므로 진화판 수치가 기본 수치 자리에 끼어들지 않는다.
+// bin 에서 Q/W/E/R 스펠 객체를 정확히 찾는다.
+//   CharacterRecord 의 spells 배열이 Q,W,E,R 순서를 보증한다.
 // ------------------------------------------------------------
 function getSpellsFromBin(bin, alias) {
-    const keys = ['Q', 'W', 'E', 'R'];
-    const out = { Q: [], W: [], E: [], R: [], P: [] };
-
     const rec = bin[`Characters/${alias}/CharacterRecords/Root`];
+    const out = {};
     if (!rec) return out;
 
-    const used = new Set();
-
-    // --- 1등급: 본체 ---
+    const keys = ['Q', 'W', 'E', 'R'];
     (rec.spells || []).forEach((p, i) => {
         if (i >= 4) return;
         const obj = bin[p];
-        if (obj && obj.mSpell) {
-            out[keys[i]].push({ spell: obj.mSpell, tier: '본체', path: p });
-            used.add(p);
-        }
+        if (obj && obj.mSpell) out[keys[i]] = obj.mSpell;
     });
 
-    const passPath = rec.mCharacterPassiveSpell;
-    const pass = bin[passPath];
-    if (pass && pass.mSpell) {
-        out.P.push({ spell: pass.mSpell, tier: '본체', path: passPath });
-        used.add(passPath);
-    }
-
-    // --- 2등급 / 3등급 ---
-    const prefix = `Characters/${alias}/Spells/`;
-    const low = alias.toLowerCase();
-    const leftovers = [];
-
-    for (const p in bin) {
-        if (!p.startsWith(prefix) || used.has(p)) continue;
-        const obj = bin[p];
-        if (!obj || !obj.mSpell) continue;
-
-        const nameLow = String(obj.ObjectName || p).toLowerCase();
-        let matched = false;
-        for (const key of keys) {
-            if (nameLow.includes(low + key.toLowerCase())) {
-                out[key].push({ spell: obj.mSpell, tier: '계열', path: p });
-                matched = true;
-            }
-        }
-        if (!matched) leftovers.push({ spell: obj.mSpell, tier: '기타', path: p });
-    }
-
-    for (const key of keys) out[key].push(...leftovers);
-    out.P.push(...leftovers);
+    const pass = bin[rec.mCharacterPassiveSpell];
+    if (pass && pass.mSpell) out.P = pass.mSpell;
 
     return out;
-}
-
-// f1, f2, Effect3Amount 처럼 스킬 고유 이름이 아니라
-// 거의 모든 스펠 객체에 들어 있는 범용 슬롯 이름.
-//   ★ 이런 이름으로 pool 을 뒤지면 엉뚱한 객체에서 아무 값이나 물어온다.
-//     (바드 W f1 = 19/0/0/0/0 같은 쓰레기가 이렇게 생겼다)
-//     그래서 범용 이름은 본체에서만 찾는다.
-const GENERIC_NAME = /^(f\d+|Effect\d+Amount)$/i;
-
-// 후보 목록을 순서대로 뒤져서 처음 성공하는 값을 쓴다.
-function resolveFromPool(name, pool, maxRank) {
-    const clean = String(name).trim().replace(/\s*\*\s*-?[\d.]+$/, '').trim();
-    const generic = GENERIC_NAME.test(clean);
-
-    for (const cand of pool) {
-        // pool 은 본체가 항상 맨 앞이다. 범용 이름이면 거기서 끊는다.
-        if (generic && cand.tier !== '본체') break;
-        const v = resolve(name, cand.spell, maxRank);
-        if (v !== null) return { val: v, tier: cand.tier };
-    }
-    return { val: null, tier: null };
 }
 
 // ------------------------------------------------------------
@@ -554,7 +333,6 @@ async function main() {
     const binFails = [];
     const stillUnknown = [];
     const partial = [];
-    const rescued = [];   // 본체가 아닌 딸린 객체에서 건져낸 값
 
     for (let n = 0; n < champions.length; n++) {
         const c = champions[n];
@@ -580,8 +358,7 @@ async function main() {
         }
 
         const binSpells = getSpellsFromBin(bin, alias);
-        // 이제 키는 항상 있고 값이 배열이다. 전부 비어 있으면 CharacterRecord 를 못 읽은 것.
-        if (!Object.values(binSpells).some(arr => arr.length)) binFails.push(`${c.name} CharacterRecord 없음`);
+        if (!Object.keys(binSpells).length) binFails.push(`${c.name} CharacterRecord 없음`);
 
         const lines = [`        "P": { "cooldown": "-", "cost": "-" },`];
         const previewLines = [];
@@ -596,44 +373,15 @@ async function main() {
             const names = [...new Set([...desc.matchAll(/@([A-Za-z0-9_.*+\-/() ]+?)@/g)].map(x => x[1].trim()))];
 
             const maxRank = key === 'R' ? 3 : 5;
-            const pool = binSpells[key] || [];
-            const spell = pool.length ? pool[0].spell : null;   // 본체 (최상위 필드용)
-
-            // 쿨타임을 먼저 구해 둔다. CooldownMultiplierCalculationPart 가 참조한다.
-            const lvTop = (arr, r) => {
-                if (!Array.isArray(arr)) return null;
-                const p = arr.slice(0, r).map(tidy);
-                return p.every(x => x === p[0]) ? p[0] : p.join(' / ');
-            };
-            currentCooldown = lvTop(s.cooldownCoefficients, maxRank) || '-';
+            const spell = binSpells[key];
 
             const pLines = names.map((name, i) => {
                 total++;
-                ctx = `${c.name} ${key} / ${name}`;
-
-                // 손으로 확인한 값이 있으면 그걸 쓴다 (한글 이름 / 영문 alias 둘 다 허용)
-                const mKeyKo = `${c.name} ${key} / ${name}`;
-                const mKeyEn = `${alias} ${key} / ${name}`;
-                const manual = MANUAL[mKeyKo] !== undefined ? MANUAL[mKeyKo] : MANUAL[mKeyEn];
-
-                let val, tier;
-                if (manual !== undefined) {
-                    val = manual;
-                    tier = '수동';
-                    manualUsed.add(MANUAL[mKeyKo] !== undefined ? mKeyKo : mKeyEn);
-                } else {
-                    ({ val, tier } = resolveFromPool(name, pool, maxRank));
-                }
-
+                const val = spell ? resolve(name, spell, maxRank) : null;
                 if (val === null) stillUnknown.push(`${c.name} ${key} / ${name}`);
                 else if (String(val).includes('(?)')) partial.push(`${c.name} ${key} / ${name} = ${val}`);
-                else {
-                    filled++;
-                    if (tier !== '본체' && tier !== '수동') rescued.push(`${c.name} ${key} / ${name} = ${val}  [${tier}]`);
-                }
-                previewLines.push(`      ${key} p${i + 1} (${name}) = ${val === null ? '?' : val}` +
-                    (tier === '수동' ? '   <- 수동 확인값'
-                        : (tier && tier !== '본체' ? `   <- ${tier} 객체` : '')));
+                else filled++;
+                previewLines.push(`      ${key} p${i + 1} (${name}) = ${val === null ? '?' : val}`);
                 return `            "p${i + 1}": ${q(val === null ? '?' : val)}, // ${name}`;
             });
 
@@ -650,17 +398,17 @@ async function main() {
             const binMana = spell ? lv0(spell.mana, maxRank) : null;
             const castTime = (spell && typeof spell.mCastTime === 'number' && spell.mCastTime > 0)
                 ? tidy(spell.mCastTime) : null;
-            // 투사체 속도는 본체가 아니라 미사일 객체에 붙는다. 후보 전체에서 찾는다.
-            let missileSpeed = null;
-            for (const cand of pool) {
-                const ms = cand.spell.missileSpeed;
-                if (typeof ms === 'number' && ms > 0) { missileSpeed = tidy(ms); break; }
-            }
+            const missileSpeed = (spell && typeof spell.missileSpeed === 'number' && spell.missileSpeed > 0)
+                ? tidy(spell.missileSpeed) : null;
             const lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
                 ? tidy(spell.mLineWidth) : null;
 
-            const lv = lvTop;
-            const cd = currentCooldown;
+            const lv = (arr, r) => {
+                if (!Array.isArray(arr)) return null;
+                const p = arr.slice(0, r).map(tidy);
+                return p.every(x => x === p[0]) ? p[0] : p.join(' / ');
+            };
+            const cd = lv(s.cooldownCoefficients, maxRank) || '-';
             const costJ = lv(s.costCoefficients, maxRank);
             let cost = (costJ && !/^0( \/ 0)*$/.test(costJ)) ? costJ : '';
             if (!cost) {
@@ -705,44 +453,18 @@ async function main() {
 
     console.log('\n' + '='.repeat(60));
     console.log(`완전히 채워짐: ${filled}/${total} (${total ? Math.round(filled / total * 100) : 0}%)`);
-    console.log(`  그중 딸린 객체에서 건진 것: ${rescued.length}개`);
     console.log(`계수 일부 미해결: ${partial.length}개`);
     console.log(`아예 못 채움: ${stillUnknown.length}개`);
 
-    if (rescued.length) {
-        console.log(`\n[딸린 객체에서 건진 값] ${rescued.length}개 (앞 25개) — 수치가 맞는지 눈으로 확인할 것:`);
-        rescued.slice(0, 25).forEach(x => console.log(`  ${x}`));
-    }
-
-    console.log(`손으로 확인한 값 적용: ${manualUsed.size}/${Object.keys(MANUAL).length}개`);
-    const manualUnused = Object.keys(MANUAL).filter(k => !manualUsed.has(k));
-    if (manualUnused.length) {
-        console.log(`\n[안 쓰인 수동 확인값] 키 오타일 수 있습니다:`);
-        manualUnused.forEach(k => console.log(`  ${k}`));
-    }
-
-    if (guessedList.length) {
-        console.log(`\n[모양으로 추측해서 푼 값] ${guessedList.length}개 — 인게임 툴팁과 대조할 것:`);
-        guessedList.forEach(x => console.log(`  ${x}`));
-    }
-
     if (unknownStats.size) {
-        console.log('\n[모르는 스탯 번호] 아래 스킬을 인게임에서 열어 보고 STAT_NAMES 에 추가:');
-        [...unknownStats.entries()].sort((a, b) => b[1].count - a[1].count)
-            .forEach(([id, e]) => {
-                console.log(`  mStat ${id}  (${e.count}회)`);
-                e.where.forEach(w => console.log(`      ${w}`));
-            });
+        console.log('\n[모르는 스탯 번호] STAT_NAMES 에 추가 필요:');
+        [...unknownStats.entries()].sort((a, b) => b[1] - a[1])
+            .forEach(([id, n]) => console.log(`  mStat ${id}  (${n}회)`));
     }
     if (unknownParts.size) {
-        console.log('\n[모르는 계산식 종류] 필드 이름을 보고 정체를 판단할 것:');
-        [...unknownParts.entries()].sort((a, b) => b[1].count - a[1].count)
-            .forEach(([t, e]) => {
-                console.log(`  ${t}  (${e.count}회, 그중 추측 성공 ${e.solved}회)`);
-                console.log(`      필드: ${e.keys}`);
-                console.log(`      내용: ${e.sample}`);
-                e.where.forEach(w => console.log(`      ${w}`));
-            });
+        console.log('\n[처리 못 한 계산식 종류]:');
+        [...unknownParts.entries()].sort((a, b) => b[1] - a[1])
+            .forEach(([t, n]) => console.log(`  ${t}  (${n}회)`));
     }
     if (binFails.length) {
         console.log(`\n[bin 로드 실패] ${binFails.length}건: ${binFails.slice(0, 15).join(', ')}`);
