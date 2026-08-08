@@ -3818,6 +3818,8 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                             <div style="display: flex; gap: 5px;">
                                 <img id="champ-skill-icon-header" src="" style="width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
                                 <img id="champ-skill-icon-header-2" src="" style="width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: none;">
+                                <!-- 재시전·취소·진화·1·2·3타 등 같은 스킬의 추가 아이콘. 개수가 가변이라 비워 둔다. -->
+                                <span id="champ-skill-icon-extra" style="display: flex; gap: 5px;"></span>
                             </div>
                             <h3 id="champ-skill-name-header" style="color: #fff; font-size: 18px; font-weight: bold; margin: 0;"></h3>
                         </div>
@@ -3941,6 +3943,16 @@ window.playSkill = function (index) {
             iconHeader2El.style.display = 'none';
             iconHeader2El.src = '';
         }
+    }
+
+    // ★ 같은 스킬에 달린 추가 아이콘 (재시전·취소·진화·1·2·3타).
+    //   개수가 스킬마다 달라서 기본 아이콘 옆에 그때그때 그린다.
+    const iconExtraEl = document.getElementById('champ-skill-icon-extra');
+    if (iconExtraEl) {
+        const list = (skill.values && Array.isArray(skill.values.icons)) ? skill.values.icons : [];
+        iconExtraEl.innerHTML = list.map(u =>
+            `<img src="${u}" style="width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);" onerror="this.style.display='none'">`
+        ).join('');
     }
 
     const nameEl = document.getElementById('champ-skill-name-header');

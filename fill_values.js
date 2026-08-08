@@ -165,6 +165,84 @@ function findSpellObj(bin, alias, objName) {
     return null;
 }
 
+// 스킬 하나에 아이콘이 여러 개 달리는 자리 (재시전·취소·진화·1·2·3타 등).
+//   bin 의 스펠 객체에 붙은 아이콘 파일 이름으로 찾는다.
+//   ★ 규칙: 파일 이름이 챔피언 이름으로 시작하고, 그 뒤 첫 글자가 QWER 이고
+//     바로 숫자가 따라와야 한다 (aatrox_q2, garen_e2, syndraw2 ...).
+//     숫자 조건이 없으면 gragasexplosivecask 의 e, rivenwindscar 의 w 를
+//     슬롯으로 오인한다.
+//   ★ 다른 챔피언 에셋이 섞여 들어오므로(쓰레쉬에 Bowmaster_, 신드라에 Cryophoenix_)
+//     챔피언 이름으로 시작하는 것만 받는다.
+const ICON_BASE = 'https://raw.communitydragon.org/latest/game/';
+
+// 스펠 객체에 안 붙어 있어서 위 규칙으로 못 찾는 아이콘. 파일이 실재하는 것만 적는다.
+//   카이사 진화 아이콘이 그렇다 — kaisa_q2/w2/e2.png 는 있는데 스펠 객체엔 없다.
+const EXTRA_ICONS = {
+    Kaisa: { Q: ['kaisa_q2'], W: ['kaisa_w2'], E: ['kaisa_e2'] },
+};
+
+function findExtraIcons(bin, alias, binSpells) {
+    const low = alias.toLowerCase();
+    const rec = bin[`Characters/${alias}/CharacterRecords/Root`];
+    if (!rec) return {};
+    const fileOf = (o) => {
+        const m = JSON.stringify(o).match(/"(ASSETS\/[^"]*Icons2D\/[^"]+\.dds)"/i);
+        return m ? m[1] : null;
+    };
+    const nameOf = (f) => f.split('/').pop().toLowerCase().replace(/\.dds$/, '');
+
+    const main = (rec.spells || []).slice(0, 4);
+    const baseIcon = {};
+    ['Q', 'W', 'E', 'R'].forEach((k, i) => {
+        const f = main[i] && bin[main[i]] ? fileOf(bin[main[i]]) : null;
+        if (f) baseIcon[k] = nameOf(f);
+    });
+    const skip = new Set([...main, rec.mCharacterPassiveSpell]);
+
+    // 두 번째 폼은 아래 박스로 따로 나가므로 아이콘 줄에서 뺀다.
+    const f2 = FORM2[alias] || {};
+    const f2Objs = new Set(['Q', 'W', 'E', 'R'].map(k => f2[k]).filter(Boolean));
+    const f2Icons = new Set([...f2Objs].map(n => {
+        const o = findSpellObj(bin, alias, n);
+        const f = o ? fileOf(o) : null;
+        return f ? nameOf(f) : null;
+    }).filter(Boolean));
+
+    const out = {};
+    const seen = new Set();
+    for (const k of Object.keys(bin)) {
+        if (!k.startsWith(`Characters/${alias}/Spells/`) || !bin[k] || !bin[k].mSpell) continue;
+        if (skip.has(k) || f2Objs.has(k.split('/').pop())) continue;
+        const f = fileOf(bin[k]);
+        if (!f) continue;
+        const file = nameOf(f);
+        if (!file.startsWith(low)) continue;
+        const m = file.slice(low.length).replace(/^_/, '').match(/^([qwer])(\d)/);
+        if (!m) continue;
+        const slot = m[1].toUpperCase();
+        if (file === baseIcon[slot] || f2Icons.has(file) || seen.has(file)) continue;
+        seen.add(file);
+        (out[slot] = out[slot] || []).push({ file, url: ICON_BASE + f.toLowerCase().replace(/\.dds$/, '.png') });
+    }
+    // 손으로 적어 둔 보완분
+    const ex = EXTRA_ICONS[alias];
+    if (ex) {
+        for (const slot of Object.keys(ex)) {
+            for (const file of ex[slot]) {
+                if (seen.has(file)) continue;
+                seen.add(file);
+                (out[slot] = out[slot] || []).push({
+                    file,
+                    url: `${ICON_BASE}assets/characters/${low}/hud/icons2d/${file}.png`,
+                });
+            }
+        }
+    }
+    // 파일 이름 순으로 정렬해야 q2 -> q3 순서가 된다.
+    for (const slot of Object.keys(out)) out[slot].sort((a, b) => a.file.localeCompare(b.file));
+    return out;
+}
+
 // 스펠 객체에 박혀 있는 아이콘 경로(ASSETS/....dds)를 CD 의 png URL 로 바꾼다.
 const iconUrlOf = (obj) => {
     const m = JSON.stringify(obj).match(/"(ASSETS\/[^"]*Icons2D\/[^"]+\.dds)"/i);
@@ -1178,6 +1256,7 @@ async function main() {
 
         const binSpells = getSpellsFromBin(bin, alias);
         spellIndex = buildSpellIndex(bin, alias);   // @spell.X:Y@ 교차 참조용
+        const extraIcons = findExtraIcons(bin, alias, binSpells);   // 슬롯별 추가 아이콘
         // 이제 키는 항상 있고 값이 배열이다. 전부 비어 있으면 CharacterRecord 를 못 읽은 것.
         if (!Object.values(binSpells).some(arr => arr.length)) binFails.push(`${c.name} CharacterRecord 없음`);
 
@@ -1394,6 +1473,11 @@ async function main() {
             lines.push(vv.v2 !== undefined ? vv.v2 : `            "v2": "",`);
             lines.push(`            "cooldown": ${q(cd)},`);
             lines.push(`            "cost": ${q(cost)},`);
+            // 같은 스킬에 아이콘이 여러 개 달리는 자리 (재시전·취소·진화·1·2·3타).
+            const ei = extraIcons[key];
+            if (ei && ei.length) {
+                lines.push(`            "icons": [${ei.map(x => q(x.url)).join(', ')}],`);
+            }
             const statRows = [];
             if (hasRange) statRows.push(`                "사거리": ${q(rng)}`);
             if (castTime) statRows.push(`                "시전시간": ${q(castTime)}`);
