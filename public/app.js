@@ -3734,20 +3734,17 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     ? customTemplates[champ.id][sp.keyChar + '2'] : null;
                 if (!v || !tpl2) return;
 
-                sp.img2 = v.icon || sp.img2;
-                const label = v.form || '두 번째 형태';
-                sp.desc += `<div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.12);">`
-                    + `<div style="color:#a78bfa; font-weight:bold; margin-bottom:6px;">${label}${v.name ? ' — ' + v.name : ''}</div>`
-                    + renderScalingTable(sp.keyChar + '2', '')
-                    + `</div>`;
-
-                // 쿨타임·소모값이 폼마다 다르면 둘 다 보여준다.
-                if (v.cooldown && v.cooldown !== '-' && String(v.cooldown) !== String(sp.cooldown)) {
-                    sp.cooldown = `${sp.cooldown}  ·  ${label} ${v.cooldown}`;
-                }
-                if (v.cost && v.cost !== '-' && String(v.cost) !== String(sp.cost)) {
-                    sp.cost = `${sp.cost}  ·  ${label} ${v.cost}`;
-                }
+                // 두 번째 폼은 아래에 박스를 따로 쌓는다. 한 박스에 이어 붙이면
+                // 쿨타임·소모값이 폼마다 달라서 헤더가 지저분해진다.
+                sp.form2 = {
+                    label: v.form || '두 번째 형태',
+                    name: v.name || '',
+                    icon: v.icon || '',
+                    cooldown: v.cooldown || '-',
+                    cost: v.cost || '-',
+                    desc: renderScalingTable(sp.keyChar + '2', ''),
+                    values: v
+                };
             });
         }
         window.currentChampSkills = [passive, ...spells];
@@ -3823,8 +3820,29 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     
                     <hr id="champ-skill-bottom-hr" style="border:0; border-top: 1px solid #554433; margin: 20px 0; display: none;">
                     <div id="champ-skill-custom-bottom"></div>
-                    
+
                 </div>
+
+                <!-- ★ 두 번째 폼 박스 (니달리 쿠거·엘리스 거미·제이스 대포·나르 메가).
+                     첫 박스와 같은 모양으로 바로 아래에 쌓인다. 해당 없으면 통째로 숨긴다. -->
+                <div id="champ-skill2-box" style="background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 25px; flex-shrink: 0; display: none;">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <img id="champ-skill2-icon" src="" style="width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                            <div>
+                                <div id="champ-skill2-form" style="color: #a78bfa; font-size: 12px; font-weight: bold; margin-bottom: 2px;"></div>
+                                <h3 id="champ-skill2-name" style="color: #fff; font-size: 18px; font-weight: bold; margin: 0;"></h3>
+                            </div>
+                        </div>
+                        <div style="text-align: right; color: #aaa; font-size: 13px; font-weight: bold; line-height: 1.7;">
+                            <div id="champ-skill2-cooldown" style="color:#ddd;"></div>
+                            <div id="champ-skill2-cost" style="color:#ddd;"></div>
+                        </div>
+                    </div>
+                    <hr style="border:0; border-top: 1px solid #554433; margin: 20px 0;">
+                    <div id="champ-skill2-desc" style="word-break: keep-all;"></div>
+                </div>
+
                 <video id="champ-skill-video" autoplay loop muted playsinline style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); object-fit: cover; flex-shrink: 0;"></video>
             </div>
         </div>
@@ -3922,6 +3940,29 @@ window.playSkill = function (index) {
 
     const descTextEl = document.getElementById('champ-skill-desc-text-body');
     if (descTextEl) descTextEl.innerHTML = skill.desc;
+
+    // ★ 두 번째 폼 박스 채우기 / 숨기기
+    const box2El = document.getElementById('champ-skill2-box');
+    if (box2El) {
+        const f2 = skill.form2;
+        if (f2) {
+            const put = (id, html) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = html;
+            };
+            const icon2 = document.getElementById('champ-skill2-icon');
+            if (icon2) icon2.src = f2.icon;
+            put('champ-skill2-form', f2.label);
+            put('champ-skill2-name',
+                `<span style="color:#ddd; font-weight: normal; font-size: 16px;">[${skill.keyChar}]</span> ${f2.name}`);
+            put('champ-skill2-cooldown', `쿨타임 ${f2.cooldown}`);
+            put('champ-skill2-cost', `소모값 ${f2.cost}`);
+            put('champ-skill2-desc', f2.desc);
+            box2El.style.display = 'block';
+        } else {
+            box2El.style.display = 'none';
+        }
+    }
 
     // ★ 우상단: 사거리·시전시간 등 판정 수치
     //   키를 직접 정해서 넣으므로 순서대로 그대로 뿌린다. 빈 키나 빈 값은 건너뛴다.
