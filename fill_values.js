@@ -690,13 +690,31 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
 
     // 계산식 전체에 곱해지는 배율 (예: 0.01)
     let selfMult = 1;
+    let rawMult = null;
     if (calc.mMultiplier) {
         const mTxt = partToText(calc.mMultiplier, spell, maxRank, 1, depth + 1);
         if (mTxt !== null && /^-?[\d.]+$/.test(mTxt)) selfMult = parseFloat(mTxt);
+        else if (mTxt !== null) rawMult = mTxt;   // 숫자 하나로 접을 수 없는 배율
     }
 
-    const parts = (calc.mFormulaParts || [])
-        .map(p => partToText(p, spell, maxRank, mult * percent * selfMult, depth + 1));
+    const bodyOf = (m) => (calc.mFormulaParts || [])
+        .map(p => partToText(p, spell, maxRank, m, depth + 1));
+    let parts = bodyOf(mult * percent * selfMult);
+
+    // ★ 숫자 하나로 못 접는 배율(랭크별 배열 등)을 어떻게 할 것인가.
+    //   원래는 통째로 버렸다. 대부분은 그게 맞다 — 본체에 이미 피해량이 다 들어 있고
+    //   배율은 "치명타 확률에 따라 증폭" 같은 별도 설명이라, 앞에 붙이면 문장만 길어진다.
+    //   ★ 단 하나 예외: 본체가 순수 배율(예: clamp 의 "1 ~ 2")뿐이면 기본값이 통째로
+    //     사라진다. 카이사 E 가 그랬다 — "100 ~ 200%" 로 나왔는데 실제는
+    //     "기본 이동 속도 55~75% x (1 + 추가 공속, 최대 2배)" 다.
+    //   그래서 "본체가 맨 숫자/범위 하나뿐일 때만" 배율을 곱셈 항으로 세운다.
+    const isBareRange = (t) =>
+        typeof t === 'string' && /^-?[\d.]+(\s*[~/]\s*-?[\d.]+)*$/.test(t.trim());
+    let multText = null;
+    if (rawMult !== null && parts.length === 1 && isBareRange(parts[0])) {
+        multText = partToText(calc.mMultiplier, spell, maxRank, percent, depth + 1);
+        parts = bodyOf(mult * selfMult);   // percent 는 multText 가 먹었다
+    }
 
     if (!parts.length || parts.every(p => p === null)) return null;
 
@@ -714,7 +732,7 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
     let out = base;
     // ★ 이미 % 로 끝나면 붙이지 않는다. 스탯 비례 조각은 guessPart 에서
     //   자기가 % 를 달고 나오기 때문에 여기서 또 붙이면 "30%%" 가 된다 (닐라 Q).
-    if (calc.mDisplayAsPercent && !/%$/.test(out)) {
+    if (calc.mDisplayAsPercent && !multText && !/%$/.test(out)) {
         // "(레벨에 따라)" 같은 꼬리표가 있으면 그 앞에 % 를 넣는다.
         //   ★ 아무 괄호나 잡으면 안 된다. 계산 항이 괄호로 끝나는 경우
         //     곱셈 한가운데에 % 가 끼어든다 ("0.6 x% (이동 속도의 100%)" — 샤코 Q).
@@ -728,13 +746,17 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
     //   ★ 숫자로만 된 항에만 붙인다. "주문력의 80%" 같은 스탯 비례 항은
     //     이미 자기 % 를 달고 나오므로 건드리면 "80%%" 가 된다.
     const asPercent = (t) => {
-        if (!calc.mDisplayAsPercent || /%/.test(t)) return t;
+        if (!calc.mDisplayAsPercent || multText || /%/.test(t)) return t;
         const tail = t.match(/\s*\([^()]*에 따라\)$/);
         const head = tail ? t.slice(0, tail.index) : t;
         if (!/^-?[\d.]+(\s*[~/]\s*-?[\d.]+)*$/.test(head.trim())) return t;
         return tail ? head + '%' + tail[0] : head + '%';
     };
     if (rest.length) out += ` (${signedTerms(rest.map(asPercent))})`;
+    if (multText) {
+        const mt = (calc.mDisplayAsPercent && !/%$/.test(multText)) ? multText + '%' : multText;
+        out = `${mt} x ${out}`;
+    }
     return out;
 }
 

@@ -9486,7 +9486,7 @@ const customValues = {
             }
         },
         "E": {
-            "p1": "100 ~ 200%", // TotalMoveSpeed
+            "p1": "55 / 60 / 65 / 70 / 75% x 1 ~ 2", // TotalMoveSpeed
             "p2": "4", // Effect2Amount
             "p3": "40 / 50 / 60 / 70 / 80", // Effect5Amount*100
             "p4": "0.5", // Effect4Amount
