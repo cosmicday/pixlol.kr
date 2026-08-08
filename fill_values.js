@@ -1264,6 +1264,11 @@ async function main() {
                 ? (lv0(spell.castRangeDisplayOverride, maxRank) || lv0(spell.castRange, maxRank))
                 : null;
             const binMana = spell ? lv0(spell.mana, maxRank) : null;
+            // mana 가 없고 manaUiOverride 에만 들어 있는 스펠이 있다 (킨드레드 E).
+            //   ★ 단 이건 숫자만 있고 자원 이름이 없다. CD 소모값 문구를 먼저 보고
+            //     그게 실패했을 때만 써야 한다. 먼저 쓰면 럼블이 "20 열기" 대신
+            //     "20" 이 된다 (열기가 사라짐).
+            const binManaUi = spell ? lv0(spell.manaUiOverride, maxRank) : null;
             const castTime = (spell && typeof spell.mCastTime === 'number' && spell.mCastTime > 0)
                 ? tidy(spell.mCastTime) : null;
             // 투사체 속도는 본체가 아니라 미사일 객체에 붙는다. 후보 전체에서 찾는다.
@@ -1289,21 +1294,50 @@ async function main() {
             //   (예: 문도 Q "체력 @HealthCost@", 럼블 W "@HeatCost@ 열기")
             if (!cost && s.cost) {
                 const txt = String(s.cost).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-                if (/기본 지속 효과/.test(txt)) {
-                    cost = '-';                     // 지속 효과라 소모가 없다
-                } else if (txt) {
+                const fillOne = (t) => {
                     let ok = true;
-                    const filled = txt.replace(/@([A-Za-z0-9_.*+\-/():]+?)@/g, (m0, nm) => {
+                    const out = t.replace(/@([A-Za-z0-9_.*+\-/():]+?)@/g, (m0, nm) => {
                         const want = nm.trim();
                         ctx = `${c.name} ${key} / cost:${want}`;
                         const r = resolveFromPool(want, pool, maxRank);
                         if (!r || r.val === null) { ok = false; return m0; }
                         return r.val;
                     });
-                    // 하나라도 못 풀면 반쪽짜리를 내보내지 않는다.
-                    if (ok) { cost = filled; costFromText.push(`${c.name} ${key} = ${filled}`); }
+                    return { ok, out };
+                };
+
+                if (/기본 지속 효과/.test(txt)) {
+                    cost = '-';                     // 지속 효과라 소모가 없다
+                } else if (txt) {
+                    // ★ 괄호 안은 "절대값 참고" 라서 없어도 뜻이 통한다.
+                    //   못 풀면 괄호째 버리고 본문만 살린다. 예전엔 하나라도 실패하면
+                    //   문구 전체를 버려서 자크 Q/W/E 와 블라디미르 W 가 통째로 빈칸이었다.
+                    //   (자크는 HPCost 8%/4%/4% 가 멀쩡히 있는데 옆의
+                    //    @HealthCostTooltip@ 하나 때문에 다 날아갔다)
+                    //   블라디미르 E 처럼 괄호가 본문과 같은 말을 반복하는 경우도 같이 정리된다.
+                    const stripped = txt.replace(/\s*\([^()]*@[^()]*\)/g, (paren) =>
+                        fillOne(paren).ok ? paren : '');
+                    const { ok, out } = fillOne(stripped.replace(/\s+/g, ' ').trim());
+                    // 괄호가 본문과 같은 말을 반복하면 지운다.
+                    //   블라디미르 E 가 "최대 체력의 8% (최대 체력의 8%) 소모" 로 나왔다.
+                    const dedup = (t) => {
+                        let r = t;
+                        for (const m of [...t.matchAll(/\s*\(([^()]+)\)/g)]) {
+                            const inner = m[1].trim();
+                            const without = r.replace(m[0], '');
+                            if (inner && without.includes(inner)) r = without;
+                        }
+                        return r.replace(/\s+/g, ' ').trim();
+                    };
+                    if (ok) { cost = dedup(out); costFromText.push(`${c.name} ${key} = ${cost}`); }
                     else costTextFail.push(`${c.name} ${key} = ${txt}`);
                 }
+                // 문구로도 못 채웠으면 manaUiOverride 를 쓴다 (킨드레드 E = 50).
+                if (!cost && binManaUi && !/^0( \/ 0)*$/.test(binManaUi)) cost = binManaUi;
+                // ★ CD 의 범용 문구 "@AbilityResourceName@ @Cost@" 는 자원 이름 자체가
+                //   플레이스홀더인데 CD 에 그 값이 없다. 소모값도 0 이면 실제로 안 쓰는
+                //   스킬이다 (사미라 R·시비르 E·탐 켄치 E 인게임 확인). 그래서 "-" 로 본다.
+                if (!cost && /@AbilityResourceName@/.test(String(s.cost))) cost = '-';
             }
             // 사거리는 클라이언트 표시값(castRangeDisplayOverride)을 우선한다
             const v1Range = lv(s.range, maxRank);
