@@ -1,5 +1,5 @@
 // 이 파일은 build_champion_data.js 가 생성했습니다.
-// 생성 시각: 2026-08-08T10:43:40.589Z
+// 생성 시각: 2026-08-08T23:09:31.709Z
 // 문장은 CommunityDragon 에서 가져왔고, {p1} {p2} 자리는 직접 채워야 합니다.
 
 const customTemplates = {
@@ -204,6 +204,9 @@ const customTemplates = {
         "W": "<keywordmajor>돌출 상태:</keywordmajor> 렉사이가 땅속으로 매복해 새로운 스킬을 사용할 수 있게 되지만, 기본 공격은 할 수 없는 상태가 됩니다. 이 상태에서 렉사이는 <speed>{p1}의 이동 속도</speed>를 얻고 시야 범위가 {p2}% 축소됩니다. 그러나 보이지 않지만 이동하고 있는 근처 적들의 위치를 파악해 자신 및 아군에게 표시합니다.", // 매복 / 돌출
         "E": "<keywordmajor>돌출 상태:</keywordmajor> 렉사이가 대상을 물어뜯어 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다. <keywordmajor>분노</keywordmajor>가 최대치일 경우 대신 <truedamage>{p2}의 고정 피해</truedamage>를 입힙니다.", // 성난 이빨 / 땅굴 파기
         "R": "렉사이가 {p1}초 내에 피해를 입힌 적을 표적으로 삼은 후, 땅속으로 들어가 대상으로 지정할 수 없는 상태가 됩니다. 잠시 후, 대상에게 도약해 <physicaldamage>{p2}+최대 체력의 {p3}%에 해당하는 물리 피해</physicaldamage>를 입히고 <keywordmajor>매복 / 돌출</keywordmajor>의 재사용 대기시간이 초기화됩니다. 도약 중인 렉사이는 멈출 수 없습니다.", // 공허의 돌진
+        "Q2": "<keywordmajor>매복 상태:</keywordmajor> 렉사이가 공허 에너지가 주입된 흙을 발사합니다. 흙은 처음 맞는 적 위에서 폭발하며 작은 영역에 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고, {p2}초 동안 비 은신 상태인 적의 위치를 드러냅니다. 챔피언에게 적중할 경우 <keywordmajor>{p3}의 분노</keywordmajor>가 생성됩니다.", //  — 굴 파기
+        "W2": "<keywordmajor>매복 상태:</keywordmajor> 렉사이가 매복을 풀고 나와 주변 모든 적에게 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 첫 번째 대상과 주변 챔피언, 주변 대형 몬스터를 {p2}초 동안 <status>공중으로 띄워 올립니다</status>. 이 스킬은 {p3}초에 한 번씩만 적을 <status>공중으로 띄워 올릴 수 있습니다</status>.", //  — 굴 파기
+        "E2": "<keywordmajor>매복 상태:</keywordmajor> 렉사이가 땅굴을 파고 전진하여 {p1}분 동안 연결된 두 개의 땅굴 입구를 남깁니다. 땅굴 입구 중 하나를 클릭하면 렉사이가 다른 쪽 입구로 뛰어듭니다. 땅굴은 이용하고 나면 {p2}초의 재사용 대기시간이 적용되며, 렉사이는 최대 {p3}개의 땅굴을 유지할 수 있습니다.", //  — 굴 파기
     },
     "Rell": { // 렐
         "P": "렐의 기본 공격과 스킬이 {p1}초 동안 <scalearmor>{p2}%의 방어력</scalearmor>과 <scalemr>{p2}%의 마법 저항력</scalemr>을 훔칩니다(최대 {p3}%). 기본 공격 적중 시 <magicdamage>{p4}의 마법 피해</magicdamage>를 입힙니다.", // 갑옷 파쇄 — stringtable
@@ -1086,6 +1089,7 @@ const customTemplates = {
         "W": "<passive>기본 지속 효과:</passive> 클레드가 다음 기본 공격 시 네 번의 기본 공격 또는 {p1}초 동안 <attackspeed>공격 속도가 {p2}%</attackspeed> 증가합니다.<br><br>네 번째로 적중한 공격은 <physicaldamage>{p3}+최대 체력의 {p4}에 해당하는 물리 피해</physicaldamage>를 추가로 입힙니다.", // 버럭버럭
         "E": "클레드가 돌진하여 경로 상에 있는 적들에게 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입히고, 미니언과 작은 몬스터를 자신 앞으로 끌어당깁니다.<br><br>이 스킬이 적 챔피언이나 대형 정글 몬스터에게 적중하면 {p2}초 동안 클레드의 <speed>이동 속도가 {p3}%</speed> 증가합니다. {p4}초 내에 스킬을 <recast>재사용</recast>하면 같은 대상에게 다시 돌진합니다.", // 이랴!
         "R": "클레드가 보호막을 쓴 채 목표 지점으로 돌진합니다. 돌진 경로 위에 있는 아군은 <speed>이동 속도</speed>가 빨라집니다. 클레드는 돌진하는 동안 최대 <shield>{p1}의 피해를 흡수하는 보호막</shield>을 얻습니다. 이 보호막은 돌진이 끝나고 2초 후까지 유지됩니다. 스칼은 경로상의 첫 번째 적 챔피언에게 돌격해 <magicdamage>{p2}</magicdamage>~<magicdamage>최대 체력의 {p3}에 해당하는 마법 피해</magicdamage>(이동 거리에 비례)를 입히고 잠시 <status>뒤로 밀어냅니다</status>.", // 돌겨어어억!!!
+        "Q2": "<keywordmajor>미탑승 시:</keywordmajor> 클레드가 산탄총을 발사하여 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입히며 뒤로 밀려납니다. 두 번째로 적중한 탄환부터 피해량이 감소합니다.<br><br>적 챔피언이나 에픽 몬스터가 탄환에 맞을 때마다 스칼의 <keywordmajor>용기</keywordmajor>가 회복됩니다.", // 빵야! — 스카를 하차
     },
     "Qiyana": { // 키아나
         "P": "키아나가 기본 공격을 하거나 스킬을 사용하면 <physicaldamage>{p1}의 추가 물리 피해</physicaldamage>를 입힙니다. 공격 대상별로 25초의 재사용 대기시간이 적용됩니다.<br><br><spellname>대지창조</spellname> 스킬을 사용해 무기에 다른 <keywordmajor>원소의 힘</keywordmajor>을 부여하면 모든 대상에 대한 이 스킬의 재사용 대기시간이 초기화됩니다.", // 왕가의 특권 — stringtable

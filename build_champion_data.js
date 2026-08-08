@@ -47,8 +47,14 @@ const rankOf = (alias, key) =>
 const FORM2 = {
     Nidalee: { label: '쿠거 형태',   Q: 'Takedown',         W: 'Pounce',           E: 'Swipe' },
     Elise:   { label: '거미 형태',   Q: 'EliseSpiderQCast', W: 'EliseSpiderW',     E: 'EliseSpiderE' },
-    Jayce:   { label: '머큐리 캐논', Q: 'JayceShockBlast',  W: 'JayceHyperCharge', E: 'JayceAccelerationGate', R: 'JayceStanceGtH' },
+    Jayce:   { label: '대포 형태', Q: 'JayceShockBlast',  W: 'JayceHyperCharge', E: 'JayceAccelerationGate', R: 'JayceStanceGtH' },
     Gnar:    { label: '메가 나르',   Q: 'GnarBigQ',         W: 'GnarBigW',         E: 'GnarBigE' },
+    // 렉사이는 굴 파기 상태에서 Q/W/E 가 통째로 바뀐다.
+    //   ★ 이쪽 스펠 객체는 stringtable 이름이 빈 문자열이다. 이름은 app.js 에서
+    //     Data Dragon 의 합친 이름("여왕의 진노 / 먹잇감 추적") 뒷조각으로 채운다.
+    RekSai:  { label: '굴 파기',     Q: 'RekSaiQBurrowed',  W: 'RekSaiWBurrowed',  E: 'RekSaiEBurrowed' },
+    // 클레드는 스카를에서 내리면 Q 가 "빵야!" 로 바뀐다. (W·E·R 은 그대로)
+    Kled:    { label: '스카를 하차', Q: 'KledRiderQ' },
 };
 
 // bin 에서 스펠 객체를 이름으로 찾는다. 경로가 표준형이 아닐 수 있어 뒤에서도 훑는다.
@@ -429,7 +435,9 @@ async function main() {
 
                 // 이름이 "두번째폼 / 첫번째폼" 형태로 들어 있는 경우가 있다 (니달리·엘리스·나르).
                 const nameRaw = lk.keyName ? strings[String(lk.keyName).toLowerCase()] : '';
-                const nm = String(nameRaw || objName).split('/')[0].trim();
+                // ★ 못 찾으면 객체 이름을 넣지 말고 비워 둔다. app.js 가 Data Dragon 의
+                //   합친 이름 뒷조각으로 채운다 (렉사이 굴 파기 스킬이 이 경우).
+                const nm = String(nameRaw || '').split('/')[0].trim();
 
                 const { text, names } = convertDescription(raw, alias);
                 tplLines.push(`        "${slot}2": ${q(text)}, // ${nm} — ${f2.label}`);

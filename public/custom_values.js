@@ -1999,6 +1999,42 @@ const customValues = {
                 "시전시간": "0.35"
             }
         },
+        "Q2": {
+            "p1": "50 / 80 / 110 / 140 / 170 (+ 추가 공격력의 25% + 주문력의 70%)", // spell.RekSaiQ:BurrowDamageTooltip
+            "p2": "5", // spell.RekSaiQ:BurrowedDebuffDuration
+            "p3": "25", // spell.RekSaiPassive:FuryFromAbilities
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
+            "cooldown": "-",
+            "cost": "-",
+            "name": "",
+            "form": "굴 파기",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/reksai/hud/icons2d/reksai_q2.png"
+        },
+        "W2": {
+            "p1": "30 / 55 / 80 / 105 / 130 (+ 주문력의 80%)", // spell.RekSaiW:UnburrowDamage
+            "p2": "1", // spell.RekSaiW:KnockupDuration
+            "p3": "10 / 9 / 8 / 7 / 6", // spell.RekSaiW:KnockupImmunity
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
+            "cooldown": "4",
+            "cost": "-",
+            "name": "",
+            "form": "굴 파기",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/reksai/hud/icons2d/reksai_w2.png"
+        },
+        "E2": {
+            "p1": "10", // spell.RekSaiE:TunnelDurationMinutes
+            "p2": "6 / 5 / 4 / 3 / 2", // spell.RekSaiE:TunnelReuseCooldown
+            "p3": "8", // spell.RekSaiE:MaximumTunnels
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
+            "cooldown": "18 / 18 / 17 / 16 / 15",
+            "cost": "-",
+            "name": "",
+            "form": "굴 파기",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/reksai/hud/icons2d/reksai_e2.png"
+        },
     },
     "Rell": { // 렐
         "P": {
@@ -8824,7 +8860,7 @@ const customValues = {
             "cooldown": "8",
             "cost": "55 / 60 / 65 / 70 / 75 / 80",
             "name": "전격 폭발",
-            "form": "머큐리 캐논",
+            "form": "대포 형태",
             "icon": "https://raw.communitydragon.org/latest/game/assets/characters/jayce/hud/icons2d/jayceq_ranged.png"
         },
         "W2": {
@@ -8835,7 +8871,7 @@ const customValues = {
             "cooldown": "14.6 / 13 / 11.4 / 9.8 / 8.2 / 6.6",
             "cost": "40",
             "name": "초전하",
-            "form": "머큐리 캐논",
+            "form": "대포 형태",
             "icon": "https://raw.communitydragon.org/latest/game/assets/characters/jayce/hud/icons2d/jaycew_ranged.png"
         },
         "E2": {
@@ -8847,7 +8883,7 @@ const customValues = {
             "cooldown": "16",
             "cost": "50",
             "name": "가속 관문",
-            "form": "머큐리 캐논",
+            "form": "대포 형태",
             "icon": "https://raw.communitydragon.org/latest/game/assets/characters/jayce/hud/icons2d/jaycee_ranged.png"
         },
         "R2": {
@@ -8858,7 +8894,7 @@ const customValues = {
             "cooldown": "6",
             "cost": "-",
             "name": "머큐리 해머",
-            "form": "머큐리 캐논",
+            "form": "대포 형태",
             "icon": "https://raw.communitydragon.org/latest/game/assets/characters/jayce/hud/icons2d/jaycer_melee.png"
         },
     },
@@ -10464,6 +10500,16 @@ const customValues = {
                 "사거리": "3500 / 3500 / 4000",
                 "투사체 속도": "1200"
             }
+        },
+        "Q2": {
+            "p1": "35 / 50 / 65 / 80 / 95 (+ 추가 공격력의 65%)", // TotalDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v2": "",
+            "cooldown": "3",
+            "cost": "-",
+            "name": "빵야!",
+            "form": "스카를 하차",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/kled/hud/icons2d/kled_q2.png"
         },
     },
     "Qiyana": { // 키아나

@@ -3734,11 +3734,24 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     ? customTemplates[champ.id][sp.keyChar + '2'] : null;
                 if (!v || !tpl2) return;
 
+                // ★ Data Dragon 은 두 폼 이름을 "폼1 / 폼2" 로 합쳐서 준다
+                //   (제이스 Q "하늘로! / 전격 폭발", 니달리 Q "창 투척 / 숨통 끊기").
+                //   박스를 나눴으니 각 박스엔 자기 이름만 보여준다.
+                //   ★ 폼2 이름이 어느 쪽 조각인지 소스마다 다를 수 있어서
+                //     "폼2 이름이 아닌 쪽"을 폼1로 잡는다.
+                //     렉사이 굴 파기 스킬처럼 폼2 이름이 비어 있으면 뒷조각을 쓴다.
+                const parts = String(sp.name).split('/').map(x => x.trim()).filter(Boolean);
+                let name2 = v.name || '';
+                if (parts.length === 2) {
+                    if (!name2) name2 = parts[1];
+                    sp.name = (parts[0] === name2) ? parts[1] : parts[0];
+                }
+
                 // 두 번째 폼은 아래에 박스를 따로 쌓는다. 한 박스에 이어 붙이면
                 // 쿨타임·소모값이 폼마다 달라서 헤더가 지저분해진다.
                 sp.form2 = {
                     label: v.form || '두 번째 형태',
-                    name: v.name || '',
+                    name: name2,
                     icon: v.icon || '',
                     cooldown: v.cooldown || '-',
                     cost: v.cost || '-',

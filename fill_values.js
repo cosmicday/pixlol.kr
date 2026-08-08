@@ -150,8 +150,10 @@ function noteCase(asked, actual) {
 const FORM2 = {
     Nidalee: { label: '쿠거 형태',   Q: 'Takedown',         W: 'Pounce',           E: 'Swipe' },
     Elise:   { label: '거미 형태',   Q: 'EliseSpiderQCast', W: 'EliseSpiderW',     E: 'EliseSpiderE' },
-    Jayce:   { label: '머큐리 캐논', Q: 'JayceShockBlast',  W: 'JayceHyperCharge', E: 'JayceAccelerationGate', R: 'JayceStanceGtH' },
+    Jayce:   { label: '대포 형태', Q: 'JayceShockBlast',  W: 'JayceHyperCharge', E: 'JayceAccelerationGate', R: 'JayceStanceGtH' },
     Gnar:    { label: '메가 나르',   Q: 'GnarBigQ',         W: 'GnarBigW',         E: 'GnarBigE' },
+    RekSai:  { label: '굴 파기',     Q: 'RekSaiQBurrowed',  W: 'RekSaiWBurrowed',  E: 'RekSaiEBurrowed' },
+    Kled:    { label: '스카를 하차', Q: 'KledRiderQ' },
 };
 
 function findSpellObj(bin, alias, objName) {
@@ -1447,7 +1449,8 @@ async function main() {
                 lines.push(`            "cost": ${q(fieldToText(findField(obj.mSpell, 'mana'), f2Rank, 1, false) || '-')},`);
                 // 이름이 "두번째폼 / 첫번째폼" 형태인 경우가 있다 (니달리·엘리스·나르).
                 const f2NameRaw = lk.keyName ? strings[String(lk.keyName).toLowerCase()] : '';
-                lines.push(`            "name": ${q(String(f2NameRaw || objName).split('/')[0].trim())},`);
+                // 못 찾으면 비워 둔다. app.js 가 Data Dragon 합친 이름 뒷조각으로 채운다.
+                lines.push(`            "name": ${q(String(f2NameRaw || '').split('/')[0].trim())},`);
                 lines.push(`            "form": ${q(f2.label)},`);
                 lines.push(`            "icon": ${q(iconUrlOf(obj) || '')}`);
                 lines.push(`        },`);
