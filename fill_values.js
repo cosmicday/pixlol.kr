@@ -18,6 +18,14 @@ const WRITE = process.argv.includes('--write');
 
 const PRESERVE = ['Garen', 'Galio'];
 
+// @ShieldDuration.1@ / @f2.0@ 처럼 이름 끝에 붙는 ".숫자" 를 어떻게 볼 것인가.
+//   true  = 소수점 자릿수로 본다 (1.53 -> ".1" 이면 1.5)
+//   false = 그냥 떼어내고 무시한다 (원래 값 그대로)
+//   ★ 배열 인덱스로 보는 해석도 있는데, 그러면 ".0" 이
+//     "DataValues 0번은 쓰레기" 규칙과 정면으로 부딪힌다. 그래서 자릿수로 본다.
+//     결과는 마지막에 목록으로 찍히니 인게임 툴팁과 대조할 것.
+const DOT_AS_PRECISION = true;
+
 const CD = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/ko_kr/v1';
 const BIN = 'https://raw.communitydragon.org/latest/game/data/characters';
 
@@ -27,8 +35,10 @@ const OUT_VALUES = path.join(PUBLIC_DIR, 'custom_values.new.js');
 
 const DELAY = 150;
 
-// 미리보기에서 자세히 보여줄 챔피언 (이미 아는 챔피언이라 눈으로 검산 가능)
-const PREVIEW = ['Aatrox', 'Ahri', 'MonkeyKing', 'Locke'];
+// 미리보기에서 스킬 값을 한 줄씩 다 찍어 볼 챔피언.
+//   눈으로 검산할 때만 쓴다. 평소엔 비워 두면 요약만 나온다.
+//   예:  const PREVIEW = ['Aatrox', 'Ahri', 'MonkeyKing', 'Locke'];
+const PREVIEW = [];
 
 // ------------------------------------------------------------
 // 손으로 확인한 값. 자동 추출보다 우선한다.
@@ -43,24 +53,33 @@ const PREVIEW = ['Aatrox', 'Ahri', 'MonkeyKing', 'Locke'];
 //   표에 있는데 한 번도 안 쓰인 키는 마지막에 경고로 알려준다. 오타 잡기용.
 // ------------------------------------------------------------
 const MANUAL = {
-    // 자동 추출이 쿨타임 전체(12)를 집어왔다. 실제로는 명중 시 2초 감소.
-    '미스 포츈 W / LoveTapRefund': '2',
+  '미스 포츈 W / LoveTapRefund': '...',
+  '올라프 Q / TooltipCDRefund': '2.5',
+  '사일러스 R / PerTargetCooldown': '200',
+  '카타리나 E / DaggerCooldownReduction': '12 / 11 / 10 / 9 / 8',
+  '애쉬 E / ChargeCooldown': '5',
 };
 
 const manualUsed = new Set();
 
 // ------------------------------------------------------------
 // mStat 번호 -> 한글 스탯 이름
-//   ★ 이 표는 아트록스 Q(mStat 2 = 총 공격력)만 실제로 확인했고
-//     나머지는 추정이다. 미리보기에서 이상한 게 보이면 여기를 고칠 것.
+//   ★ 인게임 툴팁으로 실제 확인한 것: mStat 2 = 공격력(아트록스 Q),
+//     mStat 4 = 공격 속도(카타리나 R — 툴팁 "+0.5 추가 공격 속도" 와
+//     0.16 x 3.125 = 0.5 가 일치), mStat 18 = 생명력 흡수(암베사 R "+0.5 생명력 흡수"),
+//     mStat 29 = 물리 관통력(파이크 R "+1.5 물리 관통력"). 나머지는 아직 추정이다.
 //     모르는 번호가 나오면 "?" 로 두고 마지막에 목록으로 알려준다.
+//     ★ 3 은 원래 '공격 속도'로 적혀 있었으나 4가 공격 속도로 확정되어 뺐다.
+//       추측으로 채우면 "?" 보다 나쁘다 — 쓰이는 자리가 있으면 목록에 뜰 것이다.
 // ------------------------------------------------------------
 const STAT_NAMES = {
     0: '주문력',
     1: '방어력',
     2: '총 공격력',
-    3: '공격 속도',
+    4: '공격 속도',
     5: '스킬 가속',
+    18: '생명력 흡수',
+    29: '물리 관통력',
     6: '치명타 확률',
     8: '마법 저항력',
     9: '이동 속도',
@@ -72,6 +91,45 @@ const STAT_NAMES = {
 const unknownStats = new Map();   // 번호 -> { count, where[] }
 const unknownParts = new Map();   // 계산식 조각 종류 -> { count, keys, where[], solved }
 const guessedList = [];           // 필드 모양으로 추측해서 푼 값 (눈으로 검산할 것)
+const viaField = [];              // 최상위 / mAmmo 필드에서 건진 값 (새 경로라 검산 대상)
+const dotList = [];               // ".숫자" 꼬리를 처리한 값 (해석이 확정 아님, 검산 대상)
+const caseList = [];              // 대소문자를 무시하고 찾아낸 이름 (툴팁 철자 != bin 철자)
+const caseSeen = new Set();
+const zeroDrop = [];              // 참조 대상이 bin 에 없어 0으로 본 항 (조회 버그와 구분하려고 남긴다)
+
+// 툴팁 철자와 bin 철자가 어긋난 자리를 기록한다.
+function noteCase(asked, actual) {
+    const k = `${asked}|${actual}`;
+    if (caseSeen.has(k)) return;
+    caseSeen.add(k);
+    if (caseList.length < 60) caseList.push(`${asked}  ->  ${actual}   (${ctx})`);
+}
+
+// DataValue 를 이름으로 찾는다. 정확히 일치가 우선, 없으면 대소문자를 무시한다.
+//   ★ 계산식 안에서 다른 DataValue 를 참조할 때도 철자가 어긋난다.
+//     AoeDamagePercent -> AoEDamagePercent, BonusLifesteal -> BonusLifeSteal 같은 식.
+//     조각 하나가 null 이 되면 계산식이 통째로 죽으므로 여기가 제일 아프다.
+function findDataValue(spell, name) {
+    if (name === undefined || name === null) return undefined;
+    const list = spell.DataValues || [];
+    const exact = list.find(d => d.name === name);
+    if (exact) return exact;
+    const want = String(name).toLowerCase();
+    const loose = list.find(d => String(d.name).toLowerCase() === want);
+    if (loose) noteCase(name, loose.name);
+    return loose;
+}
+
+// mSpellCalculations 항목을 이름으로 찾는다. 같은 이유로 대소문자 폴백을 둔다.
+function findCalc(spell, name) {
+    if (name === undefined || name === null) return undefined;
+    const calcs = spell.mSpellCalculations || {};
+    if (calcs[name] !== undefined) return calcs[name];
+    const want = String(name).toLowerCase();
+    const key = Object.keys(calcs).find(k => k.toLowerCase() === want);
+    if (key) { noteCase(name, key); return calcs[key]; }
+    return undefined;
+}
 
 // 지금 어느 챔피언 어느 스킬 어느 자리를 처리 중인지. 미해결 원인 추적용.
 let ctx = '';
@@ -105,10 +163,80 @@ const levelsToText = (values, maxRank, mult) => {
     return picked.every(v => v === picked[0]) ? picked[0] : picked.join(' / ');
 };
 
-const statName = (id, hint) => {
+// 최상위 / mAmmo 필드용 배열 -> 표시 문자열.
+//   ★ DataValues 와 달리 이쪽은 0번이 실제 1랭크다 (castRange, mana 와 같은 규칙).
+const topLevelToText = (values, maxRank, mult) => {
+    if (!Array.isArray(values) || !values.length) return null;
+    if (typeof values[0] !== 'number') return null;
+    const picked = values.slice(0, maxRank).map(v => tidy(v * mult));
+    if (!picked.length) return null;
+    return picked.every(v => v === picked[0]) ? picked[0] : picked.join(' / ');
+};
+
+// bin 의 필드 이름은 툴팁에 적힌 이름과 정확히 같지 않을 수 있다.
+//   AmmoRechargeTime -> mAmmoRechargeTime 처럼 m 접두사가 붙거나 대소문자가 다르다.
+//   그래서 (그대로 / m 붙여서 / 대소문자 무시) 순서로 찾는다.
+function findField(obj, name) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return undefined;
+    if (obj[name] !== undefined) return obj[name];
+    if (obj['m' + name] !== undefined) return obj['m' + name];
+    const want = name.toLowerCase();
+    for (const k in obj) {
+        const kl = k.toLowerCase();
+        if (kl === want || kl === 'm' + want) return obj[k];
+    }
+    return undefined;
+}
+
+// 필드에서 읽은 raw 값 -> 표시 문자열. 숫자도 배열도 아니면 실패로 본다.
+//   rank1 = 0번이 "스킬 안 찍은 상태"라서 1번부터 읽어야 하는 필드인지.
+const fieldToText = (raw, maxRank, mult, rank1) => {
+    if (typeof raw === 'number') return tidy(raw * mult);
+    if (!Array.isArray(raw)) return null;
+    // ★ 버릴 앞칸이 실제로 있을 때만 민다. 길이가 랭크 수와 같으면
+    //   앞을 버리는 순간 마지막 랭크가 잘리므로 그냥 0번부터 읽는다.
+    if (rank1 && raw.length > maxRank) return levelsToText(raw, maxRank, mult);
+    return topLevelToText(raw, maxRank, mult);
+};
+
+// 위치는 스펠 최상위여도 인덱스 규칙은 DataValues 쪽(0번은 쓰레기)을 따르는 필드.
+//   ★ 티모 R AmmoRechargeTime 이 "0 / 35 / 30" 으로 나온 게 증거다.
+//     바이·자이라도 첫 값이 겹쳤다. 인게임에서 한 칸 민 쪽이 맞다고 확인함.
+//     castRange, mana 는 0번부터가 맞으므로 여기 넣지 말 것.
+const RANK1_FIELDS = /ammo/i;
+
+// 툴팁이 부르는 이름 != bin 필드 이름인 자리. 소문자 키로 적는다.
+//   Cost 는 스펠 안에 값이 없고 "이 스킬의 마나 소모값"을 가리키는 별명이다.
+//   (카시오페아 Q: 처치하면 Q 코스트만큼 마나를 돌려받는다)
+const FIELD_ALIAS = { cost: 'mana' };
+
+// ".숫자" 꼬리를 소수점 자릿수로 적용한다.
+const applyPrecision = (text, p) => {
+    if (text === null || p === null) return text;
+    if (!DOT_AS_PRECISION) return text;
+    const out = String(text).replace(/-?\d+(?:\.\d+)?/g, (n) => {
+        const f = parseFloat(n);
+        return Number.isFinite(f) ? String(Number(f.toFixed(p))) : n;
+    });
+    if (dotList.length < 40) dotList.push(`${ctx} = ${out}   [.${p} -> 소수점 ${p}자리로 처리]`);
+    return out;
+};
+
+// mStatFormula: 없음/0 = 총, 1 = 기본, 2 = 추가.
+//   ★ 아트록스 Q(필드 없음)가 "총 공격력", 카타리나 R(2)이 "추가 공격력"·
+//     "추가 공격 속도"인 것으로 확인했다. 지금까지 이 필드를 안 봐서
+//     추가 계수를 총 계수로 잘못 적고 있었다.
+const applyStatFormula = (name, formula) => {
+    if (name === null) return null;
+    if (formula === 1) return name.startsWith('기본 ') ? name : `기본 ${name.replace(/^(총|추가) /, '')}`;
+    if (formula === 2) return name.startsWith('추가 ') ? name : `추가 ${name.replace(/^(총|기본) /, '')}`;
+    return name;
+};
+
+const statName = (id, hint, formula) => {
     // mStat 이 0(주문력)이면 JSON 에서 필드가 통째로 빠진다. undefined 는 0 으로 본다.
     if (id === undefined || id === null) id = 0;
-    if (STAT_NAMES[id] !== undefined) return STAT_NAMES[id];
+    if (STAT_NAMES[id] !== undefined) return applyStatFormula(STAT_NAMES[id], formula);
     // 번호만으로는 무슨 스탯인지 알 수 없다. 어디서 나왔는지 같이 남겨서
     // 인게임 툴팁과 대조할 수 있게 한다. (추측으로 표를 채우면 "?" 보다 나쁘다)
     if (!unknownStats.has(id)) unknownStats.set(id, { count: 0, where: [] });
@@ -125,15 +253,29 @@ const statName = (id, hint) => {
 // 계산식 조각 하나를 문자열로
 // ------------------------------------------------------------
 function partToText(part, spell, maxRank, mult, depth = 0) {
-    if (!part || depth > 4) return null;
+    // ★ 깊이 8. 카타리나 R 이 6겹이라 4로는 안쪽 조각이 통째로 잘렸다.
+    //   StatBySubPart > Sum > Product > Sum > Number 까지 내려간다.
+    if (!part || depth > 8) return null;
     const type = part.__type || '';
 
-    const dv = (name) => (spell.DataValues || []).find(d => d.name === name);
+    const dv = (name) => findDataValue(spell, name);
 
     switch (type) {
         case 'NamedDataValueCalculationPart': {
             const d = dv(part.mDataValue);
-            return d ? levelsToText(d.values, maxRank, mult) : null;
+            if (d) {
+                const t = levelsToText(d.values, maxRank, mult);
+                if (t !== null) return t;
+            }
+            // ★ 여기까지 왔으면 그 항은 0이다. 두 경우가 있는데 결과는 같다.
+            //     이름이 아예 없음        — 모드 전용 보너스 등
+            //     이름은 있는데 값이 비었음 — 니달리 W 의 ModesBonusMaxTraps
+            //   (?) 로 남기면 멀쩡한 값이 통째로 폴백돼 버리므로 0으로 보고 버린다.
+            //   다만 조용히 버리면 조회 버그와 구분이 안 되니 목록에 남긴다.
+            if (zeroDrop.length < 40) {
+                zeroDrop.push(`${ctx}   (${part.mDataValue} — ${d ? '값이 비어 있음' : '이름이 없음'})`);
+            }
+            return '0';
         }
 
         case 'NumberCalculationPart':
@@ -142,13 +284,13 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
         case 'StatByNamedDataValueCalculationPart': {
             const d = dv(part.mDataValue);
             const ratio = d ? levelsToText(d.values, maxRank, 100) : null;
-            const s = statName(part.mStat, ratio === null ? null : ratio + '%');
+            const s = statName(part.mStat, ratio === null ? null : ratio + '%', part.mStatFormula);
             if (!d || s === null) return null;
             return `${s}의 ${ratio}%`;
         }
 
         case 'StatByCoefficientCalculationPart': {
-            const s = statName(part.mStat, tidy((part.mCoefficient || 0) * 100) + '%');
+            const s = statName(part.mStat, tidy((part.mCoefficient || 0) * 100) + '%', part.mStatFormula);
             if (s === null) return null;
             return `${s}의 ${tidy((part.mCoefficient || 0) * 100)}%`;
         }
@@ -160,9 +302,25 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
         }
 
         case 'ByCharLevelBreakpointsCalculationPart': {
-            let v = part.mLevel1Value || 0;
-            (part.mBreakpoints || []).forEach(bp => { v += bp.mAdditionalBonusAtThisLevel || 0; });
-            return `${tidy((part.mLevel1Value || 0) * mult)} ~ ${tidy(v * mult)} (레벨에 따라)`;
+            // ★ 이 조각은 세 가지 필드를 섞어 쓴다. 하나라도 빼먹으면 최댓값이 틀린다.
+            //     mInitialBonusPerLevel      = 레벨당 증가분 (첫 구간)
+            //     mBonusPerLevelAtAndAfter   = 이 레벨부터 레벨당 증가분이 바뀜
+            //     mAdditionalBonusAtThisLevel= 이 레벨에서 한 번 뛰는 양
+            //   예전엔 세 번째만 더해서 니달리 W(4~10)는 맞았지만
+            //   레벨당 증가가 있는 스킬은 시작값 그대로 나왔다.
+            const base = part.mLevel1Value || 0;
+            const bps = [...(part.mBreakpoints || [])].sort((x, y) => (x.mLevel || 0) - (y.mLevel || 0));
+            let v = base;
+            let per = part.mInitialBonusPerLevel || 0;
+            for (let lv = 2; lv <= 18; lv++) {
+                const bp = bps.find(x => x.mLevel === lv);
+                if (bp) {
+                    if (bp.mBonusPerLevelAtAndAfter !== undefined) per = bp.mBonusPerLevelAtAndAfter;
+                    v += bp.mAdditionalBonusAtThisLevel || 0;
+                }
+                v += per;
+            }
+            return `${tidy(base * mult)} ~ ${tidy(v * mult)} (레벨에 따라)`;
         }
 
         case 'BuffCounterByNamedDataValueCalculationPart': {
@@ -171,10 +329,12 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
         }
 
         case 'SumOfSubPartsCalculationPart': {
-            const parts = (part.mSubparts || [])
-                .map(p => partToText(p, spell, maxRank, mult, depth + 1))
-                .filter(Boolean);
-            if (!parts.length) return null;
+            const raw = (part.mSubparts || [])
+                .map(p => partToText(p, spell, maxRank, mult, depth + 1));
+            if (!raw.length || raw.every(p => p === null)) return null;
+            // ★ 못 푼 조각을 조용히 버리면 "계수 빠진 반쪽 값"이 완성품처럼 보인다.
+            //   calcToText 와 같은 규칙으로 (?) 를 남겨 눈에 띄게 한다.
+            const parts = raw.map(p => p === null ? '(?)' : p);
             // 전부 단일 숫자면 그냥 더한다 (1 + 0.75 -> 1.75)
             if (parts.every(p => /^-?[\d.]+$/.test(p))) {
                 return tidy(parts.reduce((a, b) => a + parseFloat(b), 0));
@@ -185,7 +345,12 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
         case 'ProductOfSubPartsCalculationPart': {
             const a = partToText(part.mPart1, spell, maxRank, 1, depth + 1);
             const b = partToText(part.mPart2, spell, maxRank, 1, depth + 1);
-            return (a && b) ? `${a} x ${b}` : null;
+            if (!a || !b) return null;
+            // ★ 덧셈이 든 조각은 괄호로 묶어야 한다.
+            //   안 묶으면 "0.16 x 1 + 공격 속도의 312.5%" 가 되어
+            //   0.16 x (1 + ...) 라는 원래 뜻과 달라진다.
+            const wrap = (x) => x.includes(' + ') ? `(${x})` : x;
+            return `${wrap(a)} x ${wrap(b)}`;
         }
 
         case 'EffectValueCalculationPart': {
@@ -195,7 +360,7 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
         }
 
         case 'StatBySubPartCalculationPart': {
-            const s2 = statName(part.mStat);
+            const s2 = statName(part.mStat, null, part.mStatFormula);
             const sub = partToText(part.mSubpart, spell, maxRank, 100, depth + 1);
             return (s2 !== null && sub !== null) ? `${s2}의 ${sub}%` : null;
         }
@@ -288,16 +453,16 @@ function guessPart(part, spell, maxRank, mult, depth) {
     // 다른 계산식을 이름으로 가리키는 모양. ({f3cbe7b2} 가 이 형태다)
     //   필드가 mSpellCalculationKey 하나뿐이라 정체가 뚜렷하다.
     if (part.mSpellCalculationKey !== undefined) {
-        const ref = (spell.mSpellCalculations || {})[part.mSpellCalculationKey];
+        const ref = findCalc(spell, part.mSpellCalculationKey);
         return ref ? calcToText(ref, spell, maxRank, mult, depth + 1) : null;
     }
 
     // 이름 붙은 DataValue 를 가리키는 모양
     if (part.mDataValue !== undefined) {
-        const d = (spell.DataValues || []).find(x => x.name === part.mDataValue);
+        const d = findDataValue(spell, part.mDataValue);
         if (d) {
             if (part.mStat !== undefined) {
-                const s = statName(part.mStat);
+                const s = statName(part.mStat, null, part.mStatFormula);
                 if (s !== null) return `${s}의 ${levelsToText(d.values, maxRank, 100)}%`;
                 return null;
             }
@@ -308,7 +473,7 @@ function guessPart(part, spell, maxRank, mult, depth) {
 
     // 스탯 * 계수 모양
     if (part.mCoefficient !== undefined && part.mStat !== undefined) {
-        const s = statName(part.mStat);
+        const s = statName(part.mStat, null, part.mStatFormula);
         return s === null ? null : `${s}의 ${tidy(part.mCoefficient * 100)}%`;
     }
 
@@ -334,15 +499,23 @@ function guessPart(part, spell, maxRank, mult, depth) {
 
 // mSpellCalculations 항목 하나 -> 문자열
 function calcToText(calc, spell, maxRank, mult, depth = 0) {
-    if (!calc || depth > 3) return null;
+    // 계산식이 다른 계산식을 참조하는 사슬. 위 partToText 상향과 짝을 맞춘다.
+    if (!calc || depth > 6) return null;
 
     // 다른 계산식을 배율만 바꿔 재사용하는 형태
     if (calc.mModifiedGameCalculation) {
-        const base = (spell.mSpellCalculations || {})[calc.mModifiedGameCalculation];
+        const base = findCalc(spell, calc.mModifiedGameCalculation);
         const inner = calcToText(base, spell, maxRank, mult, depth + 1);
         if (!inner) return null;
         const m = calc.mMultiplier ? partToText(calc.mMultiplier, spell, maxRank, 1, depth + 1) : null;
         return m ? `${inner} x ${m}` : inner;
+    }
+
+    // 버프 유무로 계산식이 갈리는 형태 (카이사 Q MaxDamageDisplay).
+    //   ★ 조건부 쪽은 이름이 {b2bd0d2f} 처럼 난독화돼 있어 못 쓴다.
+    //     버프가 없는 기본 상태를 쓴다 — 툴팁 기본 표기와 같은 쪽이다.
+    if (calc.mDefaultGameCalculation) {
+        return calcToText(findCalc(spell, calc.mDefaultGameCalculation), spell, maxRank, mult, depth + 1);
     }
 
     const percent = calc.mDisplayAsPercent ? 100 : 1;
@@ -367,7 +540,9 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
 
     // 해석 못 한 계수 조각을 조용히 버리면 "계수 없는 반쪽 값"이 된다.
     // (?) 로 남겨서 미리보기에서 눈에 띄게 한다.
-    const rest = parts.slice(1).map(p => p === null ? '(?)' : p);
+    const rest = parts.slice(1)
+        .filter(p => p !== '0')          // 0인 항은 적어봐야 의미가 없다
+        .map(p => p === null ? '(?)' : p);
     let out = base;
     if (calc.mDisplayAsPercent) {
         // "(레벨에 따라)" 같은 꼬리표가 있으면 그 앞에 % 를 넣는다
@@ -382,20 +557,33 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
 function resolve(name, spell, maxRank) {
     // @Name*100@ / @Name*-100@ 형태에서 배율을 떼어낸다
     let mult = 1;
-    let clean = name.trim();
+    let clean = String(name).trim();
     const m = clean.match(/^(.+?)\s*\*\s*(-?[\d.]+)$/);
     if (m) { clean = m[1].trim(); mult = parseFloat(m[2]); }
 
+    // @ShieldDuration.1@ / @f2.0@ 처럼 이름 끝에 붙는 점+숫자를 떼어낸다.
+    //   ★ 이걸 안 떼면 이름을 통째로 찾으려 해서 무조건 실패한다.
+    //     f2.0 은 GENERIC_NAME 검사에도 안 걸려서 범용 이름 보호막까지 풀렸다.
+    let precision = null;
+    const dm = clean.match(/^(.+?)\.(\d+)$/);
+    if (dm) { clean = dm[1].trim(); precision = parseInt(dm[2], 10); }
+
+    const done = (v) => (v === null ? null : applyPrecision(v, precision));
+
     // 1) DataValues 에 직접 있나
-    const d = (spell.DataValues || []).find(x => x.name === clean);
+    //    ★ 정확히 일치를 먼저 보고, 없으면 대소문자를 무시하고 한 번 더 본다.
+    //      라이엇이 툴팁 철자와 bin 철자를 따로 관리해서 자주 어긋난다.
+    //      HoTDuration -> HotDuration, Stunduration -> StunDuration,
+    //      LifeStealPercent -> LifestealPercent 같은 식이다.
+    const d = findDataValue(spell, clean);
     if (d) {
         // 문장에 이미 % 가 붙어 있으므로 값에는 붙이지 않는다 (50%% 방지)
-        return levelsToText(d.values, maxRank, mult);
+        return done(levelsToText(d.values, maxRank, mult));
     }
 
-    // 2) mSpellCalculations 에 있나
-    const calc = (spell.mSpellCalculations || {})[clean];
-    if (calc) return calcToText(calc, spell, maxRank, mult);
+    // 2) mSpellCalculations 에 있나 (여기도 같은 이유로 대소문자 폴백)
+    const calc = findCalc(spell, clean);
+    if (calc !== undefined) return done(calcToText(calc, spell, maxRank, mult));
 
     // 3) Effect2Amount 처럼 mEffectAmount 를 이름으로 부르는 경우
     const em = clean.match(/^Effect(\d+)Amount$/i);
@@ -404,7 +592,7 @@ function resolve(name, spell, maxRank) {
         if (ea && ea.value) {
             const t = levelsToText(ea.value, maxRank, mult);
             // 문장에 이미 % 가 붙어 있으므로 값에는 붙이지 않는다
-            if (t !== null) return t;
+            if (t !== null) return done(t);
         }
     }
 
@@ -412,7 +600,31 @@ function resolve(name, spell, maxRank) {
     const fm = clean.match(/^f(\d+)$/i);
     if (fm && Array.isArray(spell.mEffectAmount)) {
         const ea = spell.mEffectAmount[parseInt(fm[1]) - 1];
-        if (ea && ea.value) return levelsToText(ea.value, maxRank, mult);
+        if (ea && ea.value) {
+            const t = levelsToText(ea.value, maxRank, mult);
+            if (t !== null) return done(t);
+        }
+    }
+
+    // 5) 탄약 값은 mSpell 바로 밑이 아니라 mAmmo 하위 블록에 따로 들어 있다.
+    //    (AmmoRechargeTime, MaxAmmo ... — 바이 E, 벨코즈 W, 진 E 가 여기 걸렸다)
+    const rank1 = RANK1_FIELDS.test(clean);
+    const ammoTxt = fieldToText(findField(spell.mAmmo, clean), maxRank, mult, rank1);
+    if (ammoTxt !== null) {
+        if (viaField.length < 40) viaField.push(`${ctx} = ${ammoTxt}   [mAmmo 필드${rank1 ? ', 1번부터' : ''}]`);
+        return done(ammoTxt);
+    }
+
+    // 6) 스펠 최상위 필드 (PerTargetCooldown, EnergyRefund ...)
+    //    DataValues 도 계산식도 아니고 스펠 객체에 그냥 붙어 있는 값들이다.
+    const aliased = FIELD_ALIAS[clean.toLowerCase()];
+    const topRaw = findField(spell, clean) !== undefined
+        ? findField(spell, clean)
+        : (aliased ? findField(spell, aliased) : undefined);
+    const topTxt = fieldToText(topRaw, maxRank, mult, rank1);
+    if (topTxt !== null) {
+        if (viaField.length < 40) viaField.push(`${ctx} = ${topTxt}   [최상위 필드${rank1 ? ', 1번부터' : ''}]`);
+        return done(topTxt);
     }
 
     return null;
@@ -492,10 +704,27 @@ function getSpellsFromBin(bin, alias) {
 //     그래서 범용 이름은 본체에서만 찾는다.
 const GENERIC_NAME = /^(f\d+|Effect\d+Amount)$/i;
 
+// 최상위 / mAmmo 필드 중에도 거의 모든 스펠 객체에 들어 있는 이름이 있다.
+//   위와 같은 이유로 이것들도 본체에서만 찾는다.
+//   (안 그러면 미사일 객체의 cooldownTime 같은 게 딸려 들어온다)
+const GENERIC_FIELDS = new Set([
+    'cooldowntime', 'mana', 'castrange', 'castrangedisplayoverride',
+    'missilespeed', 'castradius', 'castconeangle', 'castconedistance',
+    'casttime', 'linewidth', 'ammorechargetime', 'maxammo', 'ammousedpercast', 'cost',
+]);
+
+const isGenericName = (clean) =>
+    GENERIC_NAME.test(clean) || GENERIC_FIELDS.has(clean.toLowerCase());
+
 // 후보 목록을 순서대로 뒤져서 처음 성공하는 값을 쓴다.
 function resolveFromPool(name, pool, maxRank) {
-    const clean = String(name).trim().replace(/\s*\*\s*-?[\d.]+$/, '').trim();
-    const generic = GENERIC_NAME.test(clean);
+    // ★ 배율(*100)뿐 아니라 ".숫자" 꼬리도 여기서 같이 떼야 한다.
+    //   안 그러면 f2.0 이 범용 이름으로 안 잡혀서 pool 전체를 뒤진다.
+    const clean = String(name).trim()
+        .replace(/\s*\*\s*-?[\d.]+$/, '')
+        .replace(/\.\d+$/, '')
+        .trim();
+    const generic = isGenericName(clean);
 
     for (const cand of pool) {
         // pool 은 본체가 항상 맨 앞이다. 범용 이름이면 거기서 끊는다.
@@ -697,7 +926,7 @@ async function main() {
             previewLines.forEach(l => console.log(l));
             console.log('');
         } else if (n % 20 === 0) {
-            console.log(`  (${n + 1}/${champions.length}) ${c.name}`);
+            console.log(`  (${n + 1}/${champions.length})`);
         }
 
         await sleep(DELAY);
@@ -724,6 +953,41 @@ async function main() {
     if (guessedList.length) {
         console.log(`\n[모양으로 추측해서 푼 값] ${guessedList.length}개 — 인게임 툴팁과 대조할 것:`);
         guessedList.forEach(x => console.log(`  ${x}`));
+    }
+
+    // ? 가드에 걸려 Data Dragon 툴팁으로 폴백될 스킬 목록.
+    //   못 채운 값이든 (?) 가 남은 값이든, 그 문장은 통째로 버려진다.
+    const fallback = new Map();
+    const noteFallback = (line) => {
+        const skill = String(line).split(' / ')[0];
+        fallback.set(skill, (fallback.get(skill) || 0) + 1);
+    };
+    stillUnknown.forEach(noteFallback);
+    partial.forEach(noteFallback);
+    if (fallback.size) {
+        console.log(`\n[DD 폴백 예정 스킬] ${fallback.size}개 — 이 스킬들은 문장이 통째로 버려지고 Data Dragon 툴팁이 뜬다:`);
+        [...fallback.entries()].sort().forEach(([k, n]) => console.log(`  ${k}   (빈칸 ${n}개)`));
+    }
+
+    if (zeroDrop.length) {
+        console.log(`\n[0으로 보고 버린 항] ${zeroDrop.length}개 — 참조 대상이 bin 에 없는 자리:`);
+        zeroDrop.forEach(x => console.log(`  ${x}`));
+    }
+
+    if (caseList.length) {
+        console.log(`\n[대소문자가 어긋나서 찾아낸 이름] ${caseList.length}종 — 툴팁 철자와 bin 철자가 다른 자리:`);
+        caseList.forEach(x => console.log(`  ${x}`));
+    }
+
+    if (viaField.length) {
+        console.log(`\n[최상위 / mAmmo 필드에서 건진 값] ${viaField.length}개 — 새 경로다. 인게임 툴팁과 대조할 것:`);
+        viaField.forEach(x => console.log(`  ${x}`));
+    }
+
+    if (dotList.length) {
+        console.log(`\n[".숫자" 꼬리를 처리한 값] ${dotList.length}개 — 자릿수 해석이 확정이 아니다. 대조할 것:`);
+        console.log(`  (틀렸으면 파일 위쪽 DOT_AS_PRECISION 을 false 로)`);
+        dotList.forEach(x => console.log(`  ${x}`));
     }
 
     if (unknownStats.size) {
