@@ -2,3 +2,9 @@ node_modules/
 .env
 database.sqlite
 *.bak.js
+*.bak-*
+/*.PNG
+/*.md
+# 앞의 / 는 "루트만" 이라는 뜻. public/riot.txt 와 public/ 안 이미지는 안 걸린다
+/*.txt
+!/CLAUDE.md
