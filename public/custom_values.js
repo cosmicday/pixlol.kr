@@ -3096,7 +3096,7 @@ const customValues = {
         "E": {
             "p1": "최대 체력의 200 / 230 / 260 / 290 / 320%", // PassiveBonusAD
             "p2": "5 / 15 / 25 / 35 / 45 (+ 추가 최대 체력의 5%)", // AdditionalDamage
-            "p3": "140% (- 100)", // MaxDamageAmpTooltip
+            "p3": "140% (- 100%)", // MaxDamageAmpTooltip
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "9 / 8.25 / 7.5 / 6.75 / 6",
@@ -5247,7 +5247,7 @@ const customValues = {
         },
         "R": {
             "p1": "1.25", // Fury_Generation
-            "p2": "300% (- 100)", // TT_Fury_Mult
+            "p2": "300% (- 100%)", // TT_Fury_Mult
             "p3": "100% (- 1 x 0.25)", // TT_Fury_AoE_Penalty
             "p4": "150 / 250 / 350 (+ 주문력의 100%)", // Damage
             "p5": "0.75", // FearDuration
@@ -7378,8 +7378,8 @@ const customValues = {
             "p3": "6 / 12 / 18 / 24 / 30 / 36 (+ 추가 공격력의 20% + 추가 최대 체력의 1 / 1.2 / 1.4 / 1.6 / 1.8 / 2%)", // OnHitDamage
             "p4": "3 / 4 / 5 / 6 / 7 / 8% (+ 추가 공격력의 0.035%)", // MaxHPOnHit1
             "p5": "50", // AttackRange
-            "p6": "20 / 32 / 44 / 56 / 68 / 80% (+ 20 ~ 70 (레벨에 따라))", // EmpoweredTotalAS
-            "p7": "3 / 4 / 5 / 6 / 7 / 8% (+ 2 ~ 4 (레벨에 따라) + 추가 공격력의 0.05% + 추가 최대 체력의 0.001%)", // Q2TotalOnHitHPDamage
+            "p6": "20 / 32 / 44 / 56 / 68 / 80% (+ 20 ~ 70% (레벨에 따라))", // EmpoweredTotalAS
+            "p7": "3 / 4 / 5 / 6 / 7 / 8% (+ 2 ~ 4% (레벨에 따라) + 추가 공격력의 0.05% + 추가 최대 체력의 0.001%)", // Q2TotalOnHitHPDamage
             "p8": "(주문력의 0.006% + 0.015 ~ 0.03 (레벨에 따라)) x (1 + 5 x 1)%", // EmpoweredLightningBonusMax
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -9486,7 +9486,7 @@ const customValues = {
             }
         },
         "E": {
-            "p1": "추가 공격 속도의 100% + 100%", // TotalMoveSpeed
+            "p1": "100 ~ 200%", // TotalMoveSpeed
             "p2": "4", // Effect2Amount
             "p3": "40 / 50 / 60 / 70 / 80", // Effect5Amount*100
             "p4": "0.5", // Effect4Amount

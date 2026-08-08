@@ -428,7 +428,22 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             return joinTerms(parts);
         }
 
+        case 'ClampSubPartsCalculationPart': {
+            // clamp(하위 조각들의 합, mFloor, mCeiling).
+            //   ★ 합계 안에 스탯 비례가 들어 있으면 실제 값이 게임 중에 변하므로
+            //     고정 숫자로 쓸 수 없다. 그래서 가질 수 있는 범위(바닥~천장)를 보여준다.
+            //   예전엔 이 타입을 몰라서 합계만 적었고, 그 결과 카이사 E 가
+            //   "추가 공격 속도의 100% + 100%" 로 나왔다. 없는 상수를 더한 것처럼 보인다.
+            if (part.mFloor === undefined || part.mCeiling === undefined) return null;
+            return `${tidy(part.mFloor * mult)} ~ ${tidy(part.mCeiling * mult)}`;
+        }
+
         case 'ProductOfSubPartsCalculationPart': {
+            // ★ 배율(mult)을 여기서 어느 쪽에 실을지가 미해결이다. 양쪽 다 1 로 버리면
+            //   percent 배율(x100)이 사라져 우디르 Q 가 "0.015 ~ 0.03" 으로 나온다(실제 1.5~3%).
+            //   그렇다고 mPart1 에 그냥 실으면 이미 자기 % 를 붙이는 조각에 100 이 또 곱해져
+            //   다리우스 Q 가 "총 공격력의 10000" 이 된다. 22자리가 한꺼번에 흔들리는 자리라
+            //   인게임 대조 없이 바꾸면 안 된다. 지금은 안전한 쪽(안 싣기)을 유지한다.
             const a = partToText(part.mPart1, spell, maxRank, 1, depth + 1);
             const b = partToText(part.mPart2, spell, maxRank, 1, depth + 1);
             if (!a || !b) return null;
@@ -640,6 +655,7 @@ function guessPart(part, spell, maxRank, mult, depth) {
         return joinTerms(ps);
     }
     if (part.mPart1 && part.mPart2) {
+        // 위 ProductOfSubParts 와 같은 이유로 배율을 안 싣는다.
         const a = partToText(part.mPart1, spell, maxRank, 1, depth + 1);
         const b = partToText(part.mPart2, spell, maxRank, 1, depth + 1);
         return (a && b) ? `${a} x ${b}` : null;
@@ -706,7 +722,19 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
         const tail = out.match(/\s*\([^()]*에 따라\)$/);
         out = tail ? out.slice(0, tail.index) + '%' + tail[0] : out + '%';
     }
-    if (rest.length) out += ` (${signedTerms(rest)})`;
+    // ★ 계수 항에도 % 를 붙여야 한다. 예전엔 기본값에만 붙여서
+    //   우디르 Q 가 "20 / ... / 80% (+ 20 ~ 70 (레벨에 따라))" 로 나왔다.
+    //   인게임은 뒤쪽도 "20% ~ 70%" 라 퍼센트다.
+    //   ★ 숫자로만 된 항에만 붙인다. "주문력의 80%" 같은 스탯 비례 항은
+    //     이미 자기 % 를 달고 나오므로 건드리면 "80%%" 가 된다.
+    const asPercent = (t) => {
+        if (!calc.mDisplayAsPercent || /%/.test(t)) return t;
+        const tail = t.match(/\s*\([^()]*에 따라\)$/);
+        const head = tail ? t.slice(0, tail.index) : t;
+        if (!/^-?[\d.]+(\s*[~/]\s*-?[\d.]+)*$/.test(head.trim())) return t;
+        return tail ? head + '%' + tail[0] : head + '%';
+    };
+    if (rest.length) out += ` (${signedTerms(rest.map(asPercent))})`;
     return out;
 }
 
