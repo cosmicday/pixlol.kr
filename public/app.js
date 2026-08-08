@@ -3720,35 +3720,37 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 isPassive: false
             };
         });
-        // ★ 두 번째 폼 스킬 (니달리 쿠거, 엘리스 거미, 제이스 대포, 나르 메가)
-        //   Data Dragon 에는 4개뿐이라 이 스킬들이 통째로 빠져 있었다.
-        //   custom_values 의 Q2 / W2 / E2 / R2 에 값·아이콘·폼 이름이 들어 있다.
-        const formSpells = [];
-        const cv = (typeof customValues !== 'undefined' && customValues[champ.id]) || null;
-        if (cv) {
-            ['Q', 'W', 'E', 'R'].forEach((k) => {
-                const v = cv[k + '2'];
-                if (!v) return;
-                const tplName = (typeof customTemplates !== 'undefined' && customTemplates[champ.id])
-                    ? customTemplates[champ.id][k + '2'] : null;
-                if (!tplName) return;
-                formSpells.push({
-                    id: k + '2',
-                    keyChar: k,
-                    name: `${v.name || v.form || '변신'} (${k})`,
-                    desc: renderScalingTable(k + '2', ''),
-                    cooldown: v.cooldown || '-',
-                    cost: v.cost || '-',
-                    img: v.icon || '',
-                    img2: null,
-                    stats: v.stats || null,
-                    values: v,
-                    isPassive: false,
-                    formLabel: v.form || null
-                });
+        // ★ 두 번째 폼(니달리 쿠거, 엘리스 거미, 제이스 대포, 나르 메가)은
+        //   별도 스킬 칸으로 만들지 않고 같은 칸에 합친다.
+        //   Data Dragon 의 스킬 이름이 이미 두 폼을 같이 적어 두기 때문이다 —
+        //   제이스 Q 이름이 "하늘로! / 전격 폭발" 인데 앞이 해머폼, 뒤가 캐논폼이다.
+        //   따로 칸을 만들면 같은 이름이 두 번 나와서 어느 쪽이 어느 폼인지 알 수 없다.
+        //   보조 아이콘(img2)은 원래 있던 장치를 그대로 쓴다.
+        const cv2 = (typeof customValues !== 'undefined' && customValues[champ.id]) || null;
+        if (cv2) {
+            spells.forEach((sp) => {
+                const v = cv2[sp.keyChar + '2'];
+                const tpl2 = (typeof customTemplates !== 'undefined' && customTemplates[champ.id])
+                    ? customTemplates[champ.id][sp.keyChar + '2'] : null;
+                if (!v || !tpl2) return;
+
+                sp.img2 = v.icon || sp.img2;
+                const label = v.form || '두 번째 형태';
+                sp.desc += `<div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.12);">`
+                    + `<div style="color:#a78bfa; font-weight:bold; margin-bottom:6px;">${label}${v.name ? ' — ' + v.name : ''}</div>`
+                    + renderScalingTable(sp.keyChar + '2', '')
+                    + `</div>`;
+
+                // 쿨타임·소모값이 폼마다 다르면 둘 다 보여준다.
+                if (v.cooldown && v.cooldown !== '-' && String(v.cooldown) !== String(sp.cooldown)) {
+                    sp.cooldown = `${sp.cooldown}  ·  ${label} ${v.cooldown}`;
+                }
+                if (v.cost && v.cost !== '-' && String(v.cost) !== String(sp.cost)) {
+                    sp.cost = `${sp.cost}  ·  ${label} ${v.cost}`;
+                }
             });
         }
-        window.currentChampSkills = [passive, ...spells, ...formSpells];
+        window.currentChampSkills = [passive, ...spells];
 
         let displayLore = champ.lore.replace(/\r\n|\n/g, '<br><br>');
 
