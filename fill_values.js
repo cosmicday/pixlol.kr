@@ -217,7 +217,10 @@ function findExtraIcons(bin, alias, binSpells) {
         if (!f) continue;
         const file = nameOf(f);
         if (!file.startsWith(low)) continue;
-        const m = file.slice(low.length).replace(/^_/, '').match(/^([qwer])(\d)/);
+        // ★ 숫자는 2 이상만. 1 은 기본 아이콘이고(Garen_E1, Syndra_Q1),
+        //   0 은 게임에 안 쓰는 내부용이다 — Thresh_E0 가 그래서 잘못 들어갔었다
+        //   (위키 확인: 쓰레쉬 E 는 아이콘이 하나뿐이고 .gif/.png 는 같은 그림이다).
+        const m = file.slice(low.length).replace(/^_/, '').match(/^([qwer])([2-9])/);
         if (!m) continue;
         const slot = m[1].toUpperCase();
         if (file === baseIcon[slot] || f2Icons.has(file) || seen.has(file)) continue;

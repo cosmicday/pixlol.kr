@@ -5906,7 +5906,6 @@ const customValues = {
             "v2": "",
             "cooldown": "13 / 12.25 / 11.5 / 10.75 / 10",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/thresh/hud/icons2d/thresh_e0.png"],
             "stats": {
                 "사거리": "500",
                 "투사체 속도": "1100"
