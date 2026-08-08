@@ -13,6 +13,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { loadStringTable, getPassiveTooltip } = require('./stringtable');
 
 const WRITE = process.argv.includes('--write');
 
@@ -94,7 +95,13 @@ const STAT_NAMES = {
     //   정확히 맞교환이라 우연이 아니다. 21자리가 틀린 이름으로 나가고 있었다.
     6: '마법 저항력',
     8: '치명타 확률',
-    9: '이동 속도',
+    // ★ 9 는 원래 '이동 속도'로 적혀 있었으나 2026-08-08에 '치명타 피해량'으로 정정.
+    //   야스오 패시브 CurrentCritDamage 가 위키 기준 180%(치명타 피해량)인데
+    //   "이동 속도의 100%"로 찍히고 있었다. 탈론 Q 인게임 설명("근접 공격 피해량은
+    //   치명타 피해량 증가에 영향을 받습니다")도 같은 결론.
+    //   케이틀린 P·루시안 R·미스 포츈 Q·샤코 Q 의 "치명타 확률 x (X - 1)" 형태도
+    //   X 가 치명타 피해량일 때만 성립한다.
+    9: '치명타 피해량',
     11: '추가 공격력',
     12: '최대 체력',
     13: '추가 체력',
@@ -327,7 +334,11 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             for (let lv = 2; lv <= 18; lv++) {
                 const bp = bps.find(x => x.mLevel === lv);
                 if (bp) {
-                    if (bp.mBonusPerLevelAtAndAfter !== undefined) per = bp.mBonusPerLevelAtAndAfter;
+                    // ★ 생략 = 0. bin 은 기본값인 필드를 통째로 빼고 적는다 (mStat 생략 = 주문력과 같은 규칙).
+                    //   그래서 필드가 하나도 없는 Breakpoint 는 "이 레벨부터 성장 정지"라는 뜻이다.
+                    //   생략을 "이전 값 유지"로 읽던 시절엔 멈춰야 할 레벨 뒤로도 계속 더해서
+                    //   유미 R 이 1.3~1.9(실제 1.3~1.6), 아이번 HarvestDuration 이 -5초로 나왔다.
+                    per = bp.mBonusPerLevelAtAndAfter !== undefined ? bp.mBonusPerLevelAtAndAfter : 0;
                     v += bp.mAdditionalBonusAtThisLevel || 0;
                 }
                 v += per;
@@ -386,8 +397,15 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             return `${tidy((part.mCoefficient || 0) * mult)} (중첩당)`;
 
         case 'ByCharLevelFormulaCalculationPart': {
-            const a = tidy((part.mValues && part.mValues[0] || 0) * mult);
-            const b = tidy((part.mValues && part.mValues[part.mValues.length - 1] || 0) * mult);
+            // ★ 두 군데가 틀려서 이 분기는 지금까지 한 번도 값을 못 읽고 "0 ~ 0"만 냈다.
+            //   1) 필드 이름이 mValues 가 아니라 values 다. 전수 조사 15자리 전부 values.
+            //   2) 배열이 31칸(레벨 1~31)이라 마지막 칸은 31레벨 값이다.
+            //      우리는 18레벨 기준이므로 인덱스 17에서 잘라야 한다.
+            //      (노틸러스 P: 마지막 칸 188, 18레벨은 110)
+            const vals = findField(part, 'values');
+            if (!Array.isArray(vals) || !vals.length) return null;
+            const a = tidy(vals[0] * mult);
+            const b = tidy(vals[Math.min(17, vals.length - 1)] * mult);
             return `${a} ~ ${b} (레벨에 따라)`;
         }
 
@@ -443,6 +461,12 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
 //   ★ 추측이므로 결과를 무조건 믿으면 안 된다.
 //     푼 값은 guessedList 에 모아서 마지막에 전부 출력한다. 눈으로 검산할 것.
 // ------------------------------------------------------------
+// "OO의 80%" 를 만든다.
+//   ★ 값 쪽이 이미 % 로 끝나면 붙이지 않는다. 계수 자리에 단일 숫자가 아니라
+//     계산식 조각이 통째로 들어오는 경우가 있어서(애쉬 P) 그때 "100%%" 가 됐다.
+const statRatio = (name, value) =>
+    value === null ? null : `${name}의 ${value}${/%$/.test(String(value)) ? '' : '%'}`;
+
 // 항을 이어붙인다. 음수 항이 "+ -1" 로 나오면 흉해서 "- 1" 로 바꾼다.
 //   (루시안 R, 미스 포츈 Q·R, 제리 W, 샤코 Q 가 여기 걸렸다. 계산은 맞고 표시만 문제였다)
 const joinTerms = (arr) =>
@@ -486,7 +510,7 @@ function guessPart(part, spell, maxRank, mult, depth) {
         if (d) {
             if (part.mStat !== undefined) {
                 const s = statName(part.mStat, null, part.mStatFormula);
-                if (s !== null) return `${s}의 ${levelsToText(d.values, maxRank, 100)}%`;
+                if (s !== null) return statRatio(s, levelsToText(d.values, maxRank, 100));
                 return null;
             }
             return levelsToText(d.values, maxRank, mult);
@@ -497,7 +521,7 @@ function guessPart(part, spell, maxRank, mult, depth) {
     // 스탯 * 계수 모양
     if (part.mCoefficient !== undefined && part.mStat !== undefined) {
         const s = statName(part.mStat, null, part.mStatFormula);
-        return s === null ? null : `${s}의 ${tidy(part.mCoefficient * 100)}%`;
+        return s === null ? null : statRatio(s, tidy(part.mCoefficient * 100));
     }
 
     // 상수
@@ -796,6 +820,9 @@ async function main() {
     const prelude = oldValues.indexOf('const customValues');
     const valuesPrelude = prelude === -1 ? '' : oldValues.slice(0, prelude);
 
+    // 패시브 문장은 CD v1 에 없어서 stringtable 에서 가져온다 (stringtable.js 주석 참고)
+    const strings = await loadStringTable({ refresh: process.argv.includes('--refresh') });
+
     const summary = await get(`${CD}/champion-summary.json`);
     const seen = new Set();
     const champions = summary
@@ -840,8 +867,53 @@ async function main() {
         // 이제 키는 항상 있고 값이 배열이다. 전부 비어 있으면 CharacterRecord 를 못 읽은 것.
         if (!Object.values(binSpells).some(arr => arr.length)) binFails.push(`${c.name} CharacterRecord 없음`);
 
-        const lines = [`        "P": { "cooldown": "-", "cost": "-" },`];
+        // ---- 패시브 ----
+        // 문장은 stringtable 에서 온다. build_champion_data.js 와 같은 경로를 써야
+        // 템플릿의 {pN} 번호와 여기서 매기는 pN 이 어긋나지 않는다.
+        const passiveRaw = getPassiveTooltip(bin, alias, strings);
+        const passiveNames = passiveRaw
+            ? [...new Set([...String(passiveRaw)
+                .replace(/@SpellModifierDescriptionAppend@/gi, '')
+                .matchAll(/@([A-Za-z0-9_.*+\-/() ]+?)@/g)].map(x => x[1].trim()))]
+            : [];
+
         const previewLines = [];
+        const lines = [];
+        if (!passiveNames.length) {
+            lines.push(`        "P": { "cooldown": "-", "cost": "-" },`);
+        } else {
+            lines.push(`        "P": {`);
+            passiveNames.forEach((name, i) => {
+                total++;
+                ctx = `${c.name} P / ${name}`;
+                const mKeyKo = `${c.name} P / ${name}`;
+                const mKeyEn = `${alias} P / ${name}`;
+                const manual = MANUAL[mKeyKo] !== undefined ? MANUAL[mKeyKo] : MANUAL[mKeyEn];
+
+                let val, tier;
+                if (manual !== undefined) {
+                    val = manual;
+                    tier = '수동';
+                    manualUsed.add(MANUAL[mKeyKo] !== undefined ? mKeyKo : mKeyEn);
+                } else {
+                    // ★ 패시브는 스킬 랭크가 없다. 레벨별 배열이 아니라 한 값이라 maxRank = 1.
+                    //   챔피언 레벨에 따라 변하는 값은 보간 조각(guessPart)이 따로 처리한다.
+                    ({ val, tier } = resolveFromPool(name, binSpells.P || [], 1));
+                }
+
+                if (val === null) stillUnknown.push(`${c.name} P / ${name}`);
+                else if (String(val).includes('(?)')) partial.push(`${c.name} P / ${name} = ${val}`);
+                else {
+                    filled++;
+                    if (tier !== '본체' && tier !== '수동') rescued.push(`${c.name} P / ${name} = ${val}  [${tier}]`);
+                }
+                previewLines.push(`      P p${i + 1} (${name}) = ${val === null ? '?' : val}`);
+                lines.push(`            "p${i + 1}": ${q(val === null ? '?' : val)}, // ${name}`);
+            });
+            lines.push(`            "cooldown": "-",`);
+            lines.push(`            "cost": "-"`);
+            lines.push(`        },`);
+        }
         const seenKey = new Set();
 
         for (const s of (v1.spells || [])) {

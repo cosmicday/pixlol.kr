@@ -1,6 +1,7 @@
 node_modules/
 .env
 database.sqlite
+.cache/
 *.bak.js
 *.bak-*
 /*.PNG

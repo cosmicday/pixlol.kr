@@ -151,7 +151,14 @@ const customValues = {
         }
     }, // 갈리오 (직접 작성)
     "Gangplank": { // 갱플랭크
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "2.5", // DoTDuration
+            "p2": "50 ~ 250 (레벨에 따라) (+ 추가 공격력의 100%)", // TotalDamage
+            "p3": "2", // MoveSpeedDuration
+            "p4": "15 ~ 30% (레벨에 따라)", // MoveSpeed
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1", // GameModeInteger
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -215,7 +222,11 @@ const customValues = {
         },
     },
     "Gragas": { // 그라가스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "최대 체력의 5.5%", // HealAmount
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "4", // BarrelMaxDuration
             "p2": "80 / 120 / 160 / 200 / 240 (+ 주문력의 80%)", // MinDamage
@@ -277,7 +288,14 @@ const customValues = {
         },
     },
     "Graves": { // 그레이브즈
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "총 공격력의 0 ~ 97.605 (레벨에 따라)%", // SingleBulletDamage
+            "p2": "총 공격력의 0 ~ 97.605 (레벨에 따라)% x 0.333", // MultiBulletDamage
+            "p3": "0.5 x (-1 + 치명타 피해량의 100%)%", // CritDamageMult
+            "p4": "25", // StructureDamageReduction*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "50 / 75 / 100 / 125 / 150 (+ 추가 공격력의 65%)", // TotalDamage
             "p2": "80 / 125 / 170 / 215 / 260 (+ 추가 공격력의 55 / 70 / 85 / 100 / 115%)", // TotalDetonationDamage
@@ -333,7 +351,13 @@ const customValues = {
         },
     },
     "Gwen": { // 그웬
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "100% (+ 주문력의 0.6%) x 0.01", // PercentHealth1000Cuts
+            "p2": "50%", // HealingPercent
+            "p3": "10 ~ 25 (레벨에 따라) (+ 주문력의 6.5%)", // healcap
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "6", // BuffDuration
             "p2": "10 / 14 / 18 / 22 / 26 (+ 주문력의 5%)", // MiniSwipeDamage
@@ -399,7 +423,17 @@ const customValues = {
         },
     },
     "Gnar": { // 나르
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "0 ~ 20 (레벨에 따라)", // TotalMS
+            "p2": "5.5 ~ 99% (레벨에 따라)", // TotalAS
+            "p3": "0 ~ 100 (레벨에 따라)", // TotalAttackRange
+            "p4": "100 ~ 831 (레벨에 따라)", // TotalMegaGnarHealth
+            "p5": "3.5 ~ 54.5 (레벨에 따라)", // TotalMegaGnarArmor
+            "p6": "3.5 ~ 63 (레벨에 따라)", // TotalMegaGnarMR
+            "p7": "6 ~ 48.5 (레벨에 따라)", // TotalMegaGnarAD
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
@@ -447,7 +481,12 @@ const customValues = {
         },
     },
     "Nami": { // 나미
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "100 (+ 주문력의 25%)", // TotalMSBonus
+            "p2": "1.5", // BuffDuration
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1.5", // StunDuration
             "p2": "90 / 145 / 200 / 255 / 310 (+ 주문력의 50%)", // TotalDamageTT
@@ -565,7 +604,16 @@ const customValues = {
         },
     },
     "Naafiri": { // 나피리
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "10 ~ 20 (레벨에 따라) (+ 추가 공격력의 4%)", // PackmateTotalDamage
+            "p2": "30 ~ 10 (레벨에 따라)", // PackmateSpawnCooldown
+            "p3": "10 ~ 20 (레벨에 따라) (+ 추가 공격력의 4%) x 1.3", // FrenzyDamageTooltipOnly
+            "p4": "4", // CooldownReduceOnAbilityHit
+            "p5": "1", // CooldownReduceOnKill
+            "p6": "2 ~ 5 (레벨에 따라)", // PackmateCap
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
@@ -622,7 +670,12 @@ const customValues = {
         },
     },
     "Nautilus": { // 노틸러스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "8 ~ 110 (레벨에 따라) (+ 총 공격력의 100%)", // TotalDamageTooltip
+            "p2": "0.75 ~ 1.5 (레벨에 따라)", // RootDuration
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "85 / 130 / 175 / 220 / 265 (+ 주문력의 90%)", // QDamageCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -678,7 +731,15 @@ const customValues = {
         },
     },
     "Nocturne": { // 녹턴
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "12", // Cooldown
+            "p2": "총 공격력의 120%", // TotalDamageNoCrit
+            "p3": "13 ~ 32 (레벨에 따라) (+ 주문력의 30%)", // TotalHealing
+            "p4": "1", // AACDR
+            "p5": "3", // AAChampMonsterCDR
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "65 / 105 / 145 / 185 / 225 (+ 추가 공격력의 85%)", // TotalDamage
             "p2": "5", // TrailDuration
@@ -735,7 +796,13 @@ const customValues = {
         },
     },
     "Nunu": { // 누누와 윌럼프
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "20", // ASIncrease*100
+            "p2": "10", // MSIncrease*100
+            "p3": "총 공격력의 30%", // CleaveDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "400 / 600 / 800 / 1000 / 1200", // MonsterMinionDamage
             "p2": "65 / 95 / 125 / 155 / 185 (+ 추가 최대 체력의 10% + 주문력의 90%)", // MonsterHealing
@@ -917,7 +984,13 @@ const customValues = {
         },
     },
     "Nilah": { // 닐라
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "50", // ExperiencePercentage*100
+            "p2": "7.5", // HealingIncrease*100
+            "p3": "15", // ShieldIncrease*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "치명타 확률의 30%", // CritArmorPen
             "p2": "치명타 확률의 20%", // CritLifesteal
@@ -978,7 +1051,14 @@ const customValues = {
         },
     },
     "Darius": { // 다리우스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5", // BleedDuration
+            "p2": "13 ~ 30 (레벨에 따라) (+ 추가 공격력의 30%)", // BleedDamagePerStack
+            "p3": "5", // MaxStacks
+            "p4": "30 ~ 230 (레벨에 따라)", // NoxianMightBonusAD
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "50 / 80 / 110 / 140 / 170 (+ 총 공격력의 100 / 110 / 120 / 130 / 140 x 0.01%)", // BladeDamage
             "p2": "50 / 80 / 110 / 140 / 170 (+ 총 공격력의 100 / 110 / 120 / 130 / 140 x 0.01%) x 0.35", // HandleDamage
@@ -1040,7 +1120,14 @@ const customValues = {
         },
     },
     "Diana": { // 다이애나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "15 ~ 35% (레벨에 따라)", // BonusAS
+            "p2": "5", // BuffDuration
+            "p3": "15 ~ 35% (레벨에 따라) x 3", // EmpoweredAS
+            "p4": "20 ~ 220 (레벨에 따라) (+ 주문력의 50%)", // CleaveDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 105 / 140 / 175 / 210 (+ 주문력의 70%)", // TotalDamage
             "p2": "3", // MoonlightDuration
@@ -1098,7 +1185,16 @@ const customValues = {
         },
     },
     "Draven": { // 드레이븐
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1", // StackGain
+            "p2": "25", // PassiveGoldBase
+            "p3": "2", // PassiveGoldPerStack
+            "p4": "50", // PercentOfStacksLost
+            "p5": "1 (중첩당)", // DravenPassiveGoldEarned
+            "p6": "1 (중첩당)", // DravenPassiveHighestBounty
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "40 / 45 / 50 / 55 / 60 (+ 추가 공격력의 75 / 85 / 95 / 105 / 115%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -1160,7 +1256,11 @@ const customValues = {
         },
     },
     "Ryze": { // 라이즈
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "주문력의 1000%", // PassiveManaCalcTooltip
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "4", // RuneDuration
             "p2": "2", // MaximumRunes
@@ -1219,7 +1319,13 @@ const customValues = {
         },
     },
     "Rakan": { // 라칸
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "40 ~ 14.5 (레벨에 따라)", // ShieldCooldown
+            "p2": "30 ~ 225 (레벨에 따라) (+ 주문력의 95%)", // TotalShield
+            "p3": "1", // HitCooldown
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 115 / 160 / 205 / 250 (+ 주문력의 70%)", // TotalDamage
             "p2": "3", // HealDelay
@@ -1278,7 +1384,11 @@ const customValues = {
         },
     },
     "Rammus": { // 람머스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "방어력의 15% (+ 마법 저항력의 15%)", // TotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "25 ~ 39.1% (레벨에 따라)", // MinimumMoveSpeed
             "p2": "6", // RollDuration
@@ -1337,7 +1447,12 @@ const customValues = {
         },
     },
     "Lux": { // 럭스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6", // DebuffDuration
+            "p2": "20 ~ 190 (레벨에 따라) (+ 주문력의 35%)", // TotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "2", // RootDuration
             "p2": "80 / 120 / 160 / 200 / 240 (+ 주문력의 75%)", // TotalDamageTT
@@ -1392,7 +1507,17 @@ const customValues = {
         },
     },
     "Rumble": { // 럼블
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "50", // DangerZoneHeat
+            "p2": "150", // OverheatingHeat
+            "p3": "4", // OverheatDuration
+            "p4": "50 ~ 130% (레벨에 따라)", // OverheatAS
+            "p5": "5 ~ 40 (레벨에 따라) (+ 주문력의 25%)", // TotalBaseDamage
+            "p6": "4", // OverheatPercBonusDamage*100
+            "p7": "65 ~ 150 (레벨에 따라)", // MonsterCapScaling
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "3", // FlamespitterDuration
             "p2": "50 / 75 / 100 / 125 / 150 (+ 주문력의 105%)", // FlatDamage
@@ -1463,7 +1588,13 @@ const customValues = {
         },
     },
     "Renata": { // 레나타 글라스크
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6", // PassiveDuration
+            "p2": "1 ~ 2% (레벨에 따라) (+ 주문력의 0.02%)", // PercentAmpCalcSelf
+            "p3": "1 ~ 2% (레벨에 따라) (+ 주문력의 0.02%)", // PercentAmpCalc
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1", // RootDuration
             "p2": "80 / 125 / 170 / 215 / 260 (+ 주문력의 80%)", // TotalDamage
@@ -1528,7 +1659,14 @@ const customValues = {
         },
     },
     "Renekton": { // 레넥톤
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5", // FuryPerAttack
+            "p2": "50", // FuryCost
+            "p3": "50", // LowHealthPercentThreshold*100
+            "p4": "50", // FuryIncreasePercent*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 90 / 120 / 150 / 180 (+ 추가 공격력의 100%)", // BasicDamage
             "p2": "2 / 3 / 4 / 5 / 6 (+ 추가 공격력의 2%)", // NonChampHealing
@@ -1597,7 +1735,12 @@ const customValues = {
         },
     },
     "Leona": { // 레오나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "2.5", // MarkDuration
+            "p2": "25 ~ 144 (레벨에 따라)", // TotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1", // StunDuration
             "p2": "10 / 35 / 60 / 85 / 110 (+ 주문력의 30%)", // TotalDamageTooltip
@@ -1655,7 +1798,14 @@ const customValues = {
         },
     },
     "RekSai": { // 렉사이
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "25", // FuryFromAttacks
+            "p2": "25", // FuryFromAbilities
+            "p3": "3", // HealDuration
+            "p4": "최대 체력의 9 ~ 20 (레벨에 따라)%", // HealAmount
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "3", // BuffDuration
             "p2": "35", // AttackSpeed*100
@@ -1708,7 +1858,14 @@ const customValues = {
         },
     },
     "Rell": { // 렐
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5", // ShredDuration
+            "p2": "3", // StealPercent*100
+            "p3": "15", // MaxPercentTooltipOnly
+            "p4": "방어력의 5% (+ 마법 저항력의 5%)", // OnHitDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "0.65", // StunDuration
             "p2": "60 / 100 / 140 / 180 / 220 (+ 주문력의 60%)", // Damage
@@ -1757,7 +1914,13 @@ const customValues = {
         },
     },
     "Rengar": { // 렝가
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // MaxFerocity
+            "p2": "1.5", // EmpoweredMSDuration
+            "p3": "30 ~ 50% (레벨에 따라)", // EmpoweredMS
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "40", // ASBonus
             "p2": "20 / 55 / 90 / 125 / 160 (+ 총 공격력의 100% + 총 공격력의 5%)", // QTotalDamage
@@ -1778,7 +1941,7 @@ const customValues = {
             "p1": "50 / 80 / 110 / 140 / 170 (+ 주문력의 80%)", // TotalDamage
             "p2": "1.5", // HealingWindow
             "p3": "50", // DamagePercentageHealed
-            "p4": "0 ~ 0 (레벨에 따라) (+ 주문력의 80%)", // TotalDamageEmpowered
+            "p4": "0 ~ 210 (레벨에 따라) (+ 주문력의 80%)", // TotalDamageEmpowered
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
             "cooldown": "0.25",
@@ -1820,7 +1983,12 @@ const customValues = {
         },
     },
     "Locke": { // 로크
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5 ~ 40 (레벨에 따라) (+ 주문력의 10%)", // MinOnHitDamage
+            "p2": "10 ~ 80 (레벨에 따라) (+ 주문력의 20%)", // MaxOnHitDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "40 / 48 / 56 / 64 / 72 (+ 주문력의 20%)", // MissileDamage
             "p2": "1", // SlowDuration1
@@ -1891,7 +2059,15 @@ const customValues = {
         },
     },
     "Lucian": { // 루시안
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3.5", // PassiveDuration
+            "p2": "총 공격력의 50 ~ 60 (레벨에 따라)%", // TotalDamage
+            "p3": "총 공격력의 100%", // MinionDamage
+            "p4": "2", // NumAuto
+            "p5": "15 (+ 총 공격력의 20%)", // PassiveTotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 115 / 150 / 185 / 220 (+ 추가 공격력의 100%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -1934,9 +2110,9 @@ const customValues = {
         },
         "R": {
             "p1": "3", // Duration
-            "p2": "22 + 치명타 확률의 100% x (이동 속도의 100% - 1)", // TotalNumShots
+            "p2": "22 + 치명타 확률의 100% x (치명타 피해량의 100% - 1)", // TotalNumShots
             "p3": "15 / 30 / 45 (+ 총 공격력의 25% + 주문력의 15%)", // DamagePerBullet
-            "p4": "22 + 치명타 확률의 100% x (이동 속도의 100% - 1) x 15 / 30 / 45 + 총 공격력의 25% + 주문력의 15%", // TotalDamage
+            "p4": "22 + 치명타 확률의 100% x (치명타 피해량의 100% - 1) x 15 / 30 / 45 + 총 공격력의 25% + 주문력의 15%", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
             "cooldown": "110 / 100 / 90",
@@ -1950,7 +2126,11 @@ const customValues = {
         },
     },
     "Lulu": { // 룰루
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5 ~ 39 (레벨에 따라) (+ 주문력의 5%) x 3", // CombinedDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 95 / 130 / 165 / 200 (+ 주문력의 50%)", // TotalDamage
             "p2": "80", // SlowAmount*-100
@@ -2073,7 +2253,13 @@ const customValues = {
         },
     },
     "LeeSin": { // 리 신
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "40", // PassiveAS
+            "p2": "10 ~ 20 (레벨에 따라) x 2", // TTFirstHitEnergy
+            "p3": "10 ~ 20 (레벨에 따라)", // EnergyReturn
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 90 / 120 / 150 / 180 (+ 추가 공격력의 90%)", // InitialDamage
             "p2": "3", // ReactivateTime
@@ -2131,7 +2317,12 @@ const customValues = {
         },
     },
     "Riven": { // 리븐
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3", // Charges
+            "p2": "총 공격력의 30 ~ 45 (레벨에 따라)%", // TotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "45 / 75 / 105 / 135 / 165 (+ 추가 공격력의 60 / 65 / 70 / 75 / 80%)", // FirstSlashDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -2183,7 +2374,13 @@ const customValues = {
         },
     },
     "Lissandra": { // 리산드라
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "25", // MoveSpeedMod*-100
+            "p2": "4", // ExplosionDelay
+            "p3": "120 ~ 520 (레벨에 따라) (+ 주문력의 50%)", // TotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 115 / 150 / 185 / 220 (+ 주문력의 75%)", // TotalDamage
             "p2": "1.5", // SlowDuration
@@ -2242,7 +2439,14 @@ const customValues = {
         },
     },
     "Lillia": { // 릴리아
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3", // Duration
+            "p2": "500% (+ 주문력의 1.25%) x 0.01", // DotPercentTooltip
+            "p3": "6.5 (+ 주문력의 2.5%) x 6", // MonsterHealTT
+            "p4": "1 ~ 15 (레벨에 따라) (+ 주문력의 5%) x 6", // ChampionHealTT
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "6.5", // PranceDuration
             "p2": "3 / 4 / 5 / 6 / 7% (+ 주문력의 0.03%)", // PranceSpeed
@@ -2302,7 +2506,12 @@ const customValues = {
         },
     },
     "MasterYi": { // 마스터 이
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // AttackCount
+            "p2": "총 공격력의 50%", // TotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "4", // AlphaStrikeBounces
             "p2": "20 / 40 / 60 / 80 / 100 (+ 총 공격력의 70%)", // TotalDamage
@@ -2364,7 +2573,13 @@ const customValues = {
         },
     },
     "Maokai": { // 마오카이
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "최대 체력의 4 ~ 12.8 (레벨에 따라)%", // PassiveHealingTotal
+            "p2": "4", // PassiveCooldownReduction
+            "p3": "1.5", // JungPassCooldownReduction
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "75 / 120 / 165 / 210 / 255 (+ 주문력의 50%)", // TotalDamage
             "p2": "2 / 2.5 / 3 / 3.5 / 4", // BasePercentHealth*100
@@ -2427,7 +2642,13 @@ const customValues = {
         },
     },
     "Malzahar": { // 말자하
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "0.25", // LingerDuration
+            "p2": "90", // DRPercent
+            "p3": "30 ~ 12 (레벨에 따라)", // ShieldCooldown
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 105 / 140 / 175 / 210 (+ 주문력의 55%)", // TotalDamageTooltip
             "p2": "1 / 1.25 / 1.5 / 1.75 / 2", // SilenceDuration
@@ -2457,7 +2678,7 @@ const customValues = {
             "p1": "4", // Duration
             "p2": "80 / 115 / 150 / 185 / 220 (+ 주문력의 80%)", // TotalDamage
             "p3": "최대 마나의 2%", // ManaRestore
-            "p4": "10 ~ 44 (레벨에 따라)", // MinionExecuteThreshold
+            "p4": "10 ~ 30 (레벨에 따라)", // MinionExecuteThreshold
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
@@ -2483,7 +2704,12 @@ const customValues = {
         },
     },
     "Malphite": { // 말파이트
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "8 ~ 6 (레벨에 따라)", // PassiveCooldown
+            "p2": "최대 체력의 10%", // TotalShield
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 120 / 170 / 220 / 270 (+ 주문력의 60%)", // QDamageCalc
             "p2": "3", // SlowDuration
@@ -2543,7 +2769,14 @@ const customValues = {
         },
     },
     "Mel": { // 멜
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5", // OverwhelmDuration
+            "p2": "3", // PassiveBonusMissiles
+            "p3": "8 ~ 30 (레벨에 따라) (+ 주문력의 4%)", // PassiveBonusMissileDamage
+            "p4": "9", // MaxPassiveBonusMissiles
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "6 / 7 / 8 / 9 / 10", // ExplosionCount
             "p2": "60 / 85 / 110 / 135 / 160 (+ 주문력의 55%)", // InitialExplosionDamage
@@ -2607,7 +2840,14 @@ const customValues = {
         },
     },
     "Mordekaiser": { // 모데카이저
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "주문력의 40%", // BonusAPAuto
+            "p2": "5 (+ 주문력의 30%)", // AuraDamagePerStack
+            "p3": "1 ~ 5 (레벨에 따라)", // PercentHealthForAura
+            "p4": "3 ~ 9% (레벨에 따라)", // PassiveMovementSpeed
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 115 / 150 / 185 / 220 (+ 0 ~ 45 (레벨에 따라) + 추가 공격력의 120% + 주문력의 70%)", // QDamage
             "p2": "80 / 115 / 150 / 185 / 220 (+ 0 ~ 45 (레벨에 따라) + 추가 공격력의 120% + 주문력의 70%) x 1.3 / 1.35 / 1.4 / 1.45 / 1.5", // EmpoweredDamageTooltip
@@ -2664,7 +2904,11 @@ const customValues = {
         },
     },
     "Morgana": { // 모르가나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "18", // HealPercent
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "2 / 2.25 / 2.5 / 2.75 / 3", // RootDuration
             "p2": "80 / 135 / 190 / 245 / 300 (+ 주문력의 90%)", // TotalDamage
@@ -2723,7 +2967,15 @@ const customValues = {
         },
     },
     "DrMundo": { // 문도 박사
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // CurrentHealthLoss*100
+            "p2": "7", // CannisterGroundDuration
+            "p3": "15", // PassiveCooldownRefund
+            "p4": "4", // MaxHealthGain*100
+            "p5": "0.4 ~ 2.3% (레벨에 따라)", // MaxHealthRegen
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "20 / 22.5 / 25 / 27.5 / 30", // CurrentHealthDamage*100
             "p2": "2", // SlowDuration
@@ -2787,10 +3039,14 @@ const customValues = {
         },
     },
     "MissFortune": { // 미스 포츈
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "총 공격력의 50 ~ 100 (레벨에 따라)%", // TotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 100% + 주문력의 35%)", // TotalDamageTooltip
-            "p2": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 100% + 주문력의 35%) x 1 + 0.5 x (이동 속도의 100% - 1)", // TotalDamageCrit
+            "p2": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 100% + 주문력의 35%) x 1 + 0.5 x (치명타 피해량의 100% - 1)", // TotalDamageCrit
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
@@ -2838,7 +3094,7 @@ const customValues = {
             "p2": "14 / 16 / 18", // BaseWaves
             "p3": "20 / 30 / 40 (+ 총 공격력의 60% + 주문력의 25%)", // PhysicalDamagePerWave
             "p4": "20 / 30 / 40 (+ 총 공격력의 60% + 주문력의 25%) x 14 / 16 / 18", // TotalPhysicalDamage
-            "p5": "20 / 30 / 40 (+ 총 공격력의 60% + 주문력의 25%) x 1 + 0.3 x (이동 속도의 100% - 1)", // CritDamagePerWave
+            "p5": "20 / 30 / 40 (+ 총 공격력의 60% + 주문력의 25%) x 1 + 0.3 x (치명타 피해량의 100% - 1)", // CritDamagePerWave
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
             "cooldown": "120 / 110 / 100",
@@ -2852,7 +3108,13 @@ const customValues = {
         },
     },
     "Milio": { // 밀리오
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "7 ~ 15% (레벨에 따라)", // ADBurstRatio
+            "p2": "1.5", // BurnDuration
+            "p3": "10 ~ 50 (레벨에 따라) (+ 주문력의 20%)", // BurnDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 140 / 200 / 260 / 320 (+ 주문력의 120%)", // Damage
             "p2": "1.5", // SlowDuration
@@ -2914,7 +3176,20 @@ const customValues = {
         },
     },
     "Bard": { // 바드
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "18", // f1
+            "p2": "12", // TooltipManaRestore
+            "p3": "20", // SpeedStackDuration
+            "p4": "24", // TooltipMSPerStack
+            "p5": "10", // MaxSpeedStacks
+            "p6": "?", // f5
+            "p7": "?", // f4
+            "p8": "30 (+ 주문력의 40%)", // MeepDamageNoChime
+            "p9": "5", // TooltipChimeDamageCheckpoint
+            "p10": "6", // DamagePerCheckpoint
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 120 / 160 / 200 / 240 (+ 주문력의 80%)", // TotalDamage
             "p2": "1 / 1.2 / 1.4 / 1.6 / 1.8", // SlowDuration
@@ -2975,7 +3250,17 @@ const customValues = {
         },
     },
     "Varus": { // 바루스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5 ~ 11 (레벨에 따라)", // ASDuration
+            "p2": "10 ~ 20% (레벨에 따라)", // MinionAS
+            "p3": "추가 공격 속도의 1100%", // MinionAD
+            "p4": "추가 공격 속도의 1100%", // MinionAP
+            "p5": "30%", // ChampionAS
+            "p6": "추가 공격 속도의 3300%", // ChampionAD
+            "p7": "추가 공격 속도의 3300%", // ChampionAP
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "20", // MoveSpeedMod*-100
             "p2": "4", // MaxChannelDuration
@@ -3046,7 +3331,12 @@ const customValues = {
         },
     },
     "Vi": { // 바이
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3", // ShieldDuration
+            "p2": "최대 체력의 12%", // TotalShield
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "15", // SelfSlow
             "p2": "40 / 60 / 80 / 100 / 120 (+ 추가 공격력의 60%)", // TotalDamage
@@ -3104,7 +3394,13 @@ const customValues = {
         },
     },
     "Veigar": { // 베이가
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1", // dAbilityStacks
+            "p2": "5", // dTakedownStacks
+            "p3": "1", // APPerStack
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 120 / 160 / 200 / 240 (+ 주문력의 50 / 55 / 60 / 65 / 70%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -3153,7 +3449,11 @@ const customValues = {
         },
     },
     "Vayne": { // 베인
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "30", // MovementSpeed
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "총 공격력의 75 / 85 / 95 / 105 / 115% (+ 주문력의 50%)", // ADRatioBonus
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -3211,7 +3511,15 @@ const customValues = {
         },
     },
     "Vex": { // 벡스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "25 ~ 16 (레벨에 따라)", // DoomCD
+            "p2": "0.75 ~ 1.5 (레벨에 따라)", // FearDuration
+            "p3": "6", // GloomDuration
+            "p4": "40 ~ 150 (레벨에 따라) (+ 주문력의 25%)", // GloomProcCalc
+            "p5": "25", // GloomCDChamp*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 115 / 160 / 205 / 250 (+ 주문력의 70%)", // QDamageCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -3266,7 +3574,16 @@ const customValues = {
         },
     },
     "Belveth": { // 벨베스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3", // SheenDuration
+            "p2": "20 ~ 20% (레벨에 따라)", // SheenSpeedPerStack
+            "p3": "1", // MonsterStacks
+            "p4": "2", // ChampionStacks
+            "p5": "0.1 ~ 2 (레벨에 따라)", // AttackSpeedPerStack
+            "p6": "0.1 ~ 2 (레벨에 따라) x 1 (중첩당)", // TotalAttackSpeedFromStacks
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "12 / 14 / 16 / 18 / 20 (+ 총 공격력의 105%)", // BaseDamage
             "p2": "16 / 15 / 14 / 13 / 12", // f1
@@ -3334,7 +3651,12 @@ const customValues = {
         },
     },
     "Velkoz": { // 벨코즈
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "7", // Duration
+            "p2": "주문력의 60% (+ 35 ~ 180 (레벨에 따라))", // TotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 120 / 160 / 200 / 240 (+ 주문력의 90%)", // TotalDamage
             "p2": "70", // SlowAmount*100
@@ -3393,7 +3715,13 @@ const customValues = {
         },
     },
     "Volibear": { // 볼리베어
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6", // BuffDuration
+            "p2": "5% (+ 주문력의 0.03%)", // AttackSpeedCalc
+            "p3": "11 ~ 60 (레벨에 따라) (+ 주문력의 45%)", // ChainLightningDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "4", // Duration
             "p2": "12 / 15.5 / 19 / 22.5 / 26%", // MinSpeedCalc
@@ -3462,7 +3790,16 @@ const customValues = {
         },
     },
     "Braum": { // 브라움
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // StackDuration
+            "p2": "4", // StackCap
+            "p3": "1.25 ~ 1.75 (레벨에 따라)", // StunDuration
+            "p4": "16 ~ 186 (레벨에 따라)", // TotalDamage
+            "p5": "8 ~ 4 (레벨에 따라)", // StunCD
+            "p6": "16 ~ 186 (레벨에 따라) x 0.4", // OnHitDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "75 / 120 / 165 / 210 / 255 (+ 최대 체력의 2.5%)", // TotalDamage
             "p2": "70", // InitialSlow
@@ -3526,7 +3863,17 @@ const customValues = {
         },
     },
     "Briar": { // 브라이어
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5", // BleedDuration
+            "p2": "5", // MaxBleedStacks
+            "p3": "2 ~ 10 (레벨에 따라) (+ 추가 공격력의 10%) x 5", // BleedDamageOverDurationTooltip
+            "p4": "2 ~ 10 (레벨에 따라) (+ 추가 공격력의 10%) x 5 x 2", // BleedMaxDamageOverDurationTooltip
+            "p5": "25", // HealPercent*100
+            "p6": "0.4 (+ 추가 최대 체력의 0.025%) x 100", // TotalHealPerMissingHPPercentTooltip
+            "p7": "5", // CurrentHealthPercentCost*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 85 / 110 / 135 / 160 (+ 주문력의 60% + 추가 공격력의 80%)", // TotalDamage
             "p2": "0.85", // StunDuration
@@ -3596,7 +3943,13 @@ const customValues = {
         },
     },
     "Brand": { // 브랜드
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "2", // PercentHealthDamage
+            "p2": "20 ~ 39.983 (레벨에 따라)", // ManaRestore
+            "p3": "6 ~ 12% (레벨에 따라) (+ 주문력의 2%)", // ExplosionDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 100 / 130 / 160 / 190 (+ 주문력의 65%)", // TotalDamage
             "p2": "1.75", // StunDuration
@@ -3649,7 +4002,14 @@ const customValues = {
         },
     },
     "Vladimir": { // 블라디미르
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "30", // Effect1Amount
+            "p2": "1.6", // Effect2Amount
+            "p3": "(추가 최대 체력의 100% + 1.6 x 주문력의 -100%) x 0.01 x 3.333", // ApproximateAPBonusAvoidingRecursion
+            "p4": "(추가 주문력의 100% + 0.01 x 3.333 x 추가 최대 체력의 -100%) x 1.06 x 1.6", // ApproximateHPBonusAvoidingRecursion
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 100 / 120 / 140 / 160 (+ 주문력의 60%)", // BaseDamageTooltip
             "p2": "20 / 25 / 30 / 35 / 40 (+ 주문력의 35%)", // BaseHealTooltip
@@ -3714,7 +4074,13 @@ const customValues = {
         },
     },
     "Blitzcrank": { // 블리츠크랭크
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "30", // HealthThreshold*100
+            "p2": "10", // ShieldDuration
+            "p3": "최대 마나의 35%", // ShieldAmount
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "110 / 160 / 210 / 260 / 310 (+ 주문력의 120%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -3769,7 +4135,14 @@ const customValues = {
         },
     },
     "Viego": { // 비에고
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3", // TakedownWindow
+            "p2": "2 (+ 추가 공격력의 2.5% + 주문력의 2% + 추가 공격 속도의 500%)", // PercentHealthHeal
+            "p3": "10", // TransformDuration
+            "p4": "10", // MoveSpeedPercent*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "2 / 3 / 4 / 5 / 6%", // TotalPercentHealthOnHit
             "p2": "총 공격력의 20% (+ 주문력의 15%)", // SecondAttackDamage
@@ -3829,7 +4202,14 @@ const customValues = {
         },
     },
     "Viktor": { // 빅토르
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "100", // EvolutionStackBreakpoint
+            "p2": "1", // MinionStacks
+            "p3": "10", // CannonStacks
+            "p4": "20", // ChampionStacks
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 75 / 90 / 105 / 120 (+ 주문력의 40%)", // TotalMissileDamage
             "p2": "2.5", // BuffDuration
@@ -3894,7 +4274,14 @@ const customValues = {
         },
     },
     "Poppy": { // 뽀삐
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "16 ~ 8 (레벨에 따라)", // ActualCooldown
+            "p2": "350", // BonusRange
+            "p3": "20 ~ 180 (레벨에 따라)", // TotalDamage
+            "p4": "최대 체력의 11 ~ 20 (레벨에 따라)%", // ShieldValue
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "30 / 55 / 80 / 105 / 130 (+ 추가 공격력의 100%)", // BaseDamage
             "p2": "9", // HealthDamagePercent
@@ -3958,7 +4345,13 @@ const customValues = {
         },
     },
     "Samira": { // 사미라
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "2.75 ~ 3.5% (레벨에 따라)", // MSBonusNew
+            "p2": "2 ~ 19 (레벨에 따라) (+ 총 공격력의 3.5 ~ 10.5 (레벨에 따라)%)", // BonusMeleeDamage
+            "p3": "2 ~ 19 (레벨에 따라) (+ 총 공격력의 3.5 ~ 10.5 (레벨에 따라)%) x 2", // EmpoweredMeleeDamageTooltip
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "0 / 5 / 10 / 15 / 20 (+ 총 공격력의 110%)", // DamageCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -4014,7 +4407,12 @@ const customValues = {
         },
     },
     "Sion": { // 사이온
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "100", // Lifesteal*100
+            "p2": "10", // PercentMaxHP*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "30 / 45 / 60 / 75 / 90 (+ 총 공격력의 40 / 50 / 60 / 70 / 80%)", // MinDamageTotal
             "p2": "90 / 155 / 220 / 285 / 350 (+ 총 공격력의 120 / 150 / 180 / 210 / 240%)", // MaxDamageTotal
@@ -4078,7 +4476,14 @@ const customValues = {
         },
     },
     "Sylas": { // 사일러스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3", // PassiveCharges
+            "p2": "총 공격력의 130% (+ 주문력의 30%)", // PassiveDamage
+            "p3": "총 공격력의 40% (+ 주문력의 20%)", // PassiveAoEDamage
+            "p4": "125", // PassiveAttackSpeed*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "40 / 60 / 80 / 100 / 120 (+ 주문력의 40%)", // Damage
             "p2": "1.5", // SlowDuration
@@ -4139,11 +4544,17 @@ const customValues = {
         },
     },
     "Shaco": { // 샤코
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "20 ~ 35 (레벨에 따라) (+ 추가 공격력의 20%)", // BasicAttackDamage
+            "p2": "15 ~ 50 (레벨에 따라) (+ 주문력의 10%)", // ShivDamage
+            "p3": "15 ~ 50 (레벨에 따라) (+ 주문력의 10%) x 1.5", // ShivDamageExecute
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "2.5 / 2.75 / 3 / 3.25 / 3.5", // StealthDuration
             "p2": "25 / 35 / 45 / 55 / 65 (+ 추가 공격력의 60%)", // TotalDamage
-            "p3": "100 + 0.6 x (이동 속도의 100% - 1)%", // QCritDamageMod
+            "p3": "100 + 0.6 x (치명타 피해량의 100% - 1)%", // QCritDamageMod
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
             "cooldown": "13 / 12.5 / 12 / 11.5 / 11",
@@ -4205,7 +4616,19 @@ const customValues = {
         },
     },
     "Senna": { // 세나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1 ~ 10 (레벨에 따라)", // BonusCurentHealthDamage
+            "p2": "0.75", // ADPerStack
+            "p3": "20", // StacksForBonus
+            "p4": "20", // BonusRange
+            "p5": "10", // BonusCritChance
+            "p6": "치명타 피해량의 100%", // CriticalDamage
+            "p7": "35", // CritToLifestealConversionPercent*100
+            "p8": "총 공격력의 20%", // BonusOnHitDamage
+            "p9": "10 ~ 20% (레벨에 따라)", // MSSteal
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "30 / 55 / 80 / 105 / 130 (+ 추가 공격력의 60%)", // TotalDamage
             "p2": "1 / 1.25 / 1.5 / 1.75 / 2", // SlowDuration
@@ -4266,7 +4689,12 @@ const customValues = {
         },
     },
     "Seraphine": { // 세라핀
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "25", // BonusAARange
+            "p2": "4 ~ 25 (레벨에 따라) (+ 주문력의 4%)", // AutoDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 85 / 110 / 135 / 160 (+ 주문력의 40%)", // ExplosionDamage
             "p2": "25", // ExecuteThreshold*100
@@ -4325,7 +4753,14 @@ const customValues = {
         },
     },
     "Sejuani": { // 세주아니
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "12 ~ 6 (레벨에 따라)", // FrostArmorOOC
+            "p2": "10 (+ 추가 방어력의 75%)", // TotalArmorTooltip
+            "p3": "10 (+ 추가 마법 저항력의 75%)", // TotalMRTooltip
+            "p4": "10%", // PercentHPDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "90 / 140 / 190 / 240 / 290 (+ 주문력의 75%)", // TotalDamageTooltip
             "p2": "0.5", // KnockupDurationTOOLTIPONLY
@@ -4379,7 +4814,13 @@ const customValues = {
         },
     },
     "Sett": { // 세트
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "0 ~ 85 (레벨에 따라) (+ 추가 공격력의 55%)", // RightPunchBonus
+            "p2": "5", // MissingHealthUnit*500
+            "p3": "0.03 ~ 0.4 (레벨에 따라) x 5", // TooltipRegenPerMissingHealthCalc
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1.5", // MSDuration
             "p2": "30", // MSAmount*100
@@ -4445,7 +4886,14 @@ const customValues = {
         },
     },
     "Sona": { // 소나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "0.5", // AccelerandoAHPerStack
+            "p2": "60", // AccelerandoCap
+            "p3": "3", // PowerChordPassiveCountMax
+            "p4": "20 ~ 240 (레벨에 따라) (+ 주문력의 20%)", // PowerChordDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "50 / 85 / 120 / 155 / 190 (+ 주문력의 40%)", // TotalDamage
             "p2": "3", // AuraDuration
@@ -4511,7 +4959,12 @@ const customValues = {
         },
     },
     "Soraka": { // 소라카
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "40", // HealthThreshold*100
+            "p2": "90", // MovementSpeed*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "85 / 120 / 155 / 190 / 225 (+ 주문력의 35%)", // TotalDamage
             "p2": "1.5", // SlowDuration
@@ -4570,7 +5023,14 @@ const customValues = {
         },
     },
     "Shen": { // 쉔
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "2.5", // ShieldDuration
+            "p2": "47 ~ 120 (레벨에 따라) (+ 추가 최대 체력의 13%)", // ShieldValue
+            "p3": "11", // ShieldCooldown
+            "p4": "4 ~ 7.995 (레벨에 따라)", // ShieldCooldownReduction
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "2", // SlowDuration
             "p2": "25 / 30 / 35 / 40 / 45", // SlowPercent
@@ -4626,7 +5086,14 @@ const customValues = {
         },
     },
     "Shyvana": { // 쉬바나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "0.3", // BonusArmor
+            "p2": "0.3", // BonusMagicResist
+            "p3": "0.3 (중첩당)", // Calc_Bonus_Armor
+            "p4": "0.3 (중첩당)", // Calc_Bonus_MR
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1% (+ 추가 공격력의 0.011%)", // Calc_Max_Health_Damage
             "p2": "0.5", // Cooldown_Reduction
@@ -4696,7 +5163,15 @@ const customValues = {
         },
     },
     "Smolder": { // 스몰더
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "0.25 (중첩당)", // Passive_QDamageIncrease
+            "p2": "0.55 (중첩당)", // Passive_WDamageIncrease
+            "p3": "0.08 (중첩당)", // EBonusDamage
+            "p4": "100", // EStacksPerAttackTooltip
+            "p5": "?", // f1.0
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 70 / 80 / 90 / 100 (+ 추가 공격력의 130%)", // TotalDamage
             "p2": "15", // ManaRestore
@@ -4767,7 +5242,14 @@ const customValues = {
         },
     },
     "Swain": { // 스웨인
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6 ~ 6% (레벨에 따라)", // PassiveHealPercent
+            "p2": "15", // HealthIncrement
+            "p3": "?", // f1
+            "p4": "15 (중첩당)", // MaxHealthGained
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 90 / 120 / 150 / 180 (+ 주문력의 45%)", // InitialDamage
             "p2": "60 / 90 / 120 / 150 / 180 (+ 주문력의 45%) x 0.25", // ExtraBoltDamage
@@ -4828,7 +5310,13 @@ const customValues = {
         },
     },
     "Skarner": { // 스카너
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // Duration
+            "p2": "3", // StacksToTriggerPassive
+            "p3": "5 ~ 9% (레벨에 따라)", // PercentHealthDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "20 / 25 / 30 / 35 / 40", // AttackSpeed*100
             "p2": "10 / 20 / 30 / 40 / 50 (+ 추가 공격력의 90% + 추가 최대 체력의 3%)", // AbilityDamage
@@ -4884,7 +5372,12 @@ const customValues = {
         },
     },
     "Sivir": { // 시비르
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "55 ~ 75 (레벨에 따라)", // FlatMS
+            "p2": "1.5", // HasteDuration
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 85 / 110 / 135 / 160 (+ 추가 공격력의 70% + 주문력의 60%)", // TotalDamage
             "p2": "40", // FallOffMinimum*100
@@ -4941,7 +5434,12 @@ const customValues = {
         },
     },
     "XinZhao": { // 신 짜오
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "총 공격력의 15 ~ 60 (레벨에 따라)% (+ 주문력의 5 ~ 20 (레벨에 따라)%)", // TotalDamage
+            "p2": "최대 체력의 2 ~ 5 (레벨에 따라)% (+ 주문력의 40 ~ 70 (레벨에 따라)%)", // TotalHealing
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "15 / 30 / 45 / 60 / 75 (+ 추가 공격력의 40%)", // BonusDamage
             "p2": "0.75", // KnockUpDuration
@@ -5002,7 +5500,18 @@ const customValues = {
         },
     },
     "Syndra": { // 신드라
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "120", // MaxStackAmount
+            "p2": "20 ~ 215 (레벨에 따라)", // ManaPerProc
+            "p3": "4", // MarkDuration
+            "p4": "1 ~ 3 (레벨에 따라)", // StacksPerProc
+            "p5": "8", // PassiveMarkCooldown
+            "p6": "5", // PassiveStacksPerLevel
+            "p7": "1", // StackPerSiege
+            "p8": "15", // CapstoneAPPerc*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "90 / 125 / 160 / 195 / 230 (+ 주문력의 70%)", // TotalDamage
             "p2": "6", // SphereDuration
@@ -5061,7 +5570,13 @@ const customValues = {
         },
     },
     "Singed": { // 신지드
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "2", // MSDuration
+            "p2": "25", // MSPercent*100
+            "p3": "8", // PerTargetCD
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "20 / 30 / 40 / 50 / 60 (+ 주문력의 42.5%)", // DamagePerSecond
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -5115,7 +5630,11 @@ const customValues = {
         },
     },
     "Thresh": { // 쓰레쉬
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1", // StatValuePerSoul
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1.5", // TauntLength
             "p2": "100 / 150 / 200 / 250 / 300 (+ 주문력의 90%)", // TotalDamage
@@ -5174,7 +5693,14 @@ const customValues = {
         },
     },
     "Ahri": { // 아리
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "9", // MaxStacks
+            "p2": "35 ~ 95 (레벨에 따라) (+ 주문력의 20%)", // MinionHeal
+            "p3": "3", // TakedownWindow
+            "p4": "75 ~ 165 (레벨에 따라) (+ 주문력의 30%)", // ChampionHeal
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "35 / 60 / 85 / 110 / 135 (+ 주문력의 50%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -5234,7 +5760,12 @@ const customValues = {
         },
     },
     "Amumu": { // 아무무
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3", // DebuffDuration
+            "p2": "10", // DamageAmp*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1", // StunDuration
             "p2": "70 / 95 / 120 / 145 / 170 (+ 주문력의 85%)", // TotalDamage
@@ -5287,7 +5818,16 @@ const customValues = {
         },
     },
     "AurelionSol": { // 아우렐리온 솔
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "0.031 (중첩당)%", // QPassiveScaling
+            "p2": "?", // f2.1
+            "p3": "?", // f3.1
+            "p4": "0.026 (중첩당)", // EPassiveScalingExecute
+            "p5": "?", // f4.1
+            "p6": "?", // f1
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "3.25 / 3.25 / 3.25 / 3.25 / 9999", // MaxChannelDuration
             "p2": "45 / 60 / 75 / 90 / 105 (+ 주문력의 55%)", // DamagePerSecond
@@ -5350,7 +5890,13 @@ const customValues = {
         },
     },
     "Ivern": { // 아이번
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "15 ~ 0.006 (레벨에 따라) x 기본 최대 체력의 1%", // HealthTooltip
+            "p2": "20 ~ 0.025 (레벨에 따라) x 최대 마나의 1%", // ManaTooltip
+            "p3": "40 ~ 1 (레벨에 따라)", // HarvestDuration
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 125 / 170 / 215 / 260 (+ 주문력의 70%)", // TotalDamage
             "p2": "1.6 / 1.7 / 1.8 / 1.9 / 2", // RootDuration
@@ -5413,7 +5959,13 @@ const customValues = {
         },
     },
     "Azir": { // 아지르
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "230 ~ 410 (레벨에 따라) (+ 주문력의 40%)", // TowerDamage
+            "p2": "30 ~ 90 (레벨에 따라)", // BonusResists
+            "p3": "45", // TowerDisintegrationTime
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 80 / 100 / 120 / 140 (+ 주문력의 35 / 40 / 45 / 50 / 55%)", // TotalDamage
             "p2": "25", // SlowAmount*-100
@@ -5469,7 +6021,12 @@ const customValues = {
         },
     },
     "Akali": { // 아칼리
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "40 ~ 70% (레벨에 따라)", // PassiveSpeedBonus
+            "p2": "35 ~ 182 (레벨에 따라) (+ 추가 공격력의 60% + 주문력의 55%)", // Damage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "45 / 70 / 95 / 120 / 145 (+ 총 공격력의 65% + 주문력의 60%)", // Damage
             "p2": "0.5", // SlowDuration
@@ -5532,7 +6089,17 @@ const customValues = {
         },
     },
     "Akshan": { // 아크샨
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "총 공격력의 50%", // SecondAutoDamage
+            "p2": "20 ~ 75 (레벨에 따라) x 1 + 추가 공격 속도의 100%", // ASModdedMS
+            "p3": "1", // HasteDuration
+            "p4": "15 ~ 150 (레벨에 따라) (+ 주문력의 60%)", // PassiveProcDamage
+            "p5": "2", // ShieldDuration
+            "p6": "40 ~ 280 (레벨에 따라) (+ 추가 공격력의 35%)", // TotalShieldAmount
+            "p7": "16 ~ 4 (레벨에 따라)", // PassiveCooldown
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "45 / 75 / 105 / 135 / 165 (+ 추가 공격력의 70%)", // FinalDamage
             "p2": "20% (+ 주문력의 0.05%)", // TotalHaste
@@ -5588,7 +6155,14 @@ const customValues = {
         },
     },
     "Aatrox": { // 아트록스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4 ~ 10% (레벨에 따라)", // PDamage
+            "p2": "100", // PHealingRatio*100
+            "p3": "25", // PHealingMinionMod*100
+            "p4": "22 ~ 10 (레벨에 따라)", // PCooldown
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "10 / 25 / 40 / 55 / 70 (+ 총 공격력의 60 / 67.5 / 75 / 82.5 / 90%)", // QDamage
             "p2": "10 / 25 / 40 / 55 / 70 (+ 총 공격력의 60 / 67.5 / 75 / 82.5 / 90%) x 1.75", // QEdgeDamage
@@ -5647,7 +6221,15 @@ const customValues = {
         },
     },
     "Aphelios": { // 아펠리오스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "?", // f1
+            "p2": "?", // f2
+            "p3": "?", // f3
+            "p4": "?", // f4
+            "p5": "?", // f5
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
@@ -5697,7 +6279,13 @@ const customValues = {
         },
     },
     "Alistar": { // 알리스타
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "7", // PassiveMaxStacks
+            "p2": "최대 체력의 5%", // BaseHeal
+            "p3": "최대 체력의 5% x 1.4", // AllyHeal
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1", // KnockupDuration
             "p2": "60 / 100 / 140 / 180 / 220 (+ 주문력의 80%)", // TotalDamage
@@ -5750,7 +6338,16 @@ const customValues = {
         },
     },
     "Ambessa": { // 암베사
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // Attack_Buff_Duration
+            "p2": "3", // Attack_Buff_Max_Stacks
+            "p3": "75", // Attack_Range_Amount
+            "p4": "50%", // Calc_Attack_Speed
+            "p5": "5 ~ 30 (레벨에 따라) (+ 추가 공격력의 25%)", // Calc_OnHit_Damage_Flat
+            "p6": "40 ~ 70 (레벨에 따라)", // Calc_OnHit_Energy_Refund
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "40 / 60 / 80 / 100 / 120 (+ 추가 공격력의 60%)", // Calc_Damage_1_Max
             "p2": "4 / 4.5 / 5 / 5.5 / 6% (+ 추가 공격력의 0.03%)", // Calc_Damage_1_Percent_Max
@@ -5814,7 +6411,11 @@ const customValues = {
         },
     },
     "Annie": { // 애니
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1.25 ~ 1.75 (레벨에 따라)", // StunDuration
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 125 / 170 / 215 / 260 (+ 주문력의 80%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -5869,7 +6470,11 @@ const customValues = {
         },
     },
     "Anivia": { // 애니비아
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "-40 ~ 20 (레벨에 따라)", // BonusResists
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "50 / 70 / 90 / 110 / 130 (+ 주문력의 25%)", // TotalPassthroughDamage
             "p2": "3", // SlowDuration
@@ -5927,7 +6532,14 @@ const customValues = {
         },
     },
     "Ashe": { // 애쉬
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "2", // SlowDuration
+            "p2": "20 ~ 30% (레벨에 따라)", // SlowAmount
+            "p3": "100% (+ 치명타 확률의 100 + 추가 치명타 피해량의 100%%)", // DamageBonus
+            "p4": "40 ~ 60% (레벨에 따라)", // EmpoweredSlowAmount
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "4", // StackDuration
             "p2": "4", // MaxStacks
@@ -5981,7 +6593,14 @@ const customValues = {
         },
     },
     "Yasuo": { // 야스오
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "125 ~ 600 (레벨에 따라)", // ShieldValue
+            "p2": "100", // CritChanceMultiplier*100
+            "p3": "치명타 피해량의 100%", // CurrentCritDamage
+            "p4": "0.5", // YasuoCritToAD*.01
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 105%)", // TotalDamage
             "p2": "6", // GatheringStormDuration
@@ -6038,7 +6657,14 @@ const customValues = {
         },
     },
     "Ekko": { // 에코
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "30 ~ 140 (레벨에 따라) (+ 주문력의 80%)", // ThreeHitDamage
+            "p2": "2 ~ 3 (레벨에 따라)", // SpeedDuration
+            "p3": "50 ~ 80% (레벨에 따라)", // BonusMS
+            "p4": "4", // LockoutTime
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 95 / 110 / 125 / 140 (+ 주문력의 30%)", // InitialDamage
             "p2": "40 / 45 / 50 / 55 / 60", // SlowPercent*-100
@@ -6145,7 +6771,15 @@ const customValues = {
         },
     },
     "MonkeyKing": { // 오공
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6 ~ 10 (레벨에 따라)", // BonusArmor
+            "p2": "0.35", // HealthPercentPer5*100
+            "p3": "5", // StackDuration
+            "p4": "100", // StackMultiplier*100
+            "p5": "5", // MaxStacks
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "135 / 145 / 155 / 165 / 175", // AttackRangeBonus
             "p2": "20 / 45 / 70 / 95 / 120 (+ 추가 공격력의 50%)", // BonusDamageTT
@@ -6208,7 +6842,13 @@ const customValues = {
         },
     },
     "Aurora": { // 오로라
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1% (+ 주문력의 0.027%)", // ProcDamage
+            "p2": "4", // SpiritModeDuration
+            "p3": "3 ~ 20 (레벨에 따라) (+ 주문력의 2%)", // HealCalc
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "45 / 70 / 95 / 120 / 145 (+ 주문력의 40%)", // damage
             "p2": "3.5", // MarkDuration
@@ -6270,7 +6910,11 @@ const customValues = {
         },
     },
     "Ornn": { // 오른
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1", // GameModeInteger
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 110%)", // TotalDamage
             "p2": "2", // SlowDuration
@@ -6332,7 +6976,14 @@ const customValues = {
         },
     },
     "Orianna": { // 오리아나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "10 ~ 50 (레벨에 따라) (+ 주문력의 15%)", // TotalDamage
+            "p2": "4", // StackDuration
+            "p3": "10 ~ 50 (레벨에 따라) (+ 주문력의 15%) x 0.15", // StackDamage
+            "p4": "10 ~ 50 (레벨에 따라) (+ 주문력의 15%) x 0.15 x 2", // StackDamageMax
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 90 / 120 / 150 / 180 (+ 주문력의 55%)", // TotalDamageTooltip
             "p2": "30", // ReducedDamagePercent
@@ -6392,7 +7043,12 @@ const customValues = {
         },
     },
     "Olaf": { // 올라프
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "50 ~ 100% (레벨에 따라)", // MaxAttackSpeed
+            "p2": "8 ~ 25% (레벨에 따라)", // MaxLifeSteal
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 120 / 170 / 220 / 270 (+ 추가 공격력의 100%)", // TotalDamage
             "p2": "3", // MaxSlowDuration
@@ -6457,7 +7113,14 @@ const customValues = {
         },
     },
     "Yone": { // 요네
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "50", // MagicDamageSplit*100
+            "p2": "100", // CritChanceMultiplier*100
+            "p3": "치명타 피해량의 100%", // CurrentCritDamage
+            "p4": "0.5", // YoneCritToAD*.01
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "25 / 50 / 75 / 100 / 125 (+ 총 공격력의 110%)", // QDamage
             "p2": "6", // BuffDuration
@@ -6517,7 +7180,14 @@ const customValues = {
         },
     },
     "Yorick": { // 요릭
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "8 ~ 2 (레벨에 따라)", // YorickPassiveSpawnThreshold
+            "p2": "100 ~ 300 (레벨에 따라) (+ 추가 최대 체력의 15%)", // YorickPassiveGhoulHealth
+            "p3": "15 ~ 100 (레벨에 따라) (+ 추가 공격력의 20%)", // YorickPassiveGhoulDamage
+            "p4": "4", // YorickPassiveGhoulMax
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "30 / 50 / 70 / 90 / 110 (+ 총 공격력의 50%)", // BonusDamage
             "p2": "10 ~ 68 (레벨에 따라)", // QHeal
@@ -6570,7 +7240,14 @@ const customValues = {
         },
     },
     "Udyr": { // 우디르
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "50 ~ 20 (레벨에 따라)", // UltCD
+            "p2": "4", // AttackSpeedDuration
+            "p3": "30%", // AttackSpeed
+            "p4": "5", // UltCDReduction*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "4", // AttackSpeedDurationBase
             "p2": "20 / 32 / 44 / 56 / 68", // AttackSpeedBase*100
@@ -6641,7 +7318,13 @@ const customValues = {
         },
     },
     "Urgot": { // 우르곳
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "총 공격력의 40 ~ 100 (레벨에 따라)%", // ADDamage
+            "p2": "2 ~ 6% (레벨에 따라)", // PercentHPRatio
+            "p3": "30 ~ 2.5 (레벨에 따라)", // PerLegCD
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "25 / 70 / 115 / 160 / 205 (+ 총 공격력의 70%)", // TotalDamage
             "p2": "1.25", // SlowDuration
@@ -6705,7 +7388,15 @@ const customValues = {
         },
     },
     "Warwick": { // 워윅
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6 ~ 55 (레벨에 따라) (+ 추가 공격력의 15% + 주문력의 10%)", // OnHitDamage
+            "p2": "50", // HealingThreshold*100
+            "p3": "100", // HealingRatio*100
+            "p4": "25", // EmpoweredHealingThreshold*100
+            "p5": "250", // EmpoweredHealingRatio*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "총 공격력의 120% (+ 주문력의 100%)", // BaseBiteDamage
             "p2": "6 / 7 / 8 / 9 / 10", // TargetPercentHPDamage
@@ -6762,7 +7453,11 @@ const customValues = {
         },
     },
     "Yunara": { // 유나라
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "10% (+ 주문력의 0.1%)", // Calc_Damage_Amp
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "5 / 10 / 15 / 20 / 25 (+ 주문력의 20%)", // Calc_Passive_Damage
             "p2": "1", // Resource_Nonchampion
@@ -6820,7 +7515,13 @@ const customValues = {
         },
     },
     "Yuumi": { // 유미
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "20 ~ 110 (레벨에 따라) (+ 주문력의 30%)", // HealAmount
+            "p2": "4", // HealDelayTime
+            "p3": "20 ~ 8 (레벨에 따라)", // PassiveCooldown
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 95 / 130 / 165 / 200 (+ 주문력의 20%)", // TotalMissileDamage
             "p2": "20", // SlowAmount
@@ -6877,7 +7578,7 @@ const customValues = {
             "p5": "10", // BaseSlow*-100
             "p6": "10", // BonusSlowPerWave*-100
             "p7": "30 / 50 / 70 (+ 주문력의 12%)", // TotalHealPerWave
-            "p8": "30 / 50 / 70 (+ 주문력의 12%) x 1.3 ~ 1.9 (레벨에 따라)", // EnhancedHealPerWave
+            "p8": "30 / 50 / 70 (+ 주문력의 12%) x 1.3 ~ 1.6 (레벨에 따라)", // EnhancedHealPerWave
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
             "cooldown": "120 / 110 / 100",
@@ -6890,7 +7591,14 @@ const customValues = {
         },
     },
     "Irelia": { // 이렐리아
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6", // BuffDuration
+            "p2": "4", // MaxStacks
+            "p3": "10 ~ 25 (레벨에 따라)", // SingleStackAS
+            "p4": "10 ~ 3 (레벨에 따라) (+ 추가 공격력의 20%)", // OnHitBonus
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "5 / 25 / 45 / 65 / 85 (+ 총 공격력의 70%)", // ChampionDamage
             "p2": "총 공격력의 9 / 10 / 11 / 12 / 13%", // HealAmount
@@ -6953,7 +7661,14 @@ const customValues = {
         },
     },
     "Evelynn": { // 이블린
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // DemonShadeTimer
+            "p2": "250 ~ 590 (레벨에 따라) (+ 주문력의 250%)", // HealingThresholdTOOLTIP
+            "p3": "15 ~ 150 (레벨에 따라)", // HealPerSecondTOOLTIP
+            "p4": "1.5", // StealthDropTimer
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "25 / 30 / 35 / 40 / 45 (+ 주문력의 25%)", // MissileDamage
             "p2": "15 / 25 / 35 / 45 / 55 (+ 주문력의 25%)", // TotalBonusDamage
@@ -7022,7 +7737,13 @@ const customValues = {
         },
     },
     "Ezreal": { // 이즈리얼
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6", // StackDuration
+            "p2": "10", // AttackSpeedPerStack.0*100
+            "p3": "5", // MaxStacks
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 130% + 주문력의 40%)", // Damage
             "p2": "1.5", // CDRefund
@@ -7076,7 +7797,12 @@ const customValues = {
         },
     },
     "Illaoi": { // 일라오이
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "18 ~ 7 (레벨에 따라)", // SpawnCD
+            "p2": "5", // MissingHPPercentHeal*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
@@ -7132,7 +7858,12 @@ const customValues = {
         },
     },
     "JarvanIV": { // 자르반 4세
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "8", // TooltipCurrentHealthDamage*100
+            "p2": "6 ~ 3 (레벨에 따라)", // TooltipCooldown
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "90 / 130 / 170 / 210 / 250 (+ 추가 공격력의 145%)", // TotalDamage
             "p2": "3", // Effect3Amount
@@ -7189,7 +7920,13 @@ const customValues = {
         },
     },
     "Xayah": { // 자야
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "?", // f14
+            "p2": "?", // f16*100
+            "p3": "?", // f12
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "45 / 60 / 75 / 90 / 105 (+ 추가 공격력의 50%)", // TotalDamage
             "p2": "45 / 60 / 75 / 90 / 105 (+ 추가 공격력의 50%) x 0.5", // MultiHitDamage
@@ -7246,7 +7983,12 @@ const customValues = {
         },
     },
     "Zyra": { // 자이라
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "13.6 ~ 9.05 (레벨에 따라)", // SeedCooldown
+            "p2": "15 ~ 75 (레벨에 따라) (+ 주문력의 20%)", // PlantDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 100 / 140 / 180 / 220 (+ 주문력의 65%)", // InitialDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -7308,7 +8050,13 @@ const customValues = {
         },
     },
     "Zac": { // 자크
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4 ~ 8% (레벨에 따라)", // HealPercent
+            "p2": "8 ~ 4 (레벨에 따라)", // ReviveBlobletDuration
+            "p3": "300", // ReviveCooldown
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 90 / 120 / 150 / 180 (+ 주문력의 30% + 추가 최대 체력의 3%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -7366,7 +8114,15 @@ const customValues = {
         },
     },
     "Zaahen": { // 자헨
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "12", // MaxStacks
+            "p2": "1.5 ~ 2.8% (레벨에 따라)", // PercentBonusADCalc
+            "p3": "4", // ReviveDuration
+            "p4": "?", // RevivePercentCalc
+            "p5": "300 ~ 120 (레벨에 따라)", // ReviveCooldownCalc
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "15 / 30 / 45 / 60 / 75 (+ 추가 공격력의 20 / 25 / 30 / 35 / 40%)", // InitialDamage
             "p2": "5 / 6 / 7 / 8 / 9", // HealPercent*100
@@ -7426,7 +8182,12 @@ const customValues = {
         },
     },
     "Janna": { // 잔나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6", // MSPercentAlly*100
+            "p2": "?", // BonusDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "3", // MaxDuration
             "p2": "55 / 90 / 125 / 160 / 195 (+ 주문력의 50%)", // MinimumDamage
@@ -7488,7 +8249,12 @@ const customValues = {
         },
     },
     "Jax": { // 잭스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5 ~ 12.5% (레벨에 따라)", // AttackSpeedPerStack
+            "p2": "5 ~ 12.5% (레벨에 따라) x 8", // MaxBonusAttackSpeed
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "65 / 105 / 145 / 185 / 225 (+ 추가 공격력의 100%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -7550,7 +8316,13 @@ const customValues = {
         },
     },
     "Zed": { // 제드
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "50", // CurrentHealthThreshold*100
+            "p2": "5 ~ 10% (레벨에 따라)", // MaxHPDamage
+            "p3": "10", // PerUnitCD
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 120 / 160 / 200 / 240 (+ 추가 공격력의 100%)", // TotalDamage
             "p2": "80 / 120 / 160 / 200 / 240 (+ 추가 공격력의 100%) x 0.6", // PassThroughDamage
@@ -7608,7 +8380,13 @@ const customValues = {
         },
     },
     "Xerath": { // 제라스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "30 ~ 195 (레벨에 따라) x 2", // ChampionManaRestoreTT
+            "p2": "30 ~ 195 (레벨에 따라)", // MinionManaRestoreTT
+            "p3": "3.5", // CooldownKillRefund
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "75 / 115 / 155 / 195 / 235 (+ 주문력의 90%)", // TooltipTotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -7686,7 +8464,7 @@ const customValues = {
             "p1": "30 / 70 / 110 / 150 / 190 (+ 총 공격력의 120% + 주문력의 50%)", // TotalDamage
             "p2": "2", // SlowDuration
             "p3": "30 / 35 / 40 / 45 / 50", // SlowPercent*100
-            "p4": "30 / 70 / 110 / 150 / 190 (+ 총 공격력의 120% + 주문력의 50%) x 1 + 0.5 x (이동 속도의 100% - 1)", // WallDamage
+            "p4": "30 / 70 / 110 / 150 / 190 (+ 총 공격력의 120% + 주문력의 50%) x 1 + 0.5 x (치명타 피해량의 100% - 1)", // WallDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
@@ -7734,7 +8512,12 @@ const customValues = {
         },
     },
     "Jayce": { // 제이스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "0.75", // MovementSpeedDuration
+            "p2": "30", // FlatMovementSpeed
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
@@ -7780,7 +8563,11 @@ const customValues = {
         },
     },
     "Zoe": { // 조이
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "16 ~ 130 (레벨에 따라) (+ 주문력의 20%)", // PassiveDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "50 / 80 / 110 / 140 / 170 (+ 2 ~ 50 (레벨에 따라) + 주문력의 60%)", // TotalDamageTooltip
             "p2": "50 / 80 / 110 / 140 / 170 (+ 2 ~ 50 (레벨에 따라) + 주문력의 60%) x 2.5", // MaxDamageTooltip
@@ -7838,7 +8625,14 @@ const customValues = {
         },
     },
     "Ziggs": { // 직스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "?", // Cooldown
+            "p2": "20 ~ 160 (레벨에 따라) (+ 주문력의 50%)", // TotalDamage
+            "p3": "20 ~ 160 (레벨에 따라) (+ 주문력의 50%) x 1.75", // StructureDamage
+            "p4": "4 ~ 6 (레벨에 따라)", // SpellCDR
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "80 / 130 / 180 / 230 / 280 (+ 주문력의 60 / 65 / 70 / 75 / 80%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -7893,7 +8687,16 @@ const customValues = {
         },
     },
     "Jhin": { // 진
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // MaxAmmo
+            "p2": "15 ~ 25% (레벨에 따라)", // FourthShotExecutePercent
+            "p3": "4 ~ 44% (레벨에 따라) (+ 치명타 확률의 35% + 추가 공격 속도의 30%)", // TotalADPercent
+            "p4": "25", // CritReductionPercent*100
+            "p5": "2", // HasteDuration
+            "p6": "14% (+ 추가 공격 속도의 44%)", // CritMoveSpeedPercent
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "44 / 69 / 94 / 119 / 144 (+ 총 공격력의 44 / 51.5 / 59 / 66.5 / 74% + 주문력의 60%)", // TotalDamage
             "p2": "4", // TooltipMaxTargetsHit
@@ -7958,7 +8761,11 @@ const customValues = {
         },
     },
     "Zilean": { // 질리언
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1", // GameModeInteger
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "3", // FuseDuration
             "p2": "75 / 115 / 165 / 230 / 300 (+ 주문력의 90%)", // TotalDamage
@@ -8011,7 +8818,14 @@ const customValues = {
         },
     },
     "Jinx": { // 징크스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3", // AssistMarkerDuration
+            "p2": "6", // BuffDuration
+            "p3": "25", // ASBuff
+            "p4": "175", // MSBuff
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "총 공격력의 110%", // RocketDamage
             "p2": "10", // RocketASPDPenalty*100
@@ -8077,7 +8891,12 @@ const customValues = {
         },
     },
     "Chogath": { // 초가스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "18 ~ 52 (레벨에 따라)", // ChogathCarnivoreHeal
+            "p2": "4.72 ~ 9.48 (레벨에 따라)", // ChogathCarnivoreMana
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1", // Effect5Amount
             "p2": "80 / 135 / 190 / 245 / 300 (+ 주문력의 100%)", // TotalDamageTooltip
@@ -8136,7 +8955,11 @@ const customValues = {
         },
     },
     "Karma": { // 카르마
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // SpellMantraRefund
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 110 / 160 / 210 / 260 (+ 주문력의 70%)", // TotalDamage
             "p2": "1.5", // SlowDuration
@@ -8199,7 +9022,13 @@ const customValues = {
         },
     },
     "Camille": { // 카밀
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "2", // ShieldDuration
+            "p2": "최대 체력의 20%", // ShieldAmount
+            "p3": "18 ~ 10 (레벨에 따라)", // PassiveCooldown
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "총 공격력의 20 / 25 / 30 / 35 / 40%", // BonusDamage
             "p2": "1", // MSDuration
@@ -8207,7 +9036,7 @@ const customValues = {
             "p4": "3.5", // QTotalRecastTime
             "p5": "1.5", // QRampUpTime
             "p6": "총 공격력의 20 / 25 / 30 / 35 / 40% x 2", // EmpoweredBonusDamage
-            "p7": "40 ~ 108% (레벨에 따라)", // DamageConversionPercentage
+            "p7": "40 ~ 100% (레벨에 따라)", // DamageConversionPercentage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
@@ -8264,7 +9093,11 @@ const customValues = {
         },
     },
     "Kassadin": { // 카사딘
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "10", // DamageReductionPercent*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "65 / 95 / 125 / 155 / 185 (+ 주문력의 70%)", // TotalDamage
             "p2": "80 / 110 / 140 / 170 / 200 (+ 주문력의 30%)", // TotalShield
@@ -8321,7 +9154,11 @@ const customValues = {
         },
     },
     "Karthus": { // 카서스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "7", // PassiveDuration
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "40 / 59 / 78 / 97 / 116 (+ 주문력의 35%)", // QDamage
             "p2": "40 / 59 / 78 / 97 / 116 (+ 주문력의 35%) x 2", // QSingleTargetDamage
@@ -8378,7 +9215,11 @@ const customValues = {
         },
     },
     "Cassiopeia": { // 카시오페아
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6 ~ 40% (레벨에 따라)", // PercentHasteMod
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "3", // PoisonDuration
             "p2": "75 / 110 / 145 / 180 / 215 (+ 주문력의 65%)", // TooltipTotalDamage
@@ -8436,7 +9277,19 @@ const customValues = {
         },
     },
     "Kaisa": { // 카이사
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // PDuration
+            "p2": "4 ~ 30 (레벨에 따라) (+ 주문력의 12%)", // PBaseDamage
+            "p3": "1 ~ 8 (레벨에 따라) (+ 주문력의 3%)", // PCurrentPerStackDamage
+            "p4": "4", // PMaxStacks
+            "p5": "15% (+ 주문력의 0.06%)", // PExecutePercentage
+            "p6": "1", // PAllyStacks
+            "p7": "?", // f1.1
+            "p8": "?", // f2.1
+            "p9": "?", // f3.1
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "6", // Effect2Amount
             "p2": "40 / 55 / 70 / 85 / 100 (+ 추가 공격력의 55% + 주문력의 20%)", // TotalIndividualMissileDamage
@@ -8506,7 +9359,13 @@ const customValues = {
         },
     },
     "Khazix": { // 카직스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "10 ~ 129 (레벨에 따라) (+ 추가 공격력의 50%)", // TotalDamage
+            "p2": "2", // SlowDuration
+            "p3": "25", // SlowAmount*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
             "v2": "",
@@ -8560,7 +9419,13 @@ const customValues = {
         },
     },
     "Katarina": { // 카타리나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3", // ResetWindow
+            "p2": "15", // ResetCDR
+            "p3": "0 ~ 223.754 (레벨에 따라) (+ 추가 공격력의 60% + 주문력의 70 ~ 100 (레벨에 따라)%)", // TotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "2", // MaxBounces
             "p2": "80 / 115 / 150 / 185 / 220 (+ 주문력의 40%)", // TotalDamage
@@ -8620,7 +9485,11 @@ const customValues = {
         },
     },
     "Kalista": { // 칼리스타
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1", // GameModeInteger
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "10 / 75 / 140 / 205 / 270 (+ 총 공격력의 105%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -8675,7 +9544,13 @@ const customValues = {
         },
     },
     "Kennen": { // 케넨
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6", // MarkDuration
+            "p2": "1.25", // StunDuration
+            "p3": "25", // EnergyRestore
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "75 / 125 / 175 / 225 / 275 (+ 주문력의 75%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -8734,7 +9609,13 @@ const customValues = {
         },
     },
     "Caitlyn": { // 케이틀린
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5", // AttacksPerHeadshot
+            "p2": "2", // BrushAttackTotal
+            "p3": "총 공격력의 60 ~ 100 (레벨에 따라) + 치명타 확률의 100% x (치명타 피해량의 100% - 1)%", // HeadShotBonusDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "50 / 90 / 130 / 170 / 210 (+ 총 공격력의 125 / 145 / 165 / 185 / 205%)", // InitialDamage
             "p2": "50 / 90 / 130 / 170 / 210 (+ 총 공격력의 125 / 145 / 165 / 185 / 205%) x 0.6", // SecondaryDamage
@@ -8791,7 +9672,11 @@ const customValues = {
         },
     },
     "Kayn": { // 케인
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "2", // f1
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "75 / 105 / 135 / 165 / 195 (+ 추가 공격력의 85%)", // TotalDamage
             "p2": "총 공격력의 65%", // DarkinFlatDamage
@@ -8857,7 +9742,20 @@ const customValues = {
         },
     },
     "Kayle": { // 케일
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1", // LevelForPassiveRank0
+            "p2": "5", // EnrageDuration
+            "p3": "6", // EnrageTotalASPerStack
+            "p4": "10", // MSTowardsEnemy*100
+            "p5": "6", // LevelForPassiveRank1
+            "p6": "525", // UpgradedAttackRange
+            "p7": "11", // LevelForPassiveRank2
+            "p8": "20 ~ 41 (레벨에 따라) (+ 주문력의 25% + 추가 공격력의 10%)", // PassiveWaveDamage
+            "p9": "16", // LevelForPassiveRank3
+            "p10": "625", // FinalAttackRange
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 90 / 120 / 150 / 180 (+ 주문력의 50% + 추가 공격력의 60%)", // TotalDamage
             "p2": "2", // SlowDuration
@@ -8916,7 +9814,13 @@ const customValues = {
         },
     },
     "KogMaw": { // 코그모
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // TooltipPassiveDuration
+            "p2": "50", // TooltipPassiveMS*100
+            "p3": "140 ~ 650 (레벨에 따라)", // PassiveDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "5 / 10 / 15 / 20 / 25", // AttackSpeed*100
             "p2": "80 / 125 / 170 / 215 / 260 (+ 주문력의 90%)", // TotalDamage
@@ -8977,7 +9881,13 @@ const customValues = {
         },
     },
     "Corki": { // 코르키
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "20", // AttackConversion*100
+            "p2": "총 공격력의 20%", // BasicAttackTOOLTIP
+            "p3": "총 공격력의 20% x 치명타 피해량의 100%", // CriticalStrikeTOOLTIP
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 105 / 150 / 195 / 240 (+ 추가 공격력의 125% + 주문력의 100%)", // TotalDamage
             "p2": "6", // RevealDuration
@@ -9033,7 +9943,13 @@ const customValues = {
         },
     },
     "Quinn": { // 퀸
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "?", // f1
+            "p2": "4", // RevealDuration
+            "p3": "15 ~ 120 (레벨에 따라) (+ 추가 공격력의 40%)", // BonusDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "1.75", // VisionReductionDuration
             "p2": "65 / 100 / 135 / 170 / 205 (+ 추가 공격력의 80 / 85 / 90 / 95 / 100% + 주문력의 50%)", // TotalDamage
@@ -9092,7 +10008,13 @@ const customValues = {
         },
     },
     "KSante": { // 크산테
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "12", // FlatDamage
+            "p2": "1 ~ 2% (레벨에 따라)", // PercentHealthDamage
+            "p3": "1% (+ 추가 방어력의 0.01% + 추가 마법 저항력의 0.01%)", // MaxHealthDamagePercent
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 100 / 130 / 160 / 190 (+ 추가 방어력의 40% + 추가 마법 저항력의 40%)", // BaseDamage
             "p2": "0.5", // SlowDuration
@@ -9167,7 +10089,20 @@ const customValues = {
         },
     },
     "Kled": { // 클레드
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "70 ~ 155 (레벨에 따라)", // DismountedMS
+            "p2": "4 (+ 추가 최대 체력의 1%)", // DismountedResistBonus
+            "p3": "30", // ResistBonusPerEnemy*100
+            "p4": "4 (+ 추가 최대 체력의 1%) x 2.5", // DismountedResistBonusMax
+            "p5": "15 ~ 0% (레벨에 따라)", // DismountedAttackPenalty
+            "p6": "15", // CourageVsChamps
+            "p7": "5", // CourageVsOther
+            "p8": "5", // CourageLastHit
+            "p9": "30", // MountCooldown
+            "p10": "40 ~ 70% (레벨에 따라)", // SkaarlRemountHealth
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "30 / 55 / 80 / 105 / 130 (+ 추가 공격력의 60%)", // TotalDamage
             "p2": "1.75", // TetherPopTime
@@ -9222,7 +10157,11 @@ const customValues = {
         },
     },
     "Qiyana": { // 키아나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "15 ~ 83 (레벨에 따라) (+ 추가 공격력의 25% + 주문력의 30%)", // FinalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 100 / 130 / 160 / 190 (+ 추가 공격력의 85%)", // VanillaDamage
             "p2": "1", // SlowDuration
@@ -9281,7 +10220,17 @@ const customValues = {
         },
     },
     "Kindred": { // 킨드레드
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // InitialMarkThreshold
+            "p2": "?", // FirstTierRangeIncreaseTT
+            "p3": "3", // AdditionalMarkThreshold
+            "p4": "25", // RangeIncrease
+            "p5": "5 (중첩당)%", // QMarkBonus
+            "p6": "1 (중첩당)%", // WMarkBonus
+            "p7": "0.5 (중첩당)%", // EMarkBonus
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "40 / 65 / 90 / 115 / 140 (+ 추가 공격력의 75%)", // TotalDamage
             "p2": "4", // BaseASDuration
@@ -9339,7 +10288,13 @@ const customValues = {
         },
     },
     "Taric": { // 타릭
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5", // Duration
+            "p2": "25 ~ 93 (레벨에 따라) x 1 (+ 추가 방어력의 15%)", // TotalDamage
+            "p3": "1 + 1 + 160 / 140 / 120 x -1", // CDR
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "15", // StackCooldown
             "p2": "1 / 2 / 3 / 4 / 5", // Effect6Amount
@@ -9394,10 +10349,16 @@ const customValues = {
         },
     },
     "Talon": { // 탈론
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6", // StackDuration
+            "p2": "2", // BleedDuration
+            "p3": "80 ~ 280 (레벨에 따라) (+ 추가 공격력의 210%)", // BleedDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "65 / 85 / 105 / 125 / 145 (+ 추가 공격력의 100%)", // LeapDamage
-            "p2": "65 / 85 / 105 / 125 / 145 (+ 추가 공격력의 100%) x 1.5 + 추가 이동 속도의 100%", // CriticalDamage
+            "p2": "65 / 85 / 105 / 125 / 145 (+ 추가 공격력의 100%) x 1.5 + 추가 치명타 피해량의 100%", // CriticalDamage
             "p3": "9 ~ 55 (레벨에 따라)", // TotalHealing
             "p4": "50", // CooldownRefund*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -9449,7 +10410,12 @@ const customValues = {
         },
     },
     "Taliyah": { // 탈리야
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3", // FallOffTime
+            "p2": "10 ~ 40% (레벨에 따라)", // TotalMS
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "55 / 72.5 / 90 / 107.5 / 125 (+ 주문력의 50%)", // RockDamage
             "p2": "60", // ExtraMissileReducedDamagePercent
@@ -9513,7 +10479,13 @@ const customValues = {
         },
     },
     "TahmKench": { // 탐 켄치
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5 ~ 60 (레벨에 따라) (+ 추가 최대 체력의 4% + 주문력의 추가 최대 체력의 1.25% x 0.01%)", // TotalDamage
+            "p2": "5", // Duration
+            "p3": "3", // MaxStacks
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "75 / 120 / 165 / 210 / 255 (+ 주문력의 100%)", // TotalDamage
             "p2": "2", // SlowDuration
@@ -9578,7 +10550,11 @@ const customValues = {
         },
     },
     "Trundle": { // 트런들
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1.8 ~ 5.5% (레벨에 따라)", // RegenPercent
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "10 / 30 / 50 / 70 / 90 (+ 총 공격력의 115 / 125 / 135 / 145 / 155%)", // TotalDamage
             "p2": "75", // SlowAmount*100
@@ -9635,7 +10611,11 @@ const customValues = {
         },
     },
     "Tristana": { // 트리스타나
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "0 ~ 150 (레벨에 따라)", // BonusPassiveRange
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "7", // BuffDuration
             "p2": "60 / 75 / 90 / 105 / 120", // AttackSpeedMod*100
@@ -9691,7 +10671,11 @@ const customValues = {
         },
     },
     "Tryndamere": { // 트린다미어
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "0.5", // PassiveCritConversionTooltip
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "20 / 35 / 50 / 65 / 80", // MaximumBonusAD
             "p2": "30 / 40 / 50 / 60 / 70 (+ 주문력의 30%)", // BaseHeal
@@ -9751,7 +10735,11 @@ const customValues = {
         },
     },
     "TwistedFate": { // 트위스티드 페이트
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1", // GameModeInteger
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 105 / 150 / 195 / 240 (+ 추가 공격력의 50% + 주문력의 85%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
@@ -9804,7 +10792,14 @@ const customValues = {
         },
     },
     "Twitch": { // 트위치
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "6", // Duration
+            "p2": "1 ~ 5 (레벨에 따라) (+ 주문력의 3%)", // DamagePerSecond
+            "p3": "6", // MaxStacks
+            "p4": "1 ~ 5 (레벨에 따라) (+ 주문력의 3%) x 6", // DamagePerSecondMax
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "10 / 11 / 12 / 13 / 14", // StealthDuration
             "p2": "10", // MoveSpeedMod
@@ -9864,7 +10859,13 @@ const customValues = {
         },
     },
     "Teemo": { // 티모
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "1.5", // StealthCooldownDuration
+            "p2": "5", // AttackSpeedDuration
+            "p3": "20 ~ 80% (레벨에 따라)", // BonusAttackSpeed
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "2 / 2.25 / 2.5 / 2.75 / 3", // BlindDuration
             "p2": "80 / 125 / 170 / 215 / 260 (+ 주문력의 70%)", // CalculatedDamage
@@ -9923,7 +10924,13 @@ const customValues = {
         },
     },
     "Pyke": { // 파이크
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "9% (+ 물리 관통력의 0.2%)", // OneEnemyCalc
+            "p2": "40% (+ 물리 관통력의 0.4%)", // AdditionalBonusCalc
+            "p3": "80 (+ 추가 공격력의 800%)", // DamageStorageMax
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "100 / 150 / 200 / 250 / 300 (+ 추가 공격력의 75%)", // TotalDamage
             "p2": "1", // SlowDuration
@@ -9979,7 +10986,11 @@ const customValues = {
         },
     },
     "Pantheon": { // 판테온
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "5", // ActionsToEmpower
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 100 / 130 / 160 / 190 (+ 추가 공격력의 115%)", // TapDamageCalc
             "p2": "60", // TapCooldownRefund*100
@@ -10104,7 +11115,13 @@ const customValues = {
         },
     },
     "Fiora": { // 피오라
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "3% (+ 추가 공격력의 0.04%)", // PassiveDamageTotal
+            "p2": "2", // MovementSpeedDuration
+            "p3": "35 ~ 100 (레벨에 따라)", // PassiveHealAmount
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 80 / 90 / 100 / 110 (+ 추가 공격력의 90 / 95 / 100 / 105 / 110%)", // TotalDamage
             "p2": "50", // CDRefundPercent*100
@@ -10166,7 +11183,11 @@ const customValues = {
         },
     },
     "Fizz": { // 피즈
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4 (+ 주문력의 1%)", // DamageReductionCalc
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "총 공격력의 100%", // TotalDamage
             "p2": "10 / 25 / 40 / 55 / 70 (+ 주문력의 55%)", // QDamage
@@ -10226,7 +11247,11 @@ const customValues = {
         },
     },
     "Heimerdinger": { // 하이머딩거
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "20", // MovementSpeed.0*100
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "3", // MaxTurrets
             "p2": "3", // MaxKits
@@ -10287,7 +11312,11 @@ const customValues = {
         },
     },
     "Hecarim": { // 헤카림
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "?", // BonusAD
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 90 / 120 / 150 / 180 (+ 추가 공격력의 90%)", // Damage
             "p2": "8", // BuffDuration
@@ -10350,7 +11379,12 @@ const customValues = {
         },
     },
     "Hwei": { // 흐웨이
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "4", // Duration
+            "p2": "40 ~ 285 (레벨에 따라) (+ 주문력의 35%)", // TotalDamage
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "50 / 80 / 110 / 140 / 170 (+ 주문력의 80%)", // Tooltip_QQDamage
             "p2": "3 / 4 / 5 / 6 / 7", // Tooltip_QQBonusDamage

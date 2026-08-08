@@ -16,6 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { loadStringTable, getPassiveTooltip } = require('./stringtable');
 
 // ------------------------------------------------------------
 // 설정
@@ -34,6 +35,9 @@ const OUT_TEMPLATES = path.join(PUBLIC_DIR, 'custom_templates.new.js');
 const OUT_VALUES = path.join(PUBLIC_DIR, 'custom_values.new.js');
 
 const CD_BASE = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/ko_kr/v1';
+
+// 패시브 툴팁 키를 읽으려면 bin 이 필요하다. (stringtable.js 주석 참고)
+const BIN = 'https://raw.communitydragon.org/latest/game/data/characters';
 
 // 요청 간격(ms). 너무 빠르면 CD가 막을 수 있다.
 const DELAY = 120;
@@ -101,6 +105,11 @@ function q(str) {
 
 const unknownTags = new Map(); // 태그명 -> 처음 발견한 챔피언
 
+// 문장 안에서 다른 스킬 이름을 부르는 {{Spell_XXX_Name}} 참조를 풀기 위해 필요하다.
+//   loadStringTable() 결과를 main 에서 넣어 준다. 비어 있으면 참조는 그대로 남는다.
+let stringTable = {};
+const unresolvedRefs = new Map(); // {{키}} -> 처음 발견한 챔피언
+
 function convertDescription(raw, championAlias) {
     if (!raw) return { text: '', names: [] };
 
@@ -111,6 +120,19 @@ function convertDescription(raw, championAlias) {
 
     // 2) 아이콘 토큰(%i:cooldown% 등) 제거
     text = text.replace(/%i:[a-zA-Z0-9_]+%/g, '');
+
+    // 2.5) {{Spell_XXX_Name}} — 다른 스킬 이름을 부르는 참조.
+    //   패시브 툴팁을 stringtable 에서 가져오면서 딸려 들어온 문법이다.
+    //   @Placeholder@ 와 달리 {p} 자리가 아니라서 못 풀어도 폴백이 안 걸리고
+    //   화면에 "{{Spell_DariusR_Name}}" 이 그대로 찍힌다. 반드시 여기서 풀어야 한다.
+    //   키는 소문자로 조회한다 (패시브 툴팁 조회와 같은 규칙).
+    //   ★ 키 안에 {p1} 같은 게 또 들어간 중첩형(갱플랭크 Q)은 일부러 안 건드린다.
+    text = text.replace(/\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g, (match, key) => {
+        const hit = stringTable[key.toLowerCase()];
+        if (typeof hit === 'string' && hit.trim()) return hit;
+        if (!unresolvedRefs.has(key)) unresolvedRefs.set(key, championAlias);
+        return match;
+    });
 
     // 3) 태그 이름 정리 + 미지의 태그 수집
     text = text.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>/g, (match, tag, rest) => {
@@ -227,10 +249,16 @@ async function main() {
 
     console.log(`  ${champions.length}명 확인`);
 
-    console.log('[3/4] 스킬 데이터 받는 중...');
+    console.log('[3/4] 패시브 툴팁 문장 준비 중...');
+    const strings = await loadStringTable({ refresh: process.argv.includes('--refresh') });
+    stringTable = strings;   // convertDescription 의 {{...}} 해석이 이걸 본다
+
+    console.log('[4/4] 스킬 데이터 받는 중...');
     const templateEntries = [];
     const valueEntries = [];
     const needsManualCost = [];
+    const binFails = [];         // bin 을 못 받은 챔피언
+    const passiveFallback = [];  // 패시브 툴팁을 못 찾아 CD 요약문으로 떨어진 챔피언
 
     for (let n = 0; n < champions.length; n++) {
         const c = champions[n];
@@ -253,15 +281,36 @@ async function main() {
         }
 
         // ---- 패시브 ----
-        // CD 패시브는 dynamicDescription 이 없고 짧은 요약뿐이다.
-        // 그대로 넣되, 직접 고쳐 쓰라는 표시를 남긴다.
-        const passiveText = (data.passive && data.passive.description) ? data.passive.description : '';
+        // CD v1 의 passive.description 은 "몇 초 동안" 같은 요약문이라 빈칸이 없다.
+        // 인게임 진짜 툴팁은 stringtable 에 있고 @Placeholder@ 가 살아 있다.
+        let bin = null;
+        try {
+            const low = alias.toLowerCase();
+            bin = await getJson(`${BIN}/${low}/${low}.bin.json`);
+        } catch (e) {
+            binFails.push(`${c.name} (${e.message})`);
+        }
+
+        const passiveRaw = bin ? getPassiveTooltip(bin, alias, strings) : null;
+        if (!passiveRaw) passiveFallback.push(c.name);
+
+        // 툴팁을 못 찾으면 예전처럼 CD 요약문으로 떨어진다.
+        const passiveSrc = passiveRaw || (data.passive && data.passive.description) || '';
+        const passive = convertDescription(passiveSrc, alias);
 
         const tplLines = [];
         const valLines = [];
 
-        tplLines.push(`        "P": ${q(passiveText)}, // ${(data.passive && data.passive.name) || ''} — CD 요약본, 직접 다듬을 것`);
-        valLines.push(`        "P": { "cooldown": "-", "cost": "-" },`);
+        const passiveNote = passiveRaw ? 'stringtable' : 'CD 요약본 — 빈칸 없음, 직접 다듬을 것';
+        tplLines.push(`        "P": ${q(passive.text)}, // ${(data.passive && data.passive.name) || ''} — ${passiveNote}`);
+
+        valLines.push(`        "P": {`);
+        passive.names.forEach((name, i) => {
+            valLines.push(`            "p${i + 1}": "?", // ${name}`);
+        });
+        valLines.push(`            "cooldown": "-",`);
+        valLines.push(`            "cost": "-"`);
+        valLines.push(`        },`);
 
         // ---- Q W E R ----
         const seen = new Set();
@@ -319,7 +368,7 @@ async function main() {
         await sleep(DELAY);
     }
 
-    console.log('[4/4] 파일 쓰는 중...');
+    console.log('[5/5] 파일 쓰는 중...');
 
     const header = `// 이 파일은 build_champion_data.js 가 생성했습니다.\n` +
         `// 생성 시각: ${new Date().toISOString()}\n` +
@@ -347,6 +396,24 @@ async function main() {
         for (const [tag, champ] of unknownTags) {
             console.log(`  <${tag}>   (예: ${champ})`);
         }
+    }
+
+    if (unresolvedRefs.size) {
+        console.log(`\n[주의] 못 푼 {{...}} 참조 ${unresolvedRefs.size}종 — 문장에 그대로 찍힙니다:`);
+        for (const [key, champ] of unresolvedRefs) {
+            console.log(`  {{${key}}}   (예: ${champ})`);
+        }
+    }
+
+    if (passiveFallback.length) {
+        console.log(`\n[주의] 패시브 툴팁을 못 찾아 CD 요약문으로 떨어진 챔피언 ${passiveFallback.length}명:`);
+        console.log('  ' + passiveFallback.join(', '));
+        console.log('  (이쪽은 빈칸이 없으니 직접 써야 합니다)');
+    }
+
+    if (binFails.length) {
+        console.log(`\n[주의] bin 을 못 받은 챔피언 ${binFails.length}명:`);
+        console.log('  ' + binFails.join(', '));
     }
 
     if (needsManualCost.length) {
