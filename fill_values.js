@@ -17,7 +17,11 @@ const { loadStringTable, getPassiveTooltip } = require('./stringtable');
 
 const WRITE = process.argv.includes('--write');
 
-const PRESERVE = ['Garen', 'Galio'];
+// 챔피언 블록을 통째로 안 건드릴 목록.
+//   ★ 2026-08-08 비웠다. 가렌·갈리오는 {pN} 체계가 생기기 전 손으로 쓴 옛 형식이라
+//     다른 챔피언과 구조가 달랐다 (pN 이 아예 없음). 이제 CD 에서 똑같이 받아온다.
+//     손으로 쓴 v1/v2 는 extractVV() 가 원문 그대로 물려주므로 여기 안 적어도 안 날아간다.
+const PRESERVE = [];
 
 // @ShieldDuration.1@ / @f2.0@ 처럼 이름 끝에 붙는 ".숫자" 를 어떻게 볼 것인가.
 //   true  = 소수점 자릿수로 본다 (1.53 -> ".1" 이면 1.5)
@@ -102,6 +106,12 @@ const STAT_NAMES = {
     //   케이틀린 P·루시안 R·미스 포츈 Q·샤코 Q 의 "치명타 확률 x (X - 1)" 형태도
     //   X 가 치명타 피해량일 때만 성립한다.
     9: '치명타 피해량',
+    // ★ 7 = 이동 속도. 2026-08-08 추가. 표에 없어서 잔나 P·헤카림 P 가 통째로 죽고 있었다.
+    //   헤카림 P BonusAD 가 결정적: mStat 7 / mStatFormula 2(추가) 에
+    //   레벨 3·6·9·12·15·18 마다 +0.02 씩 붙는 0.12 -> 0.24 계수다.
+    //   헤카림 패시브(전쟁의 길)가 정의상 "추가 이동 속도의 12~24% 만큼 추가 공격력"이라
+    //   숫자까지 그대로 맞는다. 잔나 P(순풍)도 추가 이동 속도 비례로 같은 모양.
+    7: '이동 속도',
     11: '추가 공격력',
     12: '최대 체력',
     13: '추가 체력',
@@ -115,6 +125,7 @@ const dotList = [];               // ".숫자" 꼬리를 처리한 값 (해석�
 const caseList = [];              // 대소문자를 무시하고 찾아낸 이름 (툴팁 철자 != bin 철자)
 const caseSeen = new Set();
 const zeroDrop = [];              // 참조 대상이 bin 에 없어 0으로 본 항 (조회 버그와 구분하려고 남긴다)
+const hashHits = new Set();       // CD 가 이름을 못 푼 {해시} 자리를 해시로 찾아낸 곳
 
 // 툴팁 철자와 bin 철자가 어긋난 자리를 기록한다.
 function noteCase(asked, actual) {
@@ -128,11 +139,25 @@ function noteCase(asked, actual) {
 //   ★ 계산식 안에서 다른 DataValue 를 참조할 때도 철자가 어긋난다.
 //     AoeDamagePercent -> AoEDamagePercent, BonusLifesteal -> BonusLifeSteal 같은 식.
 //     조각 하나가 null 이 되면 계산식이 통째로 죽으므로 여기가 제일 아프다.
+// 라이엇 bin 프로퍼티 해시 (FNV-1a 32bit, 소문자 기준).
+//   ★ CD 가 이름을 못 푼 자리는 {8자리16진수} 로 남는다. 툴팁이 부르는 이름을
+//     이 해시로 바꾸면 그 자리를 찾아갈 수 있다.
+//     검증: fnv1a('firsttierrangeincreasett') = d34fc902 이고
+//     킨드레드 패시브의 계산식 키가 정확히 {d34fc902} 다.
+const fnv1a = (s) => {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+    return (h >>> 0).toString(16).padStart(8, '0');
+};
+const hashKey = (name) => `{${fnv1a(String(name).toLowerCase())}}`;
+
 function findDataValue(spell, name) {
     if (name === undefined || name === null) return undefined;
     const list = spell.DataValues || [];
     const exact = list.find(d => d.name === name);
     if (exact) return exact;
+    const hashed = list.find(d => d.name === hashKey(name));
+    if (hashed) { hashHits.add(`${ctx}   (${name} -> ${hashKey(name)})`); return hashed; }
     const want = String(name).toLowerCase();
     const loose = list.find(d => String(d.name).toLowerCase() === want);
     if (loose) noteCase(name, loose.name);
@@ -144,6 +169,10 @@ function findCalc(spell, name) {
     if (name === undefined || name === null) return undefined;
     const calcs = spell.mSpellCalculations || {};
     if (calcs[name] !== undefined) return calcs[name];
+    if (calcs[hashKey(name)] !== undefined) {
+        hashHits.add(`${ctx}   (${name} -> ${hashKey(name)})`);
+        return calcs[hashKey(name)];
+    }
     const want = String(name).toLowerCase();
     const key = Object.keys(calcs).find(k => k.toLowerCase() === want);
     if (key) { noteCase(name, key); return calcs[key]; }
@@ -210,6 +239,9 @@ function findField(obj, name) {
 // 필드에서 읽은 raw 값 -> 표시 문자열. 숫자도 배열도 아니면 실패로 본다.
 //   rank1 = 0번이 "스킬 안 찍은 상태"라서 1번부터 읽어야 하는 필드인지.
 const fieldToText = (raw, maxRank, mult, rank1) => {
+    // ★ 최상위 필드가 배열이 아니라 { values: [...] } 로 한 겹 싸여 있는 경우가 있다.
+    //   직스 P 가 부르는 Cooldown 이 이 모양이라 객체인 채로 그냥 실패하고 있었다.
+    if (raw && typeof raw === 'object' && !Array.isArray(raw) && Array.isArray(raw.values)) raw = raw.values;
     if (typeof raw === 'number') return tidy(raw * mult);
     if (!Array.isArray(raw)) return null;
     // ★ 버릴 앞칸이 실제로 있을 때만 민다. 길이가 랭크 수와 같으면
@@ -809,6 +841,37 @@ function extractBlock(source, alias) {
     return null;
 }
 
+// 손으로 쓴 v1 / v2 를 기존 파일에서 원문 그대로 떠 온다.
+//   ★ 재생성은 값을 전부 새로 찍으므로, 이게 없으면 손으로 만든 피해량 줄이 매번 날아간다.
+//     (지금은 가렌·갈리오 6자리뿐이지만 v1·v2 작성은 앞으로 할 일이라 미리 막아 둔다)
+//   ★ 값이 한 줄이 아닐 수 있다. 가렌 P 의 v1 은 drawGraph 호출이 6줄이다.
+//     그래서 문자열로 파싱하지 않고 "그 속성이 차지하는 줄들"을 통째로 옮긴다.
+function extractVV(source, alias) {
+    const block = extractBlock(source, alias);
+    if (!block) return {};
+    const out = {};
+    const lines = block.split('\n');
+    let key = null;
+    for (let i = 0; i < lines.length; i++) {
+        const mk = lines[i].match(/^\s{8}"([PQWER])":\s*\{/);
+        if (mk) { key = mk[1]; continue; }
+        const mv = lines[i].match(/^\s{12}"(v1|v2)":/);
+        if (!mv || !key) continue;
+        const buf = [lines[i]];
+        let j = i + 1;
+        // 같은 들여쓰기의 다음 속성이나 스킬 블록 끝을 만나면 멈춘다.
+        for (; j < lines.length; j++) {
+            if (/^\s{12}"/.test(lines[j]) || /^\s{8}\}/.test(lines[j])) break;
+            buf.push(lines[j]);
+        }
+        let text = buf.join('\n').replace(/\s+$/, '');
+        if (!text.endsWith(',')) text += ',';   // 뒤에 항상 cooldown 이 오므로 쉼표가 필요하다
+        (out[key] = out[key] || {})[mv[1]] = text;
+        i = j - 1;
+    }
+    return out;
+}
+
 const q = (s) => '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, '\\n') + '"';
 
 // ------------------------------------------------------------
@@ -850,6 +913,9 @@ async function main() {
             continue;
         }
 
+        // 손으로 쓴 피해량 줄은 재생성해도 살린다.
+        const carried = extractVV(oldValues, alias);
+
         let v1, bin;
         try { v1 = await get(`${CD}/champions/${c.id}.json`); }
         catch (e) { binFails.push(`${c.name} v1(${e.message})`); await sleep(DELAY); continue; }
@@ -880,7 +946,17 @@ async function main() {
         const previewLines = [];
         const lines = [];
         if (!passiveNames.length) {
-            lines.push(`        "P": { "cooldown": "-", "cost": "-" },`);
+            // 빈칸이 없어도 손으로 쓴 피해량 줄이 있으면 한 줄짜리로 못 줄인다.
+            if (carried.P && (carried.P.v1 !== undefined || carried.P.v2 !== undefined)) {
+                lines.push(`        "P": {`);
+                if (carried.P.v1 !== undefined) lines.push(carried.P.v1);
+                if (carried.P.v2 !== undefined) lines.push(carried.P.v2);
+                lines.push(`            "cooldown": "-",`);
+                lines.push(`            "cost": "-"`);
+                lines.push(`        },`);
+            } else {
+                lines.push(`        "P": { "cooldown": "-", "cost": "-" },`);
+            }
         } else {
             lines.push(`        "P": {`);
             passiveNames.forEach((name, i) => {
@@ -910,6 +986,9 @@ async function main() {
                 previewLines.push(`      P p${i + 1} (${name}) = ${val === null ? '?' : val}`);
                 lines.push(`            "p${i + 1}": ${q(val === null ? '?' : val)}, // ${name}`);
             });
+            // 패시브는 원래 v1/v2 를 안 찍는다. 손으로 쓴 게 있을 때만 살려서 넣는다.
+            if (carried.P && carried.P.v1 !== undefined) lines.push(carried.P.v1);
+            if (carried.P && carried.P.v2 !== undefined) lines.push(carried.P.v2);
             lines.push(`            "cooldown": "-",`);
             lines.push(`            "cost": "-"`);
             lines.push(`        },`);
@@ -1003,8 +1082,10 @@ async function main() {
 
             lines.push(`        "${key}": {`);
             if (pLines.length) lines.push(pLines.join('\n'));
-            lines.push(`            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)`);
-            lines.push(`            "v2": "",`);
+            // 손으로 쓴 게 있으면 원문 그대로, 없으면 빈칸.
+            const vv = carried[key] || {};
+            lines.push(vv.v1 !== undefined ? vv.v1 : `            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)`);
+            lines.push(vv.v2 !== undefined ? vv.v2 : `            "v2": "",`);
             lines.push(`            "cooldown": ${q(cd)},`);
             lines.push(`            "cost": ${q(cost)},`);
             const statRows = [];
@@ -1077,6 +1158,11 @@ async function main() {
     if (caseList.length) {
         console.log(`\n[대소문자가 어긋나서 찾아낸 이름] ${caseList.length}종 — 툴팁 철자와 bin 철자가 다른 자리:`);
         caseList.forEach(x => console.log(`  ${x}`));
+    }
+
+    if (hashHits.size) {
+        console.log(`\n[FNV 해시로 찾아낸 이름] ${hashHits.size}자리 — CD 가 이름을 못 푼 {해시} 자리다:`);
+        [...hashHits].forEach(x => console.log(`  ${x}`));
     }
 
     if (viaField.length) {

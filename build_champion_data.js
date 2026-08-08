@@ -24,9 +24,10 @@ const { loadStringTable, getPassiveTooltip } = require('./stringtable');
 
 // 손으로 이미 작성한 챔피언. 여기 적힌 이름은 기존 파일 내용을 그대로 유지한다.
 //
-//  ★ 중요: 수치를 다 채운 챔피언은 반드시 여기에 이름을 추가할 것.
-//     목록에 없으면 다시 실행할 때 "?" 로 되돌아가서 작업이 날아간다.
-const PRESERVE = ['Garen', 'Galio'];
+//  ★ 2026-08-08 비웠다. 가렌·갈리오가 유일한 항목이었는데 {pN} 체계 이전의
+//     옛 형식이라 다른 챔피언과 구조가 달랐다. 이제 전부 CD 에서 받아온다.
+//     수치 쪽 손작업(v1/v2)은 fill_values.js 의 extractVV() 가 따로 물려준다.
+const PRESERVE = [];
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const SRC_TEMPLATES = path.join(PUBLIC_DIR, 'custom_templates.js');
@@ -373,7 +374,7 @@ async function main() {
     const header = `// 이 파일은 build_champion_data.js 가 생성했습니다.\n` +
         `// 생성 시각: ${new Date().toISOString()}\n` +
         `// 문장은 CommunityDragon 에서 가져왔고, {p1} {p2} 자리는 직접 채워야 합니다.\n` +
-        `// ${PRESERVE.join(', ')} 는 기존 내용을 그대로 유지했습니다.\n\n`;
+        (PRESERVE.length ? `// ${PRESERVE.join(', ')} 는 기존 내용을 그대로 유지했습니다.\n` : '') + `\n`;
 
     fs.writeFileSync(
         OUT_TEMPLATES,
