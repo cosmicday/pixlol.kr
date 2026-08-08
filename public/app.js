@@ -131,6 +131,17 @@ async function initDdragonVersion() {
     }
 }
 
+// 패치 버전 비교. a 가 더 새것이면 양수.
+function compareDdragonVersion(a, b) {
+    const pa = String(a).split('.').map(Number);
+    const pb = String(b).split('.').map(Number);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        const x = pa[i] || 0, y = pb[i] || 0;
+        if (x !== y) return x - y;
+    }
+    return 0;
+}
+
 async function fetchRuneMap() {
     if (Object.keys(fullRuneData).length > 0) return;
     try {
@@ -531,7 +542,15 @@ async function executeSearch() {
 
         addRecentSearch(data.profile.name);
 
-        ddragonVersion = data.version || ddragonVersion;
+        // ★ 서버가 주는 version 은 서버가 부팅할 때 받아 둔 값이라 클라이언트가 이미
+        //   맞춰 둔 최신보다 오래된 경우가 있다 (갱신 실패 시 server.js 기본값 16.1.1).
+        //   그대로 덮어쓰면 챔피언 탭이 구버전 champion.json 을 읽어서
+        //   신규 챔피언이 목록에서 통째로 사라진다. 로크가 정확히 이 경우였다.
+        //   (16.1.1 / 16.5.1 = 172명, 로크 없음 / 16.15.1 = 로크 있음)
+        //   그래서 "더 새 것일 때만" 받아들인다.
+        if (data.version && compareDdragonVersion(data.version, ddragonVersion) > 0) {
+            ddragonVersion = data.version;
+        }
         window.currentPuuid = data.puuid || null;    // ★ 추가
         allMatches = data.history || [];
         // 새 소환사를 검색하면 챔피언 필터는 초기화 (큐 필터는 유지)

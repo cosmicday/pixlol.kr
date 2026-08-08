@@ -1,5 +1,5 @@
 // 이 파일은 build_champion_data.js 가 생성했습니다.
-// 생성 시각: 2026-08-08T08:23:48.514Z
+// 생성 시각: 2026-08-08T08:49:33.338Z
 // 문장은 CommunityDragon 에서 가져왔고, {p1} {p2} 자리는 직접 채워야 합니다.
 
 const customTemplates = {

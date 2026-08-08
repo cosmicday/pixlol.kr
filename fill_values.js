@@ -142,6 +142,22 @@ function noteCase(asked, actual) {
 //   ★ 계산식 안에서 다른 DataValue 를 참조할 때도 철자가 어긋난다.
 //     AoeDamagePercent -> AoEDamagePercent, BonusLifesteal -> BonusLifeSteal 같은 식.
 //     조각 하나가 null 이 되면 계산식이 통째로 죽으므로 여기가 제일 아프다.
+// 랭크 수가 표준(일반 5 / 궁 3)에서 벗어나는 챔피언.
+//   ★ 자동 판별할 근거가 없다. bin 의 mSpell 엔 최대 레벨 필드가 없고,
+//     CD v1 의 cooldownCoefficients / costCoefficients 는 챔피언과 무관하게
+//     전부 길이 6 으로 패딩돼 있어서 랭크 수를 알려주지 않는다. 그래서 표로 박는다.
+//   규칙: 1레벨에 스킬을 공짜로 주는 챔피언은 남는 포인트만큼 다른 스킬이 더 올라간다.
+const MAX_RANK = {
+    Udyr:    { Q: 6, W: 6, E: 6, R: 6 },   // 궁이 따로 없어 4개 전부 6랭크 (그래서 마스터 불가)
+    Jayce:   { Q: 6, W: 6, E: 6, R: 1 },   // 1레벨에 R(변신) 공짜
+    Nidalee: { Q: 5, W: 5, E: 5, R: 4 },   // 1레벨에 R 공짜
+    Karma:   { Q: 5, W: 5, E: 5, R: 4 },   // 〃
+    Elise:   { Q: 5, W: 5, E: 5, R: 4 },   // 〃
+    Yuumi:   { Q: 6, W: 5, E: 5, R: 3 },   // 1레벨에 W 공짜라 Q 만 6랭크
+};
+const rankOf = (alias, key) =>
+    (MAX_RANK[alias] && MAX_RANK[alias][key]) || (key === 'R' ? 3 : 5);
+
 // 라이엇 bin 프로퍼티 해시 (FNV-1a 32bit, 소문자 기준).
 //   ★ CD 가 이름을 못 푼 자리는 {8자리16진수} 로 남는다. 툴팁이 부르는 이름을
 //     이 해시로 바꾸면 그 자리를 찾아갈 수 있다.
@@ -882,12 +898,15 @@ function buildSpellIndex(bin, alias) {
     //   ★ CD 가 경로 이름을 못 풀어 {해시}로 남기는 경우가 있다.
     //     스몰더 패시브가 `{c72a53d8}` 이라 SmolderP 라는 키가 아예 없었다.
     //     툴팁은 관례 이름으로 부르므로 그쪽으로도 같이 등록한다.
-    const ranks = [5, 5, 5, 3];
+    //   ★ 랭크 수는 반드시 rankOf 로 얻어야 한다. 여기에 [5,5,5,3] 을 박아 두면
+    //     교차 참조로 들어온 값만 표준 랭크로 잘린다. 제이스 Q 가 그랬다 —
+    //     쿨타임은 6칸인데 피해량은 5칸이라 한 스킬 안에서 칸 수가 어긋났다.
     const keys = ['Q', 'W', 'E', 'R'];
     (rec.spells || []).forEach((p, i) => {
         if (i >= 4 || !bin[p] || !bin[p].mSpell) return;
-        put(p, bin[p].mSpell, ranks[i]);
-        putName(alias + keys[i], bin[p].mSpell, ranks[i]);
+        const r = rankOf(alias, keys[i]);
+        put(p, bin[p].mSpell, r);
+        putName(alias + keys[i], bin[p].mSpell, r);
     });
     const pp = rec.mCharacterPassiveSpell;
     if (bin[pp] && bin[pp].mSpell) {
@@ -905,8 +924,11 @@ function buildSpellIndex(bin, alias) {
         if (!o || !o.mSpell) continue;
         const nameLow = String(o.ObjectName || p).toLowerCase();
         let r = 1;
-        if (nameLow.includes(low + 'r')) r = 3;
-        else if (['q', 'w', 'e'].some(k => nameLow.includes(low + k))) r = 5;
+        if (nameLow.includes(low + 'r')) r = rankOf(alias, 'R');
+        else {
+            const k = ['q', 'w', 'e'].find(x => nameLow.includes(low + x));
+            if (k) r = rankOf(alias, k.toUpperCase());
+        }
         put(p, o.mSpell, r);
     }
     return idx;
@@ -1137,7 +1159,7 @@ async function main() {
             //   여기가 어긋나면 문장의 {pN} 개수와 값의 pN 개수가 안 맞는다.
             const names = [...new Set([...desc.matchAll(/@([A-Za-z0-9_.*+\-/():]+?)@/g)].map(x => x[1].trim()))];
 
-            const maxRank = key === 'R' ? 3 : 5;
+            const maxRank = rankOf(alias, key);
             const pool = binSpells[key] || [];
             const spell = pool.length ? pool[0].spell : null;   // 본체 (최상위 필드용)
 

@@ -22,6 +22,22 @@ const { loadStringTable, getPassiveTooltip } = require('./stringtable');
 // 설정
 // ------------------------------------------------------------
 
+// 랭크 수가 표준(일반 5 / 궁 3)에서 벗어나는 챔피언.
+//   ★ fill_values.js 의 MAX_RANK 와 반드시 같아야 한다.
+//     어긋나면 쿨타임·소모값 칸 수와 수치 칸 수가 서로 안 맞는다.
+//   자동 판별할 근거가 없어서 표로 박는다 (bin 에 최대 레벨 필드가 없고
+//   CD 의 계수 배열은 전부 길이 6 으로 패딩돼 있다).
+const MAX_RANK = {
+    Udyr:    { Q: 6, W: 6, E: 6, R: 6 },   // 궁이 따로 없어 4개 전부 6랭크
+    Jayce:   { Q: 6, W: 6, E: 6, R: 1 },   // 1레벨에 R(변신) 공짜
+    Nidalee: { Q: 5, W: 5, E: 5, R: 4 },   // 1레벨에 R 공짜
+    Karma:   { Q: 5, W: 5, E: 5, R: 4 },   // 〃
+    Elise:   { Q: 5, W: 5, E: 5, R: 4 },   // 〃
+    Yuumi:   { Q: 6, W: 5, E: 5, R: 3 },   // 1레벨에 W 공짜라 Q 만 6랭크
+};
+const rankOf = (alias, key) =>
+    (MAX_RANK[alias] && MAX_RANK[alias][key]) || (key === 'R' ? 3 : 5);
+
 // 손으로 이미 작성한 챔피언. 여기 적힌 이름은 기존 파일 내용을 그대로 유지한다.
 //
 //  ★ 2026-08-08 비웠다. 가렌·갈리오가 유일한 항목이었는데 {pN} 체계 이전의
@@ -327,7 +343,7 @@ async function main() {
             const { text, names } = convertDescription(spell.dynamicDescription || spell.description, alias);
             tplLines.push(`        "${key}": ${q(text)}, // ${spell.name}`);
 
-            const maxRank = (key === 'R') ? 3 : 5;
+            const maxRank = rankOf(alias, key);
 
             // 플레이스홀더 자리 (직접 채워야 함)
             const vLines = names.map((name, i) => `            "p${i + 1}": "?", // ${name}`);

@@ -6838,9 +6838,9 @@ const customValues = {
     },
     "Elise": { // 엘리스
         "P": {
-            "p1": "2 / 3 / 4", // spell.EliseR:BaseSpiderlingsStored
-            "p2": "12 / 22 / 32 (+ 주문력의 15%)", // spell.EliseR:PassiveTotalDamage
-            "p3": "6 / 8 / 10 (+ 주문력의 8%)", // spell.EliseR:PassiveTotalHealing
+            "p1": "2 / 3 / 4 / 5", // spell.EliseR:BaseSpiderlingsStored
+            "p2": "12 / 22 / 32 / 42 (+ 주문력의 15%)", // spell.EliseR:PassiveTotalDamage
+            "p3": "6 / 8 / 10 / 12 (+ 주문력의 8%)", // spell.EliseR:PassiveTotalHealing
             "cooldown": "-",
             "cost": "-"
         },
@@ -7374,12 +7374,12 @@ const customValues = {
         },
         "Q": {
             "p1": "4", // AttackSpeedDurationBase
-            "p2": "20 / 32 / 44 / 56 / 68", // AttackSpeedBase*100
-            "p3": "6 / 12 / 18 / 24 / 30 (+ 추가 공격력의 20% + 추가 최대 체력의 1 / 1.2 / 1.4 / 1.6 / 1.8%)", // OnHitDamage
-            "p4": "3 / 4 / 5 / 6 / 7% (+ 추가 공격력의 0.035%)", // MaxHPOnHit1
+            "p2": "20 / 32 / 44 / 56 / 68 / 80", // AttackSpeedBase*100
+            "p3": "6 / 12 / 18 / 24 / 30 / 36 (+ 추가 공격력의 20% + 추가 최대 체력의 1 / 1.2 / 1.4 / 1.6 / 1.8 / 2%)", // OnHitDamage
+            "p4": "3 / 4 / 5 / 6 / 7 / 8% (+ 추가 공격력의 0.035%)", // MaxHPOnHit1
             "p5": "50", // AttackRange
-            "p6": "20 / 32 / 44 / 56 / 68% (+ 20 ~ 70 (레벨에 따라))", // EmpoweredTotalAS
-            "p7": "3 / 4 / 5 / 6 / 7% (+ 2 ~ 4 (레벨에 따라) + 추가 공격력의 0.05% + 추가 최대 체력의 0.001%)", // Q2TotalOnHitHPDamage
+            "p6": "20 / 32 / 44 / 56 / 68 / 80% (+ 20 ~ 70 (레벨에 따라))", // EmpoweredTotalAS
+            "p7": "3 / 4 / 5 / 6 / 7 / 8% (+ 2 ~ 4 (레벨에 따라) + 추가 공격력의 0.05% + 추가 최대 체력의 0.001%)", // Q2TotalOnHitHPDamage
             "p8": "(주문력의 0.006% + 0.015 ~ 0.03 (레벨에 따라)) x (1 + 5 x 1)%", // EmpoweredLightningBonusMax
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -7392,12 +7392,12 @@ const customValues = {
         },
         "W": {
             "p1": "4", // ShieldDuration
-            "p2": "45 / 65 / 85 / 105 / 125 (+ 최대 체력의 2 / 2.3 / 2.6 / 2.9 / 3.2% + 주문력의 40% + 추가 공격력의 50%)", // TotalShield
-            "p3": "15 / 16 / 17 / 18 / 19", // LifeSteal*100
+            "p2": "45 / 65 / 85 / 105 / 125 / 145 (+ 최대 체력의 2 / 2.3 / 2.6 / 2.9 / 3.2 / 3.5% + 주문력의 40% + 추가 공격력의 50%)", // TotalShield
+            "p3": "15 / 16 / 17 / 18 / 19 / 20", // LifeSteal*100
             "p4": "최대 체력의 1.2% (+ 주문력의 8%)", // LifeOnHit
-            "p5": "20 ~ 150 (레벨에 따라) (+ 45 / 65 / 85 / 105 / 125 + 주문력의 65% + 최대 체력의 8% + 추가 공격력의 100%)", // RecastShield
-            "p6": "20 ~ 150 (레벨에 따라) (+ 45 / 65 / 85 / 105 / 125 + 주문력의 65% + 최대 체력의 8% + 추가 공격력의 100%) x 0.5", // RecastHeal
-            "p7": "30 / 32 / 34 / 36 / 38", // LifeSteal*200
+            "p5": "20 ~ 150 (레벨에 따라) (+ 45 / 65 / 85 / 105 / 125 / 145 + 주문력의 65% + 최대 체력의 8% + 추가 공격력의 100%)", // RecastShield
+            "p6": "20 ~ 150 (레벨에 따라) (+ 45 / 65 / 85 / 105 / 125 / 145 + 주문력의 65% + 최대 체력의 8% + 추가 공격력의 100%) x 0.5", // RecastHeal
+            "p7": "30 / 32 / 34 / 36 / 38 / 40", // LifeSteal*200
             "p8": "최대 체력의 1.2% (+ 주문력의 8%) x 2", // LifeOnHitAwakened
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -7408,10 +7408,10 @@ const customValues = {
             }
         },
         "E": {
-            "p1": "25 / 31 / 37 / 43 / 49% (+ 추가 공격력의 0.05%)", // MoveSpeed
+            "p1": "25 / 31 / 37 / 43 / 49 / 55% (+ 추가 공격력의 0.05%)", // MoveSpeed
             "p2": "4", // MoveSpeedDuration
             "p3": "0.75", // StunDuration
-            "p4": "6 / 5.6 / 5.2 / 4.8 / 4.4", // ICD
+            "p4": "6 / 5.6 / 5.2 / 4.8 / 4.4 / 4", // ICD
             "p5": "1.5", // UnstoppableDuration
             "p6": "30 ~ 40% (레벨에 따라) (+ 추가 공격력의 0.1%)", // MoveSpeedBonus
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -7425,8 +7425,8 @@ const customValues = {
         },
         "R": {
             "p1": "4", // BuffDuration
-            "p2": "20 / 36 / 52 (+ 주문력의 35%)", // StormDamage
-            "p3": "15 / 18 / 21", // SlowPotency*100
+            "p2": "20 / 36 / 52 / 68 / 84 / 100 (+ 주문력의 35%)", // StormDamage
+            "p3": "15 / 18 / 21 / 24 / 27 / 30", // SlowPotency*100
             "p4": "10 ~ 40 (레벨에 따라) (+ 주문력의 35%)", // PulseDamage
             "p5": "8 ~ 14% (레벨에 따라) (+ 주문력의 0.035%)", // PercentHPBlast
             "p6": "5%", // EmpoweredSlow
@@ -7651,18 +7651,18 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
-            "p1": "60 / 95 / 130 / 165 / 200 (+ 주문력의 20%)", // TotalMissileDamage
+            "p1": "60 / 95 / 130 / 165 / 200 / 235 (+ 주문력의 20%)", // TotalMissileDamage
             "p2": "20", // SlowAmount
-            "p3": "80 / 135 / 190 / 245 / 300 (+ 주문력의 30%)", // TotalMissileDamageEmpowered
+            "p3": "80 / 135 / 190 / 245 / 300 / 355 (+ 주문력의 30%)", // TotalMissileDamageEmpowered
             "p4": "2", // EmpoweredSlowDuration
-            "p5": "50 / 53 / 56 / 59 / 62", // EmpoweredSlowAmount
+            "p5": "50 / 53 / 56 / 59 / 62 / 65", // EmpoweredSlowAmount
             "p6": "5", // BuffDuration
-            "p7": "주문력의 5% (+ 10 / 12 / 14 / 16 / 18)", // OnHitDamageCalc
+            "p7": "주문력의 5% (+ 10 / 12 / 14 / 16 / 18 / 20)", // OnHitDamageCalc
             "p8": "75", // AllyCritChanceMaxAmp*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "6.5",
-            "cost": "50 / 55 / 60 / 65 / 70",
+            "cost": "50 / 55 / 60 / 65 / 70 / 75",
             "stats": {
                 "사거리": "25000",
                 "투사체 속도": "100",
@@ -8663,12 +8663,12 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
-            "p1": "60 / 110 / 160 / 210 / 260 (+ 추가 공격력의 135%)", // spell.JayceToTheSkies:Damage
+            "p1": "60 / 110 / 160 / 210 / 260 / 310 (+ 추가 공격력의 135%)", // spell.JayceToTheSkies:Damage
             "p2": "2", // spell.JayceToTheSkies:SlowDuration
-            "p3": "35 / 40 / 45 / 50 / 55", // spell.JayceToTheSkies:Slow*-100
+            "p3": "35 / 40 / 45 / 50 / 55 / 60", // spell.JayceToTheSkies:Slow*-100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "16 / 14 / 12 / 10 / 8",
+            "cooldown": "16 / 14 / 12 / 10 / 8 / 6",
             "cost": "40",
             "stats": {
                 "사거리": "600",
@@ -8676,9 +8676,9 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "15 / 17 / 19 / 21 / 23", // spell.JayceStaticField:ManaGain
+            "p1": "15 / 17 / 19 / 21 / 23 / 25", // spell.JayceStaticField:ManaGain
             "p2": "4", // spell.JayceStaticField:Duration
-            "p3": "140 / 200 / 260 / 320 / 380 (+ 주문력의 100%)", // spell.JayceStaticField:Damage
+            "p3": "140 / 200 / 260 / 320 / 380 / 440 (+ 주문력의 100%)", // spell.JayceStaticField:Damage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "10",
@@ -8691,10 +8691,10 @@ const customValues = {
         },
         "E": {
             "p1": "추가 공격력의 100%", // spell.JayceThunderingBlow:FlatDamage
-            "p2": "8 / 10.8 / 13.6 / 16.4 / 19.2", // spell.JayceThunderingBlow:PercHPDamage*100
+            "p2": "8 / 10.8 / 13.6 / 16.4 / 19.2 / 22", // spell.JayceThunderingBlow:PercHPDamage*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "20 / 18 / 16 / 14 / 12",
+            "cooldown": "20 / 18 / 16 / 14 / 12 / 10",
             "cost": "55",
             "stats": {
                 "사거리": "240",
@@ -9158,16 +9158,16 @@ const customValues = {
             }
         },
         "R": {
-            "p1": "40 / 100 / 160 (+ 주문력의 30%)", // RQImpactDamage
-            "p2": "40 / 130 / 220 (+ 주문력의 50%)", // RQFieldDamage
+            "p1": "40 / 100 / 160 / 220 (+ 주문력의 30%)", // RQImpactDamage
+            "p2": "40 / 130 / 220 / 310 (+ 주문력의 50%)", // RQFieldDamage
             "p3": "17% (+ 주문력의 1%)", // RWHealAmount
-            "p4": "0.5 / 0.75 / 1", // RWBonusRoot
-            "p5": "45 / 85 / 125 (+ 주문력의 45%)", // REBonusShield
-            "p6": "45 / 85 / 125 (+ 주문력의 45%) x 1", // REBonusShieldArea
+            "p4": "0.5 / 0.75 / 1 / 1.25", // RWBonusRoot
+            "p5": "45 / 85 / 125 / 165 (+ 주문력의 45%)", // REBonusShield
+            "p6": "45 / 85 / 125 / 165 (+ 주문력의 45%) x 1", // REBonusShieldArea
             "p7": "15", // REMoveSpeed*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "40 / 38 / 36",
+            "cooldown": "40 / 38 / 36 / 34",
             "cost": "-",
             "stats": {
                 "사거리": "1100",
