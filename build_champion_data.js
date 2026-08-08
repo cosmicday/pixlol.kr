@@ -149,7 +149,10 @@ function convertDescription(raw, championAlias) {
     // 4) @Placeholder@ -> {v1} {v2} ...
     //    같은 이름이 여러 번 나오면 같은 번호를 쓴다.
     const names = [];
-    text = text.replace(/@([A-Za-z0-9_.*+\-/() ]+?)@/g, (match, name) => {
+    // ★ 문자 집합에 ':' 가 들어 있다. @spell.GnarQ:MiniTotalDamage@ 같은 교차 참조를
+    //   놓치면 {pN} 으로 안 바뀌고, {p} 자리가 아니라서 폴백도 안 걸려
+    //   화면에 "@spell.GnarQ:...@" 가 그대로 찍힌다. 37챔피언이 이 상태였다.
+    text = text.replace(/@([A-Za-z0-9_.*+\-/():]+?)@/g, (match, name) => {
         const key = name.trim();
         let idx = names.indexOf(key);
         if (idx === -1) {

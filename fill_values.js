@@ -126,6 +126,9 @@ const caseList = [];              // 대소문자를 무시하고 찾아낸 이�
 const caseSeen = new Set();
 const zeroDrop = [];              // 참조 대상이 bin 에 없어 0으로 본 항 (조회 버그와 구분하려고 남긴다)
 const hashHits = new Set();       // CD 가 이름을 못 푼 {해시} 자리를 해시로 찾아낸 곳
+const crossHits = new Set();      // @spell.X:Y@ 교차 참조를 풀어낸 곳
+const crossMiss = [];             // 교차 참조인데 못 푼 곳
+let spellIndex = {};              // 지금 처리 중인 챔피언의 스펠 객체 색인 (buildSpellIndex)
 
 // 툴팁 철자와 bin 철자가 어긋난 자리를 기록한다.
 function noteCase(asked, actual) {
@@ -692,7 +695,26 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
 }
 
 // 플레이스홀더 이름 하나를 해결
-function resolve(name, spell, maxRank) {
+function resolve(name, spell, maxRank, depth = 0) {
+    // ★ @spell.<스펠이름>:<이름>@ — 다른 스펠의 값을 부르는 교차 참조.
+    //   대소문자가 섞여 있다(@spell.GnarQ:...@ / @Spell.SonaQ:...@).
+    //   자기 자신을 부르기도 한다(소나 P 의 @Spell.SonaPassive:...@).
+    //   ★ 배율(*100)·자릿수(.1) 접미사는 안쪽 이름 끝에 붙어 있으므로
+    //     떼지 말고 통째로 넘겨서 재귀 호출이 알아서 처리하게 둔다.
+    const xm = String(name).trim().match(/^spell\.([A-Za-z0-9_]+)\s*:\s*(.+)$/i);
+    if (xm) {
+        if (depth > 3) return null;                       // 서로 부르는 경우 대비
+        const t = spellIndex[xm[1].toLowerCase()];
+        if (!t) {
+            if (crossMiss.length < 40) crossMiss.push(`${ctx}   (스펠 객체 ${xm[1]} 없음)`);
+            return null;
+        }
+        const v = resolve(xm[2].trim(), t.spell, t.maxRank, depth + 1);
+        if (v === null && crossMiss.length < 40) crossMiss.push(`${ctx}   (${xm[1]} 안에서 ${xm[2]} 못 찾음)`);
+        if (v !== null) crossHits.add(`${ctx} = ${v}`);
+        return v;
+    }
+
     // @Name*100@ / @Name*-100@ 형태에서 배율을 떼어낸다
     let mult = 1;
     let clean = String(name).trim();
@@ -833,6 +855,61 @@ function getSpellsFromBin(bin, alias) {
     out.P.push(...leftovers);
 
     return out;
+}
+
+// @spell.<스펠이름>:<이름>@ 교차 참조를 풀기 위한 색인.
+//   스펠 객체 이름(소문자) -> { spell, maxRank }
+//   ★ maxRank 를 같이 들고 다녀야 한다. 패시브 문장이 Q 값을 부르는 경우가 있는데
+//     P 의 maxRank(1)로 읽으면 1랭크 값만 나오고, 반대로 R 값을 5랭크로 읽으면
+//     없는 4·5랭크가 지어내진다.
+//   ★ 모를 때 기본값은 1 이다. levelsToText 는 값이 전부 같으면 하나로 줄이므로
+//     랭크가 없는 값은 1 로 읽어도 맞고, 5 로 두면 없는 랭크가 부풀려진다.
+function buildSpellIndex(bin, alias) {
+    const idx = {};
+    const putName = (nm, spell, maxRank) => {
+        const k = String(nm || '').toLowerCase();
+        if (!k || !spell || idx[k]) return;     // 먼저 등록된 쪽(더 확실한 쪽)을 지킨다
+        idx[k] = { spell, maxRank };
+    };
+    const put = (path, spell, maxRank) =>
+        putName(String(path || '').split('/').pop(), spell, maxRank);
+
+    const rec = bin[`Characters/${alias}/CharacterRecords/Root`];
+    if (!rec) return idx;
+
+    // CharacterRecord 가 제일 확실하다. 옛날 이름(PowerBall=람머스 Q,
+    // GlacialStorm=애니비아 R 등)도 여기서 제 랭크를 얻는다.
+    //   ★ CD 가 경로 이름을 못 풀어 {해시}로 남기는 경우가 있다.
+    //     스몰더 패시브가 `{c72a53d8}` 이라 SmolderP 라는 키가 아예 없었다.
+    //     툴팁은 관례 이름으로 부르므로 그쪽으로도 같이 등록한다.
+    const ranks = [5, 5, 5, 3];
+    const keys = ['Q', 'W', 'E', 'R'];
+    (rec.spells || []).forEach((p, i) => {
+        if (i >= 4 || !bin[p] || !bin[p].mSpell) return;
+        put(p, bin[p].mSpell, ranks[i]);
+        putName(alias + keys[i], bin[p].mSpell, ranks[i]);
+    });
+    const pp = rec.mCharacterPassiveSpell;
+    if (bin[pp] && bin[pp].mSpell) {
+        put(pp, bin[pp].mSpell, 1);
+        putName(alias + 'P', bin[pp].mSpell, 1);
+        putName(alias + 'Passive', bin[pp].mSpell, 1);
+    }
+
+    // 나머지 스펠 객체(미사일·소환물·변신판 등)는 이름으로만 추론한다.
+    const prefix = `Characters/${alias}/Spells/`;
+    const low = alias.toLowerCase();
+    for (const p in bin) {
+        if (!p.startsWith(prefix)) continue;
+        const o = bin[p];
+        if (!o || !o.mSpell) continue;
+        const nameLow = String(o.ObjectName || p).toLowerCase();
+        let r = 1;
+        if (nameLow.includes(low + 'r')) r = 3;
+        else if (['q', 'w', 'e'].some(k => nameLow.includes(low + k))) r = 5;
+        put(p, o.mSpell, r);
+    }
+    return idx;
 }
 
 // f1, f2, Effect3Amount 처럼 스킬 고유 이름이 아니라
@@ -984,6 +1061,7 @@ async function main() {
         }
 
         const binSpells = getSpellsFromBin(bin, alias);
+        spellIndex = buildSpellIndex(bin, alias);   // @spell.X:Y@ 교차 참조용
         // 이제 키는 항상 있고 값이 배열이다. 전부 비어 있으면 CharacterRecord 를 못 읽은 것.
         if (!Object.values(binSpells).some(arr => arr.length)) binFails.push(`${c.name} CharacterRecord 없음`);
 
@@ -994,7 +1072,7 @@ async function main() {
         const passiveNames = passiveRaw
             ? [...new Set([...String(passiveRaw)
                 .replace(/@SpellModifierDescriptionAppend@/gi, '')
-                .matchAll(/@([A-Za-z0-9_.*+\-/() ]+?)@/g)].map(x => x[1].trim()))]
+                .matchAll(/@([A-Za-z0-9_.*+\-/():]+?)@/g)].map(x => x[1].trim()))]
             : [];
 
         const previewLines = [];
@@ -1055,7 +1133,9 @@ async function main() {
             seenKey.add(key);
 
             const desc = (s.dynamicDescription || '').replace(/@SpellModifierDescriptionAppend@/gi, '');
-            const names = [...new Set([...desc.matchAll(/@([A-Za-z0-9_.*+\-/() ]+?)@/g)].map(x => x[1].trim()))];
+            // ★ ':' 포함. build_champion_data.js 의 convertDescription 과 반드시 같아야 한다.
+            //   여기가 어긋나면 문장의 {pN} 개수와 값의 pN 개수가 안 맞는다.
+            const names = [...new Set([...desc.matchAll(/@([A-Za-z0-9_.*+\-/():]+?)@/g)].map(x => x[1].trim()))];
 
             const maxRank = key === 'R' ? 3 : 5;
             const pool = binSpells[key] || [];
@@ -1212,6 +1292,11 @@ async function main() {
     if (caseList.length) {
         console.log(`\n[대소문자가 어긋나서 찾아낸 이름] ${caseList.length}종 — 툴팁 철자와 bin 철자가 다른 자리:`);
         caseList.forEach(x => console.log(`  ${x}`));
+    }
+
+    if (crossHits.size || crossMiss.length) {
+        console.log(`\n[@spell.X:Y@ 교차 참조] 풀어냄 ${crossHits.size}자리 / 실패 ${crossMiss.length}자리`);
+        crossMiss.forEach(x => console.log(`  실패: ${x}`));
     }
 
     if (hashHits.size) {

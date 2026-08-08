@@ -478,6 +478,10 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
+            "p1": "5 / 45 / 85 / 125 / 165 (+ 총 공격력의 125%)", // spell.GnarQ:MiniTotalDamage
+            "p2": "2", // spell.GnarQ:SlowDuration
+            "p3": "15 / 20 / 25 / 30 / 35", // spell.GnarQ:SlowAmount*100
+            "p4": "40", // spell.GnarQ:MiniCDRefund*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
@@ -489,6 +493,10 @@ const customValues = {
             }
         },
         "W": {
+            "p1": "0 / 10 / 20 / 30 / 40 (+ 주문력의 100%)", // spell.GnarW:MiniTotalDamage
+            "p2": "6 / 8 / 10 / 12 / 14", // spell.GnarW:MiniPercentHPDamage*100
+            "p3": "40 / 60 / 80", // spell.GnarR:RHyperMovementSpeedPercent
+            "p4": "3", // spell.GnarW:MiniHasteDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7",
@@ -498,6 +506,10 @@ const customValues = {
             }
         },
         "E": {
+            "p1": "6", // spell.GnarE:MiniASDuration
+            "p2": "40 / 45 / 50 / 55 / 60", // spell.GnarE:MinibAS*100
+            "p3": "50 / 85 / 120 / 155 / 190 (+ 최대 체력의 6%)", // spell.GnarE:MiniTotalDamage
+            "p4": "80", // spell.GnarE:MoveSpeedMod*-100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "22 / 19.5 / 17 / 14.5 / 12",
@@ -591,7 +603,11 @@ const customValues = {
         },
     },
     "Nasus": { // 나서스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "12 ~ 24 (레벨에 따라)", // Spell.NasusPassive:LifestealTooltip
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "40 / 60 / 80 / 100 / 120 (+ 총 공격력의 100% + 1 (중첩당))", // TotalDamage
             "p2": "3", // BasicStacks
@@ -658,6 +674,13 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
+            "p1": "35 / 40 / 45 / 50 / 55 (+ 추가 공격력의 20%)", // spell.NaafiriQ:TotalDamageFirstCast
+            "p2": "5", // spell.NaafiriQ:BleedDuration
+            "p3": "35 / 60 / 85 / 110 / 135 (+ 추가 공격력의 80%)", // spell.NaafiriQ:TotalBleedDamage
+            "p4": "30 / 42.5 / 55 / 67.5 / 80 (+ 추가 공격력의 40%)", // spell.NaafiriQ:TotalMinDamageSecondCast
+            "p5": "60 / 85 / 110 / 135 / 160 (+ 추가 공격력의 70%)", // spell.NaafiriQ:TotalMaxDamageSecondCast
+            "p6": "45 / 60 / 75 / 90 / 105 (+ 추가 공격력의 40%)", // spell.NaafiriQ:TotalHealSecondCast
+            "p7": "2", // spell.NaafiriP:PackmateTauntDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
@@ -914,7 +937,12 @@ const customValues = {
         },
     },
     "Nidalee": { // 니달리
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "10", // spell.AspectOfTheCougar:PassivePercentMS
+            "p2": "30", // spell.AspectOfTheCougar:PassivePercentMS*3
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "70 / 90 / 110 / 130 / 150 (+ 주문력의 50%)", // HumanMinimumDamage
             "p2": "70 / 90 / 110 / 130 / 150 (+ 주문력의 50%) x 3.25", // HumanMaximumDamage
@@ -1082,7 +1110,8 @@ const customValues = {
             "p1": "15 / 25 / 35 (+ 추가 공격력의 10%) x 4", // DamagePerTickCalcTooltip
             "p2": "125 / 225 / 325 (+ 추가 공격력의 100%)", // DamageCalc
             "p3": "20% (+ 치명타 확률의 10%)", // ChampHealingPercent
-            "p4": "6", // Duration
+            "p4": "치명타 확률의 20%", // spell.NilahQ:CritLifesteal
+            "p5": "6", // Duration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "110 / 95 / 80",
@@ -1308,8 +1337,9 @@ const customValues = {
             "p1": "4", // RuneDuration
             "p2": "2", // MaximumRunes
             "p3": "75 / 95 / 115 / 135 / 155 (+ 주문력의 55% + 최대 마나의 2%)", // QDamageCalc
-            "p4": "2", // MovementSpeedDuration
-            "p5": "28 / 32 / 36 / 40 / 44", // MovementSpeedAmount
+            "p4": "50 / 75 / 100", // Spell.RyzeR:OverloadDamageBonus
+            "p5": "2", // MovementSpeedDuration
+            "p6": "28 / 32 / 36 / 40 / 44", // MovementSpeedAmount
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "5",
@@ -1476,9 +1506,10 @@ const customValues = {
             "p1": "150 / 250 / 350 (+ 주문력의 60%)", // InitialDamageCalc
             "p2": "1.5", // SlowDuration
             "p3": "30 / 40 / 50", // SlowAmount*100
-            "p4": "0.75", // KnockupDuration
-            "p5": "3.5", // BuffDuration
-            "p6": "3", // NumberOfPulses
+            "p4": "80 / 120 / 160 / 200 / 240 (+ 주문력의 100%)", // spell.PowerBall:PowerBallDamage
+            "p5": "0.75", // KnockupDuration
+            "p6": "3.5", // BuffDuration
+            "p7": "3", // NumberOfPulses
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 105 / 90",
@@ -1875,6 +1906,8 @@ const customValues = {
             }
         },
         "E": {
+            "p1": "70 / 95 / 120 / 145 / 170 (+ 추가 공격력의 60%)", // spell.RekSaiE:BaseDamageCalculation
+            "p2": "70 / 95 / 120 / 145 / 170 (+ 추가 공격력의 60%) x 1.2", // spell.RekSaiE:EmpoweredDamageCalculation
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "6",
@@ -1922,6 +1955,12 @@ const customValues = {
             }
         },
         "W": {
+            "p1": "20 / 25 / 30 / 35 / 40", // spell.RellW_Dismount:MountedMoveSpeed
+            "p2": "60 / 90 / 120 / 150 / 180 (+ 주문력의 60%)", // spell.RellW_Dismount:DismountDamage
+            "p3": "20 / 40 / 60 / 80 / 100 (+ 최대 체력의 11%)", // spell.RellW_Dismount:Shield
+            "p4": "15", // spell.RellW_Dismount:ResistanceIncrease*100
+            "p5": "20", // spell.RellW_Dismount:DismountedASBoost*100
+            "p6": "75", // spell.RellW_Dismount:DismountedRangeBoost
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "10",
@@ -2814,9 +2853,11 @@ const customValues = {
     "Mel": { // 멜
         "P": {
             "p1": "5", // OverwhelmDuration
-            "p2": "3", // PassiveBonusMissiles
-            "p3": "8 ~ 30 (레벨에 따라) (+ 주문력의 4%)", // PassiveBonusMissileDamage
-            "p4": "9", // MaxPassiveBonusMissiles
+            "p2": "60 / 70 / 80 (+ 주문력의 10%)", // spell.MelR:PassiveFlatDamage
+            "p3": "3 / 4 / 5 (+ 주문력의 0.75%)", // spell.MelR:PassiveStackDamage
+            "p4": "3", // PassiveBonusMissiles
+            "p5": "8 ~ 30 (레벨에 따라) (+ 주문력의 4%)", // PassiveBonusMissileDamage
+            "p6": "9", // MaxPassiveBonusMissiles
             "cooldown": "-",
             "cost": "-"
         },
@@ -3084,6 +3125,7 @@ const customValues = {
     "MissFortune": { // 미스 포츈
         "P": {
             "p1": "총 공격력의 50 ~ 100 (레벨에 따라)%", // TotalDamage
+            "p2": "240", // Spell.MissFortuneViciousStrikes:LoveTapRefund
             "cooldown": "-",
             "cost": "-"
         },
@@ -3399,6 +3441,7 @@ const customValues = {
             "p2": "4", // SharedBuffsDuration
             "p3": "20", // ShredAmount
             "p4": "30 / 35 / 40 / 45 / 50", // AttackSpeed
+            "p5": "4", // spell.ViPassive:CDReductionOn3Hit
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "0",
@@ -3446,6 +3489,8 @@ const customValues = {
         },
         "Q": {
             "p1": "80 / 120 / 160 / 200 / 240 (+ 주문력의 50 / 55 / 60 / 65 / 70%)", // TotalDamage
+            "p2": "1", // Spell.VeigarPassive:dQKillStacks
+            "p3": "3", // Spell.VeigarPassive:dQKillStacksLarge
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "6 / 5.5 / 5 / 4.5 / 4",
@@ -3458,6 +3503,8 @@ const customValues = {
         },
         "W": {
             "p1": "85 / 140 / 195 / 250 / 305 (+ 주문력의 70 / 80 / 90 / 100 / 110%)", // TotalDamage
+            "p2": "50", // Spell.VeigarPassive:PStacksPerDarkMatterCDR
+            "p3": "10", // Spell.VeigarPassive:DarkMatterCDRIncrement*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "0",
@@ -3605,6 +3652,9 @@ const customValues = {
             }
         },
         "R": {
+            "p1": "75 / 125 / 175 (+ 주문력의 20%)", // spell.VexR:RDamageCalc
+            "p2": "150 / 250 / 350 (+ 주문력의 50%)", // spell.VexR:RecastDamageCalc
+            "p3": "8", // spell.VexR:TakedownWindow
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "140 / 120 / 100",
@@ -4932,8 +4982,14 @@ const customValues = {
         "P": {
             "p1": "0.5", // AccelerandoAHPerStack
             "p2": "60", // AccelerandoCap
-            "p3": "3", // PowerChordPassiveCountMax
-            "p4": "20 ~ 240 (레벨에 따라) (+ 주문력의 20%)", // PowerChordDamage
+            "p3": "1.5", // Spell.SonaPassive:AccelerandoUltCDR
+            "p4": "3", // PowerChordPassiveCountMax
+            "p5": "20 ~ 240 (레벨에 따라) (+ 주문력의 20%)", // PowerChordDamage
+            "p6": "30 ~ 360 (레벨에 따라) (+ 주문력의 30%)", // Spell.SonaQ:TotalStaccatoDamage
+            "p7": "3", // Spell.SonaW:DiminuendoDuration
+            "p8": "25% (+ 주문력의 0.04%)", // Spell.SonaW:TotalDiminuendoWeakenPercent
+            "p9": "2", // Spell.SonaE:TempoDuration
+            "p10": "50% (+ 주문력의 0.04%)", // Spell.SonaE:TotalTempoMoveSpeedSlow
             "cooldown": "-",
             "cost": "-"
         },
@@ -5027,6 +5083,7 @@ const customValues = {
         "W": {
             "p1": "90 / 110 / 130 / 150 / 170 (+ 주문력의 50%)", // TotalHeal
             "p2": "80 / 85 / 90 / 95 / 100", // PercentHealthCostRefund*100
+            "p3": "2.5", // Spell.SorakaQ:HoTDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "6 / 5 / 4 / 3 / 2",
@@ -5208,24 +5265,28 @@ const customValues = {
     "Smolder": { // 스몰더
         "P": {
             "p1": "0.25 (중첩당)", // Passive_QDamageIncrease
-            "p2": "0.55 (중첩당)", // Passive_WDamageIncrease
-            "p3": "0.08 (중첩당)", // EBonusDamage
-            "p4": "100", // EStacksPerAttackTooltip
-            "p5": "?", // f1.0
+            "p2": "25", // spell.SmolderQ:StackTier1
+            "p3": "125", // spell.SmolderQ:StackTier2
+            "p4": "225", // spell.SmolderQ:StackTier3
+            "p5": "0.55 (중첩당)", // Passive_WDamageIncrease
+            "p6": "0.08 (중첩당)", // EBonusDamage
+            "p7": "100", // EStacksPerAttackTooltip
+            "p8": "?", // f1.0
             "cooldown": "-",
             "cost": "-"
         },
         "Q": {
             "p1": "60 / 70 / 80 / 90 / 100 (+ 추가 공격력의 130%)", // TotalDamage
-            "p2": "15", // ManaRestore
-            "p3": "25", // StackTier1
-            "p4": "125", // StackTier2
-            "p5": "50", // Tier2_BlowbackPercentageDamage
-            "p6": "2 (+ 0.008 (중첩당))", // Tier2_NumberOfBlowback
-            "p7": "225", // StackTier3
-            "p8": "3", // Tier3_DotLength
-            "p9": "추가 공격력의 0.025% (+ 0.005 (중첩당))", // Tier3_Burn
-            "p10": "6.5%", // Tier3_ExecuteThreshold
+            "p2": "0.25 (중첩당)", // spell.SmolderP:Passive_QDamageIncrease
+            "p3": "15", // ManaRestore
+            "p4": "25", // StackTier1
+            "p5": "125", // StackTier2
+            "p6": "50", // Tier2_BlowbackPercentageDamage
+            "p7": "2 (+ 0.008 (중첩당))", // Tier2_NumberOfBlowback
+            "p8": "225", // StackTier3
+            "p9": "3", // Tier3_DotLength
+            "p10": "추가 공격력의 0.025% (+ 0.005 (중첩당))", // Tier3_Burn
+            "p11": "6.5%", // Tier3_ExecuteThreshold
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "5.5 / 5 / 4.5 / 4 / 3.5",
@@ -5241,6 +5302,7 @@ const customValues = {
             "p2": "1.5", // SlowDuration
             "p3": "35", // SlowAmount*100
             "p4": "10 / 35 / 60 / 85 / 110 (+ 추가 공격력의 50% + 주문력의 80%)", // ExplosionDamage
+            "p5": "0.55 (중첩당)", // spell.SmolderP:Passive_WDamageIncrease
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
@@ -5257,6 +5319,7 @@ const customValues = {
             "p2": "75", // MoveSpeed*100
             "p3": "5 (+ 0.01 (중첩당))", // TotalNumberOfAttacks
             "p4": "10 / 15 / 20 / 25 / 30 (+ 총 공격력의 30%)", // DamagePerHit
+            "p5": "0.08 (중첩당)", // spell.SmolderP:EBonusDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "24 / 22 / 20 / 18 / 16",
@@ -5366,6 +5429,10 @@ const customValues = {
             "p3": "11", // MaxHPPercent*100
             "p4": "1", // SlowDuration
             "p5": "40", // SlowPercent*100
+            "p6": "10 / 20 / 30 / 40 / 50 (+ 추가 공격력의 90% + 추가 최대 체력의 3%)", // spell.SkarnerQ:AbilityDamage
+            "p7": "11", // spell.SkarnerQ:MaxHPPercent*100
+            "p8": "1", // spell.SkarnerQ:SlowDuration
+            "p9": "40", // spell.SkarnerQ:SlowPercent*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "8 / 6.75 / 5.5 / 4.25 / 3",
@@ -5558,7 +5625,8 @@ const customValues = {
         "Q": {
             "p1": "90 / 125 / 160 / 195 / 230 (+ 주문력의 70%)", // TotalDamage
             "p2": "6", // SphereDuration
-            "p3": "2", // Upgrade1MaxAmmo
+            "p3": "40", // spell.SyndraPassive:Q1UpgradeThreshold
+            "p4": "2", // Upgrade1MaxAmmo
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7",
@@ -5572,7 +5640,8 @@ const customValues = {
             "p1": "70 / 100 / 130 / 160 / 190 (+ 주문력의 65%)", // ThrowDamage
             "p2": "1.5", // f2
             "p3": "25", // TotalSlowAmount
-            "p4": "12% (+ 주문력의 2%)", // TOOLTIPONLYPassiveBonusPercent
+            "p4": "60", // spell.SyndraPassive:WUpgradeThreshold
+            "p5": "12% (+ 주문력의 2%)", // TOOLTIPONLYPassiveBonusPercent
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
@@ -5585,8 +5654,9 @@ const customValues = {
         "E": {
             "p1": "60 / 95 / 130 / 165 / 200 (+ 주문력의 60%)", // TotalDamage
             "p2": "1.25", // StunDuration
-            "p3": "1.25", // UpgradedSlowDuration
-            "p4": "70", // UpgradedSlowAmount*100
+            "p3": "80", // spell.SyndraPassive:EUpgradeThreshold
+            "p4": "1.25", // UpgradedSlowDuration
+            "p5": "70", // UpgradedSlowAmount*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "15",
@@ -5600,7 +5670,8 @@ const customValues = {
             "p1": "10", // QHastePerRank
             "p2": "80 / 120 / 160 (+ 주문력의 20%)", // DamageCalc
             "p3": "80 / 120 / 160 (+ 주문력의 20%) x 7", // MaxDamageCalc
-            "p4": "15", // UpgradeExecuteThreshold*100
+            "p4": "100", // spell.SyndraPassive:RUpgradeThreshold
+            "p5": "15", // UpgradeExecuteThreshold*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 100 / 80",
@@ -6265,11 +6336,12 @@ const customValues = {
     },
     "Aphelios": { // 아펠리오스
         "P": {
-            "p1": "?", // f1
-            "p2": "?", // f2
-            "p3": "?", // f3
-            "p4": "?", // f4
-            "p5": "?", // f5
+            "p1": "?", // spell.ApheliosCalibrumQ:Hotkey
+            "p2": "?", // f1
+            "p3": "?", // f2
+            "p4": "?", // f3
+            "p5": "?", // f4
+            "p6": "?", // f5
             "cooldown": "-",
             "cost": "-"
         },
@@ -6521,8 +6593,9 @@ const customValues = {
         "Q": {
             "p1": "50 / 70 / 90 / 110 / 130 (+ 주문력의 25%)", // TotalPassthroughDamage
             "p2": "3", // SlowDuration
-            "p3": "1.1 / 1.2 / 1.3 / 1.4 / 1.5", // StunDuration
-            "p4": "60 / 95 / 130 / 165 / 200 (+ 주문력의 45%)", // TotalExplosionDamage
+            "p3": "20 / 30 / 40", // Spell.GlacialStorm:SlowAmount
+            "p4": "1.1 / 1.2 / 1.3 / 1.4 / 1.5", // StunDuration
+            "p5": "60 / 95 / 130 / 165 / 200 (+ 주문력의 45%)", // TotalExplosionDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
@@ -6764,7 +6837,13 @@ const customValues = {
         },
     },
     "Elise": { // 엘리스
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "2 / 3 / 4", // spell.EliseR:BaseSpiderlingsStored
+            "p2": "12 / 22 / 32 (+ 주문력의 15%)", // spell.EliseR:PassiveTotalDamage
+            "p3": "6 / 8 / 10 (+ 주문력의 8%)", // spell.EliseR:PassiveTotalHealing
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "40 / 70 / 100 / 130 / 160", // BaseDamage
             "p2": "4% (+ 주문력의 3%)", // HumanPercentHealth
@@ -6779,6 +6858,7 @@ const customValues = {
             }
         },
         "W": {
+            "p1": "60 / 100 / 140 / 180 / 220 (+ 주문력의 75%)", // spell.EliseHumanW:TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12",
@@ -7257,8 +7337,9 @@ const customValues = {
             "p2": "1.5", // SlowDuration
             "p3": "30%", // Calc_Slow
             "p4": "4", // MarkDuration
-            "p5": "13 / 16 / 19 / 22 / 25", // ArmorShred*100
-            "p6": "18 / 21 / 24 / 27 / 30", // HasteAmount*100
+            "p5": "4", // Spell.YorickPassive:YorickPassiveGhoulMax
+            "p6": "13 / 16 / 19 / 22 / 25", // ArmorShred*100
+            "p7": "18 / 21 / 24 / 27 / 30", // HasteAmount*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
@@ -7510,6 +7591,7 @@ const customValues = {
             "p6": "20 / 30 / 40 / 50 / 60%", // Calc_Attack_Speed
             "p7": "5 / 10 / 15 / 20 / 25 (+ 주문력의 20%)", // Calc_Damage
             "p8": "총 공격력의 30%", // Calc_Damage_Spread
+            "p9": "15", // Spell.YunaraR:Buff_Duration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "0",
@@ -7523,6 +7605,9 @@ const customValues = {
             "p2": "99%", // Calc_Slow
             "p3": "1.5", // Slow_Duration
             "p4": "55 / 95 / 135 / 175 / 215 (+ 추가 공격력의 85% + 주문력의 50%) x 0.6", // Calc_Damage_Per_Second
+            "p5": "160 / 320 / 480 (+ 추가 공격력의 120% + 주문력의 75%)", // Spell.YunaraR:Calc_RW_Damage
+            "p6": "99%", // Spell.YunaraR:Calc_RW_Slow_Amount
+            "p7": "1", // Spell.YunaraR:RW_Slow_Duration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "10",
@@ -7842,11 +7927,14 @@ const customValues = {
     "Illaoi": { // 일라오이
         "P": {
             "p1": "18 ~ 7 (레벨에 따라)", // SpawnCD
-            "p2": "5", // MissingHPPercentHeal*100
+            "p2": "9 ~ 180 (레벨에 따라) (+ 총 공격력의 110% + 주문력의 40%)", // spell.IllaoiQ:TentacleDamageTotal
+            "p3": "5", // MissingHPPercentHeal*100
             "cooldown": "-",
             "cost": "-"
         },
         "Q": {
+            "p1": "10 / 15 / 20 / 25 / 30", // spell.IllaoiQ:TentacleDamageAmp*100
+            "p2": "9 ~ 180 (레벨에 따라) (+ 총 공격력의 110% + 주문력의 40%)", // spell.IllaoiQ:TentacleDamageTotal
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
@@ -7889,6 +7977,7 @@ const customValues = {
         "R": {
             "p1": "150 / 250 / 350 (+ 추가 공격력의 50%)", // DamageCalc
             "p2": "8", // Duration
+            "p3": "2", // spell.IllaoiW:CooldownDuringR
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 95 / 70",
@@ -8034,6 +8123,8 @@ const customValues = {
         },
         "Q": {
             "p1": "60 / 100 / 140 / 180 / 220 (+ 주문력의 65%)", // InitialDamage
+            "p2": "15 ~ 75 (레벨에 따라) (+ 주문력의 20%)", // spell.ZyraP:PlantDamage
+            "p3": "8", // spell.ZyraP:PlantDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
@@ -8063,9 +8154,11 @@ const customValues = {
         "E": {
             "p1": "1 / 1.25 / 1.5 / 1.75 / 2", // RootDuration
             "p2": "60 / 95 / 130 / 165 / 200 (+ 주문력의 60%)", // TotalDamage
-            "p3": "2", // SlowDurationPlantAttack
-            "p4": "30", // SlowAmountPlantAttack
-            "p5": "2", // MaxSlowStacks
+            "p3": "15 ~ 75 (레벨에 따라) (+ 주문력의 20%)", // spell.ZyraP:PlantDamage
+            "p4": "8", // spell.ZyraP:PlantDuration
+            "p5": "2", // SlowDurationPlantAttack
+            "p6": "30", // SlowAmountPlantAttack
+            "p7": "2", // MaxSlowStacks
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "11",
@@ -8252,6 +8345,7 @@ const customValues = {
             "p2": "2", // SlowDuration
             "p3": "20 / 24 / 28 / 32 / 36% (+ 주문력의 6%)", // TotalSlow
             "p4": "55 / 85 / 115 / 145 / 175 (+ 주문력의 50%)", // TotalDamage
+            "p5": "추가 이동 속도의 30%", // spell.TailwindSelf:BonusDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
@@ -8489,7 +8583,14 @@ const customValues = {
         },
     },
     "Zeri": { // 제리
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "p1": "10 ~ 25 (레벨에 따라) (+ 주문력의 3%)", // Spell.ZeriQ:MinDamage
+            "p2": "70 ~ 160 (레벨에 따라) (+ 주문력의 20%)", // Spell.ZeriQ:PassiveExecuteThreshold
+            "p3": "75 ~ 160 (레벨에 따라) (+ 주문력의 110%)", // Spell.ZeriQ:PassiveMaxDamage
+            "p4": "1 ~ 11% (레벨에 따라)", // Spell.ZeriQ:PassiveMaxChargePercentHealth
+            "cooldown": "-",
+            "cost": "-"
+        },
         "Q": {
             "p1": "7", // NumberOfMissiles
             "p2": "22 / 26 / 30 / 34 / 38 (+ 총 공격력의 102 / 104 / 106 / 108 / 110%)", // ActiveDamageThatCanCrit
@@ -8562,6 +8663,9 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
+            "p1": "60 / 110 / 160 / 210 / 260 (+ 추가 공격력의 135%)", // spell.JayceToTheSkies:Damage
+            "p2": "2", // spell.JayceToTheSkies:SlowDuration
+            "p3": "35 / 40 / 45 / 50 / 55", // spell.JayceToTheSkies:Slow*-100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "16 / 14 / 12 / 10 / 8",
@@ -8572,6 +8676,9 @@ const customValues = {
             }
         },
         "W": {
+            "p1": "15 / 17 / 19 / 21 / 23", // spell.JayceStaticField:ManaGain
+            "p2": "4", // spell.JayceStaticField:Duration
+            "p3": "140 / 200 / 260 / 320 / 380 (+ 주문력의 100%)", // spell.JayceStaticField:Damage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "10",
@@ -8583,6 +8690,8 @@ const customValues = {
             }
         },
         "E": {
+            "p1": "추가 공격력의 100%", // spell.JayceThunderingBlow:FlatDamage
+            "p2": "8 / 10.8 / 13.6 / 16.4 / 19.2", // spell.JayceThunderingBlow:PercHPDamage*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
@@ -8595,6 +8704,8 @@ const customValues = {
             }
         },
         "R": {
+            "p1": "5", // spell.JayceStanceHtG:ShredDuration
+            "p2": "20 ~ 35% (레벨에 따라)", // spell.JayceStanceHtG:RangedFormShred
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "6",
@@ -9328,8 +9439,11 @@ const customValues = {
             "p5": "15% (+ 주문력의 0.06%)", // PExecutePercentage
             "p6": "1", // PAllyStacks
             "p7": "?", // f1.1
-            "p8": "?", // f2.1
-            "p9": "?", // f3.1
+            "p8": "100", // spell.KaisaQ:Effect6Amount
+            "p9": "?", // f2.1
+            "p10": "100", // spell.KaisaW:Effect2Amount
+            "p11": "?", // f3.1
+            "p12": "100", // spell.KaisaE:Effect6Amount
             "cooldown": "-",
             "cost": "-"
         },
@@ -9355,10 +9469,11 @@ const customValues = {
         "W": {
             "p1": "30 / 55 / 80 / 105 / 130 (+ 총 공격력의 130% + 주문력의 45%)", // TotalDamage
             "p2": "2", // Effect4Amount
-            "p3": "3", // Effect5Amount
-            "p4": "75", // Effect3Amount
-            "p5": "100", // f2.1
-            "p6": "100", // Effect2Amount
+            "p3": "4", // spell.KaisaPassive:PDuration
+            "p4": "3", // Effect5Amount
+            "p5": "75", // Effect3Amount
+            "p6": "100", // f2.1
+            "p7": "100", // Effect2Amount
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "20 / 18.5 / 17 / 15.5 / 14",
@@ -9410,6 +9525,8 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
+            "p1": "80 / 105 / 130 / 155 / 180 (+ 추가 공격력의 105%)", // spell.KhazixQ:BaseDamage
+            "p2": "80 / 105 / 130 / 155 / 180 (+ 추가 공격력의 105%) x 2.1", // spell.KhazixQ:IsoDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "4",
@@ -9450,7 +9567,9 @@ const customValues = {
             "p1": "1.25", // StealthDuration
             "p2": "40", // BonusMovementSpeedPercent*100
             "p3": "12", // RecastWindow
-            "p4": "2", // EvolvedStealthDuration
+            "p4": "45", // spell.KhazixQ:Effect4Amount
+            "p5": "40", // spell.KhazixW:Effect3Amount
+            "p6": "2", // EvolvedStealthDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "100 / 85 / 70",
@@ -9656,6 +9775,7 @@ const customValues = {
             "p1": "5", // AttacksPerHeadshot
             "p2": "2", // BrushAttackTotal
             "p3": "총 공격력의 60 ~ 100 (레벨에 따라) + 치명타 확률의 100% x (치명타 피해량의 100% - 1)%", // HeadShotBonusDamage
+            "p4": "35 / 80 / 125 / 170 / 215 (+ 추가 공격력의 30%)", // spell.CaitlynW:HeadshotBonusDamage
             "cooldown": "-",
             "cost": "-"
         },
@@ -9833,6 +9953,7 @@ const customValues = {
         "E": {
             "p1": "15 / 20 / 25 / 30 / 35 (+ 주문력의 20% + 추가 공격력의 10%)", // EPassiveTotalDamage
             "p2": "8 / 8.5 / 9 / 9.5 / 10% (+ 주문력의 1.5%)", // ActiveTotalExecuteDamage
+            "p3": "11", // Spell.KaylePassive:LevelForPassiveRank2
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
@@ -10535,7 +10656,8 @@ const customValues = {
             "p3": "50", // SlowAmount*100
             "p4": "10 / 15 / 20 / 25 / 30", // BaseHeal
             "p5": "5 / 5.5 / 6 / 6.5 / 7", // PercentHealthHealing*100
-            "p6": "1.5", // StunDuration
+            "p6": "5 ~ 60 (레벨에 따라) (+ 추가 최대 체력의 4% + 주문력의 추가 최대 체력의 1.25% x 0.01%)", // Spell.TahmKenchPassive:TotalDamage
+            "p7": "1.5", // StunDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
@@ -11085,10 +11207,11 @@ const customValues = {
         },
         "R": {
             "p1": "10 / 20 / 30", // ArmorPenetration*100
-            "p2": "2", // SpearSlowDuration
-            "p3": "50", // SpearSlow*100
-            "p4": "300 / 500 / 700 (+ 주문력의 100%)", // DamageCalc
-            "p5": "50", // EdgeDamageReduction*100
+            "p2": "70 / 100 / 130 / 160 / 190 (+ 추가 공격력의 115% + 주문력의 50%)", // spell.PantheonQ:HoldDamageCalc
+            "p3": "2", // SpearSlowDuration
+            "p4": "50", // SpearSlow*100
+            "p5": "300 / 500 / 700 (+ 주문력의 100%)", // DamageCalc
+            "p6": "50", // EdgeDamageReduction*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "180 / 165 / 150",
@@ -11160,8 +11283,9 @@ const customValues = {
     "Fiora": { // 피오라
         "P": {
             "p1": "3% (+ 추가 공격력의 0.04%)", // PassiveDamageTotal
-            "p2": "2", // MovementSpeedDuration
-            "p3": "35 ~ 100 (레벨에 따라)", // PassiveHealAmount
+            "p2": "30 / 40 / 50", // spell.FioraR:PercentMS*100
+            "p3": "2", // MovementSpeedDuration
+            "p4": "35 ~ 100 (레벨에 따라)", // PassiveHealAmount
             "cooldown": "-",
             "cost": "-"
         },
@@ -11211,9 +11335,10 @@ const customValues = {
         },
         "R": {
             "p1": "30 / 40 / 50", // PercentMS*100
-            "p2": "8", // MarkDuration
-            "p3": "5", // HealDuration
-            "p4": "75 / 100 / 125 (+ 추가 공격력의 60%)", // HealPerSecondCalc
+            "p2": "3% (+ 추가 공격력의 0.04%) x 4", // spell.FioraPassive:RDamageTotal
+            "p3": "8", // MarkDuration
+            "p4": "5", // HealDuration
+            "p5": "75 / 100 / 125 (+ 추가 공격력의 60%)", // HealPerSecondCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "110 / 90 / 70",
@@ -11434,7 +11559,9 @@ const customValues = {
             "p3": "60 / 85 / 110 / 135 / 160 (+ 주문력의 30%)", // Tooltip_QWDamage
             "p4": "60 / 85 / 110 / 135 / 160 (+ 주문력의 30%) x 2 / 2.375 / 2.75 / 3.125 / 3.5", // Tooltip_QWBonusDamage
             "p5": "20 / 35 / 50 / 65 / 80 (+ 주문력의 30%)", // Tooltip_QEDamage
-            "p6": "20 / 35 / 50 / 65 / 80 (+ 주문력의 24%)", // Tooltip_QEDamagePerSecond
+            "p6": "2.5", // spell.HweiQE:Duration
+            "p7": "20 / 35 / 50 / 65 / 80 (+ 주문력의 24%)", // Tooltip_QEDamagePerSecond
+            "p8": "35", // spell.HweiQE:SlowPercent
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
@@ -11447,8 +11574,9 @@ const customValues = {
         "W": {
             "p1": "30 / 32.5 / 35 / 37.5 / 40% (+ 주문력의 3%)", // Tooltip_WQMoveSpeed
             "p2": "100 / 140 / 180 / 220 / 260 (+ 주문력의 60%)", // Tooltip_WWShieldAmount
-            "p3": "20 / 30 / 40 / 50 / 60 (+ 주문력의 15%)", // Tooltip_WEOnHitDamage
-            "p4": "45 / 50 / 55 / 60 / 65", // Tooltip_WEOnHitManaRestore
+            "p3": "15", // spell.HweiWW:ToolTipAllyMod*100
+            "p4": "20 / 30 / 40 / 50 / 60 (+ 주문력의 15%)", // Tooltip_WEOnHitDamage
+            "p5": "45 / 50 / 55 / 60 / 65", // Tooltip_WEOnHitManaRestore
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "18 / 17.5 / 17 / 16.5 / 16",
