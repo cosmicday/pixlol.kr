@@ -58,6 +58,14 @@ const MANUAL = {
   '사일러스 R / PerTargetCooldown': '200',
   '카타리나 E / DaggerCooldownReduction': '12 / 11 / 10 / 9 / 8',
   '애쉬 E / ChargeCooldown': '5',
+
+  // 2026-08-08 인게임 확인분.
+  //   벨베스 E / 세트 W / 신 짜오 E / 진 E 는 숫자만으로 안 끝난다.
+  //   (공속 비례분·투지 계수 등이 문장 쪽에 같이 들어가야 함) — 확인결과.md 2번 참고
+  '말파이트 W / f1': '10 / 15 / 20 / 25 / 30',
+  '말파이트 W / f2': '30 / 45 / 60 / 75 / 90',
+  '벨베스 Q / f1': '16 / 15 / 14 / 13 / 12',
+  '신드라 W / f2': '1.5',
 };
 
 const manualUsed = new Set();
@@ -80,8 +88,12 @@ const STAT_NAMES = {
     5: '스킬 가속',
     18: '생명력 흡수',
     29: '물리 관통력',
-    6: '치명타 확률',
-    8: '마법 저항력',
+    // ★ 6 과 8 은 원래 서로 반대로 적혀 있었다. 2026-08-08 인게임 확인으로 교환:
+    //   닐라 R 이 "치명타 확률의 10%"(사이트는 마법 저항력이라고 했음),
+    //   뽀삐 W 가 "마법 저항력의 12%"(사이트는 치명타 확률이라고 했음).
+    //   정확히 맞교환이라 우연이 아니다. 21자리가 틀린 이름으로 나가고 있었다.
+    6: '마법 저항력',
+    8: '치명타 확률',
     9: '이동 속도',
     11: '추가 공격력',
     12: '최대 체력',
@@ -339,7 +351,7 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             if (parts.every(p => /^-?[\d.]+$/.test(p))) {
                 return tidy(parts.reduce((a, b) => a + parseFloat(b), 0));
             }
-            return parts.join(' + ');
+            return joinTerms(parts);
         }
 
         case 'ProductOfSubPartsCalculationPart': {
@@ -349,7 +361,9 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             // ★ 덧셈이 든 조각은 괄호로 묶어야 한다.
             //   안 묶으면 "0.16 x 1 + 공격 속도의 312.5%" 가 되어
             //   0.16 x (1 + ...) 라는 원래 뜻과 달라진다.
-            const wrap = (x) => x.includes(' + ') ? `(${x})` : x;
+            //   ★ 뺄셈도 같이 봐야 한다. joinTerms 가 음수 항을 " - " 로 적기 때문에
+            //     ' + ' 만 보면 괄호를 놓쳐서 뜻이 달라진다.
+            const wrap = (x) => / [+-] /.test(x) ? `(${x})` : x;
             return `${wrap(a)} x ${wrap(b)}`;
         }
 
@@ -429,6 +443,15 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
 //   ★ 추측이므로 결과를 무조건 믿으면 안 된다.
 //     푼 값은 guessedList 에 모아서 마지막에 전부 출력한다. 눈으로 검산할 것.
 // ------------------------------------------------------------
+// 항을 이어붙인다. 음수 항이 "+ -1" 로 나오면 흉해서 "- 1" 로 바꾼다.
+//   (루시안 R, 미스 포츈 Q·R, 제리 W, 샤코 Q 가 여기 걸렸다. 계산은 맞고 표시만 문제였다)
+const joinTerms = (arr) =>
+    arr.reduce((acc, t) => /^-/.test(t) ? `${acc} - ${t.slice(1)}` : `${acc} + ${t}`);
+
+// 위와 같지만 맨 앞 항에도 부호를 붙인다. " (+ 주문력의 80%)" 처럼 쓰는 자리용.
+const signedTerms = (arr) =>
+    arr.map(t => /^-/.test(t) ? `- ${t.slice(1)}` : `+ ${t}`).join(' ');
+
 function guessPart(part, spell, maxRank, mult, depth) {
     if (!part || typeof part !== 'object') return null;
 
@@ -485,7 +508,7 @@ function guessPart(part, spell, maxRank, mult, depth) {
         const ps = part.mSubparts.map(p => partToText(p, spell, maxRank, mult, depth + 1)).filter(Boolean);
         if (!ps.length) return null;
         if (ps.every(p => /^-?[\d.]+$/.test(p))) return tidy(ps.reduce((a, b) => a + parseFloat(b), 0));
-        return ps.join(' + ');
+        return joinTerms(ps);
     }
     if (part.mPart1 && part.mPart2) {
         const a = partToText(part.mPart1, spell, maxRank, 1, depth + 1);
@@ -544,12 +567,17 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
         .filter(p => p !== '0')          // 0인 항은 적어봐야 의미가 없다
         .map(p => p === null ? '(?)' : p);
     let out = base;
-    if (calc.mDisplayAsPercent) {
-        // "(레벨에 따라)" 같은 꼬리표가 있으면 그 앞에 % 를 넣는다
-        const tail = out.match(/\s*\(.*\)$/);
+    // ★ 이미 % 로 끝나면 붙이지 않는다. 스탯 비례 조각은 guessPart 에서
+    //   자기가 % 를 달고 나오기 때문에 여기서 또 붙이면 "30%%" 가 된다 (닐라 Q).
+    if (calc.mDisplayAsPercent && !/%$/.test(out)) {
+        // "(레벨에 따라)" 같은 꼬리표가 있으면 그 앞에 % 를 넣는다.
+        //   ★ 아무 괄호나 잡으면 안 된다. 계산 항이 괄호로 끝나는 경우
+        //     곱셈 한가운데에 % 가 끼어든다 ("0.6 x% (이동 속도의 100%)" — 샤코 Q).
+        //     그래서 "~에 따라" 로 끝나는 진짜 꼬리표만 잡는다.
+        const tail = out.match(/\s*\([^()]*에 따라\)$/);
         out = tail ? out.slice(0, tail.index) + '%' + tail[0] : out + '%';
     }
-    if (rest.length) out += ` (+ ${rest.join(' + ')})`;
+    if (rest.length) out += ` (${signedTerms(rest)})`;
     return out;
 }
 
