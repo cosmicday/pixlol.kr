@@ -128,6 +128,8 @@ const zeroDrop = [];              // 참조 대상이 bin 에 없어 0으로 본
 const hashHits = new Set();       // CD 가 이름을 못 푼 {해시} 자리를 해시로 찾아낸 곳
 const crossHits = new Set();      // @spell.X:Y@ 교차 참조를 풀어낸 곳
 const crossMiss = [];             // 교차 참조인데 못 푼 곳
+const costFromText = [];          // CD 소모값 문구를 풀어서 채운 곳
+const costTextFail = [];          // 소모값 문구를 못 푼 곳
 let spellIndex = {};              // 지금 처리 중인 챔피언의 스펠 객체 색인 (buildSpellIndex)
 
 // 툴팁 철자와 bin 철자가 어긋난 자리를 기록한다.
@@ -1281,6 +1283,28 @@ async function main() {
                 if (binMana && !/^0( \/ 0)*$/.test(binMana)) cost = binMana;
                 else if (/없음/.test(s.cost || '')) cost = '-';
             }
+            // ★ 마나가 아닌 자원(기력·체력·열기·야성 등)은 costCoefficients 가 전부 0이다.
+            //   대신 CD 의 cost 문구에 값이 들어 있고, 그 문구도 설명문과 똑같은
+            //   @플레이스홀더@ 문법을 쓴다. 그래서 같은 방식으로 풀 수 있다.
+            //   (예: 문도 Q "체력 @HealthCost@", 럼블 W "@HeatCost@ 열기")
+            if (!cost && s.cost) {
+                const txt = String(s.cost).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+                if (/기본 지속 효과/.test(txt)) {
+                    cost = '-';                     // 지속 효과라 소모가 없다
+                } else if (txt) {
+                    let ok = true;
+                    const filled = txt.replace(/@([A-Za-z0-9_.*+\-/():]+?)@/g, (m0, nm) => {
+                        const want = nm.trim();
+                        ctx = `${c.name} ${key} / cost:${want}`;
+                        const r = resolveFromPool(want, pool, maxRank);
+                        if (!r || r.val === null) { ok = false; return m0; }
+                        return r.val;
+                    });
+                    // 하나라도 못 풀면 반쪽짜리를 내보내지 않는다.
+                    if (ok) { cost = filled; costFromText.push(`${c.name} ${key} = ${filled}`); }
+                    else costTextFail.push(`${c.name} ${key} = ${txt}`);
+                }
+            }
             // 사거리는 클라이언트 표시값(castRangeDisplayOverride)을 우선한다
             const v1Range = lv(s.range, maxRank);
             const rng = (binRange && !/^0( \/ 0)*$/.test(binRange)) ? binRange : v1Range;
@@ -1364,6 +1388,15 @@ async function main() {
     if (caseList.length) {
         console.log(`\n[대소문자가 어긋나서 찾아낸 이름] ${caseList.length}종 — 툴팁 철자와 bin 철자가 다른 자리:`);
         caseList.forEach(x => console.log(`  ${x}`));
+    }
+
+    if (costFromText.length || costTextFail.length) {
+        console.log(`\n[소모값 문구에서 채운 값] ${costFromText.length}개 — 마나가 아닌 자원이다. 눈으로 확인할 것:`);
+        costFromText.forEach(x => console.log(`  ${x}`));
+        if (costTextFail.length) {
+            console.log(`  -- 못 푼 것 ${costTextFail.length}개 (직접 채워야 함):`);
+            costTextFail.forEach(x => console.log(`     ${x}`));
+        }
     }
 
     if (crossHits.size || crossMiss.length) {
