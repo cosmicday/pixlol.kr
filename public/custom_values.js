@@ -534,6 +534,41 @@ const customValues = {
                 "투사체 속도": "1200"
             }
         },
+        "Q2": {
+            "p1": "45 / 90 / 135 / 180 / 225 (+ 총 공격력의 140%)", // spell.GnarQ:MegaTotalDamage
+            "p2": "2", // spell.GnarQ:MegaSlowDuration
+            "p3": "30 / 35 / 40 / 45 / 50", // spell.GnarQ:MegaSlowAmount*100
+            "p4": "70", // spell.GnarQ:MegaCDRefund*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "17.5 / 16 / 14.5 / 13 / 11.5",
+            "cost": "-",
+            "name": "돌덩이 던지기",
+            "form": "메가 나르",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/gnar/hud/icons2d/gnarbig_q.png"
+        },
+        "W2": {
+            "p1": "45 / 75 / 105 / 135 / 165 (+ 총 공격력의 100%)", // spell.GnarW:MegaTotalDamage
+            "p2": "1.25", // spell.GnarW:MegaStunDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "7",
+            "cost": "-",
+            "name": "쿵쾅",
+            "form": "메가 나르",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/gnar/hud/icons2d/gnarbig_w.png"
+        },
+        "E2": {
+            "p1": "80 / 115 / 150 / 185 / 220 (+ 최대 체력의 6%)", // spell.GnarE:MegaTotalDamage
+            "p2": "80", // spell.GnarE:MoveSpeedMod*-100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "24.5 / 22 / 19.5 / 17 / 14.5",
+            "cost": "-",
+            "name": "우지끈",
+            "form": "메가 나르",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/gnar/hud/icons2d/gnarbig_e.png"
+        },
     },
     "Nami": { // 나미
         "P": {
@@ -993,6 +1028,38 @@ const customValues = {
                 "사거리": "20",
                 "투사체 속도": "943.8"
             }
+        },
+        "Q2": {
+            "p1": "5 / 30 / 55 / 80 (+ 총 공격력의 75% + 주문력의 40%)", // spell.AspectOfTheCougar:TotalTakedownDamage
+            "p2": "1 / 1.25 / 1.5 / 1.75", // spell.AspectOfTheCougar:TakedownDamageAmp
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "6",
+            "cost": "-",
+            "name": "숨통 끊기",
+            "form": "쿠거 형태",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/nidalee/hud/icons2d/nidalee_q2.png"
+        },
+        "W2": {
+            "p1": "55 / 100 / 145 / 190 (+ 추가 공격력의 50% + 주문력의 30%)", // spell.AspectOfTheCougar:TotalPounceDamage
+            "p2": "3 / 2.5 / 2 / 1.5", // spell.AspectOfTheCougar:PounceCooldown
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "6",
+            "cost": "-",
+            "name": "급습",
+            "form": "쿠거 형태",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/nidalee/hud/icons2d/nidalee_w2.png"
+        },
+        "E2": {
+            "p1": "70 / 130 / 190 / 250 (+ 추가 공격력의 70% + 주문력의 55%)", // spell.AspectOfTheCougar:TotalSwipeDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "6",
+            "cost": "-",
+            "name": "할퀴기",
+            "form": "쿠거 형태",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/nidalee/hud/icons2d/nidalee_e2.png"
         },
     },
     "Neeko": { // 니코
@@ -6892,6 +6959,40 @@ const customValues = {
                 "투사체 속도": "943.8"
             }
         },
+        "Q2": {
+            "p1": "50 / 80 / 110 / 140 / 170", // Spell.EliseSpiderQCast:BaseDamage
+            "p2": "8% (+ 주문력의 3%)", // Spell.EliseSpiderQCast:MissingHPDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "6",
+            "cost": "-",
+            "name": "독이빨",
+            "form": "거미 형태",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/elise/hud/icons2d/elisespiderq.png"
+        },
+        "W2": {
+            "p1": "5 / 10 / 15 / 20 / 25", // spell.EliseSpiderW:PassiveAttackSpeed*100
+            "p2": "3", // spell.EliseSpiderW:BuffDuration
+            "p3": "60 / 75 / 90 / 105 / 120", // spell.EliseSpiderW:ActiveAttackSpeed*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "6",
+            "cost": "-",
+            "name": "광란의 질주",
+            "form": "거미 형태",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/elise/hud/icons2d/elisespiderw.png"
+        },
+        "E2": {
+            "p1": "5", // spell.EliseSpiderE:BuffDuration
+            "p2": "40 / 55 / 70 / 85 / 100", // spell.EliseSpiderE:PBonusIncrease*100
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "23 / 22 / 21 / 20 / 19",
+            "cost": "-",
+            "name": "줄타기",
+            "form": "거미 형태",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/elise/hud/icons2d/elisespidere.png"
+        },
     },
     "MonkeyKing": { // 오공
         "P": {
@@ -8714,6 +8815,51 @@ const customValues = {
                 "사거리": "600",
                 "투사체 속도": "1500"
             }
+        },
+        "Q2": {
+            "p1": "80 / 121 / 162 / 203 / 244 / 285 (+ 추가 공격력의 130%)", // spell.JayceShockBlast:Damage
+            "p2": "80 / 121 / 162 / 203 / 244 / 285 (+ 추가 공격력의 130%) x 1.4", // spell.JayceShockBlast:EmpoweredDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "8",
+            "cost": "55 / 60 / 65 / 70 / 75 / 80",
+            "name": "전격 폭발",
+            "form": "머큐리 캐논",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/jayce/hud/icons2d/jayceq_ranged.png"
+        },
+        "W2": {
+            "p1": "3", // spell.JayceHyperCharge:NumAttacks
+            "p2": "총 공격력의 70 / 78 / 86 / 94 / 102 / 110%", // spell.JayceHyperCharge:ActualDamage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "14.6 / 13 / 11.4 / 9.8 / 8.2 / 6.6",
+            "cost": "40",
+            "name": "초전하",
+            "form": "머큐리 캐논",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/jayce/hud/icons2d/jaycew_ranged.png"
+        },
+        "E2": {
+            "p1": "4", // spell.JayceAccelerationGate:Duration
+            "p2": "35 / 40 / 45 / 50 / 55 / 60", // spell.JayceAccelerationGate:MovementSpeed*100
+            "p3": "3", // spell.JayceAccelerationGate:HasteDuration
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "16",
+            "cost": "50",
+            "name": "가속 관문",
+            "form": "머큐리 캐논",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/jayce/hud/icons2d/jaycee_ranged.png"
+        },
+        "R2": {
+            "p1": "5 ~ 26 (레벨에 따라) (+ 추가 공격력의 7.5%)", // spell.JayceStanceHtG:Resists
+            "p2": "25 ~ 130 (레벨에 따라) (+ 추가 공격력의 30%)", // spell.JayceStanceHtG:Damage
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
+            "v2": "",
+            "cooldown": "6",
+            "cost": "-",
+            "name": "머큐리 해머",
+            "form": "머큐리 캐논",
+            "icon": "https://raw.communitydragon.org/latest/game/assets/characters/jayce/hud/icons2d/jaycer_melee.png"
         },
     },
     "Zoe": { // 조이

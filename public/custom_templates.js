@@ -1,5 +1,5 @@
 // 이 파일은 build_champion_data.js 가 생성했습니다.
-// 생성 시각: 2026-08-08T08:49:33.338Z
+// 생성 시각: 2026-08-08T10:43:40.589Z
 // 문장은 CommunityDragon 에서 가져왔고, {p1} {p2} 자리는 직접 채워야 합니다.
 
 const customTemplates = {
@@ -51,6 +51,9 @@ const customTemplates = {
         "W": "<keywordmajor>미니 나르 기본 지속 효과:</keywordmajor> 같은 적에게 세 번째 기본 공격이나 스킬을 가할 때마다 <magicdamage>{p1}+최대 체력의 {p2}%에 해당하는 마법 피해</magicdamage>를 추가로 입히며 <speed>이동 속도가 {p3}%</speed> 증가한 뒤 {p4}초에 걸쳐 원래대로 돌아옵니다.", // 슝슝 / 쿵쾅
         "E": "<keywordmajor>미니 나르:</keywordmajor> 나르가 폴짝 뛰어 {p1}초 동안 <attackspeed>공격 속도가 {p2}%</attackspeed> 상승합니다. 유닛 위에 착지하면 튕겨서 더 멀리 날아갑니다. 적에게 착지하여 튕기면 <physicaldamage>{p3}의 물리 피해</physicaldamage>를 입히며 잠시 {p4}% <status>둔화</status>시킵니다.", // 폴짝 / 우지끈
         "R": "<keywordmajor>미니 나르 기본 지속 효과:</keywordmajor> <spellname>슝슝</spellname>의 <speed>이동 속도</speed>가 증가합니다.<br><br><keywordmajor>메가 나르:</keywordmajor> 근처 적을 던져 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입히고 <status>뒤로 밀어내며</status> {p2}초 동안 {p3}% <status>둔화</status>시킵니다. 벽에 부딪히는 적은 <physicaldamage>{p4}의 물리 피해</physicaldamage>를 입고 <status>기절</status>합니다.", // 나르!
+        "Q2": "<keywordmajor>메가 나르:</keywordmajor> 나르가 돌덩이를 던져 처음 적중한 적과 주변 적에게 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입히고 {p2}초 동안 {p3}% <status>둔화</status>시킵니다. 돌덩이를 집어 들면 이 스킬의 재사용 대기시간이 {p4}% 감소합니다.", // 돌덩이 던지기 — 메가 나르
+        "W2": "<keywordmajor>메가 나르:</keywordmajor> 나르가 일정 범위를 내리치며 해당 범위 내 유닛에게 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입히고 {p2}초 동안 <status>기절</status>시킵니다.", // 쿵쾅 — 메가 나르
+        "E2": "<keywordmajor>메가 나르:</keywordmajor> 나르가 폴짝 뛰어 착지하며 근처 적에게 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다. 착지 지점 바로 밑에 있는 적은 추가로 잠시 {p2}% <status>둔화</status>됩니다.", // 우지끈 — 메가 나르
     },
     "Nami": { // 나미
         "P": "나미의 스킬에 맞은 아군 챔피언은 <speed>이동 속도가 {p1}</speed> 상승했다 {p2}초에 걸쳐 원래대로 돌아옵니다.", // 밀려오는 파도 — stringtable
@@ -100,6 +103,9 @@ const customTemplates = {
         "W": "<keywordmajor>인간 형태:</keywordmajor> 니달리가 2분 동안 유지되는 투명한 덫을 설치합니다. 적이 덫을 밟으면 {p1}초 동안 초당 <magicdamage>{p2}의 마법 피해</magicdamage>를 입습니다.<br><br>한 번에 {p3}개의 덫만 설치할 수 있습니다.", // 매복 덫 / 급습
         "E": "<keywordmajor>인간 형태:</keywordmajor> 니달리가 <healing>체력을 {p1}</healing> 회복합니다. 회복량은 잃은 체력에 비례해 <healing>{p2}</healing>까지 증가합니다. 또한 {p3}초 동안 <attackspeed>공격 속도를 {p4}%</attackspeed> 증가시킵니다.", // 태고의 생명력 / 할퀴기
         "R": "<passive>기본 지속 효과:</passive> <keywordmajor>인간 형태</keywordmajor>일 때 <keywordmajor>사냥</keywordmajor>을 적용하면 이 스킬의 재사용 대기시간이 초기화됩니다.<br><br><keywordmajor>인간 형태:</keywordmajor> 니달리가 <keywordmajor>쿠거 형태</keywordmajor>로 변하며 기본 공격이 근접으로 바뀌고 사용 스킬이 변경됩니다.<br><br><keywordmajor>쿠거 형태:</keywordmajor> 니달리가 <keywordmajor>인간 형태</keywordmajor>로 변하며 기본 공격이 원거리로 바뀌고 사용 스킬이 변경됩니다.", // 쿠거의 상
+        "Q2": "<keywordmajor>쿠거 형태:</keywordmajor> 니달리의 다음 기본 공격이 <magicdamage>{p1}+잃은 체력의 1%당 {p2}%에 해당하는 마법 피해</magicdamage>를 입힙니다.<br><br><keywordmajor>사냥</keywordmajor>당하는 적이 입는 피해는 30% 증가합니다.", // 숨통 끊기 — 쿠거 형태
+        "W2": "<keywordmajor>쿠거 형태:</keywordmajor> 니달리가 도약하고 착지하여 주변 적들에게 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다. <keywordmajor>쿠거 형태</keywordmajor>로 유닛 처치 시 이 스킬의 재사용 대기시간이 {p2}초 감소합니다.<br><br>더욱 먼 거리에서 <keywordmajor>사냥</keywordmajor> 대상에게 도약할 수 있으며 이 스킬의 재사용 대기시간이 {p2}초 감소합니다.", // 급습 — 쿠거 형태
+        "E2": "<keywordmajor>쿠거 형태:</keywordmajor> 니달리가 전방의 적들을 발톱으로 공격하여 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다.", // 할퀴기 — 쿠거 형태
     },
     "Neeko": { // 니코
         "P": "니코가 맵에 있는 다른 유닛으로 변신합니다. 니코는 언제든 아군 챔피언 중 한 명으로 변신하거나 아군 또는 중립 유닛 근처에서 유닛의 쇼마를 저장해 해당 유닛으로 변신할 수 있습니다. <status>이동 불가 군중 제어기</status>에 당하거나 피해를 입히는 스킬을 사용하거나 챔피언이 아닌 상태에서 적 포탑에 피해를 입히거나 변장한 유닛이 해당 유닛의 체력만큼 피해를 입으면 변신이 풀립니다. <br><br><rules>니코가 변신하는 유닛의 긍정적 특징과 부정적 특징을 다수 획득합니다.</rules>", // 태고의 마력 — stringtable
@@ -716,6 +722,9 @@ const customTemplates = {
         "W": "<keywordmajor>인간 형태</keywordmajor>: 엘리스가 폭발하는 새끼 거미를 소환하면, 지정한 위치로 이동해 근처에 적이 있을 때, 혹은 3초 뒤에 폭발합니다. 거미는 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다.", // 위험한 새끼 거미 / 광란의 질주
         "E": "<keywordmajor>인간 형태</keywordmajor>: 엘리스가 고치를 던져 처음 적중한 적을 {p1}초 동안 <status>기절</status>시키며, 위치를 드러냅니다.", // 고치 / 줄타기
         "R": "<keywordmajor>인간 형태</keywordmajor>: 엘리스가 위협적인 거미로 변신하여 근접 챔피언이 되며 <keywordmajor>거미 형태</keywordmajor> 스킬을 사용할 수 있고 휴면 상태의 <keywordmajor>새끼 거미</keywordmajor>를 모두 소환합니다.", // 거미 형태
+        "Q2": "<keywordmajor>거미 형태:</keywordmajor> 엘리스가 적에게 돌진하고 독니로 깨물어 <magicdamage>{p1}+대상이 잃은 체력의 {p2}에 해당하는 마법 피해</magicdamage>를 입힙니다.", // 독이빨 — 거미 형태
+        "W2": "<keywordmajor>거미 형태</keywordmajor> <passive>기본 지속 효과</passive>: <keywordmajor>새끼 거미</keywordmajor>의 <attackspeed>공격 속도가 {p1}%</attackspeed> 증가합니다.<br><br><keywordmajor>거미 형태</keywordmajor> <active>사용 시:</active> {p2}초 동안 엘리스와 <keywordmajor>새끼 거미</keywordmajor>의 <attackspeed>공격 속도가 {p3}%</attackspeed> 증가합니다.", // 광란의 질주 — 거미 형태
+        "E2": "<keywordmajor>거미 형태</keywordmajor>: 엘리스와 <keywordmajor>새끼 거미</keywordmajor>들이 공중으로 올라가 최대 2초까지 대상으로 지정할 수 없게 되며 엘리스가 대상으로 지정한 적에게 하강합니다. 하강 시 {p1}초 동안 <spellname>거미 여왕</spellname>의 추가 피해량과 회복량을 {p2}% 증가시킵니다. <br>", // 줄타기 — 거미 형태
     },
     "MonkeyKing": { // 오공
         "P": "오공이 <scalearmor>{p1}의 방어력</scalearmor>을 얻고 <healing>5초마다 최대 체력의 {p2}%</healing>를 회복합니다. 이 효과는 오공이나 오공의 <keywordmajor>분신</keywordmajor>이 기본 공격 및 스킬로 적 챔피언이나 정글 몬스터를 공격할 때마다 {p3}초 동안 {p4}% 증가하며, 최대 {p5}회 중첩됩니다.", // 바위 피부 — stringtable
@@ -905,6 +914,10 @@ const customTemplates = {
         "W": "<keywordmajor>머큐리 해머 - 기본 지속 효과:</keywordmajor> <keywordmajor>해머</keywordmajor>로 공격 시 제이스의 <scalemana>마나가 {p1}</scalemana> 회복됩니다.<br><br><keywordmajor>머큐리 해머 - 사용 시:</keywordmajor> 제이스가 전류 오라를 생성해 {p2}초 동안 <magicdamage>{p3}의 마법 피해</magicdamage>를 입힙니다.", // 전류 역장 / 초전하
         "E": "<keywordmajor>해머 형태</keywordmajor>: 제이스가 해머를 휘둘러 대상을 <status>뒤로 밀어내고</status> <magicdamage>{p1}+대상 최대 체력의 {p2}%에 해당하는 마법 피해</magicdamage>를 입힙니다.", // 천둥 강타 / 가속 관문
         "R": "<keywordmajor>머큐리 해머</keywordmajor>: 제이스가 무기를 원거리 공격용 <keywordmajor>머큐리 캐논</keywordmajor>으로 변환하고 새로운 스킬을 사용할 수 있게 됩니다. 제이스의 다음 기본 공격은 {p1}초 동안 대상의 <scalemr>마법 저항력</scalemr>과 <scalearmor>방어력을 {p2}</scalearmor> 감소시킵니다.", // 머큐리 캐논 / 머큐리 해머
+        "Q2": "<keywordmajor>머큐리 캐논</keywordmajor>: 제이스가 전기 구체를 발사해 처음 적중한 적과 주변 모든 적에게 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다. 전기 구체가 <spellname>가속 관문</spellname>을 통과하면 사거리와 이동 속도가 상승하며 피해량이 <physicaldamage>{p2}</physicaldamage>까지 증가합니다.", // 전격 폭발 — 머큐리 캐논
+        "W2": "<keywordmajor>머큐리 캐논:</keywordmajor> 제이스가 캐논을 과충전해 최대 <attackspeed>공격 속도</attackspeed>로 {p1}회 공격합니다. 각 공격은 <physicaldamage>{p2}의 물리 피해</physicaldamage>를 입힙니다.", // 초전하 — 머큐리 캐논
+        "E2": "<keywordmajor>머큐리 캐논</keywordmajor>: 제이스가 {p1}초 동안 가속 관문을 열어 통과하는 아군 챔피언의 <speed>이동 속도를 {p2}%</speed> 상승시킵니다. 상승한 이동 속도는 {p3}초에 걸쳐 원래대로 되돌아옵니다.", // 가속 관문 — 머큐리 캐논
+        "R2": "<keywordmajor>머큐리 캐논:</keywordmajor> 제이스가 무기를 근접 공격용 <keywordmajor>머큐리 해머</keywordmajor>로 변환하고 새로운 스킬을 사용할 수 있게 됩니다. 또한 <scalearmor>{p1}의 방어력</scalearmor>과 <scalemr>마법 저항력</scalemr>을 얻고, 다음 기본 공격 시 <magicdamage>{p2}의 마법 피해</magicdamage>를 추가로 입힙니다.", // 머큐리 해머 — 머큐리 캐논
     },
     "Zoe": { // 조이
         "P": "조이가 스킬을 사용한 후 첫 번째 기본 공격 시 <magicdamage>{p1}의 마법 피해</magicdamage>를 추가로 입힙니다.", // 반짝반짝! — stringtable

@@ -3720,7 +3720,35 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 isPassive: false
             };
         });
-        window.currentChampSkills = [passive, ...spells];
+        // ★ 두 번째 폼 스킬 (니달리 쿠거, 엘리스 거미, 제이스 대포, 나르 메가)
+        //   Data Dragon 에는 4개뿐이라 이 스킬들이 통째로 빠져 있었다.
+        //   custom_values 의 Q2 / W2 / E2 / R2 에 값·아이콘·폼 이름이 들어 있다.
+        const formSpells = [];
+        const cv = (typeof customValues !== 'undefined' && customValues[champ.id]) || null;
+        if (cv) {
+            ['Q', 'W', 'E', 'R'].forEach((k) => {
+                const v = cv[k + '2'];
+                if (!v) return;
+                const tplName = (typeof customTemplates !== 'undefined' && customTemplates[champ.id])
+                    ? customTemplates[champ.id][k + '2'] : null;
+                if (!tplName) return;
+                formSpells.push({
+                    id: k + '2',
+                    keyChar: k,
+                    name: `${v.name || v.form || '변신'} (${k})`,
+                    desc: renderScalingTable(k + '2', ''),
+                    cooldown: v.cooldown || '-',
+                    cost: v.cost || '-',
+                    img: v.icon || '',
+                    img2: null,
+                    stats: v.stats || null,
+                    values: v,
+                    isPassive: false,
+                    formLabel: v.form || null
+                });
+            });
+        }
+        window.currentChampSkills = [passive, ...spells, ...formSpells];
 
         let displayLore = champ.lore.replace(/\r\n|\n/g, '<br><br>');
 

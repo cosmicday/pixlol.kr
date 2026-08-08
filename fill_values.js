@@ -144,6 +144,33 @@ function noteCase(asked, actual) {
 //   ★ 계산식 안에서 다른 DataValue 를 참조할 때도 철자가 어긋난다.
 //     AoeDamagePercent -> AoEDamagePercent, BonusLifesteal -> BonusLifeSteal 같은 식.
 //     조각 하나가 null 이 되면 계산식이 통째로 죽으므로 여기가 제일 아프다.
+// 폼이 두 개인 챔피언의 "두 번째 폼" 스킬.
+//   ★ build_champion_data.js 의 FORM2 와 반드시 같아야 한다.
+//     어긋나면 문장은 있는데 값이 없거나 그 반대가 된다.
+const FORM2 = {
+    Nidalee: { label: '쿠거 형태',   Q: 'Takedown',         W: 'Pounce',           E: 'Swipe' },
+    Elise:   { label: '거미 형태',   Q: 'EliseSpiderQCast', W: 'EliseSpiderW',     E: 'EliseSpiderE' },
+    Jayce:   { label: '머큐리 캐논', Q: 'JayceShockBlast',  W: 'JayceHyperCharge', E: 'JayceAccelerationGate', R: 'JayceStanceGtH' },
+    Gnar:    { label: '메가 나르',   Q: 'GnarBigQ',         W: 'GnarBigW',         E: 'GnarBigE' },
+};
+
+function findSpellObj(bin, alias, objName) {
+    const direct = bin[`Characters/${alias}/Spells/${objName}`];
+    if (direct && direct.mSpell) return direct;
+    for (const k of Object.keys(bin)) {
+        if (k.endsWith('/' + objName) && bin[k] && bin[k].mSpell) return bin[k];
+    }
+    return null;
+}
+
+// 스펠 객체에 박혀 있는 아이콘 경로(ASSETS/....dds)를 CD 의 png URL 로 바꾼다.
+const iconUrlOf = (obj) => {
+    const m = JSON.stringify(obj).match(/"(ASSETS\/[^"]*Icons2D\/[^"]+\.dds)"/i);
+    return m
+        ? 'https://raw.communitydragon.org/latest/game/' + m[1].toLowerCase().replace(/\.dds$/, '.png')
+        : null;
+};
+
 // 랭크 수가 표준(일반 5 / 궁 3)에서 벗어나는 챔피언.
 //   ★ 자동 판별할 근거가 없다. bin 의 mSpell 엔 최대 레벨 필드가 없고,
 //     CD v1 의 cooldownCoefficients / costCoefficients 는 챔피언과 무관하게
@@ -967,6 +994,18 @@ function buildSpellIndex(bin, alias) {
         putName(alias + 'Passive', bin[pp].mSpell, 1);
     }
 
+    // ★ 두 번째 폼 스킬도 제 랭크로 등록한다. CharacterRecord 에 없어서 아래 이름 추론에
+    //   맡기면 1랭크가 되고, 교차 참조로 들어온 값이 한 칸만 나온다.
+    //   (제이스 Q2 피해량이 6랭크인데 "80" 하나로 나왔다)
+    const f2 = FORM2[alias];
+    if (f2) {
+        for (const slot of ['Q', 'W', 'E', 'R']) {
+            if (!f2[slot]) continue;
+            const o = findSpellObj(bin, alias, f2[slot]);
+            if (o) putName(f2[slot], o.mSpell, rankOf(alias, slot));
+        }
+    }
+
     // 나머지 스펠 객체(미사일·소환물·변신판 등)는 이름으로만 추론한다.
     const prefix = `Characters/${alias}/Spells/`;
     const low = alias.toLowerCase();
@@ -1058,7 +1097,8 @@ function extractVV(source, alias) {
     const lines = block.split('\n');
     let key = null;
     for (let i = 0; i < lines.length; i++) {
-        const mk = lines[i].match(/^\s{8}"([PQWER])":\s*\{/);
+        // Q2 / W2 처럼 두 번째 폼 키도 받는다.
+        const mk = lines[i].match(/^\s{8}"([PQWER]\d?)":\s*\{/);
         if (mk) { key = mk[1]; continue; }
         const mv = lines[i].match(/^\s{12}"(v1|v2)":/);
         if (!mv || !key) continue;
@@ -1362,6 +1402,56 @@ async function main() {
             const last = lines[lines.length - 1];
             if (last.endsWith(',') && !last.endsWith('},')) lines[lines.length - 1] = last.slice(0, -1);
             lines.push(`        },`);
+        }
+
+        // ---- 두 번째 폼 (니달리 쿠거 등) ----
+        //   CD v1 에는 없는 스킬이라 문장은 build 가 stringtable 에서 만들어 뒀다.
+        //   여기서는 그 문장의 @이름@ 을 읽어 값을 채운다.
+        const f2 = FORM2[alias];
+        if (f2 && bin) {
+            for (const slot of ['Q', 'W', 'E', 'R']) {
+                const objName = f2[slot];
+                if (!objName) continue;
+                const obj = findSpellObj(bin, alias, objName);
+                const lk = obj && obj.mSpell.mClientData && obj.mSpell.mClientData.mTooltipData
+                    && obj.mSpell.mClientData.mTooltipData.mLocKeys;
+                const raw = lk && lk.keyTooltip ? strings[String(lk.keyTooltip).toLowerCase()] : null;
+                if (!raw) continue;
+
+                const f2Names = [...new Set([...String(raw)
+                    .replace(/@SpellModifierDescriptionAppend@/gi, '')
+                    .matchAll(/@([A-Za-z0-9_.*+\-/():]+?)@/g)].map(x => x[1].trim()))];
+
+                // 이 폼의 본체를 pool 맨 앞에 둔다. 자기 값을 먼저 찾게 하려는 것.
+                const f2Rank = rankOf(alias, slot);
+                const f2Pool = [{ spell: obj.mSpell, tier: '본체', path: objName },
+                                ...(binSpells[slot] || [])];
+
+                lines.push(`        "${slot}2": {`);
+                f2Names.forEach((name, i) => {
+                    total++;
+                    ctx = `${c.name} ${slot}2 / ${name}`;
+                    const { val, tier } = resolveFromPool(name, f2Pool, f2Rank);
+                    if (val === null) stillUnknown.push(ctx);
+                    else if (String(val).includes('(?)')) partial.push(`${ctx} = ${val}`);
+                    else {
+                        filled++;
+                        if (tier !== '본체') rescued.push(`${ctx} = ${val}  [${tier}]`);
+                    }
+                    lines.push(`            "p${i + 1}": ${q(val === null ? '?' : val)}, // ${name}`);
+                });
+                const vv2 = carried[slot + '2'] || {};
+                lines.push(vv2.v1 !== undefined ? vv2.v1 : `            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)`);
+                lines.push(vv2.v2 !== undefined ? vv2.v2 : `            "v2": "",`);
+                lines.push(`            "cooldown": ${q(fieldToText(findField(obj.mSpell, 'Cooldown'), f2Rank, 1, false) || '-')},`);
+                lines.push(`            "cost": ${q(fieldToText(findField(obj.mSpell, 'mana'), f2Rank, 1, false) || '-')},`);
+                // 이름이 "두번째폼 / 첫번째폼" 형태인 경우가 있다 (니달리·엘리스·나르).
+                const f2NameRaw = lk.keyName ? strings[String(lk.keyName).toLowerCase()] : '';
+                lines.push(`            "name": ${q(String(f2NameRaw || objName).split('/')[0].trim())},`);
+                lines.push(`            "form": ${q(f2.label)},`);
+                lines.push(`            "icon": ${q(iconUrlOf(obj) || '')}`);
+                lines.push(`        },`);
+            }
         }
 
         entries.push(`    "${alias}": { // ${c.name}\n${lines.join('\n')}\n    },`);

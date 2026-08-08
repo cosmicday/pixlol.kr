@@ -38,6 +38,37 @@ const MAX_RANK = {
 const rankOf = (alias, key) =>
     (MAX_RANK[alias] && MAX_RANK[alias][key]) || (key === 'R' ? 3 : 5);
 
+// 폼이 두 개인 챔피언의 "두 번째 폼" 스킬. bin 의 스펠 객체 이름으로 적는다.
+//   ★ 자동 판별이 안 된다. 아이콘 파일명 규칙이 챔피언마다 제각각이다:
+//     니달리 Nidalee_Q2 / 엘리스 EliseHumanQ·EliseSpiderQ /
+//     제이스 JayceQ_Melee·JayceQ_Ranged / 나르 Gnar_Q·GnarBig_Q
+//   `_Q2` 로 훑어봤더니 재시전·핸들러·래퍼까지 34명이 걸려서 쓸 수 없었다.
+//   쉬바나는 용 폼이 별도 스펠 객체가 아니라 기존 스킬이 강화되는 구조라 여기 없다.
+const FORM2 = {
+    Nidalee: { label: '쿠거 형태',   Q: 'Takedown',         W: 'Pounce',           E: 'Swipe' },
+    Elise:   { label: '거미 형태',   Q: 'EliseSpiderQCast', W: 'EliseSpiderW',     E: 'EliseSpiderE' },
+    Jayce:   { label: '머큐리 캐논', Q: 'JayceShockBlast',  W: 'JayceHyperCharge', E: 'JayceAccelerationGate', R: 'JayceStanceGtH' },
+    Gnar:    { label: '메가 나르',   Q: 'GnarBigQ',         W: 'GnarBigW',         E: 'GnarBigE' },
+};
+
+// bin 에서 스펠 객체를 이름으로 찾는다. 경로가 표준형이 아닐 수 있어 뒤에서도 훑는다.
+function findSpellObj(bin, alias, objName) {
+    const direct = bin[`Characters/${alias}/Spells/${objName}`];
+    if (direct && direct.mSpell) return direct;
+    for (const k of Object.keys(bin)) {
+        if (k.endsWith('/' + objName) && bin[k] && bin[k].mSpell) return bin[k];
+    }
+    return null;
+}
+
+// 스펠 객체 안에 박혀 있는 아이콘 경로(ASSETS/....dds)를 CD 의 png URL 로 바꾼다.
+const iconUrlOf = (obj) => {
+    const m = JSON.stringify(obj).match(/"(ASSETS\/[^"]*Icons2D\/[^"]+\.dds)"/i);
+    return m
+        ? 'https://raw.communitydragon.org/latest/game/' + m[1].toLowerCase().replace(/\.dds$/, '.png')
+        : null;
+};
+
 // 손으로 이미 작성한 챔피언. 여기 적힌 이름은 기존 파일 내용을 그대로 유지한다.
 //
 //  ★ 2026-08-08 비웠다. 가렌·갈리오가 유일한 항목이었는데 {pN} 체계 이전의
@@ -277,6 +308,8 @@ async function main() {
     const templateEntries = [];
     const valueEntries = [];
     const needsManualCost = [];
+    const form2Made = [];        // 두 번째 폼으로 만들어 넣은 스킬
+    const form2Fails = [];       // FORM2 에 적혀 있는데 툴팁을 못 찾은 것
     const binFails = [];         // bin 을 못 받은 챔피언
     const passiveFallback = [];  // 패시브 툴팁을 못 찾아 CD 요약문으로 떨어진 챔피언
 
@@ -381,6 +414,40 @@ async function main() {
             valLines.push(`        },`);
         }
 
+        // ---- 두 번째 폼 (니달리 쿠거, 엘리스 거미, 제이스 대포, 나르 메가) ----
+        //   CD v1 의 spells 에는 4개뿐이라 여기 없다. bin + stringtable 에서 직접 가져온다.
+        const f2 = FORM2[alias];
+        if (f2 && bin) {
+            for (const slot of ['Q', 'W', 'E', 'R']) {
+                const objName = f2[slot];
+                if (!objName) continue;
+                const obj = findSpellObj(bin, alias, objName);
+                const lk = obj && obj.mSpell.mClientData && obj.mSpell.mClientData.mTooltipData
+                    && obj.mSpell.mClientData.mTooltipData.mLocKeys;
+                const raw = lk && lk.keyTooltip ? strings[String(lk.keyTooltip).toLowerCase()] : null;
+                if (!raw) { form2Fails.push(`${c.name} ${slot}2 (${objName})`); continue; }
+
+                // 이름이 "두번째폼 / 첫번째폼" 형태로 들어 있는 경우가 있다 (니달리·엘리스·나르).
+                const nameRaw = lk.keyName ? strings[String(lk.keyName).toLowerCase()] : '';
+                const nm = String(nameRaw || objName).split('/')[0].trim();
+
+                const { text, names } = convertDescription(raw, alias);
+                tplLines.push(`        "${slot}2": ${q(text)}, // ${nm} — ${f2.label}`);
+
+                valLines.push(`        "${slot}2": {`);
+                names.forEach((name, i) => valLines.push(`            "p${i + 1}": "?", // ${name}`));
+                valLines.push(`            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)`);
+                valLines.push(`            "v2": "",`);
+                valLines.push(`            "cooldown": "-",`);
+                valLines.push(`            "cost": "-",`);
+                valLines.push(`            "name": ${q(nm)},`);
+                valLines.push(`            "form": ${q(f2.label)},`);
+                valLines.push(`            "icon": ${q(iconUrlOf(obj) || '')}`);
+                valLines.push(`        },`);
+                form2Made.push(`${c.name} ${slot}2 = ${nm}`);
+            }
+        }
+
         templateEntries.push(`    "${alias}": { // ${c.name}\n${tplLines.join('\n')}\n    },`);
         valueEntries.push(`    "${alias}": { // ${c.name}\n${valLines.join('\n')}\n    },`);
 
@@ -415,6 +482,15 @@ async function main() {
         console.log(`\n[주의] app.js <style> 에 없는 태그가 나왔습니다. CSS를 추가하세요:`);
         for (const [tag, champ] of unknownTags) {
             console.log(`  <${tag}>   (예: ${champ})`);
+        }
+    }
+
+    if (form2Made.length || form2Fails.length) {
+        console.log(`\n[두 번째 폼 스킬] ${form2Made.length}개 생성`);
+        form2Made.forEach(x => console.log(`  ${x}`));
+        if (form2Fails.length) {
+            console.log(`  -- 툴팁을 못 찾은 것 ${form2Fails.length}개 (FORM2 의 객체 이름 확인):`);
+            form2Fails.forEach(x => console.log(`     ${x}`));
         }
     }
 
