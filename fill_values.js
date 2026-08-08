@@ -151,6 +151,18 @@ const fnv1a = (s) => {
 };
 const hashKey = (name) => `{${fnv1a(String(name).toLowerCase())}}`;
 
+// 조각 안 필드 이름을 해시로만 남긴 자리가 있다. 위 FNV 로 전부 되찾았다:
+//   {91d404a5} Level1DataValue                     {bbd778a2} InitialBonusPerLevelDataValue
+//   {9823b29a} DataValueBreakpoints                {ae9b464d} AdditionalBonusAtThisLevelDataValue
+//   {b0d8b2ac} BonusPerLevelAtAndAfterDataValue    {b2cd0eb0} BonusPerLevelDataValue
+// 전부 ByCharLevelBreakpoints 의 "값 대신 DataValue 이름을 적는" 변종이다.
+// 해시로도 원래 이름으로도 찾을 수 있게 해 둔다 (CD 가 나중에 풀어줄 수 있으므로).
+const fld = (obj, name) => {
+    if (!obj || typeof obj !== 'object') return undefined;
+    const h = obj[hashKey(name)];
+    return h !== undefined ? h : obj[name];
+};
+
 function findDataValue(spell, name) {
     if (name === undefined || name === null) return undefined;
     const list = spell.DataValues || [];
@@ -510,6 +522,48 @@ const signedTerms = (arr) =>
 
 function guessPart(part, spell, maxRank, mult, depth) {
     if (!part || typeof part !== 'object') return null;
+
+    // ── ByCharLevelBreakpoints 의 "값 대신 DataValue 이름" 변종 ──
+    //   ★ 반드시 아래 "두 개짜리" 분기보다 먼저 봐야 한다. 이 모양도 문자열 두 개일 수 있는데
+    //     두 번째가 레벨18 값이 아니라 "레벨당 증가분"이라 그대로 읽으면 거꾸로 나온다.
+    //     (이렐리아 P 가 10 ~ 3 으로 나오고 있었다. 실제는 10 + 3x17 = 61)
+    {
+        const l1 = fld(part, 'Level1DataValue');
+        if (typeof l1 === 'string') {
+            // DataValue 이름 -> 숫자. DataValues 는 0번이 쓰레기라 1번을 쓴다.
+            const nv = (name) => {
+                if (typeof name !== 'string') return null;
+                const d = findDataValue(spell, name);
+                if (!d || !Array.isArray(d.values) || !d.values.length) return null;
+                return d.values.length > 1 ? d.values[1] : d.values[0];
+            };
+            const base = nv(l1);
+            if (base === null) return null;
+
+            const perName = fld(part, 'BonusPerLevelDataValue');
+            const initName = fld(part, 'InitialBonusPerLevelDataValue');
+            let per = nv(perName !== undefined ? perName : initName) || 0;
+
+            const raw = fld(part, 'DataValueBreakpoints');
+            const bps = Array.isArray(raw)
+                ? [...raw].sort((a, b) => ((a.level || a.mLevel || 0) - (b.level || b.mLevel || 0)))
+                : [];
+
+            let v = base;
+            for (let lv = 2; lv <= 18; lv++) {
+                const bp = bps.find(x => (x.level !== undefined ? x.level : x.mLevel) === lv);
+                if (bp) {
+                    // ★ 생략 = 0(성장 정지). 값 버전과 같은 규칙이다.
+                    const after = fld(bp, 'BonusPerLevelAtAndAfterDataValue');
+                    per = after !== undefined ? (nv(after) || 0) : 0;
+                    const add = fld(bp, 'AdditionalBonusAtThisLevelDataValue');
+                    if (add !== undefined) v += (nv(add) || 0);
+                }
+                v += per;
+            }
+            return `${tidy(base * mult)} ~ ${tidy(v * mult)} (레벨에 따라)`;
+        }
+    }
 
     // 필드 두 개가 각각 "레벨1 값" / "레벨18 값" DataValue 의 이름인 모양.
     //   ({ee18a47b} 가 이 형태. 예: HealCapLevel1Value / HealCapLevel18Value)

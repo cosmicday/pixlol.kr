@@ -67,7 +67,7 @@ const customValues = {
             "p2": "35", // MovementSpeedAmount*100
             "p3": "1.5", // SilenceDuration
             "p4": "30 / 60 / 90 / 120 / 150 (+ 총 공격력의 150%)", // TotalDamage
-            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "8",
             "cost": "-",
@@ -85,7 +85,7 @@ const customValues = {
             "p6": "0.75", // UpfrontDuration
             "p7": "65 / 85 / 105 / 125 / 145 (+ 추가 최대 체력의 18%)", // TotalShield
             "p8": "60", // UpfrontTenacity*100
-            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "22 / 19.5 / 17 / 14.5 / 12",
             "cost": "-",
@@ -101,7 +101,7 @@ const customValues = {
             "p5": "6", // StacksToShred
             "p6": "6", // ShredDuration
             "p7": "25", // ShredAmount*100
-            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "9 / 8.25 / 7.5 / 6.75 / 6",
             "cost": "-",
@@ -114,7 +114,7 @@ const customValues = {
         "R": {
             "p1": "125 / 200 / 275", // BaseDamage
             "p2": "25 / 30 / 35", // ExecuteDamage*100
-            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "-",
@@ -135,7 +135,7 @@ const customValues = {
             "p1": "70 / 105 / 140 / 175 / 210 (+ 주문력의 70%)", // QMissileDamage
             "p2": "2", // SuperQDuration
             "p3": "2 (+ 주문력의 1%) x 4", // PercentSuperQDamageTT
-            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "60 / 65 / 70 / 75 / 80",
@@ -156,7 +156,7 @@ const customValues = {
             "p8": "20 / 30 / 40 / 50 / 60 (+ 주문력의 30%)", // MinTotalDamage
             "p9": "20 / 30 / 40 / 50 / 60 (+ 주문력의 30%) x 3", // MaxTotalDamage
             "p10": "2", // DRLingerDuration
-            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "50",
@@ -169,7 +169,7 @@ const customValues = {
             "p1": "0.75", // KnockupDuration
             "p2": "100 / 135 / 170 / 205 / 240 (+ 주문력의 100%)", // TotalDamage
             "p3": "100 / 135 / 170 / 205 / 240 (+ 주문력의 100%) x 0.8", // PVEDamage
-            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "50",
@@ -183,7 +183,7 @@ const customValues = {
             "p1": "5", // TemporaryWShieldDuration
             "p2": "0.75", // StunDurationOuter
             "p3": "150 / 250 / 350 (+ 주문력의 70% + 추가 마법 저항력의 100%)", // TotalDamage
-            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)
+            "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "180 / 160 / 140",
             "cost": "100",
@@ -6065,7 +6065,7 @@ const customValues = {
     },
     "Akali": { // 아칼리
         "P": {
-            "p1": "40 ~ 70% (레벨에 따라)", // PassiveSpeedBonus
+            "p1": "30 ~ 60% (레벨에 따라)", // PassiveSpeedBonus
             "p2": "35 ~ 182 (레벨에 따라) (+ 추가 공격력의 60% + 주문력의 55%)", // Damage
             "cooldown": "-",
             "cost": "-"
@@ -7638,7 +7638,7 @@ const customValues = {
             "p1": "6", // BuffDuration
             "p2": "4", // MaxStacks
             "p3": "10 ~ 25 (레벨에 따라)", // SingleStackAS
-            "p4": "10 ~ 3 (레벨에 따라) (+ 추가 공격력의 20%)", // OnHitBonus
+            "p4": "10 ~ 61 (레벨에 따라) (+ 추가 공격력의 20%)", // OnHitBonus
             "cooldown": "-",
             "cost": "-"
         },
@@ -8161,7 +8161,7 @@ const customValues = {
             "p1": "12", // MaxStacks
             "p2": "1.5 ~ 2.8% (레벨에 따라)", // PercentBonusADCalc
             "p3": "4", // ReviveDuration
-            "p4": "?", // RevivePercentCalc
+            "p4": "30 ~ 75% (레벨에 따라)", // RevivePercentCalc
             "p5": "300 ~ 120 (레벨에 따라)", // ReviveCooldownCalc
             "cooldown": "-",
             "cost": "-"
