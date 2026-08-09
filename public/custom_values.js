@@ -2461,6 +2461,7 @@ const customValues = {
             "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "50",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/leesin/hud/icons2d/leesinq2.png"],
             "stats": {
                 "사거리": "1100",
                 "투사체 속도": "1800",
@@ -2477,6 +2478,7 @@ const customValues = {
             "v2": "",
             "cooldown": "7",
             "cost": "50",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/leesin/hud/icons2d/leesinw2.png"],
             "stats": {
                 "사거리": "700",
                 "투사체 속도": "1500"
@@ -2491,6 +2493,7 @@ const customValues = {
             "v2": "",
             "cooldown": "8",
             "cost": "50",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/leesin/hud/icons2d/leesine2.png"],
             "stats": {
                 "사거리": "450"
             }
@@ -4426,6 +4429,7 @@ const customValues = {
             "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "45 / 50 / 55 / 60 / 65",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_q2.png"],
             "stats": {
                 "사거리": "600",
                 "시전시간": "0.25",
@@ -4441,6 +4445,7 @@ const customValues = {
             "v2": "",
             "cooldown": "17 / 16 / 15 / 14 / 13",
             "cost": "65",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_w2.png"],
             "stats": {
                 "사거리": "800",
                 "시전시간": "0.25",
@@ -4454,6 +4459,7 @@ const customValues = {
             "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "60 / 70 / 80 / 90 / 100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_e2.png"],
             "stats": {
                 "사거리": "525",
                 "투사체 속도": "1050",
@@ -4471,6 +4477,7 @@ const customValues = {
             "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_r2.png"],
             "stats": {
                 "사거리": "700",
                 "시전시간": "0.25",
@@ -9358,6 +9365,7 @@ const customValues = {
             "v2": "",
             "cooldown": "12",
             "cost": "50 / 55 / 60 / 65 / 70",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_w2.png"],
             "stats": {
                 "사거리": "675",
                 "시전시간": "0.25",
@@ -9374,6 +9382,7 @@ const customValues = {
             "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "60 / 65 / 70 / 75 / 80",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_e2.png"],
             "stats": {
                 "사거리": "800",
                 "투사체 속도": "20"

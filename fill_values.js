@@ -177,8 +177,18 @@ const ICON_BASE = 'https://raw.communitydragon.org/latest/game/';
 
 // 스펠 객체에 안 붙어 있어서 위 규칙으로 못 찾는 아이콘. 파일이 실재하는 것만 적는다.
 //   카이사 진화 아이콘이 그렇다 — kaisa_q2/w2/e2.png 는 있는데 스펠 객체엔 없다.
+//   전부 파일 실재(200)와 롤위키 확인을 같이 거친 것만 적는다.
 const EXTRA_ICONS = {
-    Kaisa: { Q: ['kaisa_q2'], W: ['kaisa_w2'], E: ['kaisa_e2'] },
+    // 진화 — 위키: Q/W/E 에 진화판이 있고 아이콘이 따로 있다
+    Kaisa:  { Q: ['kaisa_q2'], W: ['kaisa_w2'], E: ['kaisa_e2'] },
+    // 2타 — 위키: "공명타·철갑·무쇠주먹은 각자 아이콘을 쓴다"
+    //   2타 스펠 객체가 1타와 같은 아이콘을 참조해서 bin 으로는 못 찾는다
+    LeeSin: { Q: ['leesinq2'], W: ['leesinw2'], E: ['leesine2'] },
+    // 만트라 강화판 — 위키: Q(소울플레어)·W(소생)·E(반항) 전부 이름과 아이콘이 따로
+    //   Q 는 bin 에서 이미 찾으므로(KarmaQMissileMantra) 여기엔 W/E 만
+    Karma:  { W: ['karma_w2'], E: ['karma_e2'] },
+    // 증강판 — 위키: Q/W/E/R 네 개 모두 증강 버전이 있다
+    Viktor: { Q: ['viktor_q2'], W: ['viktor_w2'], E: ['viktor_e2'], R: ['viktor_r2'] },
 };
 
 function findExtraIcons(bin, alias, binSpells) {
