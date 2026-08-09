@@ -3382,8 +3382,8 @@ const customValues = {
             "p3": "20", // SpeedStackDuration
             "p4": "24", // TooltipMSPerStack
             "p5": "10", // MaxSpeedStacks
-            "p6": "?", // f5
-            "p7": "?", // f4
+            "p6": "8 ~ 4 (고대의 종에 따라)", // f5
+            "p7": "1 ~ 9 (고대의 종에 따라)", // f4
             "p8": "30 (+ 주문력의 40%)", // MeepDamageNoChime
             "p9": "5", // TooltipChimeDamageCheckpoint
             "p10": "6", // DamagePerCheckpoint
@@ -6060,11 +6060,11 @@ const customValues = {
     },
     "AurelionSol": { // 아우렐리온 솔
         "P": {
-            "p1": "0.031 (중첩당)%", // QPassiveScaling
-            "p2": "?", // f2.1
-            "p3": "?", // f3.1
-            "p4": "0.026 (중첩당)", // EPassiveScalingExecute
-            "p5": "?", // f4.1
+            "p1": "별가루 1개당 최대 체력의 0.031%", // QPassiveScaling
+            "p2": "별가루 1개당 7.5", // f2.1
+            "p3": "별가루 1개당 면적 0.379%", // f3.1
+            "p4": "별가루 1개당 0.026%p", // EPassiveScalingExecute
+            "p5": "별가루 1개당 면적 0.379%", // f4.1
             "p6": "?", // f1
             "cooldown": "-",
             "cost": "-"
@@ -8233,9 +8233,9 @@ const customValues = {
     },
     "Xayah": { // 자야
         "P": {
-            "p1": "?", // f14
-            "p2": "?", // f16*100
-            "p3": "?", // f12
+            "p1": "3", // f14
+            "p2": "35 ~ 55 (레벨에 따라)", // f16*100
+            "p3": "6", // f12
             "cooldown": "-",
             "cost": "-"
         },
@@ -9113,7 +9113,7 @@ const customValues = {
             "p2": "35", // TrapSlowAmount*100
             "p3": "2", // TrapDetonationTime
             "p4": "20 / 80 / 140 / 200 / 260 (+ 총 공격력의 120% + 주문력의 100%)", // TotalDamage
-            "p5": "24 / 21.5 / 19 / 16.5 / 14 + (?)", // AmmoRechargeRateTooltip
+            "p5": "24 / 21.5 / 19 / 16.5 / 14", // AmmoRechargeRateTooltip
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "2",
@@ -10345,7 +10345,7 @@ const customValues = {
     },
     "Quinn": { // 퀸
         "P": {
-            "p1": "?", // f1
+            "p1": "7 ~ 2.56 (치명타 확률에 따라)", // f1
             "p2": "4", // RevealDuration
             "p3": "15 ~ 120 (레벨에 따라) (+ 추가 공격력의 40%)", // BonusDamage
             "cooldown": "-",
