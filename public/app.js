@@ -3792,22 +3792,41 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         const skillsHtml = `
         <style>
             mainText { display: block; font-size: 14px; line-height: 1.6; color: #ddd; } stats { display: block; color: #a78bfa; font-size: 13px; margin-bottom: 12px; font-weight: bold; background: rgba(167, 139, 250, 0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(167, 139, 250, 0.1); }
-            magicdamage { color: #55bced; font-weight: bold; } physicaldamage { color: #ea824d; font-weight: bold; } truedamage { color: #ffffff; font-weight: bold; text-shadow: 0 0 4px rgba(255,255,255,0.4); }
-            healing, heal { color: #00ff00; font-weight: bold; } shield { color: #00bfff; font-weight: bold; } scaleap { color: #55bced; } scalead { color: #ea824d; } scalehealth { color: #00ff00; }
-            scalearmor, scalemr, scalemana { color: #a78bfa; } keywordmajor, keywordstealth { color: #a78bfa; font-weight: bold; text-decoration: underline; } attention, rules { color: #ff3333; font-weight: bold; } speed { color: #ffff00; font-weight: bold; } status { color: #ffffff; font-weight: bold; text-decoration: underline; } active, passive { display: block; margin-top: 8px; }
-            /* CommunityDragon 툴팁 태그 */
-            spellname, keyword, keywordname, recast, toggle, onhit,
+            /* ★ 아래 색은 인게임 툴팁 스크린샷에서 픽셀을 직접 뽑은 값이다 (2026-08-09).
+                 렐 W / 쉬바나 Q / 바드 P / 우디르 Q / 로크 W 를 썼고,
+                 색이 나타나는 좌표가 해당 단어 위치와 맞는지 역으로 검증했다.
+                 겹치는 태그는 서로 다른 스크린샷에서 같은 값이 나와 교차 확인됐다
+                 (magicdamage 는 렐·쉬바나·바드 3장에서 동일).
+                 ※ "구분이 잘 되게" 가 아니라 "인게임과 같게" 가 기준이다. 색끼리 비슷해도 그대로 둔다. */
+            magicdamage { color: #0acbe6; font-weight: bold; } physicaldamage { color: #f26522; font-weight: bold; } truedamage { color: #cdfafa; font-weight: bold; }
+            healing, heal { color: #60e08f; font-weight: bold; } shield { color: #4dd0eb; font-weight: bold; }
+            scalearmor { color: #f0ba57; } scalemr { color: #4fdfff; } scalemana { color: #189ce7; }
+            keywordmajor { color: #dddd77; font-weight: bold; }
+            speed { color: #fffdc9; font-weight: bold; } status { color: #ad76c4; font-weight: bold; }
+            attackspeed { color: #ffe384; font-weight: bold; }
+            spellname, onhit { color: #f0e6d2; font-weight: bold; }
+            recast { color: #d67351; font-weight: bold; }
+            active, passive { display: block; margin-top: 8px; color: #f0e6d2; font-weight: bold; }
+            /* --- 아직 인게임 확인 못 한 태그. 확인되는 대로 위로 옮긴다 --- */
+            scaleap { color: #55bced; } scalead { color: #ea824d; } scalehealth { color: #00ff00; }
+            keywordstealth { color: #a78bfa; font-weight: bold; }
+            attention, rules { color: #ff3333; font-weight: bold; }
+            keyword, keywordname, toggle,
             tap, hold, charge, release, evolve, scalelevel { color: #a78bfa; font-weight: bold; }
             gold { color: #ffd700; font-weight: bold; }
             armorpen { color: #f1c40f; font-weight: bold; }
-            attackspeed { color: #f39c12; font-weight: bold; }
             lifesteal, omnivamp { color: #2ecc71; font-weight: bold; }
             danger, specialrules { color: #ff3333; font-weight: bold; }
+            slow { color: #ffffff; font-weight: bold; }
             b { font-weight: bold; }
             i { font-style: italic; }
-            /* <font> 는 실제 HTML 태그라 size/color 속성이 그대로 먹는다. 무력화한다. */
-            font { display: inline; font-size: inherit !important; color: #a78bfa !important; font-weight: bold; }
-            slow { color: #ffffff; font-weight: bold; }
+            /* ★ <font color=...> 는 라이엇이 원문에 색을 직접 박아 둔 것이고,
+                 그 값이 인게임 색과 정확히 일치한다 (바드 P 의 "고대의 종" #cccc00,
+                 "정령" #ff9900 을 스크린샷에서 뽑아 확인). 그러니 color 는 건드리지 않는다.
+                 예전엔 여기서 color 를 !important 로 덮어써서 44곳의 라이엇 지정색이
+                 전부 죽어 있었다 (아펠리오스 무기색·바드 종·아우렐리온 솔 별가루 등).
+                 font-size 는 원문에 <font size='18'> 같은 게 있어 글자가 튀므로 계속 막는다. */
+            font { display: inline; font-size: inherit !important; font-weight: bold; }
             .custom-footnote { position: relative; display: inline-block; cursor: pointer; color: #a78bfa; margin-left: 2px; }
             .custom-footnote .footnote-text {
                 visibility: hidden; width: max-content; max-width: 250px; background-color: #111; color: #fff;
