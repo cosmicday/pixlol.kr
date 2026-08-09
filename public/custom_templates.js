@@ -671,7 +671,7 @@ const customTemplates = {
         //   아펠리오스는 E 키를 안 쓴다 (무기 교체가 탄약 소진으로 자동 진행).
         //   "" 는 "아직 안 씀"(폴백) 이라 뜻이 다르니 헷갈리지 말 것.
         "E": null,
-        "R": "챔피언에게 적중 시 폭발하는 달빛 에너지를 발사하여 주변 적에게 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다.<br><br>이후 적중한 모든 챔피언을 주 무기로 공격합니다.", // 월광포화 — 끝의 무기별 추가 효과 참조 제거 (현재 주 무기에 따라 달라짐)
+        "R": "챔피언에게 적중 시 폭발하는 달빛 에너지를 발사하여 주변 적에게 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다.<br><br>폭발 <b>0.3</b>초 후 적중한 모든 챔피언에게 하늘에서 공격이 쏟아져 <physicaldamage>총 공격력의 100%</physicaldamage>의 피해를 입히며, <onhit>적중 시</onhit> 효과가 적용됩니다.<br><br><passive>주 무기에 따른 추가 효과:</passive><li><b><i><font color='#5ce68c'>만월총</font></i></b>: 강화된 표식을 남깁니다. 표식을 소모할 때마다 <physicaldamage>50 / 80 / 110의 추가 물리 피해</physicaldamage>를 입힙니다.</li><li><b><i><font color='#ff5c5c'>절단검</font></i></b>: 적 챔피언을 한 명 이상 맞히면 <healing>체력을 250 / 350 / 450</healing> 회복합니다.</li><li><b><i><font color='#a64dff'>중력포</font></i></b>: <status>둔화</status> 효과가 <b>99%</b>까지 증가하고, 이 둔화에 걸린 적은 <spellname>월식</spellname>으로 <b>1.35</b>초 동안 <status>속박</status>됩니다.</li><li><b><i><font color='#ff9933'>화염포</font></i></b>: 최초 폭발이 <physicaldamage>50 / 100 / 150 (+ 추가 공격력의 25%)의 추가 물리 피해</physicaldamage>를 입힙니다. 이후 공격이 대상마다 <b>400</b> 범위로 퍼집니다.</li><li><b><i><font color='#cfe2ff'>반월검</font></i></b>: 처음 맞힌 적 챔피언에게서 반월검 <b>5</b>개가 추가로 돌아옵니다. (총 <b>6</b>개)</li>", // 월광포화 — 주 무기별 추가 효과 5종 추가 (2026-08-09, 롤위키)
     },
     "Alistar": { // 알리스타
         "P": "알리스타가 적 챔피언을 <status>기절시키거나,</status> <status>공중으로 띄워 올리거나, 뒤로 밀어내거나,</status> 적이 죽을 때마다 중첩을 얻습니다. {p1}회 중첩되면 알리스타가 포효하며 자신의 <healing>체력을 {p2}</healing>만큼 회복하고 근처 아군 챔피언의 <healing>체력을 {p3}</healing>만큼 회복시킵니다.<br><br>적 챔피언이나 에픽 정글 몬스터가 죽으면 이 스킬이 최대로 중첩됩니다.", // 승리의 포효 — stringtable

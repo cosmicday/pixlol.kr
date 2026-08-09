@@ -3824,7 +3824,11 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 ${window.currentChampSkills.map((skill, idx) => `
                     <div onclick="playSkill(${idx})" id="skill-btn-${idx}" class="skill-btn" style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s; background: rgba(255,255,255,0.02);">
                         <img src="${skill.img}" style="width: 48px; height: 48px; border-radius: 8px; border: 2px solid transparent;" id="skill-img-${idx}">
-                        <div style="color: #9aa4af; font-weight: bold; width: 24px; font-size: 16px;">${['P', 'Q', 'W', 'E', 'R'][idx]}</div>
+                        <!-- ★ 라벨은 배열 인덱스가 아니라 skill.keyChar 로 붙인다.
+                             인덱스로 매기면 슬롯이 하나라도 빠졌을 때 뒤가 통째로 밀린다
+                             (아펠리오스는 E 가 없어서 R 버튼에 E 가 찍혔었다).
+                             패시브만 keyChar 가 '패시브' 라 예외로 P 를 쓴다. -->
+                        <div style="color: #9aa4af; font-weight: bold; width: 24px; font-size: 16px;">${skill.isPassive ? 'P' : skill.keyChar}</div>
                     </div>
                 `).join('')}
             </div>
