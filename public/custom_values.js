@@ -5407,7 +5407,7 @@ const customValues = {
             "p7": "2 (+ 0.008 (중첩당))", // Tier2_NumberOfBlowback
             "p8": "225", // StackTier3
             "p9": "3", // Tier3_DotLength
-            "p10": "추가 공격력의 0.025% (+ 0.005 (중첩당))", // Tier3_Burn
+            "p10": "(+0.025 추가 공격력)(+0.005 용 훈련 중첩)", // Tier3_Burn
             "p11": "6.5%", // Tier3_ExecuteThreshold
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
