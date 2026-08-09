@@ -9426,6 +9426,7 @@ const customValues = {
             "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "25",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/camille/hud/icons2d/camille_q2.png"],
             "stats": {
                 "사거리": "325",
                 "시전시간": "0.25",
@@ -10427,6 +10428,7 @@ const customValues = {
             "v2": "",
             "cooldown": "3.5",
             "cost": "20",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/ksante/hud/icons2d/icons_ksante_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/ksante/hud/icons2d/icons_ksante_q3.png"],
             "stats": {
                 "사거리": "450",
                 "시전시간": "0.35",
@@ -10481,6 +10483,7 @@ const customValues = {
             "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/ksante/hud/icons2d/icons_ksante_r2.png"],
             "stats": {
                 "사거리": "250",
                 "시전시간": "0.4",

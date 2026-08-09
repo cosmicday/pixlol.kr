@@ -189,6 +189,12 @@ const EXTRA_ICONS = {
     Karma:  { W: ['karma_w2'], E: ['karma_e2'] },
     // 증강판 — 위키: Q/W/E/R 네 개 모두 증강 버전이 있다
     Viktor: { Q: ['viktor_q2'], W: ['viktor_w2'], E: ['viktor_e2'], R: ['viktor_r2'] },
+    // 재시전 — 위키: Q(정밀 프로토콜)에 재시전이 있다. E(왈 다이브)는 bin 에서 이미 잡힘
+    //   ★ Q 는 2회 시전이라 q2 까지만. 파일에 q3 도 있지만 게임엔 없다
+    Camille: { Q: ['camille_q2'] },
+    // 위키: Q 에 강화 활성, R(모두 걸기)에 변신 상태가 있다.
+    //   q3(모두 걸기 중의 Q)·r2 는 bin 에서 잡히는데 q2(강화 활성)만 안 붙어 있다.
+    KSante: { Q: ['icons_ksante_q2'] },
 };
 
 function findExtraIcons(bin, alias, binSpells) {
@@ -199,7 +205,11 @@ function findExtraIcons(bin, alias, binSpells) {
         const m = JSON.stringify(o).match(/"(ASSETS\/[^"]*Icons2D\/[^"]+\.dds)"/i);
         return m ? m[1] : null;
     };
-    const nameOf = (f) => f.split('/').pop().toLowerCase().replace(/\.dds$/, '');
+    //   ★ 일부 챔피언은 파일 이름 앞에 icon_/icons_ 가 붙는다
+    //     (icons_ksante_q2, icon_ambessa_q2, icons_smolder_q2).
+    //     이걸 안 벗기면 "챔피언 이름으로 시작" 조건에 걸려 통째로 빠진다.
+    //     URL 은 원래 경로를 쓰므로 여기서 벗겨도 안전하다.
+    const nameOf = (f) => f.split('/').pop().toLowerCase().replace(/\.dds$/, '').replace(/^icons?_/, '');
 
     const main = (rec.spells || []).slice(0, 4);
     const baseIcon = {};
@@ -225,6 +235,9 @@ function findExtraIcons(bin, alias, binSpells) {
         if (skip.has(k) || f2Objs.has(k.split('/').pop())) continue;
         const f = fileOf(bin[k]);
         if (!f) continue;
+        // ★ 일부 챔피언은 파일 이름 앞에 icon_/icons_ 가 붙는다
+        //   (icons_ksante_q2, icon_ambessa_q2, icons_smolder_q2).
+        //   이걸 안 벗기면 "챔피언 이름으로 시작" 조건에 걸려 통째로 빠진다.
         const file = nameOf(f);
         if (!file.startsWith(low)) continue;
         // ★ 숫자는 2 이상만. 1 은 기본 아이콘이고(Garen_E1, Syndra_Q1),
