@@ -58,7 +58,7 @@ const PREVIEW = [];
 //   표에 있는데 한 번도 안 쓰인 키는 마지막에 경고로 알려준다. 오타 잡기용.
 // ------------------------------------------------------------
 const MANUAL = {
-  '미스 포츈 W / LoveTapRefund': '...',
+  '미스 포츈 W / LoveTapRefund': '2',
   '올라프 Q / TooltipCDRefund': '2.5',
   '사일러스 R / PerTargetCooldown': '200',
   '카타리나 E / DaggerCooldownReduction': '12 / 11 / 10 / 9 / 8',
@@ -71,9 +71,49 @@ const MANUAL = {
   '말파이트 W / f2': '30 / 45 / 60 / 75 / 90',
   '벨베스 Q / f1': '16 / 15 / 14 / 13 / 12',
   '신드라 W / f2': '1.5',
+
+  // 2026-08-09 검산목록 A 대조분 (롤위키 + 인게임 스샷).
+  //   미스 포츈: 활보 쿨 감소는 2초. 자동값 240 은 자릿수부터 말이 안 됐다
+  //     (활보 기본 쿨이 12초). P 는 W 값을 교차 참조하는 자리라 같이 넣는다.
+  //   타릭 P: 자동값이 궁극기 쿨(160/140/120)을 끌어와 껍데기를 만들고 있었다.
+  //     실제는 스킬 가속에 따라 1~2초. "스킬 쿨타임으로 추론" 휴리스틱 오답 사례.
+  //   우디르 Q: 문장 자리는 번개 6회 '총합'이다. 인게임 툴팁(우디르Q.PNG) 1레벨이
+  //     "여섯 번 일으켜 최대 체력의 9.0%", 회색 줄이 "각 번개 = 1.5% ~ 3.0% + 0.006%".
+  //     회당 값과 AP 계수에 각각 x6 을 실은 값. 근본 원인은 guessPart 의 x100 배율
+  //     누락이라 그쪽이 고쳐지면 이 줄은 빼도 된다.
+  '미스 포츈 P / Spell.MissFortuneViciousStrikes:LoveTapRefund': '2',
+  '타릭 P / CDR': '1 ~ 2 (스킬 가속에 따라)',
+  '우디르 Q / EmpoweredLightningBonusMax': '9 ~ 18% (레벨에 따라) (+ 주문력의 0.036%)',
+
+  // 2026-08-09 폴백 해제 후 화면에 드러난 자리들.
+  //   스몰더: BuffCounterByNamedDataValue 조각이 "0.25 (중첩당)" 이라는 분수를 그대로 낸다.
+  //     위키 대조로 Q 25% / W 55% / E 8% 확인 (E 는 치명타 확률에 따라 12.8% 까지).
+  //     ★ (중첩당) 자리를 일괄로 x100 하면 안 된다 — 드레이븐 P 골드 '1 (중첩당)',
+  //       스웨인 P 체력 '15 (중첩당)' 처럼 절대값인 자리와 '2.5% (+ 0.5 (중첩당))' 처럼
+  //       이미 % 단위인 자리가 섞여 있다. 곱셈 배율 규칙과 같은 함정이다.
+  //     문장 쪽은 "용 훈련 중첩의 {pN}에 해당하는" 으로 같이 손봤다.
+  '스몰더 P / Passive_QDamageIncrease': '25%',
+  '스몰더 P / Passive_WDamageIncrease': '55%',
+  '스몰더 P / EBonusDamage': '8%',
+  '스몰더 Q / spell.SmolderP:Passive_QDamageIncrease': '25%',
+  '스몰더 W / spell.SmolderP:Passive_WDamageIncrease': '55%',
+  '스몰더 E / spell.SmolderP:EBonusDamage': '8%',
+
+  //   카이사 Q: 계산식이 전개가 안 돼 "((...) x 5) x 0.25" 라는 날것이 화면에 찍혔다.
+  //     첫 발 100% + 나머지 5발 x 25% = 기본값 x 2.25. 위키 총합표와 일치.
+  '카이사 Q / MaxDamageDisplay': '90 / 123.75 / 157.5 / 191.25 / 225 (+ 추가 공격력의 123.75% + 주문력의 45%)',
 };
 
 const manualUsed = new Set();
+
+// ------------------------------------------------------------
+// 레벨 보간 범위 표기.
+//   ★ 양 끝이 같으면 범위가 아니라 고정값이다. "6 ~ 6% (레벨에 따라)" 처럼
+//     나가면 성장하지 않는 값을 성장하는 것처럼 읽히게 만든다.
+//     (스웨인 P 회복량, 아이번 P 이동 속도, 렉사이 R 진동 피해 3자리 해당)
+//   보간 조각 네 군데가 같은 문장을 각자 만들고 있어서 여기로 모았다.
+// ------------------------------------------------------------
+const levelRange = (a, b) => (String(a) === String(b) ? `${a}` : `${a} ~ ${b} (레벨에 따라)`);
 
 // ------------------------------------------------------------
 // mStat 번호 -> 한글 스탯 이름
@@ -515,7 +555,7 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
         case 'ByCharLevelInterpolationCalculationPart': {
             const a = tidy((part.mStartValue || 0) * mult);
             const b = tidy((part.mEndValue || 0) * mult);
-            return `${a} ~ ${b} (레벨에 따라)`;
+            return levelRange(a, b);
         }
 
         case 'ByCharLevelBreakpointsCalculationPart': {
@@ -541,7 +581,7 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
                 }
                 v += per;
             }
-            return `${tidy(base * mult)} ~ ${tidy(v * mult)} (레벨에 따라)`;
+            return levelRange(tidy(base * mult), tidy(v * mult));
         }
 
         case 'BuffCounterByNamedDataValueCalculationPart': {
@@ -635,7 +675,7 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             if (!Array.isArray(vals) || !vals.length) return null;
             const a = tidy(vals[0] * mult);
             const b = tidy(vals[Math.min(17, vals.length - 1)] * mult);
-            return `${a} ~ ${b} (레벨에 따라)`;
+            return levelRange(a, b);
         }
 
         case 'CooldownMultiplierCalculationPart': {
@@ -746,7 +786,7 @@ function guessPart(part, spell, maxRank, mult, depth) {
                 }
                 v += per;
             }
-            return `${tidy(base * mult)} ~ ${tidy(v * mult)} (레벨에 따라)`;
+            return levelRange(tidy(base * mult), tidy(v * mult));
         }
     }
 
@@ -762,7 +802,7 @@ function guessPart(part, spell, maxRank, mult, depth) {
             if (a && b) {
                 const lo = levelsToText(a.values, 1, mult);
                 const hi = levelsToText(b.values, 1, mult);
-                if (lo !== null && hi !== null) return `${lo} ~ ${hi} (레벨에 따라)`;
+                if (lo !== null && hi !== null) return levelRange(lo, hi);
             }
             return null;
         }

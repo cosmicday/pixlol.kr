@@ -3660,8 +3660,18 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             // 아직 수치를 안 채웠거나 일부만 해석된 스킬은 문장에 물음표가 찍힌다.
             // 값에 ? 가 섞여 있으면 (예: "50 / 75 (+ (?))") 템플릿을 쓰지 않는다.
             // 템플릿을 쓰지 않고 라이엇 기본 설명으로 넘긴다
+            //
+            // ★ 문장에 실제로 등장하는 {pN} 만 검사한다.
+            //   가드의 목적은 "화면에 물음표가 찍히는 걸 막는 것" 이라
+            //   문장이 안 쓰는 자리는 볼 이유가 없다.
+            //   "현재 내 챔피언의 상태" 처럼 고정값이 없어서 문장에서 뺀 자리는
+            //   custom_values.js 에 ? 로 남아 있는데(fill_values.js 가 CD 원본 desc 의
+            //   @Name@ 을 훑어 만들기 때문에 손으로 지워도 재실행하면 되살아난다),
+            //   예전 가드는 그것까지 세어서 멀쩡한 문장을 통째로 버렸다.
             const unfilled = Object.keys(values).some(
-                k => /^p[0-9]+$/.test(k) && (values[k] === '' || String(values[k]).includes('?'))
+                k => /^p[0-9]+$/.test(k)
+                  && tpl && tpl.includes(`{${k}}`)
+                  && (values[k] === '' || String(values[k]).includes('?'))
             );
 
             if (tpl && !unfilled) {

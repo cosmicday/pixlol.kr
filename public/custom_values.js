@@ -3239,7 +3239,7 @@ const customValues = {
     "MissFortune": { // 미스 포츈
         "P": {
             "p1": "총 공격력의 50 ~ 100 (레벨에 따라)%", // TotalDamage
-            "p2": "240", // Spell.MissFortuneViciousStrikes:LoveTapRefund
+            "p2": "2", // Spell.MissFortuneViciousStrikes:LoveTapRefund
             "cooldown": "-",
             "cost": "-"
         },
@@ -3263,7 +3263,7 @@ const customValues = {
             "p4": "60 / 70 / 80 / 90 / 100", // PassiveMaxMS
             "p5": "4", // ActiveDuration
             "p6": "40 / 55 / 70 / 85 / 100", // ActiveAS*100
-            "p7": "...", // LoveTapRefund
+            "p7": "2", // LoveTapRefund
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12",
@@ -3784,7 +3784,7 @@ const customValues = {
     "Belveth": { // 벨베스
         "P": {
             "p1": "3", // SheenDuration
-            "p2": "20 ~ 20% (레벨에 따라)", // SheenSpeedPerStack
+            "p2": "20%", // SheenSpeedPerStack
             "p3": "1", // MonsterStacks
             "p4": "2", // ChampionStacks
             "p5": "0.1 ~ 2 (레벨에 따라)", // AttackSpeedPerStack
@@ -5386,12 +5386,12 @@ const customValues = {
     },
     "Smolder": { // 스몰더
         "P": {
-            "p1": "0.25 (중첩당)", // Passive_QDamageIncrease
+            "p1": "25%", // Passive_QDamageIncrease
             "p2": "25", // spell.SmolderQ:StackTier1
             "p3": "125", // spell.SmolderQ:StackTier2
             "p4": "225", // spell.SmolderQ:StackTier3
-            "p5": "0.55 (중첩당)", // Passive_WDamageIncrease
-            "p6": "0.08 (중첩당)", // EBonusDamage
+            "p5": "55%", // Passive_WDamageIncrease
+            "p6": "8%", // EBonusDamage
             "p7": "100", // EStacksPerAttackTooltip
             "p8": "?", // f1.0
             "cooldown": "-",
@@ -5399,7 +5399,7 @@ const customValues = {
         },
         "Q": {
             "p1": "60 / 70 / 80 / 90 / 100 (+ 추가 공격력의 130%)", // TotalDamage
-            "p2": "0.25 (중첩당)", // spell.SmolderP:Passive_QDamageIncrease
+            "p2": "25%", // spell.SmolderP:Passive_QDamageIncrease
             "p3": "15", // ManaRestore
             "p4": "25", // StackTier1
             "p5": "125", // StackTier2
@@ -5424,7 +5424,7 @@ const customValues = {
             "p2": "1.5", // SlowDuration
             "p3": "35", // SlowAmount*100
             "p4": "10 / 35 / 60 / 85 / 110 (+ 추가 공격력의 50% + 주문력의 80%)", // ExplosionDamage
-            "p5": "0.55 (중첩당)", // spell.SmolderP:Passive_WDamageIncrease
+            "p5": "55%", // spell.SmolderP:Passive_WDamageIncrease
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
@@ -5441,7 +5441,7 @@ const customValues = {
             "p2": "75", // MoveSpeed*100
             "p3": "5 (+ 0.01 (중첩당))", // TotalNumberOfAttacks
             "p4": "10 / 15 / 20 / 25 / 30 (+ 총 공격력의 30%)", // DamagePerHit
-            "p5": "0.08 (중첩당)", // spell.SmolderP:EBonusDamage
+            "p5": "8%", // spell.SmolderP:EBonusDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "24 / 22 / 20 / 18 / 16",
@@ -5471,7 +5471,7 @@ const customValues = {
     },
     "Swain": { // 스웨인
         "P": {
-            "p1": "6 ~ 6% (레벨에 따라)", // PassiveHealPercent
+            "p1": "6%", // PassiveHealPercent
             "p2": "15", // HealthIncrement
             "p3": "?", // f1
             "p4": "15 (중첩당)", // MaxHealthGained
@@ -7555,7 +7555,7 @@ const customValues = {
             "p5": "50", // AttackRange
             "p6": "20 / 32 / 44 / 56 / 68 / 80% (+ 20 ~ 70% (레벨에 따라))", // EmpoweredTotalAS
             "p7": "3 / 4 / 5 / 6 / 7 / 8% (+ 2 ~ 4% (레벨에 따라) + 추가 공격력의 0.05% + 추가 최대 체력의 0.001%)", // Q2TotalOnHitHPDamage
-            "p8": "(주문력의 0.006% + 0.015 ~ 0.03 (레벨에 따라)) x (1 + 5 x 1)%", // EmpoweredLightningBonusMax
+            "p8": "9 ~ 18% (레벨에 따라) (+ 주문력의 0.036%)", // EmpoweredLightningBonusMax
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "6",
@@ -9683,7 +9683,7 @@ const customValues = {
         "Q": {
             "p1": "6", // Effect2Amount
             "p2": "40 / 55 / 70 / 85 / 100 (+ 추가 공격력의 55% + 주문력의 20%)", // TotalIndividualMissileDamage
-            "p3": "40 / 55 / 70 / 85 / 100 + 추가 공격력의 55% + 주문력의 20% + ((40 / 55 / 70 / 85 / 100 + 추가 공격력의 55% + 주문력의 20%) x 5) x 0.25", // MaxDamageDisplay
+            "p3": "90 / 123.75 / 157.5 / 191.25 / 225 (+ 추가 공격력의 123.75% + 주문력의 45%)", // MaxDamageDisplay
             "p4": "25", // ExtraHitReduction*100
             "p5": "12", // Effect7Amount
             "p6": "?", // f11.1
@@ -10582,7 +10582,7 @@ const customValues = {
             "p2": "1", // SlowDuration
             "p3": "20", // SlowPotency*-100
             "p4": "50", // CritThreshold*100
-            "p5": "70 / 100 / 130 / 160 / 190 (+ 추가 공격력의 85%) x 0.6 ~ 0.6 (레벨에 따라)", // TremorDamage
+            "p5": "70 / 100 / 130 / 160 / 190 (+ 추가 공격력의 85%) x 0.6", // TremorDamage
             "p6": "20", // Haste*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -10706,7 +10706,7 @@ const customValues = {
         "P": {
             "p1": "5", // Duration
             "p2": "25 ~ 93 (레벨에 따라) x 1 (+ 추가 방어력의 15%)", // TotalDamage
-            "p3": "1 + 1 + 160 / 140 / 120 x -1", // CDR
+            "p3": "1 ~ 2 (스킬 가속에 따라)", // CDR
             "cooldown": "-",
             "cost": "-"
         },
