@@ -96,7 +96,7 @@ const customValues = {
         "E": {
             "p1": "3", // Duration
             "p2": "4 / 7 / 10 / 13 / 16 (+ 총 공격력의 40 / 43 / 46 / 49 / 52%)", // TotalDamage
-            "p3": "?", // f1
+            "p3": "7", // f1
             "p4": "25", // NearestEnemyBonus*100
             "p5": "6", // StacksToShred
             "p6": "6", // ShredDuration
@@ -3823,9 +3823,9 @@ const customValues = {
             "p1": "1.5", // TotalDuration
             "p2": "20 / 30 / 40 / 50 / 60", // DRPercent*100
             "p3": "20 / 25 / 30 / 35 / 40%", // TotalLifesteal
-            "p4": "?", // f2.0
+            "p4": "6", // f2.0
             "p5": "10 / 12 / 14 / 16 / 18 (+ 총 공격력의 12%)", // DamagePerStrike
-            "p6": "10 / 12 / 14 / 16 / 18 (+ 총 공격력의 12%) x 2", // MaxDamagePerStrikeTooltip
+            "p6": "20 / 24 / 28 / 32 / 36 (+ 총 공격력의 24%)", // MaxDamagePerStrikeTooltip
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "24 / 21 / 18 / 15 / 12",
@@ -5058,7 +5058,7 @@ const customValues = {
             "p5": "3", // ShieldMaxDuration
             "p6": "80 / 100 / 120 / 140 / 160", // DamageCalc
             "p7": "25% (+ 추가 공격력의 0.25%)", // DamageConversion
-            "p8": "?", // f1
+            "p8": "80 / 100 / 120 / 140 / 160 + 최대 체력의 12.5% (+ 추가 공격력의 0.125%)", // f1
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "18 / 16.5 / 15 / 13.5 / 12",
@@ -5708,7 +5708,7 @@ const customValues = {
             "p2": "0.5", // SlowDuration
             "p3": "30", // SlowAmount
             "p4": "5", // ASDuration
-            "p5": "?", // f1
+            "p5": "38 / 46 / 54 / 62 / 70% (+ 주문력의 10%) (+ 영구적 공격 속도 5%당 1%)", // f1
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "11",
