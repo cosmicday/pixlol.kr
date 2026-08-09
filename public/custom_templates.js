@@ -485,7 +485,10 @@ const customTemplates = {
         "P": "스킬 사용 후 사일러스가 1회 충전합니다. (최대 충전량 {p1}회) 다음 기본 공격 시 충전량을 하나 소모하여 사슬을 휘두르며 적중당한 대상에게 <magicdamage>{p2}의 마법 피해</magicdamage>를 입히고 대상 주변의 모든 적에게 <magicdamage>{p3}의 마법 피해</magicdamage>를 입힙니다.<br><br>충전이 하나라도 되어 있으면 사일러스의 <attackspeed>공격 속도가 {p4}%</attackspeed> 증가합니다.", // 페트리사이트 폭발 — stringtable
         "Q": "사일러스가 사슬을 후려쳐 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 {p2}초 동안 {p3} <status>둔화</status>시킵니다. 사슬이 교차하는 지점은 폭발해 <magicdamage>{p4}의 마법 피해</magicdamage>를 추가로 입힙니다.", // 사슬 후려치기
         "W": "사일러스가 마법의 힘으로 적에게 돌진해 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다. 챔피언에게 사용하면 사일러스가 잃은 체력에 비례해 <healing>{p2}</healing>~<healing>{p3}의 체력</healing>을 회복합니다. (체력이 {p4}% 이하일 때 최대 회복량 적용)", // 국왕시해자
-        "E": "사일러스가 재빨리 돌진한 후 3.5초 동안 <recast>재사용</recast>을 준비합니다.<br><br><recast>재사용 시:</recast> 사일러스가 사슬을 던져 적에게 적중하면 사슬을 끌어당겨 적 방향으로 이동하며 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 {p2}초 동안 <status>공중으로 띄워 올립니다</status>.", // 도주 / 억압
+        "E": [
+            "사일러스가 재빨리 돌진한 후 3.5초 동안 <recast>재사용</recast>을 준비합니다.<br><rules>돌진 거리 400</rules>",
+            "<recast>재사용 시:</recast> 사일러스가 사슬을 던져 적에게 적중하면 사슬을 끌어당겨 적 방향으로 이동하며 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 {p2}초 동안 <status>공중으로 띄워 올립니다</status>.<br><rules>사거리 950 (가장자리 790)</rules>"
+        ], // 도주 / 억압
         "R": "사일러스가 적 챔피언의 궁극기를 강탈해 적과 똑같이 사용합니다. 효과는 사일러스의 궁극기 레벨과 능력치에 비례합니다.<br><br>적의 궁극기를 강탈하면 해당 궁극기 재사용 대기시간의 {p1}%(사일러스의 스킬 가속 적용)만큼 재사용 대기시간이 적용되어 사일러스가 그동안 해당 적의 궁극기를 다시 강탈할 수 없습니다. (최소 {p2}초)", // 강탈
     },
     "Shaco": { // 샤코
@@ -589,7 +592,10 @@ const customTemplates = {
     "Syndra": { // 신드라
         "P": "신드라가 <evolve>분노의 조각</evolve>을 최대 {p1}개까지 획득할 수 있습니다. 조각을 획득하면 신드라의 스킬이 강화되며 신드라가 적에게서 조각을 하나 획득할 때마다 <scalemana>마나를 {p2}</scalemana>씩 회복합니다. <br><br>신드라가 다음과 같은 방법으로 <evolve>분노의 조각</evolve>을 획득합니다.<li>{p3}초 안에 두 스킬로 적 챔피언에게 피해를 입히면 <evolve>조각 {p4}개</evolve> (재사용 대기시간 {p5}초)<li>스킬 포인트를 쓸 때마다 <evolve>조각 {p6}개</evolve><li>대형 미니언 처치 시 <evolve>조각 {p7}개</evolve><br><br><evolve>분노의 조각</evolve>이 {p1}개 있으면 신드라의 <scaleap>주문력이 {p8}%</scaleap> 증가합니다.<br>", // 초월 — stringtable
         "Q": "신드라가 <keywordmajor>어둠의 구체</keywordmajor>를 소환하여 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다. <keywordmajor>어둠의 구체</keywordmajor>는 {p2}초간 유지되며 신드라의 다른 스킬로 움직일 수 있습니다.<br><br><evolve>분노의 조각 {p3}개</evolve>: 신드라가 <keywordmajor>어둠 구체</keywordmajor>를 {p4}개 저장할 수 있습니다.", // 어둠 구체
-        "W": "신드라가 <keywordmajor>어둠 구체</keywordmajor>, 적 미니언, 혹은 에픽 몬스터를 제외한 몬스터를 잡아당기며 최대 5초 안에 <recast>재사용</recast>할 수 있습니다.<br><br><recast>재사용 시</recast>: 신드라가 물체를 던져 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 {p2}초 동안 {p3}% <status>둔화</status>시킵니다.<br><br><evolve>분노의 조각 {p4}</evolve>개: 이 스킬이 <truedamage>{p5}의 고정 피해</truedamage>를 추가로 입힙니다.<br>", // 의지의 힘
+        "W": [
+            "신드라가 <keywordmajor>어둠 구체</keywordmajor>, 적 미니언, 혹은 에픽 몬스터를 제외한 몬스터를 잡아당기며 최대 5초 안에 <recast>재사용</recast>할 수 있습니다.<br><rules>지정 위치 주변 500 안에서 가장 가까운 대상을 잡습니다. 어둠 구체는 지속시간이 새로 고쳐지고, 미니언·몬스터는 정지 상태가 됩니다.</rules>",
+            "<recast>재사용 시</recast>: 신드라가 물체를 던져 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 {p2}초 동안 {p3}% <status>둔화</status>시킵니다.<br><br><evolve>분노의 조각 {p4}</evolve>개: 이 스킬이 <truedamage>{p5}의 고정 피해</truedamage>를 추가로 입힙니다."
+        ], // 의지의 힘
         "E": "신드라가 힘의 파동을 발사하여 적들을 <status>밀어내고</status> <keywordmajor>어둠 구체</keywordmajor>에 충돌한 모든 적에게 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다.<br><br>밀려난 <keywordmajor>어둠 구체</keywordmajor>는 적들을 {p2}초 동안 <status>기절</status>시키고 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다.<br><br><evolve>분노의 조각 {p3}개</evolve>: 이 스킬의 폭이 증가하며 {p4}초 동안 적을 <status>{p5}%</status> <status>둔화</status>시킵니다.", // 적군 와해
         "R": "<passive>기본 지속 효과</passive>: <spellname>풀려난 힘</spellname>의 레벨 하나당 <spellname>어둠 구체</spellname>의 스킬 가속이 {p1}씩 추가로 증가합니다.<br><br>신드라가 엄청난 파멸의 힘을 끌어내어 신드라 주위를 도는 <keywordmajor>어둠 구체</keywordmajor> 3개와 주변 어둠 구체 4개를 적 챔피언에게 보냅니다. 각 <keywordmajor>어둠 구체</keywordmajor>는 <magicdamage>{p2}의 마법 피해</magicdamage>를 입힙니다. (최대 <magicdamage>{p3}의 마법 피해</magicdamage>)<br><br><evolve>분노의 조각 {p4}개</evolve>: 이 스킬이 체력이 {p5}% 미만인 적을 <danger>처형</danger>합니다.", // 풀려난 힘
     },
@@ -658,7 +664,13 @@ const customTemplates = {
     },
     "Aatrox": { // 아트록스
         "P": "아트록스의 기본 공격이 <magicdamage>최대 체력에 비례해 {p1}의 마법 피해</magicdamage>를 추가로 입히고 <healing>가한 피해량의 {p2}%만큼 체력</healing>을 회복합니다. 미니언을 상대로는 회복 효과가 {p3}%로 감소합니다. 이 효과에는 {p4}초의 재사용 대기시간이 있습니다.<br><br>기본 공격과 스킬이 챔피언이나 대형 정글 몬스터에게 적중하면 이 효과의 재사용 대기시간이 2초 감소합니다. <spellname>다르킨의 검</spellname> 끝이 적중하면 4초 감소합니다.", // 사신 태세 — stringtable
-        "Q": "아트록스가 대검을 내리쳐 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다. 끝에 적중한 적을 잠깐 <status>공중으로 띄워 올리고</status> <physicaldamage>{p2}</physicaldamage>의 피해를 입힙니다. 이 스킬은 두 번 <recast>재사용</recast>할 수 있으며 다시 사용할 때마다 범위 모양이 변하고 이전보다 25% 더 많은 피해를 입힙니다.", // 다르킨의 검
+        // ★ 배열 = 하위 스킬을 파트로 쪼갠 것. app.js 가 아이콘 + 구분선으로 나눠 그린다.
+        //   0번은 스킬 본체(기본 아이콘), 1번부터 values.icons[i-1] 과 짝이 된다.
+        "Q": [
+            "아트록스가 대검을 내리쳐 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다. 칼날 끝에 적중한 적은 잠깐 <status>공중으로 띄워 올려지며</status> <physicaldamage>{p2}</physicaldamage>의 피해를 입습니다.<br><rules>전방 직사각형 (625 x 180)</rules>",
+            "<recast>2타</recast>: 범위가 넓은 사다리꼴로 바뀌고 피해량이 <b>25%</b> 증가합니다.<br><rules>전방 사다리꼴 (475, 폭 300~500)</rules>",
+            "<recast>3타</recast>: 범위가 원형으로 바뀌고 피해량이 1타보다 <b>50%</b> 증가합니다.<br><rules>원형 (반지름 300)</rules>"
+        ], // 다르킨의 검
         "W": "아트록스가 사슬을 발사하여 처음 적중한 적을 {p1}초 동안 {p2}%만큼 <status>둔화</status>시키고 <physicaldamage>{p3}의 물리 피해</physicaldamage>를 입힙니다. 챔피언과 대형 정글 몬스터는 {p1}초 안에 해당 지역을 벗어나지 않으면 중심으로 <status>끌려가</status> 다시 같은 양의 피해를 입습니다.", // 지옥사슬
         "E": "<passive>기본 지속 효과:</passive> 아트록스가 챔피언에게 가한 피해의 <lifesteal>{p1}</lifesteal>만큼 체력을 회복합니다.<br><br><active>사용 시:</active> 아트록스가 돌진합니다. 이 스킬은 다른 스킬이 진행되는 동안 사용할 수 있습니다.", // 파멸의 돌진
         "R": "아트록스가 진정한 악마의 모습을 드러내 근처 미니언이 {p1}초 동안 <status>공포</status>에 떨게 하고 <speed>이동 속도가 {p2}%</speed> 증가했다가 {p3}초에 걸쳐 원래대로 돌아옵니다. 지속시간 동안 <scalead>공격력이 {p4}%</scalead>, <healing>자신에 대한 체력 회복 효과가 {p5}%</healing> 증가합니다.<br><br>챔피언 처치 관여 시 이 효과의 지속시간이 {p6}초 늘어나고 <speed>이동 속도</speed> 효과가 초기화됩니다.", // 세계의 종결자
@@ -1004,7 +1016,10 @@ const customTemplates = {
     },
     "Kaisa": { // 카이사
         "P": "기본 공격 시 {p1}초 동안 <keywordmajor>플라즈마</keywordmajor> 중첩을 쌓고 <magicdamage>중첩당 {p2}+{p3}의 마법 피해</magicdamage>를 추가로 입힙니다. {p4}회 중첩이 쌓인 적을 공격하면 <keywordmajor>플라즈마</keywordmajor>를 소모하며, <magicdamage>대상이 잃은 체력의 {p5}에 해당하는 마법 피해</magicdamage>를 입힙니다. 주변 아군이 적 챔피언을 <status>이동 불가</status> 상태로 만들면 중첩을 {p6}회 적용합니다.<br><br>카이사의 피부가 능력치에 따라 기본 스킬을 진화시킵니다.<br><br><passive>진화 조건:</passive><br><spellname>이케시아 폭우</spellname>: <physicaldamage>추가 공격력 {p8}</physicaldamage><br><spellname>공허추적자</spellname>: <scaleap>주문력 {p10}</scaleap><br><spellname>고속 충전</spellname>: <attackspeed>추가 공격 속도 {p12}%</attackspeed>", // 두 번째 피부 — stringtable. 각 항목의 "현재값/요구치" 에서 앞쪽 현재값({p7}·{p9}·{p11}) 제거
-        "Q": "카이사가 근처 적들을 추격하는 미사일을 {p1}개 발사하며, 적중한 적에게 각각 <physicaldamage>{p2}의 물리 피해</physicaldamage>를 입힙니다. (최대 {p3}) 이미 미사일에 맞은 적 챔피언 또는 몬스터에게 추가 적중할 경우 {p4}%의 피해를 입힙니다.<br><br><keywordmajor>진화 시</keywordmajor>: 미사일을 {p5}개 발사합니다.<br>진화 조건: <physicaldamage>추가 공격력 {p7}</physicaldamage>", // 이케시아 폭우 — "현재: {p6}/{p7}" 에서 현재값 제거
+        "Q": [
+            "카이사가 근처 적들을 추격하는 미사일을 {p1}개 발사하며, 적중한 적에게 각각 <physicaldamage>{p2}의 물리 피해</physicaldamage>를 입힙니다. (최대 <physicaldamage>{p3}</physicaldamage>) 이미 미사일에 맞은 적 챔피언 또는 몬스터에게 추가 적중할 경우 {p4}%의 피해를 입힙니다.",
+            "<keywordmajor>진화 시</keywordmajor>: 미사일을 {p5}개 발사합니다.<br><rules>진화 조건: 추가 공격력 {p7}</rules>"
+        ], // 이케시아 폭우 — "현재: {p6}/{p7}" 에서 현재값 제거
         "W": "카이사가 공허 에너지 광선을 발사해 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 <keywordmajor>플라즈마</keywordmajor> 중첩을 {p2}회 적용하며, {p3}초 동안 처음으로 적중한 적에 대한 <keywordstealth>절대 시야</keywordstealth>를 얻습니다.<br><br><keywordmajor>진화 시</keywordmajor>: <keywordmajor>플라즈마</keywordmajor> 중첩을 {p4}회 적용합니다. 챔피언 적중 시 재사용 대기시간이 {p5}% 감소합니다.<br>진화 조건: <scaleap>주문력 {p7}</scaleap>", // 공허추적자 — "현재: {p6}/{p7}" 에서 현재값 제거
         "E": "카이사가 공허 에너지를 고속 충전하여 <speed>이동 속도가 {p1}</speed> 증가하고 충전 중에는 유체화 상태가 되며, {p2}초 동안 <attackspeed>공격 속도가 {p3}%</attackspeed> 증가합니다.<br><br>기본 공격 시 스킬의 재사용 대기시간이 {p4}초 감소합니다.<br><br><keywordmajor>진화 시</keywordmajor>: {p5}초 동안 <keywordstealth>투명</keywordstealth> 상태가 됩니다.<br>진화 조건: <attackspeed>추가 공격 속도 {p7}%</attackspeed>", // 고속 충전 — "현재: {p6}/{p7}" 에서 현재값 제거
         "R": "카이사가 <keywordmajor>플라즈마</keywordmajor> 표식이 남은 적 챔피언 근처로 빠르게 돌진하며, {p1}초 동안 <shield>{p2}의 보호막</shield>을 얻습니다.", // 사냥본능

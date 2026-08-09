@@ -3668,18 +3668,44 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             //   custom_values.js 에 ? 로 남아 있는데(fill_values.js 가 CD 원본 desc 의
             //   @Name@ 을 훑어 만들기 때문에 손으로 지워도 재실행하면 되살아난다),
             //   예전 가드는 그것까지 세어서 멀쩡한 문장을 통째로 버렸다.
+            // ★ 템플릿이 배열이면 "하위 스킬을 파트로 쪼갠 것" 이다. 가드는 합쳐서 검사한다.
+            const tplFlat = Array.isArray(tpl) ? tpl.join(' ') : tpl;
             const unfilled = Object.keys(values).some(
                 k => /^p[0-9]+$/.test(k)
-                  && tpl && tpl.includes(`{${k}}`)
+                  && tplFlat && tplFlat.includes(`{${k}}`)
                   && (values[k] === '' || String(values[k]).includes('?'))
             );
 
             if (tpl && !unfilled) {
-                let text = tpl;
-                for (let key in values) {
-                    text = text.split(`{${key}}`).join(values[key]);
+                const fill = (t) => {
+                    let x = t;
+                    for (let key in values) x = x.split(`{${key}}`).join(values[key]);
+                    return x;
+                };
+                const bodyStyle = 'color: #ddd; line-height: 1.6; font-size: 14px;';
+
+                // ★ 배열 템플릿 = 하위 스킬(재시전·2타·3타·진화)을 아이콘과 함께 구분선으로 나눈다.
+                //   0번은 스킬 본체라 기본 아이콘, 1번부터는 values.icons[i-1] 을 쓴다.
+                //   (icons 는 findExtraIcons 가 bin 에서 뽑아 둔 추가 아이콘 배열이다)
+                if (Array.isArray(tpl)) {
+                    const extra = Array.isArray(values.icons) ? values.icons : [];
+                    const slotIdx = ['Q', 'W', 'E', 'R'].indexOf(spellKey);
+                    let baseImg = null;
+                    if (spellKey === 'P' && champ.passive && champ.passive.image) {
+                        baseImg = `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/passive/${champ.passive.image.full}`;
+                    } else if (slotIdx >= 0 && champ.spells[slotIdx]) {
+                        baseImg = `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${champ.spells[slotIdx].image.full}`;
+                    }
+                    return tpl.map((part, i) => {
+                        const icon = i === 0 ? baseImg : extra[i - 1];
+                        const imgTag = icon
+                            ? `<img src="${icon}" style="width: 34px; height: 34px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12); flex-shrink: 0;" onerror="this.style.visibility='hidden'">`
+                            : `<div style="width: 34px; flex-shrink: 0;"></div>`;
+                        return `<div style="display: flex; gap: 12px; align-items: flex-start;">${imgTag}<div style="flex: 1; ${bodyStyle}">${fill(part)}</div></div>`;
+                    }).join('<div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 14px 0;"></div>');
                 }
-                return `<div style="margin-bottom: 10px; color: #ddd; line-height: 1.6; font-size: 14px;">${text}</div>`;
+
+                return `<div style="margin-bottom: 10px; ${bodyStyle}">${fill(tpl)}</div>`;
             }
 
             return `<div style="margin-bottom: 10px; color: #ddd; line-height: 1.6; font-size: 14px;">${riotDesc}</div>`;
