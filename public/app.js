@@ -3806,7 +3806,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             keywordmajor { color: #dddd77; font-weight: bold; }
             speed { color: #fffdc9; font-weight: bold; } status { color: #ad76c4; font-weight: bold; }
             attackspeed { color: #ffe384; font-weight: bold; }
-            spellname, onhit, scalelevel, attention { color: #f0e6d2; font-weight: bold; }
+            spellname, onhit, scalelevel, attention, unique { color: #f0e6d2; font-weight: bold; }
             recast { color: #d67351; font-weight: bold; }
             scalead { color: #eb8d34; } scaleap { color: #786cff; }
             keywordstealth { color: #d182be; font-weight: bold; }
@@ -3819,16 +3819,20 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             active, passive, charge, release, toggle, tap, hold { display: block; margin-top: 8px; color: #f0e6d2; font-weight: bold; }
             /* 강인함(slow)은 인게임에서 색이 안 들어간다. 본문색을 그대로 따라간다. */
             slow { color: inherit; font-weight: normal; }
-            /* --- 아직 인게임 확인 못 한 태그. 확인되는 대로 위로 옮긴다 --- */
-            scalehealth { color: #00ff00; }
-            keyword, keywordname { color: #a78bfa; font-weight: bold; }
+            /* scalehealth 와 lifesteal 은 실제로 같은 초록이다 (블라디미르 P / 아트록스 E).
+               keyword 와 keywordstealth 도 같은 분홍보라다 (블라디미르 W / 니코 W).
+               "구분이 안 된다" 가 아니라 라이엇이 원래 같은 색을 쓴다. */
+            scalehealth, lifesteal { color: #1f995c; font-weight: bold; }
+            keyword { color: #d182be; font-weight: bold; }
+            armorpen { color: #f95f55; font-weight: bold; }
+            omnivamp { color: #cb0c2d; font-weight: bold; }
+            specialrules { color: #f0e6d2; font-weight: bold; }
+            /* 아래는 인게임에서 색이 안 들어가는 자리다. 본문색을 그대로 따라간다. 전부 실측 확인:
+               keywordname 탐 켄치 R "고정"·"심연 잠수", slow 가렌 W "60%의 강인함",
+               level 애니비아 P, stattracking 드레이븐 P (뒤 둘은 스샷에 강조색 자체가 없었다). */
+            keywordname, stattracking, level { color: inherit; }
+            /* --- 문장에 안 쓰이는 태그. 확인 대상이 아니다 --- */
             gold { color: #ffd700; font-weight: bold; }
-            armorpen { color: #f1c40f; font-weight: bold; }
-            lifesteal, omnivamp { color: #2ecc71; font-weight: bold; }
-            specialrules { color: #ff3333; font-weight: bold; }
-            /* 아래 셋은 원래도 정의가 없어 본문색으로 나가고 있었다. 확인 전까진 그대로 둔다.
-               (stattracking 2회 / level 1회 / unique 1회) */
-            stattracking, level, unique { color: inherit; }
             b { font-weight: bold; }
             i { font-style: italic; }
             /* ★ <font color=...> 는 라이엇이 원문에 색을 직접 박아 둔 것이고,
