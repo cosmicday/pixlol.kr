@@ -335,7 +335,7 @@ const customValues = {
         "P": {
             "p1": "총 공격력의 0 ~ 97.605 (레벨에 따라)%", // SingleBulletDamage
             "p2": "총 공격력의 0 ~ 97.605 (레벨에 따라)% x 0.333", // MultiBulletDamage
-            "p3": "0.5 x (-1 + 치명타 피해량의 100%)%", // CritDamageMult
+            "p3": "50 x (-1 + 치명타 피해량의 100%)%", // CritDamageMult
             "p4": "25", // StructureDamageReduction*100
             "cooldown": "-",
             "cost": "-"
@@ -1203,8 +1203,8 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
-            "p1": "50 / 80 / 110 / 140 / 170 (+ 총 공격력의 100 / 110 / 120 / 130 / 140 x 0.01%)", // BladeDamage
-            "p2": "50 / 80 / 110 / 140 / 170 (+ 총 공격력의 100 / 110 / 120 / 130 / 140 x 0.01%) x 0.35", // HandleDamage
+            "p1": "50 / 80 / 110 / 140 / 170 (+ 총 공격력의 100 / 110 / 120 / 130 / 140 x 1%)", // BladeDamage
+            "p2": "50 / 80 / 110 / 140 / 170 (+ 총 공격력의 100 / 110 / 120 / 130 / 140 x 1%) x 0.35", // HandleDamage
             "p3": "17", // MissingHealthHeal
             "p4": "51", // MissingHealPercent
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -2809,7 +2809,7 @@ const customValues = {
             "p5": "30 (+ 추가 최대 체력의 1.5%)", // EmpoweredSaplingDuration
             "p6": "100 / 150 / 200 / 250 / 300 (+ 주문력의 50% + 추가 최대 체력의 10%)", // TotalEmpoweredDamage
             "p7": "2", // EmpoweredDoTDuration
-            "p8": "45% (+ 주문력의 0.01% + 추가 최대 체력의 0.01 x 0.01%)", // EmpoweredSlowAmount
+            "p8": "45% (+ 주문력의 0.01% + 추가 최대 체력의 1 x 0.01%)", // EmpoweredSlowAmount
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
@@ -3484,8 +3484,8 @@ const customValues = {
             "p1": "4 / 13 / 22 / 31 / 40 (+ 주문력의 25% + 추가 공격력의 15%)", // OnHitDamage
             "p2": "6", // DebuffDuration
             "p3": "3", // MaxStacks
-            "p4": "3 / 3.5 / 4 / 4.5 / 5% (+ 주문력의 0.01 x 0.013%)", // PercentHPPerStack
-            "p5": "3 / 3.5 / 4 / 4.5 / 5% (+ 주문력의 0.01 x 0.013%) x 3", // MaxPercentHPPerStack
+            "p4": "3 / 3.5 / 4 / 4.5 / 5% (+ 주문력의 1 x 0.013%)", // PercentHPPerStack
+            "p5": "3 / 3.5 / 4 / 4.5 / 5% (+ 주문력의 1 x 0.013%) x 3", // MaxPercentHPPerStack
             "p6": "13", // CDRPerBlightStack*100
             "p7": "6 / 8 / 10 / 12 / 14%", // QEmpowerPercentHP
             "p8": "6 / 8 / 10 / 12 / 14% x 1.5", // MaxQEmpowerPercentHP
@@ -4768,7 +4768,7 @@ const customValues = {
         "Q": {
             "p1": "2.5 / 2.75 / 3 / 3.25 / 3.5", // StealthDuration
             "p2": "25 / 35 / 45 / 55 / 65 (+ 추가 공격력의 60%)", // TotalDamage
-            "p3": "100 + 0.6 x (치명타 피해량의 100% - 1)%", // QCritDamageMod
+            "p3": "100 + 60 x (치명타 피해량의 100% - 1)%", // QCritDamageMod
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "13 / 12.5 / 12 / 11.5 / 11",
@@ -5370,7 +5370,7 @@ const customValues = {
         "R": {
             "p1": "1.25", // Fury_Generation
             "p2": "300% (- 100%)", // TT_Fury_Mult
-            "p3": "100% (- 1 x 0.25)", // TT_Fury_AoE_Penalty
+            "p3": "100% (- 1 x 25)", // TT_Fury_AoE_Penalty
             "p4": "150 / 250 / 350 (+ 주문력의 100%)", // Damage
             "p5": "0.75", // FearDuration
             "p6": "150 / 250 / 350", // Calc_Bonus_Health
@@ -7368,7 +7368,7 @@ const customValues = {
             "p4": "10 / 40 / 70 / 100 / 130", // BaseShield
             "p5": "17.5", // ShieldPercMissingHP*100
             "p6": "30", // ThresholdForMax*100
-            "p7": "10 / 40 / 70 / 100 / 130 (+ 최대 체력의 0.175 x (1 - 1 x 0.3)%)", // MaxShieldCalc
+            "p7": "10 / 40 / 70 / 100 / 130 (+ 최대 체력의 17.5 x (1 - 1 x 0.3)%)", // MaxShieldCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
@@ -9866,12 +9866,12 @@ const customValues = {
         },
         "R": {
             "p1": "25 / 37.5 / 50 (+ 주문력의 19%)", // DamageCalc
-            "p2": "추가 공격력의 0.16 x (1 + 추가 공격 속도의 312.5%)%", // ADDamageCalc
+            "p2": "추가 공격력의 16 x (1 + 추가 공격 속도의 312.5%)%", // ADDamageCalc
             "p3": "3", // GrievousDuration
             "p4": "40", // GrievousAmount*100
             "p5": "2.5", // Duration
             "p6": "25 / 37.5 / 50 (+ 주문력의 19%) x 6 x 2.5", // TotalDamageCalc
-            "p7": "추가 공격력의 0.16 x (1 + 추가 공격 속도의 312.5%)% x 6 x 2.5", // TotalADDamageCalc
+            "p7": "추가 공격력의 16 x (1 + 추가 공격 속도의 312.5%)% x 6 x 2.5", // TotalADDamageCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "75 / 60 / 45",
@@ -10897,7 +10897,7 @@ const customValues = {
     },
     "TahmKench": { // 탐 켄치
         "P": {
-            "p1": "5 ~ 60 (레벨에 따라) (+ 추가 최대 체력의 4% + 주문력의 추가 최대 체력의 1.25% x 0.01%)", // TotalDamage
+            "p1": "5 ~ 60 (레벨에 따라) (+ 추가 최대 체력의 4% + 주문력의 추가 최대 체력의 1.25% x 1%)", // TotalDamage
             "p2": "5", // Duration
             "p3": "3", // MaxStacks
             "cooldown": "-",
@@ -10909,7 +10909,7 @@ const customValues = {
             "p3": "50", // SlowAmount*100
             "p4": "10 / 15 / 20 / 25 / 30", // BaseHeal
             "p5": "5 / 5.5 / 6 / 6.5 / 7", // PercentHealthHealing*100
-            "p6": "5 ~ 60 (레벨에 따라) (+ 추가 최대 체력의 4% + 주문력의 추가 최대 체력의 1.25% x 0.01%)", // Spell.TahmKenchPassive:TotalDamage
+            "p6": "5 ~ 60 (레벨에 따라) (+ 추가 최대 체력의 4% + 주문력의 추가 최대 체력의 1.25% x 1%)", // Spell.TahmKenchPassive:TotalDamage
             "p7": "1.5", // StunDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -11171,11 +11171,11 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "40 / 60 / 80 / 100 / 120 (+ 총 공격력의 100% + 주문력의 100% + 치명타 확률의 0.575 x (40 / 60 / 80 / 100 / 120 + 총 공격력의 100% + 주문력의 100%)%)", // BlueDamage
+            "p1": "40 / 60 / 80 / 100 / 120 (+ 총 공격력의 100% + 주문력의 100% + 치명타 확률의 57.5 x (40 / 60 / 80 / 100 / 120 + 총 공격력의 100% + 주문력의 100%)%)", // BlueDamage
             "p2": "70 / 90 / 110 / 130 / 150", // Effect6Amount
-            "p3": "30 / 45 / 60 / 75 / 90 (+ 총 공격력의 100% + 주문력의 70% + 치명타 확률의 0.35 x (30 / 45 / 60 / 75 / 90 + 총 공격력의 100% + 주문력의 70%)%)", // RedDamage
+            "p3": "30 / 45 / 60 / 75 / 90 (+ 총 공격력의 100% + 주문력의 70% + 치명타 확률의 35 x (30 / 45 / 60 / 75 / 90 + 총 공격력의 100% + 주문력의 70%)%)", // RedDamage
             "p4": "30 / 35 / 40 / 45 / 50", // Effect2Amount
-            "p5": "15 / 22.5 / 30 / 37.5 / 45 (+ 총 공격력의 100% + 주문력의 50% + 치명타 확률의 0.25 x (15 / 22.5 / 30 / 37.5 / 45 + 총 공격력의 100% + 주문력의 50%)%)", // GoldDamage
+            "p5": "15 / 22.5 / 30 / 37.5 / 45 (+ 총 공격력의 100% + 주문력의 50% + 치명타 확률의 25 x (15 / 22.5 / 30 / 37.5 / 45 + 총 공격력의 100% + 주문력의 50%)%)", // GoldDamage
             "p6": "1 / 1.25 / 1.5 / 1.75 / 2", // Effect3Amount
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -11250,7 +11250,7 @@ const customValues = {
             "p1": "20 / 30 / 40 / 50 / 60", // BaseDamage
             "p2": "15 / 20 / 25 / 30 / 35 (+ 추가 공격력의 35%)", // PhysicalDamagePerStack
             "p3": "주문력의 35%", // MagicDamagePerStack
-            "p4": "20 / 30 / 40 / 50 / 60 (+ 6 x 15 / 20 / 25 / 30 / 35 + 추가 공격력의 0.35 x 6%)", // MaxPhysicalDamage
+            "p4": "20 / 30 / 40 / 50 / 60 (+ 6 x 15 / 20 / 25 / 30 / 35 + 추가 공격력의 35 x 6%)", // MaxPhysicalDamage
             "p5": "주문력의 35% x 6", // MaxMagicDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",

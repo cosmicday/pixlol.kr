@@ -574,14 +574,30 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
         }
 
         case 'ProductOfSubPartsCalculationPart': {
-            // ★ 배율(mult)을 여기서 어느 쪽에 실을지가 미해결이다. 양쪽 다 1 로 버리면
-            //   percent 배율(x100)이 사라져 우디르 Q 가 "0.015 ~ 0.03" 으로 나온다(실제 1.5~3%).
-            //   그렇다고 mPart1 에 그냥 실으면 이미 자기 % 를 붙이는 조각에 100 이 또 곱해져
-            //   다리우스 Q 가 "총 공격력의 10000" 이 된다. 22자리가 한꺼번에 흔들리는 자리라
-            //   인게임 대조 없이 바꾸면 안 된다. 지금은 안전한 쪽(안 싣기)을 유지한다.
-            const a = partToText(part.mPart1, spell, maxRank, 1, depth + 1);
-            const b = partToText(part.mPart2, spell, maxRank, 1, depth + 1);
+            // ★ 배율(mult)은 "맨 숫자로 나오는 쪽" 에만 싣는다.
+            //   롤위키 대조로 확정 — 두 경우가 정확히 반대였다:
+            //     카타리나 R  위키 "16% bonus AD"  -> 0.16 쪽에 x100 이 필요하다
+            //     다리우스 Q  위키 "+100~140% AD" -> 비율 쪽에 실으면 10000 이 된다
+            //   비율 조각(스탯의 N%)은 자기가 이미 100 을 곱해 나오므로 건드리면 안 된다.
+            let a = partToText(part.mPart1, spell, maxRank, 1, depth + 1);
+            let b = partToText(part.mPart2, spell, maxRank, 1, depth + 1);
             if (!a || !b) return null;
+            if (mult !== 1) {
+                // ★ "맨 숫자" 이면서 "전부 1 미만" 일 때만 배율을 싣는다.
+                //   1 미만이면 아직 분수라 x100 이 필요하고, 1 이상이면 이미 퍼센트 단위다.
+                //   롤위키 대조로 셋 다 맞는 걸 확인했다:
+                //     카타리나 R  0.16  -> 16%   (위키 "16% bonus AD")
+                //     트위치  E  0.35  -> 35%   (위키 "+ 35% bonus AD")
+                //     다리우스 Q  100/110/... 은 그대로 (위키 "+ 100~140% AD")
+                const scalable = (t) => {
+                    const s = String(t).trim();
+                    if (!/^-?[\d.]+(\s*[~/]\s*-?[\d.]+)*$/.test(s)) return false;
+                    return s.split(/[~/]/).every(x => Math.abs(parseFloat(x)) < 1);
+                };
+                if (scalable(a)) a = partToText(part.mPart1, spell, maxRank, mult, depth + 1);
+                else if (scalable(b)) b = partToText(part.mPart2, spell, maxRank, mult, depth + 1);
+                if (!a || !b) return null;
+            }
             // ★ 덧셈이 든 조각은 괄호로 묶어야 한다.
             //   안 묶으면 "0.16 x 1 + 공격 속도의 312.5%" 가 되어
             //   0.16 x (1 + ...) 라는 원래 뜻과 달라진다.
