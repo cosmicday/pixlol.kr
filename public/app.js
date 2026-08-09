@@ -3729,6 +3729,14 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 values: customVals, // ★ 피해량/계수 (v1, v2)
                 isPassive: false
             };
+        }).filter(sp => {
+            // ★ 템플릿이 null 이면 "이 챔피언에겐 이 키가 아예 없다" 는 뜻이라
+            //   스킬 목록에서 통째로 뺀다. (아펠리오스 E — 무기 교체가 탄약 소진으로
+            //   자동 진행돼서 E 키를 안 쓴다. Data Dragon 에는 더미가 들어 있다)
+            //   "" 는 "아직 문장을 안 썼다"(= DD 폴백) 라서 뜻이 다르다. 여기서 걸러지면 안 된다.
+            const t = (typeof customTemplates !== 'undefined' && customTemplates[champ.id])
+                ? customTemplates[champ.id][sp.keyChar] : undefined;
+            return t !== null;
         });
         // ★ 두 번째 폼(니달리 쿠거, 엘리스 거미, 제이스 대포, 나르 메가)은
         //   별도 스킬 칸으로 만들지 않고 같은 칸에 합친다.
