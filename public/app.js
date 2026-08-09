@@ -3799,25 +3799,36 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                  (magicdamage 는 렐·쉬바나·바드 3장에서 동일).
                  ※ "구분이 잘 되게" 가 아니라 "인게임과 같게" 가 기준이다. 색끼리 비슷해도 그대로 둔다. */
             magicdamage { color: #0acbe6; font-weight: bold; } physicaldamage { color: #f26522; font-weight: bold; } truedamage { color: #cdfafa; font-weight: bold; }
-            healing, heal { color: #60e08f; font-weight: bold; } shield { color: #4dd0eb; font-weight: bold; }
+            /* health 는 유미 P 처럼 <healing><health>…</health></healing> 로 중첩돼 있어
+               같은 색을 쓴다. heal 도 같은 의미라 함께 묶었다 (실측한 건 healing 뿐). */
+            healing, heal, health { color: #60e08f; font-weight: bold; } shield { color: #4dd0eb; font-weight: bold; }
             scalearmor { color: #f0ba57; } scalemr { color: #4fdfff; } scalemana { color: #189ce7; }
             keywordmajor { color: #dddd77; font-weight: bold; }
             speed { color: #fffdc9; font-weight: bold; } status { color: #ad76c4; font-weight: bold; }
             attackspeed { color: #ffe384; font-weight: bold; }
-            spellname, onhit { color: #f0e6d2; font-weight: bold; }
+            spellname, onhit, scalelevel, attention { color: #f0e6d2; font-weight: bold; }
             recast { color: #d67351; font-weight: bold; }
-            active, passive { display: block; margin-top: 8px; color: #f0e6d2; font-weight: bold; }
+            scalead { color: #eb8d34; } scaleap { color: #786cff; }
+            keywordstealth { color: #d182be; font-weight: bold; }
+            evolve { color: #bc3598; font-weight: bold; }
+            danger { color: #ff0000; font-weight: bold; }
+            rules { color: #5a5955; }
+            /* 라벨류는 전부 "기본 지속 효과:" 색으로 통일한다.
+               인게임은 스킬마다 미묘하게 다르지만(니코 W 는 사용 시만 연노랑,
+               갈리오 W 는 충전 시작 시가 또 다름) 통일하는 쪽이 읽기 낫다는 판단. */
+            active, passive, charge, release, toggle, tap, hold { display: block; margin-top: 8px; color: #f0e6d2; font-weight: bold; }
+            /* 강인함(slow)은 인게임에서 색이 안 들어간다. 본문색을 그대로 따라간다. */
+            slow { color: inherit; font-weight: normal; }
             /* --- 아직 인게임 확인 못 한 태그. 확인되는 대로 위로 옮긴다 --- */
-            scaleap { color: #55bced; } scalead { color: #ea824d; } scalehealth { color: #00ff00; }
-            keywordstealth { color: #a78bfa; font-weight: bold; }
-            attention, rules { color: #ff3333; font-weight: bold; }
-            keyword, keywordname, toggle,
-            tap, hold, charge, release, evolve, scalelevel { color: #a78bfa; font-weight: bold; }
+            scalehealth { color: #00ff00; }
+            keyword, keywordname { color: #a78bfa; font-weight: bold; }
             gold { color: #ffd700; font-weight: bold; }
             armorpen { color: #f1c40f; font-weight: bold; }
             lifesteal, omnivamp { color: #2ecc71; font-weight: bold; }
-            danger, specialrules { color: #ff3333; font-weight: bold; }
-            slow { color: #ffffff; font-weight: bold; }
+            specialrules { color: #ff3333; font-weight: bold; }
+            /* 아래 셋은 원래도 정의가 없어 본문색으로 나가고 있었다. 확인 전까진 그대로 둔다.
+               (stattracking 2회 / level 1회 / unique 1회) */
+            stattracking, level, unique { color: inherit; }
             b { font-weight: bold; }
             i { font-style: italic; }
             /* ★ <font color=...> 는 라이엇이 원문에 색을 직접 박아 둔 것이고,
