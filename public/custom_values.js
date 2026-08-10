@@ -282,6 +282,7 @@ const customValues = {
             "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "80",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/gragas/hud/icons2d/gragasqcrit.png"],
             "stats": {
                 "사거리": "850",
                 "시전시간": "0.25",
@@ -459,7 +460,7 @@ const customValues = {
             "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/gwen/hud/icons2d/gwen_r3.png"],
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/gwen/hud/icons2d/gwen_r2.png", "https://raw.communitydragon.org/latest/game/assets/characters/gwen/hud/icons2d/gwen_r3.png"],
             "stats": {
                 "사거리": "1200",
                 "시전시간": "0.25",
@@ -488,6 +489,7 @@ const customValues = {
             "v2": "",
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
             "cost": "-",
+            "form1": "미니 나르",
             "stats": {
                 "사거리": "1100",
                 "투사체 속도": "1200",
@@ -503,6 +505,7 @@ const customValues = {
             "v2": "",
             "cooldown": "7",
             "cost": "-",
+            "form1": "미니 나르",
             "stats": {
                 "투사체 속도": "1500"
             }
@@ -516,6 +519,7 @@ const customValues = {
             "v2": "",
             "cooldown": "22 / 19.5 / 17 / 14.5 / 12",
             "cost": "-",
+            "form1": "미니 나르",
             "stats": {
                 "사거리": "475",
                 "투사체 속도": "1500"
@@ -967,6 +971,7 @@ const customValues = {
             "v2": "",
             "cooldown": "110 / 100 / 90",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/nunu/hud/icons2d/nunur.png"],
             "stats": {
                 "사거리": "650",
                 "시전시간": "0.01",
@@ -988,6 +993,7 @@ const customValues = {
             "v2": "",
             "cooldown": "6",
             "cost": "50 / 55 / 60 / 65 / 70",
+            "form1": "인간 형태",
             "stats": {
                 "사거리": "1500",
                 "시전시간": "0.25",
@@ -1003,6 +1009,7 @@ const customValues = {
             "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "30 / 35 / 40 / 45 / 50",
+            "form1": "인간 형태",
             "stats": {
                 "사거리": "900",
                 "투사체 속도": "1450"
@@ -1017,6 +1024,7 @@ const customValues = {
             "v2": "",
             "cooldown": "12",
             "cost": "50 / 55 / 60 / 65 / 70",
+            "form1": "인간 형태",
             "stats": {
                 "사거리": "900",
                 "투사체 속도": "2500"
@@ -1027,6 +1035,7 @@ const customValues = {
             "v2": "",
             "cooldown": "3",
             "cost": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/nidalee/hud/icons2d/nidalee_r2.png"],
             "stats": {
                 "사거리": "20",
                 "투사체 속도": "943.8"
@@ -1962,6 +1971,7 @@ const customValues = {
             "v2": "",
             "cooldown": "4 / 3.5 / 3 / 2.5 / 2",
             "cost": "-",
+            "form1": "돌출 상태",
             "stats": {
                 "사거리": "325",
                 "투사체 속도": "1600"
@@ -1974,6 +1984,7 @@ const customValues = {
             "v2": "",
             "cooldown": "4",
             "cost": "-",
+            "form1": "돌출 상태",
             "stats": {
                 "사거리": "1650",
                 "투사체 속도": "1600"
@@ -1986,6 +1997,7 @@ const customValues = {
             "v2": "",
             "cooldown": "6",
             "cost": "-",
+            "form1": "돌출 상태",
             "stats": {
                 "사거리": "250",
                 "시전시간": "0.25",
@@ -2015,7 +2027,7 @@ const customValues = {
             "cooldown": "-",
             "cost": "-",
             "name": "",
-            "form": "굴 파기",
+            "form": "매복 상태",
             "icon": "https://raw.communitydragon.org/latest/game/assets/characters/reksai/hud/icons2d/reksai_q2.png"
         },
         "W2": {
@@ -2027,7 +2039,7 @@ const customValues = {
             "cooldown": "4",
             "cost": "-",
             "name": "",
-            "form": "굴 파기",
+            "form": "매복 상태",
             "icon": "https://raw.communitydragon.org/latest/game/assets/characters/reksai/hud/icons2d/reksai_w2.png"
         },
         "E2": {
@@ -2039,7 +2051,7 @@ const customValues = {
             "cooldown": "18 / 18 / 17 / 16 / 15",
             "cost": "-",
             "name": "",
-            "form": "굴 파기",
+            "form": "매복 상태",
             "icon": "https://raw.communitydragon.org/latest/game/assets/characters/reksai/hud/icons2d/reksai_e2.png"
         },
     },
@@ -2075,6 +2087,7 @@ const customValues = {
             "v2": "",
             "cooldown": "10",
             "cost": "40",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/rell/hud/icons2d/rellmount.png"],
             "stats": {
                 "사거리": "450"
             }
@@ -2123,6 +2136,7 @@ const customValues = {
             "v2": "",
             "cooldown": "0.25",
             "cost": "야성 1회 중첩",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/rengar/hud/icons2d/rengarqemp.png"],
             "stats": {
                 "사거리": "450",
                 "투사체 속도": "3000",
@@ -2138,6 +2152,7 @@ const customValues = {
             "v2": "",
             "cooldown": "0.25",
             "cost": "야성 1회 중첩",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/rengar/hud/icons2d/rengar_w_emp.png"],
             "stats": {
                 "사거리": "450"
             }
@@ -2151,6 +2166,7 @@ const customValues = {
             "v2": "",
             "cooldown": "0.25",
             "cost": "야성 1회 중첩",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/rengar/hud/icons2d/rengar_e_emp.png"],
             "stats": {
                 "사거리": "1000",
                 "시전시간": "0.25",
@@ -2214,6 +2230,7 @@ const customValues = {
             "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "50 / 55 / 60 / 65 / 70",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/locke/hud/icons2d/locke_w2.png"],
             "stats": {
                 "사거리": "250"
             }
@@ -2225,6 +2242,7 @@ const customValues = {
             "v2": "",
             "cooldown": "10",
             "cost": "30 / 40 / 50 / 60 / 70",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/locke/hud/icons2d/locke_e2.png"],
             "stats": {
                 "사거리": "425",
                 "시전시간": "0.175",
@@ -2408,6 +2426,7 @@ const customValues = {
             "v2": "",
             "cooldown": "15 / 13.75 / 12.5 / 11.25 / 10",
             "cost": "60 / 70 / 80 / 90 / 100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/leblanc/hud/icons2d/leblancwreturn.png"],
             "stats": {
                 "사거리": "600",
                 "투사체 속도": "1700"
@@ -2438,6 +2457,7 @@ const customValues = {
             "v2": "",
             "cooldown": "45 / 35 / 25",
             "cost": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/leblanc/hud/icons2d/leblancrq.png", "https://raw.communitydragon.org/latest/game/assets/characters/leblanc/hud/icons2d/leblancrw.png", "https://raw.communitydragon.org/latest/game/assets/characters/leblanc/hud/icons2d/leblancre.png"],
             "stats": {
                 "사거리": "25000",
                 "투사체 속도": "20"
@@ -2562,6 +2582,7 @@ const customValues = {
             "v2": "",
             "cooldown": "120 / 90 / 60",
             "cost": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/riven/hud/icons2d/rivenwindscar.png"],
             "stats": {
                 "사거리": "200",
                 "투사체 속도": "1200"
@@ -3068,6 +3089,7 @@ const customValues = {
             "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/mordekaiser/hud/icons2d/mordekaiserw2.png"],
             "stats": {
                 "사거리": "25000",
                 "시전시간": "0.25",
@@ -3731,6 +3753,7 @@ const customValues = {
             "v2": "",
             "cooldown": "8 / 7 / 6 / 5 / 4",
             "cost": "45 / 50 / 55 / 60 / 65",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/vex/hud/icons2d/icons_vex_q02.png"],
             "stats": {
                 "사거리": "1200",
                 "투사체 속도": "700"
@@ -3744,6 +3767,7 @@ const customValues = {
             "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
             "cost": "75",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/vex/hud/icons2d/icons_vex_w02.png"],
             "stats": {
                 "사거리": "475",
                 "시전시간": "0.25",
@@ -3759,6 +3783,7 @@ const customValues = {
             "v2": "",
             "cooldown": "12",
             "cost": "70 / 80 / 90 / 100 / 110",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/vex/hud/icons2d/icons_vex_e02.png"],
             "stats": {
                 "사거리": "800",
                 "시전시간": "0.25",
@@ -3774,6 +3799,7 @@ const customValues = {
             "v2": "",
             "cooldown": "140 / 120 / 100",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/vex/hud/icons2d/icons_vex_r02.png"],
             "stats": {
                 "사거리": "2000 / 2000 / 2500",
                 "투사체 속도": "1750",
@@ -3799,6 +3825,7 @@ const customValues = {
             "v2": "",
             "cooldown": "4 / 3.25 / 2.5 / 1.75 / 1",
             "cost": "-",
+            "img": "https://raw.communitydragon.org/latest/game/assets/characters/belveth/hud/icons2d/bv_q_15.png",
             "stats": {
                 "사거리": "450",
                 "투사체 속도": "467"
@@ -4110,6 +4137,7 @@ const customValues = {
             "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "현재 체력의 5% 소모",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/briar/hud/icons2d/briarw2.png"],
             "stats": {
                 "사거리": "350",
                 "투사체 속도": "347.8"
@@ -4623,6 +4651,7 @@ const customValues = {
             "p1": "100", // Lifesteal*100
             "p2": "10", // PercentMaxHP*100
             "cooldown": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/sion/hud/icons2d/sion_passive2.png"],
             "cost": "-"
         },
         "Q": {
@@ -4681,6 +4710,7 @@ const customValues = {
             "v2": "",
             "cooldown": "140 / 100 / 60",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/sion/hud/icons2d/sion_r2.png"],
             "stats": {
                 "사거리": "7500",
                 "투사체 속도": "1500",
@@ -4917,6 +4947,7 @@ const customValues = {
             "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "60 / 70 / 80 / 90 / 100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/seraphine/hud/icons2d/seraphine_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/seraphine/hud/icons2d/seraphine_q3.png"],
             "stats": {
                 "사거리": "900",
                 "투사체 속도": "3000"
@@ -4933,7 +4964,7 @@ const customValues = {
             "v2": "",
             "cooldown": "22",
             "cost": "70 / 75 / 80 / 85 / 90",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/seraphine/hud/icons2d/seraphine_w2.png"],
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/seraphine/hud/icons2d/seraphine_w2.png", "https://raw.communitydragon.org/latest/game/assets/characters/seraphine/hud/icons2d/seraphine_w3.png"],
             "stats": {
                 "사거리": "800",
                 "투사체 속도": "1700"
@@ -4947,6 +4978,7 @@ const customValues = {
             "v2": "",
             "cooldown": "11 / 10.5 / 10 / 9.5 / 9",
             "cost": "60",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/seraphine/hud/icons2d/seraphine_e2.png", "https://raw.communitydragon.org/latest/game/assets/characters/seraphine/hud/icons2d/seraphine_e3.png"],
             "stats": {
                 "사거리": "1300",
                 "투사체 속도": "3000",
@@ -5413,6 +5445,7 @@ const customValues = {
             "v2": "",
             "cooldown": "5.5 / 5 / 4.5 / 4 / 3.5",
             "cost": "25",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/smolder/hud/icons2d/icons_smolder_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/smolder/hud/icons2d/icons_smolder_q3.png", "https://raw.communitydragon.org/latest/game/assets/characters/smolder/hud/icons2d/icons_smolder_q4.png"],
             "stats": {
                 "사거리": "550",
                 "시전시간": "0.25",
@@ -5744,6 +5777,7 @@ const customValues = {
             "p7": "1", // StackPerSiege
             "p8": "15", // CapstoneAPPerc*100
             "cooldown": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/syndra/hud/icons2d/syndra_p2.png"],
             "cost": "-"
         },
         "Q": {
@@ -5755,6 +5789,7 @@ const customValues = {
             "v2": "",
             "cooldown": "7",
             "cost": "40 / 45 / 50 / 55 / 60",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/syndra/hud/icons2d/syndra_q2.png"],
             "stats": {
                 "사거리": "800",
                 "투사체 속도": "1750"
@@ -5770,7 +5805,7 @@ const customValues = {
             "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "60 / 70 / 80 / 90 / 100",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/syndra/hud/icons2d/syndraw2.png"],
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/syndra/hud/icons2d/syndra_wr2.png", "https://raw.communitydragon.org/latest/game/assets/characters/syndra/hud/icons2d/syndra_w2.png"],
             "stats": {
                 "사거리": "925",
                 "투사체 속도": "1450"
@@ -5802,6 +5837,7 @@ const customValues = {
             "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/syndra/hud/icons2d/syndra_r2.png"],
             "stats": {
                 "사거리": "675",
                 "시전시간": "0.25",
@@ -6477,6 +6513,7 @@ const customValues = {
             "p5": "?", // f4
             "p6": "?", // f5
             "cooldown": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/calibrum_m.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/severum_m.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/gravitum_m.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/infernum_m.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/crescendum_m.png"],
             "cost": "-"
         },
         "Q": {
@@ -6484,6 +6521,7 @@ const customValues = {
             "v2": "",
             "cooldown": "9",
             "cost": "60",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/calibrum_m.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/severum_m.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/gravitum_m.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/infernum_m.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/crescendum_m.png"],
             "stats": {
                 "사거리": "1450",
                 "시전시간": "0.35",
@@ -6519,6 +6557,7 @@ const customValues = {
             "v2": "",
             "cooldown": "120 / 110 / 100",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/calibrum_u.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/severum_u.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/gravitum_u.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/infernum_u.png", "https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/crescendum_u.png"],
             "stats": {
                 "사거리": "1300",
                 "시전시간": "0.5",
@@ -6608,6 +6647,7 @@ const customValues = {
             "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "70",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/ambessa/hud/icons2d/icon_ambessa_q2.png"],
             "stats": {
                 "사거리": "650",
                 "투사체 속도": "8700",
@@ -6801,6 +6841,7 @@ const customValues = {
             "v2": "",
             "cooldown": "0",
             "cost": "30",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/ashe/hud/icons2d/ashe_q_active.png"],
             "stats": {
                 "사거리": "400",
                 "투사체 속도": "2500"
@@ -6987,6 +7028,7 @@ const customValues = {
             "v2": "",
             "cooldown": "6",
             "cost": "80 / 85 / 90 / 95 / 100",
+            "form1": "인간 형태",
             "stats": {
                 "사거리": "615",
                 "시전시간": "0.25",
@@ -6999,6 +7041,7 @@ const customValues = {
             "v2": "",
             "cooldown": "12",
             "cost": "60 / 70 / 80 / 90 / 100",
+            "form1": "인간 형태",
             "stats": {
                 "사거리": "950",
                 "투사체 속도": "10000",
@@ -7011,6 +7054,7 @@ const customValues = {
             "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "50",
+            "form1": "인간 형태",
             "stats": {
                 "사거리": "1075",
                 "시전시간": "0.25",
@@ -7127,6 +7171,7 @@ const customValues = {
             "v2": "",
             "cooldown": "130 / 110 / 90",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/monkeyking/hud/icons2d/monkeykingcyclone2.png"],
             "stats": {
                 "사거리": "315",
                 "투사체 속도": "700",
@@ -7646,6 +7691,7 @@ const customValues = {
             "v2": "",
             "cooldown": "12 / 9 / 6 / 3 / 0",
             "cost": "40 / 30 / 20 / 10 / 0",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/urgot/hud/icons2d/urgot_wcancel.png"],
             "stats": {
                 "사거리": "490",
                 "투사체 속도": "1600",
@@ -7678,6 +7724,7 @@ const customValues = {
             "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/urgot/hud/icons2d/urgot_rrecast.png"],
             "stats": {
                 "사거리": "2500",
                 "시전시간": "0.5",
@@ -7731,6 +7778,7 @@ const customValues = {
             "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "40",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/warwick/hud/icons2d/warwicke2.png"],
             "stats": {
                 "사거리": "375",
                 "투사체 속도": "1600",
@@ -7771,6 +7819,7 @@ const customValues = {
             "v2": "",
             "cooldown": "0",
             "cost": "30",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yunara/hud/icons2d/yunara_q2.png"],
             "stats": {
                 "투사체 속도": "2000"
             }
@@ -8299,6 +8348,7 @@ const customValues = {
             "p1": "13.6 ~ 9.05 (레벨에 따라)", // SeedCooldown
             "p2": "15 ~ 75 (레벨에 따라) (+ 주문력의 20%)", // PlantDamage
             "cooldown": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zyra/hud/icons2d/zyrapq.png"],
             "cost": "-"
         },
         "Q": {
@@ -8448,6 +8498,7 @@ const customValues = {
             "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "25",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zaahen/hud/icons2d/zaahenq2.png"],
             "stats": {
                 "사거리": "25000",
                 "투사체 속도": "8700"
@@ -8842,6 +8893,7 @@ const customValues = {
             "p1": "0.75", // MovementSpeedDuration
             "p2": "30", // FlatMovementSpeed
             "cooldown": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/jayce/hud/icons2d/jaycep_ranged.png"],
             "cost": "-"
         },
         "Q": {
@@ -8852,6 +8904,7 @@ const customValues = {
             "v2": "",
             "cooldown": "16 / 14 / 12 / 10 / 8 / 6",
             "cost": "40",
+            "form1": "망치 형태",
             "stats": {
                 "사거리": "600",
                 "투사체 속도": "20"
@@ -8865,6 +8918,7 @@ const customValues = {
             "v2": "",
             "cooldown": "10",
             "cost": "40",
+            "form1": "망치 형태",
             "stats": {
                 "사거리": "285",
                 "투사체 속도": "1500",
@@ -8878,6 +8932,7 @@ const customValues = {
             "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12 / 10",
             "cost": "55",
+            "form1": "망치 형태",
             "stats": {
                 "사거리": "240",
                 "시전시간": "0.25",
@@ -8892,6 +8947,7 @@ const customValues = {
             "v2": "",
             "cooldown": "6",
             "cost": "-",
+            "form1": "망치 형태",
             "stats": {
                 "사거리": "600",
                 "투사체 속도": "1500"
@@ -8971,6 +9027,7 @@ const customValues = {
             "v2": "",
             "cooldown": "0.25",
             "cost": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zoe/hud/icons2d/zoe_w2.png"],
             "stats": {
                 "사거리": "3000 / 3000 / 4500 / 6000 / 3000",
                 "시전시간": "0.01",
@@ -9219,6 +9276,7 @@ const customValues = {
             "v2": "",
             "cooldown": "0.9",
             "cost": "20",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/jinx/hud/icons2d/jinx_q2.png"],
             "stats": {
                 "사거리": "600",
                 "시전시간": "0.25",
@@ -9350,7 +9408,6 @@ const customValues = {
             "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "40 / 50 / 60 / 70 / 80",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_q2.png"],
             "stats": {
                 "사거리": "950",
                 "투사체 속도": "902",
@@ -9365,7 +9422,6 @@ const customValues = {
             "v2": "",
             "cooldown": "12",
             "cost": "50 / 55 / 60 / 65 / 70",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_w2.png"],
             "stats": {
                 "사거리": "675",
                 "시전시간": "0.25",
@@ -9382,7 +9438,6 @@ const customValues = {
             "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "60 / 65 / 70 / 75 / 80",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_e2.png"],
             "stats": {
                 "사거리": "800",
                 "투사체 속도": "20"
@@ -9400,6 +9455,7 @@ const customValues = {
             "v2": "",
             "cooldown": "40 / 38 / 36 / 34",
             "cost": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_w2.png", "https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_e2.png"],
             "stats": {
                 "사거리": "1100",
                 "투사체 속도": "1300"
@@ -9426,7 +9482,7 @@ const customValues = {
             "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "25",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/camille/hud/icons2d/camille_q2.png"],
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/camille/hud/icons2d/camille_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/camille/hud/icons2d/camille_q3.png"],
             "stats": {
                 "사거리": "325",
                 "시전시간": "0.25",
@@ -9810,6 +9866,7 @@ const customValues = {
             "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_q_red.png", "https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_w_red.png", "https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_e_red.png", "https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_r_red.png"],
             "stats": {
                 "사거리": "25000",
                 "투사체 속도": "2200"
@@ -9822,6 +9879,7 @@ const customValues = {
             "p2": "15", // ResetCDR
             "p3": "0 ~ 223.754 (레벨에 따라) (+ 추가 공격력의 60% + 주문력의 70 ~ 100 (레벨에 따라)%)", // TotalDamage
             "cooldown": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/katarina/hud/icons2d/katarina_daggerspin.png"],
             "cost": "-"
         },
         "Q": {
@@ -10072,8 +10130,12 @@ const customValues = {
     },
     "Kayn": { // 케인
         "P": {
-            "p1": "2", // f1
+            "p1": "3", // PAmpDurationAss
+            "p2": "20 ~ 40% (레벨에 따라)", // KaynAssBonusDamage
+            "p3": "8", // PAmpCooldownAss
+            "p4": "25% (+ 추가 최대 체력의 0.005%)", // KaynSlayerHealing
             "cooldown": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_passive_ass.png", "https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_passive_slay.png"],
             "cost": "-"
         },
         "Q": {
@@ -10084,6 +10146,7 @@ const customValues = {
             "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
             "cost": "40",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_q_slay.png"],
             "stats": {
                 "사거리": "350",
                 "시전시간": "0.15",
@@ -10100,6 +10163,7 @@ const customValues = {
             "v2": "",
             "cooldown": "13 / 12 / 11 / 10 / 9",
             "cost": "40 / 45 / 50 / 55 / 60",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_w_ass.png", "https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_w_slay.png"],
             "stats": {
                 "사거리": "700",
                 "시전시간": "0.55",
@@ -10118,6 +10182,7 @@ const customValues = {
             "v2": "",
             "cooldown": "21 / 19 / 17 / 15 / 13",
             "cost": "90",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_e_ass.png"],
             "stats": {
                 "사거리": "400",
                 "투사체 속도": "347.8"
@@ -10133,7 +10198,7 @@ const customValues = {
             "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_r2_primary.png"],
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_r2_ass.png", "https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_r2_slay.png"],
             "stats": {
                 "사거리": "550",
                 "시전시간": "0.1",
@@ -10195,6 +10260,7 @@ const customValues = {
             "v2": "",
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayle/hud/icons2d/kayle_e2.png"],
             "stats": {
                 "사거리": "550",
                 "투사체 속도": "2800"
@@ -10336,6 +10402,7 @@ const customValues = {
             "v2": "",
             "cooldown": "2",
             "cost": "35",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/corki/hud/icons2d/corki_r_bigone.png"],
             "stats": {
                 "사거리": "1225",
                 "투사체 속도": "828.5",
@@ -10505,6 +10572,7 @@ const customValues = {
             "p9": "30", // MountCooldown
             "p10": "40 ~ 70% (레벨에 따라)", // SkaarlRemountHealth
             "cooldown": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kled/hud/icons2d/kled_p2.png"],
             "cost": "-"
         },
         "Q": {
@@ -10517,6 +10585,7 @@ const customValues = {
             "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "-",
+            "form1": "스카를 탑승",
             "stats": {
                 "사거리": "800",
                 "시전시간": "0.25",
@@ -10588,6 +10657,7 @@ const customValues = {
             "v2": "",
             "cooldown": "7",
             "cost": "35",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/qiyana/hud/icons2d/qiyana_q2_blue.png", "https://raw.communitydragon.org/latest/game/assets/characters/qiyana/hud/icons2d/qiyana_q2_red.png", "https://raw.communitydragon.org/latest/game/assets/characters/qiyana/hud/icons2d/qiyana_q2_green.png"],
             "stats": {
                 "사거리": "525",
                 "시전시간": "0.25",
@@ -10844,6 +10914,7 @@ const customValues = {
             "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
             "cost": "55 / 60 / 65 / 70 / 75",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/taliyah/hud/icons2d/taliyah_q2.png"],
             "stats": {
                 "사거리": "1000",
                 "시전시간": "0.25",
@@ -10856,7 +10927,6 @@ const customValues = {
             "v2": "",
             "cooldown": "14 / 12.5 / 11 / 9.5 / 8",
             "cost": "40 / 30 / 20 / 10 / 0",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/taliyah/hud/icons2d/taliyah_w2.png"],
             "stats": {
                 "사거리": "900",
                 "시전시간": "0.25",
@@ -11154,11 +11224,7 @@ const customValues = {
         },
     },
     "TwistedFate": { // 트위스티드 페이트
-        "P": {
-            "p1": "1", // GameModeInteger
-            "cooldown": "-",
-            "cost": "-"
-        },
+        "P": { "cooldown": "-", "cost": "-" },
         "Q": {
             "p1": "60 / 105 / 150 / 195 / 240 (+ 추가 공격력의 50% + 주문력의 85%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -11181,6 +11247,7 @@ const customValues = {
             "v2": "",
             "cooldown": "6",
             "cost": "50 / 55 / 60 / 65 / 70",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/twistedfate/hud/icons2d/cardmaster_blue.png", "https://raw.communitydragon.org/latest/game/assets/characters/twistedfate/hud/icons2d/cardmaster_red.png", "https://raw.communitydragon.org/latest/game/assets/spells/icons2d/cardmaster_gold.png"],
             "stats": {
                 "사거리": "200",
                 "투사체 속도": "20"
@@ -11204,6 +11271,7 @@ const customValues = {
             "v2": "",
             "cooldown": "170 / 140 / 110",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/spells/icons2d/cardmaster_premonition.png"],
             "stats": {
                 "사거리": "5500",
                 "투사체 속도": "20"
@@ -11480,7 +11548,7 @@ const customValues = {
             }
         },
     },
-    "FiddleSticks": { // 피들스틱
+    "Fiddlesticks": { // 피들스틱
         "P": { "cooldown": "-", "cost": "-" },
         "Q": {
             "p1": "1.2 / 1.4 / 1.6 / 1.8 / 2", // FearDuration
@@ -11490,6 +11558,7 @@ const customValues = {
             "v2": "",
             "cooldown": "15 / 14.5 / 14 / 13.5 / 13",
             "cost": "65",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/fiddlesticks/hud/icons2d/fiddlesticksq2.png"],
             "stats": {
                 "사거리": "575",
                 "투사체 속도": "20"
@@ -11685,7 +11754,6 @@ const customValues = {
             "v2": "",
             "cooldown": "1",
             "cost": "20",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_q2.png"],
             "stats": {
                 "사거리": "350",
                 "투사체 속도": "1450"
@@ -11699,7 +11767,6 @@ const customValues = {
             "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "50 / 60 / 70 / 80 / 90",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_w2.png"],
             "stats": {
                 "사거리": "1325",
                 "시전시간": "0.25",
@@ -11716,7 +11783,6 @@ const customValues = {
             "v2": "",
             "cooldown": "11",
             "cost": "85",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_e2.png"],
             "stats": {
                 "사거리": "970",
                 "시전시간": "0.25",
@@ -11734,6 +11800,7 @@ const customValues = {
             "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_w2.png", "https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_e2.png"],
             "stats": {
                 "사거리": "1",
                 "투사체 속도": "347.8"
@@ -11827,6 +11894,7 @@ const customValues = {
             "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "80 / 90 / 100 / 110 / 120",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/hwei/hud/icons2d/hweiqq.png", "https://raw.communitydragon.org/latest/game/assets/characters/hwei/hud/icons2d/hweiqw.png", "https://raw.communitydragon.org/latest/game/assets/characters/hwei/hud/icons2d/hweiqe.png"],
             "stats": {
                 "시전시간": "0.25",
                 "투사체 속도": "347.8"
@@ -11842,6 +11910,7 @@ const customValues = {
             "v2": "",
             "cooldown": "18 / 17.5 / 17 / 16.5 / 16",
             "cost": "90 / 95 / 100 / 105 / 110",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/hwei/hud/icons2d/hweiwq.png", "https://raw.communitydragon.org/latest/game/assets/characters/hwei/hud/icons2d/hweiww.png", "https://raw.communitydragon.org/latest/game/assets/characters/hwei/hud/icons2d/hweiwe.png"],
             "stats": {
                 "시전시간": "0.25",
                 "투사체 속도": "900"
@@ -11858,6 +11927,7 @@ const customValues = {
             "v2": "",
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "50 / 55 / 60 / 65 / 70",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/hwei/hud/icons2d/hweieq.png", "https://raw.communitydragon.org/latest/game/assets/characters/hwei/hud/icons2d/hweiew.png", "https://raw.communitydragon.org/latest/game/assets/characters/hwei/hud/icons2d/hweiee.png"],
             "stats": {
                 "시전시간": "0.25",
                 "투사체 속도": "347.8"

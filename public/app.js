@@ -1,7 +1,11 @@
 // ==========================================
 // [0] 전역 변수 및 챔피언, 툴팁 정보 캐싱
 // ==========================================
-let ddragonVersion = "16.5.1"; // 2026 시즌 최신 핫픽스 방어용 기본값
+// ★ 이 기본값은 **동기화가 실패했을 때만** 쓰이지만, 그때 챔피언 목록이 이 버전으로 만들어진다.
+//   그래서 "신규 챔피언이 다 들어 있는 버전" 이어야 한다.
+//   16.5.1 은 챔피언이 172명뿐이라 로크가 없었다 (16.15.1 은 233명). 2026-08-10 올림.
+//   새 챔피언이 목록에서 안 보이면 제일 먼저 이 값을 의심할 것.
+let ddragonVersion = "16.15.1";
 let allMatches = [];
 let activeFilters = [];
 let championIdMap = {};
@@ -120,6 +124,14 @@ function cleanTooltipText(text) {
 // ==========================================
 // ★ 최신 데이터 드래곤 로드 로직
 // ==========================================
+// ★ 버전 동기화가 **끝날 때까지 기다릴 수 있게** 약속을 들고 있는다 (2026-08-10).
+//   챔피언 탭은 `ddragonVersion` 으로 champion.json 을 받는데, 동기화가 끝나기 전에
+//   탭을 열면 기본값으로 받아 버린다. **기본값 16.5.1 에는 챔피언이 172명뿐이라
+//   로크 같은 신규 챔피언이 목록에서 통째로 사라진다** (최신 16.15.1 은 233명).
+//   CLAUDE.md 의 "구버전 champion.json 을 읽으면 신규 챔피언이 사라진다" 와 같은 사고인데,
+//   그때는 서버 응답이 덮어쓰는 경로였고 이번엔 **경주(race)** 가 원인이다.
+let ddragonReady = null;
+
 async function initDdragonVersion() {
     try {
         const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
@@ -206,7 +218,8 @@ const spellMap = { 1: "SummonerBoost", 3: "SummonerExhaust", 4: "SummonerFlash",
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     // 페이지 접속 시 가장 먼저 버전 업데이트 및 툴팁 정보 백그라운드 다운로드
-    initDdragonVersion().then(() => {
+    ddragonReady = initDdragonVersion();
+    ddragonReady.then(() => {
         fetchChampionMap();
         fetchRuneMap();
         fetchItemData();
@@ -3509,6 +3522,10 @@ async function showChampions(requestedChampId = null, classicMode = false) {
     champsContainer.innerHTML = "<div style='text-align:center; padding:100px 0; color:#9aa4af;'>챔피언 데이터를 불러오는 중입니다...</div>";
 
     try {
+        // ★ 버전 동기화를 반드시 기다린다. 안 기다리면 기본값(구버전)으로 받아서
+        //   신규 챔피언이 목록에서 사라진다 — 로크가 이 경우였다 (2026-08-10).
+        if (ddragonReady) await ddragonReady;
+
         const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/champion.json`);
         const data = await res.json();
 
@@ -3694,12 +3711,23 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     if (spellKey === 'P' && champ.passive && champ.passive.image) {
                         baseImg = `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/passive/${champ.passive.image.full}`;
                     } else if (slotIdx >= 0 && champ.spells[slotIdx]) {
-                        baseImg = `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${champ.spells[slotIdx].image.full}`;
+                        // 위 img 와 같은 이유로 values.img 가 있으면 그걸 우선한다 (벨베스 Q)
+                        baseImg = values.img
+                            || `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${champ.spells[slotIdx].image.full}`;
                     }
                     return tpl.map((part, i) => {
                         const icon = i === 0 ? baseImg : extra[i - 1];
+                        // ★ 아이콘을 **첫 글줄 한가운데**에 맞춘다 (2026-08-10).
+                        //   컨테이너가 align-items:flex-start 라 아이콘 위와 텍스트 블록 위가
+                        //   맞춰지는데, 실제 화면에서는 **아이콘이 글자보다 위로 떠 보인다.**
+                        //   글줄 상자(14px x 1.6 = 22.4px) 안에서 글자가 가운데에 놓이느라
+                        //   위쪽에 여백이 생기기 때문이다. 그만큼 아이콘을 **내려야** 맞는다.
+                        //   ★ 처음엔 부호를 반대로 잡아 아이콘을 올렸더니 격차가 더 벌어졌다.
+                        //     방향이 헷갈리면 화면을 보고 판단할 것 — 부호만 바꾸면 된다.
+                        //   글자 크기를 바꾸면 이 값도 같이 바뀌므로 calc 로 적어 둔다.
+                        const iconPull = 'margin-top: calc((34px - 1.6 * 14px) / 2);';
                         const imgTag = icon
-                            ? `<img src="${icon}" style="width: 34px; height: 34px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12); flex-shrink: 0;" onerror="this.style.visibility='hidden'">`
+                            ? `<img src="${icon}" style="width: 34px; height: 34px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12); flex-shrink: 0; ${iconPull}" onerror="this.style.visibility='hidden'">`
                             : `<div style="width: 34px; flex-shrink: 0;"></div>`;
                         return `<div style="display: flex; gap: 12px; align-items: flex-start;">${imgTag}<div style="flex: 1; ${bodyStyle}">${fill(part)}</div></div>`;
                     }).join('<div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 14px 0;"></div>');
@@ -3715,6 +3743,9 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         const passive = {
             id: 'P1', keyChar: '패시브', name: champ.passive.name,
             desc: renderScalingTable('P', cleanTooltipText(champ.passive.description)),
+            // ★ 문장을 파트로 쪼갠 스킬(배열 템플릿)은 구분선 아래에 아이콘이 붙는다.
+            //   아직 안 쪼갠 스킬만 이름 옆에 아이콘을 보여 준다 — 안 그러면 화면에서 아예 사라진다.
+            partTpl: Array.isArray((typeof customTemplates !== 'undefined' && customTemplates[champ.id]) ? customTemplates[champ.id]['P'] : null),
             cooldown: (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id]['P'] && customValues[champ.id]['P'].cooldown) || '-',
             cost: (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id]['P'] && customValues[champ.id]['P'].cost) || '-',
             img: `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/passive/${champ.passive.image.full}`,
@@ -3747,9 +3778,16 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 keyChar: spellSlotsKey[i],
                 name: s.name,
                 desc: renderScalingTable(spellSlotsKey[i], parseRiotTooltip(s)),
+                // ★ 문장을 파트로 쪼갠 스킬(배열 템플릿)은 구분선 아래에 아이콘이 붙는다.
+                //   아직 안 쪼갠 스킬만 이름 옆에 아이콘을 보여 준다 — 안 그러면 화면에서 아예 사라진다.
+                partTpl: Array.isArray((typeof customTemplates !== 'undefined' && customTemplates[champ.id]) ? customTemplates[champ.id][spellSlotsKey[i]] : null),
                 cooldown: customCd,
                 cost: customCost,
-                img: `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${s.image.full}`,
+                // ★ customValues 에 img 가 있으면 DD 기본 아이콘 대신 그걸 쓴다.
+                //   DD 아이콘이 인게임과 다른 경우가 있다 — 벨베스 Q 가 유일한 사례로,
+                //   DD 것은 사분면이 한 칸만 켜진 그림이고 인게임은 꽉 찬 그림이다.
+                img: (customVals && customVals.img)
+                    || `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${s.image.full}`,
                 img2: customImg2,
                 stats: customStats, // ★ 데이터에 스탯 저장
                 values: customVals, // ★ 피해량/계수 (v1, v2)
@@ -3843,6 +3881,13 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                인게임은 스킬마다 미묘하게 다르지만(니코 W 는 사용 시만 연노랑,
                갈리오 W 는 충전 시작 시가 또 다름) 통일하는 쪽이 읽기 낫다는 판단. */
             active, passive, charge, release, toggle, tap, hold { display: block; margin-top: 8px; color: #f0e6d2; font-weight: bold; }
+            /* ★ 이 태그들이 **파트 맨 앞**에 올 때는 위 여백을 없앤다 (2026-08-10).
+               하위 스킬 파트는 각자 자기 <div> 에 들어가므로 첫 태그의 margin-top 8px 이
+               텍스트만 아래로 밀어 **옆 아이콘과 수평이 어긋난다.**
+               모데카이저 W(<active> 로 시작)와 르블랑 R(<spellname> 로 시작)이
+               서로 다르게 보이던 원인이 이거였다. 구분선이 이미 간격을 주므로 여백은 불필요. */
+            active:first-child, passive:first-child, charge:first-child,
+            release:first-child, toggle:first-child, tap:first-child, hold:first-child { margin-top: 0; }
             /* 강인함(slow)은 인게임에서 색이 안 들어간다. 본문색을 그대로 따라간다. */
             slow { color: inherit; font-weight: normal; }
             /* scalehealth 와 lifesteal 은 실제로 같은 초록이다 (블라디미르 P / 아트록스 E).
@@ -3903,7 +3948,15 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                                 <!-- 재시전·취소·진화·1·2·3타 등 같은 스킬의 추가 아이콘. 개수가 가변이라 비워 둔다. -->
                                 <span id="champ-skill-icon-extra" style="display: flex; gap: 5px;"></span>
                             </div>
-                            <h3 id="champ-skill-name-header" style="color: #fff; font-size: 18px; font-weight: bold; margin: 0;"></h3>
+                            <!-- ★ 라벨과 이름은 세로로 쌓아야 한다. 바깥은 flex 행이라
+                                 감싸지 않으면 라벨이 이름 **옆**에 붙는다. -->
+                            <div>
+                                <!-- ★ 폼이 두 개인 챔피언의 **첫 번째 폼** 이름 (미니 나르·인간 형태…).
+                                     아래 두 번째 폼 박스엔 원래부터 있던 라벨인데 본체 쪽엔 없어서
+                                     어느 폼 설명인지 알 수 없었다. 같은 모양으로 맞춘다 (2026-08-10). -->
+                                <div id="champ-skill-form" style="color: #a78bfa; font-size: 12px; font-weight: bold; margin-bottom: 2px; display: none;"></div>
+                                <h3 id="champ-skill-name-header" style="color: #fff; font-size: 18px; font-weight: bold; margin: 0;"></h3>
+                            </div>
                         </div>
                         <div style="text-align: right; color: #aaa; font-size: 13px; font-weight: bold; line-height: 1.7;">
                             <div id="champ-skill-cooldown-header" style="color:#ddd;"></div>
@@ -3940,7 +3993,16 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     <div id="champ-skill2-desc" style="word-break: keep-all;"></div>
                 </div>
 
-                <video id="champ-skill-video" autoplay loop muted playsinline style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); object-fit: cover; flex-shrink: 0;"></video>
+                <!-- ★ 순서: [첫 폼 설명] [두 번째 폼 설명] [첫 폼 영상] [두 번째 폼 영상].
+                     설명 둘을 먼저 붙이고 영상 둘을 그 아래에 **같은 순서로** 쌓는다
+                     (미니 나르 - 메가 나르 - 미니 영상 - 메가 영상).
+                     예전엔 두 번째 폼 영상이 설명 박스 **안에** 있어서 한 덩어리로 보였고,
+                     첫 폼 영상은 맨 아래라 영상 순서가 거꾸로였다.
+                     ★ 영상이 없는 스킬이 있다 (이즈리얼 패시브 등 — 라이엇이 안 만들었다).
+                     기본을 display:none 으로 두고 **불러오기에 성공했을 때만** 보여 준다.
+                     안 그러면 검은 화면만 덩그러니 남는다. -->
+                <video id="champ-skill-video" autoplay loop muted playsinline style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); object-fit: cover; flex-shrink: 0; display: none;"></video>
+                <video id="champ-skill2-video" autoplay loop muted playsinline style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); object-fit: cover; flex-shrink: 0; display: none;"></video>
             </div>
         </div>
         `;
@@ -3970,8 +4032,12 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             <div style="width: 100%; height: 100%; display: flex; flex-direction: column;">
                 <div style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 20px; flex-shrink: 0; background: rgba(0,0,0,0.2); border-top-left-radius: 12px; border-top-right-radius: 12px;">
                     <button class="champ-tab-btn active" onclick="switchChampTab(event, 'skills')" style="padding: 15px 20px; background: transparent; border: none; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; border-bottom: 3px solid #a78bfa;">스킬</button>
+                    <!-- ▼▼ 비공개 처리 (스킨 · 배경 탭) ▼▼
+                         되살릴 때: 이 주석 두 줄만 풀면 된다. 탭 내용(skinsHtml · loreHtml)과
+                         switchChampTab 은 그대로라 바로 살아난다.
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'skins')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스킨</button>
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'lore')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">배경</button>
+                         ▲▲ 비공개 처리 끝 ▲▲ -->
                 </div>
                 <div style="flex: 1; overflow-y: auto; padding: 30px;">
                     <div id="champ-tab-skills" class="champ-tab-content" style="display: block; height: 100%;">${skillsHtml}</div>
@@ -4027,14 +4093,32 @@ window.playSkill = function (index) {
         }
     }
 
-    // ★ 같은 스킬에 달린 추가 아이콘 (재시전·취소·진화·1·2·3타).
-    //   개수가 스킬마다 달라서 기본 아이콘 옆에 그때그때 그린다.
+    // ★ 스킬 이름 옆에는 **기본 아이콘 하나만** 둔다 (2026-08-10 변경).
+    //   예전엔 하위 아이콘(재시전·진화·2타…)을 여기에 전부 늘어놨는데,
+    //   그러면 "이게 뭘 가리키는 아이콘인지" 를 알 수 없다.
+    //   지금은 배열 템플릿이 **구분선 아래 각 파트 옆에** 짝지어 그린다
+    //   (가렌 E 의 "재사용 시" 옆처럼). 그래야 아이콘과 설명이 붙어서 뜻이 통한다.
+    //   ★ 배열 템플릿이 아직 없는 스킬은 아이콘이 화면에 안 나온다.
+    //     문장을 파트로 쪼개면 그때 나온다 — `남은작업.md` 1순위 참고.
+    //   ★ 단, **아직 문장을 안 쪼갠 스킬**은 여기 말고는 아이콘을 보여 줄 자리가 없다.
+    //     그런 스킬까지 비우면 아이콘이 화면에서 통째로 사라진다. 그래서 배열 템플릿이
+    //     없는 스킬만 예전처럼 이름 옆에 붙인다 (문장을 쪼개면 자동으로 여기서 빠진다).
     const iconExtraEl = document.getElementById('champ-skill-icon-extra');
     if (iconExtraEl) {
-        const list = (skill.values && Array.isArray(skill.values.icons)) ? skill.values.icons : [];
+        const list = (!skill.partTpl && skill.values && Array.isArray(skill.values.icons))
+            ? skill.values.icons : [];
         iconExtraEl.innerHTML = list.map(u =>
             `<img src="${u}" style="width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);" onerror="this.style.display='none'">`
         ).join('');
+    }
+
+    // ★ 첫 번째 폼 라벨 (미니 나르·인간 형태…). 폼이 두 개인 챔피언에만 뜬다.
+    //   두 번째 폼 박스의 라벨과 짝이다 — 한쪽만 있으면 어느 폼 설명인지 알 수 없다.
+    const formEl = document.getElementById('champ-skill-form');
+    if (formEl) {
+        const f1 = (skill.values && skill.values.form1) || '';
+        formEl.textContent = f1;
+        formEl.style.display = f1 ? 'block' : 'none';
     }
 
     const nameEl = document.getElementById('champ-skill-name-header');
@@ -4105,11 +4189,29 @@ window.playSkill = function (index) {
         if (bottomHrEl) bottomHrEl.style.display = 'none';
     }
 
-    const videoEl = document.getElementById('champ-skill-video');
-    const videoUrl = `https://d28xe8vt774jo5.cloudfront.net/champion-abilities/${window.currentChampPaddedKey}/ability_${window.currentChampPaddedKey}_${skill.id}.webm`;
-    if (videoEl && videoEl.src !== videoUrl) {
-        videoEl.src = videoUrl;
-        videoEl.play().catch(e => console.log("Video play prevented"));
+    // ★ 예시 영상. **없는 스킬이 있다** — 라이엇이 안 만든 자리다 (이즈리얼 패시브가 그렇다).
+    //   예전엔 그냥 src 를 꽂아서 실패하면 **검은 네모만 남았다.**
+    //   지금은 숨겨 두고 성공했을 때만 보여 준다.
+    const VIDEO_BASE = 'https://d28xe8vt774jo5.cloudfront.net/champion-abilities';
+    const setVideo = (el, id) => {
+        if (!el) return;
+        const url = `${VIDEO_BASE}/${window.currentChampPaddedKey}/ability_${window.currentChampPaddedKey}_${id}.webm`;
+        if (el.dataset.want === url) return;      // 같은 영상이면 다시 안 건드린다
+        el.dataset.want = url;
+        el.style.display = 'none';
+        el.onloadeddata = () => { if (el.dataset.want === url) el.style.display = 'block'; };
+        el.onerror = () => { el.style.display = 'none'; };
+        el.src = url;
+        el.play().catch(() => { });
+    };
+
+    setVideo(document.getElementById('champ-skill-video'), skill.id);
+
+    // 두 번째 폼도 자기 영상이 따로 있다 (나르 메가 Q2·W2·E2 등)
+    const v2El = document.getElementById('champ-skill2-video');
+    if (v2El) {
+        if (skill.form2) setVideo(v2El, skill.keyChar + '2');
+        else { v2El.style.display = 'none'; v2El.removeAttribute('src'); delete v2El.dataset.want; }
     }
 };
 

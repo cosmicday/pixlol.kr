@@ -30,7 +30,11 @@
                  ▲▲ 비공개 처리 끝 ▲▲ -->
             <a class="nav-item" id="nav-ranking" onclick="showRanking(); setActiveNav('nav-ranking')">랭킹</a>
             <a class="nav-item" id="nav-champions" onclick="showChampions(); setActiveNav('nav-champions')">챔피언</a>
+            <!-- ▼▼ 비공개 처리 (챔피언 클래식) ▼▼
+                 되살릴 때: 이 주석 두 줄만 풀면 된다. 기능은 그대로 살아 있다
+                 (showChampions(null, true) · isClassicChamp · Jade_* 처리 전부 유지).
             <a class="nav-item" id="nav-champions-classic" onclick="showChampions(null, true); setActiveNav('nav-champions-classic')">챔피언(클래식)</a>
+                 ▲▲ 비공개 처리 끝 ▲▲ -->
         </nav>
     </header>
 

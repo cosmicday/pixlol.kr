@@ -200,6 +200,10 @@ const STAT_NAMES = {
     1: '방어력',
     2: '총 공격력',
     4: '공격 속도',
+    // ★ 5 = 스킬 가속. 2026-08-10 인게임 확인 (추정이었던 것을 확정으로 바꿈).
+    //   타릭 P 가 유일한 사용처다. 인게임 툴팁엔 "재사용 대기시간이 1초 감소" 라고만
+    //   적혀 있고 계수가 안 보이는데, **스킬 가속 100을 찍으면 2초로 바뀐다**
+    //   (실제 규칙은 스킬 가속 10당 0.1초, 100에서 상한). 우리 값 `1 ~ 2` 가 맞다.
     5: '스킬 가속',
     18: '생명력 흡수',
     29: '물리 관통력',
@@ -222,9 +226,19 @@ const STAT_NAMES = {
     //   헤카림 패시브(전쟁의 길)가 정의상 "추가 이동 속도의 12~24% 만큼 추가 공격력"이라
     //   숫자까지 그대로 맞는다. 잔나 P(순풍)도 추가 이동 속도 비례로 같은 모양.
     7: '이동 속도',
+    // ★ 11·13 은 아직 추정이지만 **확인할 필요가 없다.** 2026-08-10 전수 조사 결과:
+    //   11 은 bin 전체에 `mStat 11` 이 **한 번도 안 나오고**, 13 은 bin 에 4곳
+    //   (문도 Q·엘리스 Q·킨드레드 W·자헨 R) 있지만 **화면에 나가는 문장엔 0자리**다.
+    //   사이트의 "추가 공격력" 290자리는 11번이 아니라 `mStat 2` + `mStatFormula 2`(추가)
+    //   조합에서 나온 말이라 무관하다. 새 챔피언이 쓰기 시작하면 그때 확인할 것.
     11: '추가 공격력',
     12: '최대 체력',
     13: '추가 체력',
+    // ★ 14 = 현재 체력. 2026-08-10 인게임 확인.
+    //   자크 Q 가 "현재 체력의 8% (56) 소모" 로 뜨는데, 그때 자크의 현재 체력이 695였다.
+    //   695 x 0.08 = 55.6 ≒ 56 이라 최대 체력이 아니라 **현재** 체력이 맞다
+    //   (12 = 최대 체력과 구별된다). W·E 는 절반인 4% 다.
+    14: '현재 체력',
 };
 
 const unknownStats = new Map();   // 번호 -> { count, where[] }
@@ -257,13 +271,18 @@ function noteCase(asked, actual) {
 // 폼이 두 개인 챔피언의 "두 번째 폼" 스킬.
 //   ★ build_champion_data.js 의 FORM2 와 반드시 같아야 한다.
 //     어긋나면 문장은 있는데 값이 없거나 그 반대가 된다.
+//   ★ `label1` = **첫 번째 폼** 이름. 두 번째 폼 박스엔 원래부터 라벨이 있었는데
+//     본체 쪽엔 없어서 "이게 어느 폼 설명이냐" 를 알 수 없었다 (2026-08-10 추가).
+//     `build_champion_data.js` 의 FORM2 와 **항상 같아야 한다.**
 const FORM2 = {
-    Nidalee: { label: '쿠거 형태',   Q: 'Takedown',         W: 'Pounce',           E: 'Swipe' },
-    Elise:   { label: '거미 형태',   Q: 'EliseSpiderQCast', W: 'EliseSpiderW',     E: 'EliseSpiderE' },
-    Jayce:   { label: '대포 형태', Q: 'JayceShockBlast',  W: 'JayceHyperCharge', E: 'JayceAccelerationGate', R: 'JayceStanceGtH' },
-    Gnar:    { label: '메가 나르',   Q: 'GnarBigQ',         W: 'GnarBigW',         E: 'GnarBigE' },
-    RekSai:  { label: '굴 파기',     Q: 'RekSaiQBurrowed',  W: 'RekSaiWBurrowed',  E: 'RekSaiEBurrowed' },
-    Kled:    { label: '스카를 하차', Q: 'KledRiderQ' },
+    Nidalee: { label: '쿠거 형태',   label1: '인간 형태',   Q: 'Takedown',         W: 'Pounce',           E: 'Swipe' },
+    Elise:   { label: '거미 형태',   label1: '인간 형태',   Q: 'EliseSpiderQCast', W: 'EliseSpiderW',     E: 'EliseSpiderE' },
+    Jayce:   { label: '대포 형태',   label1: '망치 형태',   Q: 'JayceShockBlast',  W: 'JayceHyperCharge', E: 'JayceAccelerationGate', R: 'JayceStanceGtH' },
+    Gnar:    { label: '메가 나르',   label1: '미니 나르',   Q: 'GnarBigQ',         W: 'GnarBigW',         E: 'GnarBigE' },
+    //   ★ '굴 파기' 였는데 인게임 표기가 '매복 상태' 라 맞췄다. 기본 QWE 문장은
+    //     원래부터 "돌출 상태:" 로 시작한다 — 그래서 label1 도 '돌출 상태' 다
+    RekSai:  { label: '매복 상태',   label1: '돌출 상태',   Q: 'RekSaiQBurrowed',  W: 'RekSaiWBurrowed',  E: 'RekSaiEBurrowed' },
+    Kled:    { label: '스카를 하차', label1: '스카를 탑승', Q: 'KledRiderQ' },
 };
 
 function findSpellObj(bin, alias, objName) {
@@ -288,23 +307,212 @@ const ICON_BASE = 'https://raw.communitydragon.org/latest/game/';
 // 스펠 객체에 안 붙어 있어서 위 규칙으로 못 찾는 아이콘. 파일이 실재하는 것만 적는다.
 //   카이사 진화 아이콘이 그렇다 — kaisa_q2/w2/e2.png 는 있는데 스펠 객체엔 없다.
 //   전부 파일 실재(200)와 롤위키 확인을 같이 거친 것만 적는다.
+//   ★ 2026-08-09: 전수 방식으로 바꾸면서 대부분이 필요 없어졌다.
+//     카이사·카르마·빅토르·카밀·크산테는 이제 bin 에서 자동으로 잡힌다.
+//     크산테는 그대로 두면 `icons_ksante_q2`(수동)와 `ksante_q2`(자동)가
+//     **같은 아이콘을 두 번** 넣는다 (nameOf 가 icons_ 를 벗겨서 이름이 갈린다).
+//     리 신만 남는다 — 2타 스펠 객체가 1타와 같은 아이콘을 참조해서 bin 에 없다.
 const EXTRA_ICONS = {
-    // 진화 — 위키: Q/W/E 에 진화판이 있고 아이콘이 따로 있다
-    Kaisa:  { Q: ['kaisa_q2'], W: ['kaisa_w2'], E: ['kaisa_e2'] },
     // 2타 — 위키: "공명타·철갑·무쇠주먹은 각자 아이콘을 쓴다"
-    //   2타 스펠 객체가 1타와 같은 아이콘을 참조해서 bin 으로는 못 찾는다
     LeeSin: { Q: ['leesinq2'], W: ['leesinw2'], E: ['leesine2'] },
-    // 만트라 강화판 — 위키: Q(소울플레어)·W(소생)·E(반항) 전부 이름과 아이콘이 따로
-    //   Q 는 bin 에서 이미 찾으므로(KarmaQMissileMantra) 여기엔 W/E 만
-    Karma:  { W: ['karma_w2'], E: ['karma_e2'] },
-    // 증강판 — 위키: Q/W/E/R 네 개 모두 증강 버전이 있다
-    Viktor: { Q: ['viktor_q2'], W: ['viktor_w2'], E: ['viktor_e2'], R: ['viktor_r2'] },
-    // 재시전 — 위키: Q(정밀 프로토콜)에 재시전이 있다. E(왈 다이브)는 bin 에서 이미 잡힘
-    //   ★ Q 는 2회 시전이라 q2 까지만. 파일에 q3 도 있지만 게임엔 없다
-    Camille: { Q: ['camille_q2'] },
-    // 위키: Q 에 강화 활성, R(모두 걸기)에 변신 상태가 있다.
-    //   q3(모두 걸기 중의 Q)·r2 는 bin 에서 잡히는데 q2(강화 활성)만 안 붙어 있다.
-    KSante: { Q: ['icons_ksante_q2'] },
+    // ★ 인게임 확인 2026-08-10. 파일은 실재하고 화면에도 뜨는데 bin 스펠 객체엔 안 붙어
+    //   있어서 자동으로 못 찾는다. (CD 디렉터리 목록으로 파일 실재 확인함)
+    Locke: { W: ['locke_w2'] },        // W 재시전 — Q·R 은 인게임에 없다고 확인됨
+    Sion:  { P: ['sion_passive2'] },   // P 좀비 형태
+    //   ★ 키아나 Q 는 원소가 셋(얼음·바위·야생)인데 bin 엔 blue·green 만 붙어 있다.
+    //     `qiyana_q2_red`(바위) 는 파일이 실재하는데 스펠 객체에 안 달려 있다 (화면 확인 2026-08-10)
+    Qiyana: { Q: ['qiyana_q2_red'] },
+    //   ★ 트페 W 는 카드가 셋인데 bin 엔 금색만 붙어 있다. 파랑·빨강도 파일은 실재한다
+    TwistedFate: { W: ['cardmaster_blue', 'cardmaster_red'] },
+    //   ★ 아펠리오스는 P·Q·R 이 전부 **무기 5종별로 효과가 갈린다.** 무기 아이콘은
+    //     별도 캐릭터 bin 이라 자동으로 안 잡힌다. 파일명 규칙: `_m` = 주 무기,
+    //     `_l` = 보조 무기, `_u` = 궁극기 강화. P·Q 는 주 무기 기준이라 `_m` 을 쓴다
+    Aphelios: {
+        P: ['calibrum_m', 'severum_m', 'gravitum_m', 'infernum_m', 'crescendum_m'],
+        Q: ['calibrum_m', 'severum_m', 'gravitum_m', 'infernum_m', 'crescendum_m'],
+    },
+};
+
+// 기본 아이콘(Data Dragon 것)이 인게임과 다를 때 갈아끼운다.
+//   ★ 벨베스 Q 가 유일한 사례다. 파일이 `bv_q_1`~`bv_q_15` 인데 **사분면 4칸의 비트값**이라
+//     15 = 네 칸 다 켜진 그림이다. DD 가 주는 기본 아이콘은 하필 `bv_q_1`(한 칸만 켜짐)이라
+//     인게임에서 실제로 보는 모습과 다르다. 나머지 14개는 "지금 몇 칸 찼나" 를 나타내는
+//     상태 표시라 사이트에 다 넣을 값이 없다 — 꽉 찬 것 하나만 쓴다 (인게임 확인 2026-08-10).
+const ICON_OVERRIDE = {
+    Belveth: { Q: 'bv_q_15' },
+};
+
+// ─── 2026-08-09: 전수 방식으로 교체 ─────────────────────────────────────
+//   옛 방식은 스펠 객체마다 아이콘을 "하나만" 읽고, 파일명이 `<alias>[qwer][2-9]`
+//   인 것만 받았다. 그래서 두 부류를 통째로 놓쳤다:
+//     1. 본체 스펠이 아이콘을 **배열**로 들고 있는 경우
+//        (GwenR = [Gwen_R, Gwen_R2, Gwen_R3] — 첫 개만 읽어 R2·R3 를 버렸다)
+//     2. 파일명이 숫자 패턴이 아닌 경우
+//        (Khazix_Q_red, Kayn_Q_Ass, HweiQE, Icons_Vex_Q02 — `0` 이 [2-9] 밖)
+//   173명 전수 스캔으로 확인한 수: 기본 5개 외 아이콘이 **121명 / 335개** 있고,
+//   옛 방식은 그중 72개만 잡았다. 새 방식은 슬롯을 확정할 수 있는 221개를 잡고,
+//   나머지는 아래 ICON_SLOT 표로 채운다. 근거는 `아이콘위키조사.md` (173명 위키 대조).
+
+// 노이즈 — 롤위키 대조로 확정한 네 부류.
+//   ★ 구분 기준은 접미사 철자가 아니라 "플레이어가 누르는가" 다.
+//     _Cancel/_Recast 는 실제 시전 동작이라 살리고(우르곳 W 수동 종료),
+//     _Grey/_Off 는 같은 스킬의 비활성 표시라 버린다.
+//   ★ 구분자가 없는 변종이 있다 — CaitlynPGrey(언더스코어 없음),
+//     BrandP-Debuff(하이픈). 그래서 [-_]? 로 받는다.
+const ICON_NOISE = /[-_]?(grey|gray|off|disabled|cooldown|no_charge|cannotcast|debuff|slow|sleep|charging)$/i;
+//   접미사가 아니라 이름 중간에 오는 노이즈. 스킨별 아이콘·퀘스트 진행 표시·콜라보다.
+//   (아펠리오스 ApheliosP_Skin01~40, 세나 Senna_Quest_Lucian, 제리 ZeriXEkko)
+const ICON_NOISE2 = /(_skin\d|_quest_|xekko)/i;
+//   구버전 이름 — 그 챔피언 것이 맞지만 지금 게임에 없는 스킬이다.
+//   파일명이 alias 로 시작해서 자동 필터에 안 걸리므로 손으로 적는다.
+//   (아리 "정기 흡수" 는 현재 "정기 조각" 이다 — CLAUDE.md 의 stringtable 경고와 같은 일)
+const ICON_OLD = new Set([
+    'ahri_souleater',            // 옛 패시브 "정기 흡수" (현재는 정기 조각)
+    'thresh_e0',
+    'missfortune_doubleup',      // 리메이크 전 Q 아이콘 (인게임 확인 2026-08-10)
+]);
+// ★ 인게임에서 직접 보고 "아니다" 로 판정한 것 (2026-08-10).
+//   위키·파일명만으로는 진짜와 구별이 안 돼서 보류였던 자리들이다.
+//   근거는 `아이콘확인목록.md` A 절에 항목별로 적혀 있다.
+const ICON_REJECT = new Set([
+    // 스킬 아이콘이 아니라 **적에게 걸리는 디버프/버프 표시**
+    'kayle_q_shred',             // 케일 Q 방어력 감소 표시
+    'sett_buff',                 // 세트 — 상대에게 갈 때 붙는 버프
+    // **중첩·상태 표시**라 스킬 칸이 갈리는 게 아님
+    'kayle_p_attackspeed',       // 케일 P 스택
+    'senna_passivehaste',        // 세나 P 가속
+    'oriannap2',                 // 오리아나 P
+    'darius_passivebuff',        // 다리우스 P 녹서스의 힘
+    // 회색(비활성) 아이콘. `_grey` 가 이름에 없어서 자동 필터에 안 걸린다
+    'monkeykingcyclonecancel',   // 오공 R — 흑백 아이콘
+    // 이스터에그·모드 전용
+    'jax_fishing', 'fish_1', 'fish_2',   // 잭스 낚시
+    // 인게임에 하위 아이콘이 아예 없는 자리
+    'ryze_q_shield',
+    'gravesbuckshot',
+    'akali_q2',
+    'mel_r2',                    // 처형 전용 표시
+    'fiddlesticksw2', 'fiddlesticksr2',
+    // ── 2026-08-10 2차 (화면을 직접 보고 판단. 가렌~블라디미르 60명 검수분) ──
+    'graveshighnoon',            // 그레이브즈 R
+    'rumble_junkyardtitan3',     // 럼블 P
+    'rumble_electroharpoon_twin',// 럼블 E
+    'lillia_icon_buff_speedup',  // 릴리아 Q
+    'bard_meeps',                // 바드 P
+    'varusw2',                   // 바루스 W
+    'brandsear', 'brandpillarofflame', 'brandconflagration', 'brandpyroclasm',  // 브랜드 QWER
+    'vladimir_tidesofblood',     // 블라디미르 E
+    'briarwbuff',                // 브라이어 W — 세 아이콘 중 맨 오른쪽
+    'draven_whirlingdeath_recall',   // 드레이븐 R
+    // 르블랑 R — 미믹 Q·W·E 세 개만 쓴다. 궁 기본 설명엔 아이콘을 안 붙인다
+    'leblancrr', 'leblancrwreturn',
+    'syndra_wr1',                // 신드라 W — 잡는 상태. 던지는 쪽(wr2)만 쓴다
+    // ── 2026-08-10 3차 (58스킬 화면 검수분) ──
+    'gnar_e_cancel', 'viego_buff', 'senna_e2', 'senna_r2',
+    'zerip', 'zeriqe', 'zeriqpassive', 'zeriqr', 'zeriqre',
+    'jhin_r_shot', 'jhin_r_shot4', 'talonnoxiandiplomacy', 'taliyah_w2',
+    'twitch_deadlyvenom', 'twitch_q_stealth', 'fiddlesticksp2', 'fiddlestickse2',
+    // 사미라 R 7개 — 1차 위키 조사에서 이미 "내부 연출용" 으로 판정났던 자리다.
+    //   전수 수집기로 바꾸면서 다시 들어왔던 것을 화면 확인으로 재확인해 뺀다
+    'samirar2', 'samirar3', 'samirar4', 'samirar5', 'samirar6', 'samirar7', 'samirar8',
+    'evelynn_ravage',            // 이블린 E — 셋 중 맨 오른쪽
+    'corki_thepackage',          // 코르키 R — 둘 중 오른쪽
+    'kayn_r1_slay', 'kayn_r2_primary',   // 케인 R — 남기는 건 r2_ass(암살자)·r2_slay(학살자)
+    'hweiwashbrush',             // 흐웨이 W — 넷 중 첫 번째
+    // ★ 케인 Q·E — 문장에 **한쪽 폼 설명만** 있다. Q 는 "다르킨 학살자" 만,
+    //   E 는 "그림자 암살자" 만 나온다. 짝이 없는 아이콘은 붙일 자리가 없어서 뺀다
+    //   (원문에 그 폼 설명이 아예 없는 것이라 우리가 지어낼 수는 없다)
+    'kayn_q_ass', 'kayn_e_slay',
+]);
+//   기본 아이콘과 그림이 같은데 파일만 따로 있는 것. 넣으면 같은 아이콘이 두 번 나온다.
+//   ★ 자동 판별이 안 된다 — 파일명이 기본과 달라서(rengarq vs rengar_q) 이름 비교로는
+//     못 걸러지고, 그림을 봐야 안다. 롤위키 대조로 확인한 것만 적는다.
+const ICON_DUP = new Set([
+    'rengar_q',     // 기본 Q 와 동일 (위키: Q 하위는 강화판 하나뿐)
+    'kled_q',       // 〃
+    'qiyana_q1',    // 〃 (q2_green/q2_blue 가 진짜 하위)
+    'syndraw2',     // W 가 적에게 거는 표시(SyndraWDebuff). syndra_w2 가 진짜 강화판
+]);
+
+// 파일명에 슬롯 글자가 없어 자동으로 못 정하는 것. 롤위키에서 확인한 슬롯을 적는다.
+//   ★ 여기 없는 자리는 "확인 안 됨" 이 아니라 "노이즈로 판정" 이다.
+//     (블리츠크랭크 RocketGrab = 기본 Q 중복, 잔나 HowlingGale_URF = URF 전용 등)
+// 슬롯을 **강제로** 지정한다. 이름·객체명으로 자동 판별한 결과를 덮어쓴다.
+//   ★ 르블랑 미믹(R 로 직전 스킬을 복제)이 유일한 사례다. 파일명이 `LeblancRQ` 라
+//     Q 슬롯으로 잡히는데, 실제로는 **R 을 눌렀을 때 나가는 Q** 라서 R 밑에 있어야
+//     뜻이 통한다 (화면 확인 2026-08-10). `LeblancWReturn`(W 자체의 귀환)은 W 에 남긴다.
+// 중첩형 {{키_@인덱스@}} 를 푼다. **`build_champion_data.js` 의 NESTED_INDEX 와 항상 같아야 한다** —
+//   어긋나면 문장의 {pN} 개수와 값의 pN 개수가 안 맞아 화면에 `{p2}` 가 그대로 찍힌다.
+const NESTED_INDEX = {
+    'game_spell_kayn_p_main': 0,      // 0 = 변신 전 (양쪽 폼 설명이 다 들어 있다)
+    'spell_secondsight_tooltip': 1,   // 1 = 소환사의 협곡 (2 는 아레나)
+};
+const resolveNested = (text, strings) => {
+    if (!text) return text;
+    const tbl = (strings && strings.entries) ? strings.entries : strings;
+    return String(text).replace(/\{\{\s*([A-Za-z0-9_]+?)_(?:@[^@]+@|\{p\d+\})\s*\}\}/g, (m0, prefix) => {
+        const idx = NESTED_INDEX[prefix.toLowerCase()];
+        if (idx === undefined) return m0;
+        const hit = tbl && tbl[`${prefix.toLowerCase()}_${idx}`];
+        return (typeof hit === 'string' && hit.trim()) ? hit : m0;
+    });
+};
+
+const ICON_FORCE_SLOT = {
+    Leblanc: { leblancrq: 'R', leblancrw: 'R', leblancre: 'R' },
+    // ★ 아래 셋은 "궁이 기본 스킬을 강화하는" 구조라, 강화판 아이콘이 Q/W/E 가 아니라
+    //   **궁 설명 옆에** 있어야 뜻이 통한다 (화면 확인 2026-08-10).
+    Karma:        { karma_q2: 'R', karma_w2: 'R', karma_e2: 'R' },
+    Khazix:       { khazix_q_red: 'R', khazix_w_red: 'R', khazix_e_red: 'R' },
+    Heimerdinger: { heimerdinger_q2: 'R', heimerdinger_w2: 'R', heimerdinger_e2: 'R' },
+};
+
+// 한 슬롯 안의 아이콘 **순서**를 강제한다. 기본은 파일 이름순인데(`q2` -> `q3`),
+//   르블랑 R 은 이름순이면 `re, rq, rw` = E·Q·W 가 돼서 문장(Q·W·E)과 어긋난다.
+//   여기 적힌 것만 앞으로 당기고 나머지는 뒤에 이름순으로 붙는다.
+const ICON_ORDER = {
+    Leblanc: { R: ['leblancrq', 'leblancrw', 'leblancre'] },
+    //   신드라 W 는 재사용(던지기) 다음에 진화가 와야 하는데 이름순이면 진화(w2)가 앞선다
+    Syndra: { W: ['syndra_wr2', 'syndra_w2'] },
+    // ★ 흐웨이는 **문장 순서와 파일 이름순이 서로 다르다.** 조합 스킬이라 짝이 어긋나면
+    //   엉뚱한 그림이 붙는다. 문장에 나오는 차례대로 적는다 (화면 확인 2026-08-10).
+    Hwei: {
+        Q: ['hweiqq', 'hweiqw', 'hweiqe'],   // 파멸의 화염 · 절단의 번개 · 녹아내린 균열
+        W: ['hweiwq', 'hweiww', 'hweiwe'],   // 쏜살같은 물살 · 반사의 웅덩이 · 요동치는 빛
+        E: ['hweieq', 'hweiew', 'hweiee'],   // 암울한 형상 · 심연의 응시 · 파괴의 아귀
+    },
+    // 궁으로 옮긴 강화판들도 궁 문장에 나오는 차례(Q -> W -> E)로 맞춘다
+    Karma:        { R: ['karma_q2', 'karma_w2', 'karma_e2'] },
+    Khazix:       { R: ['khazix_q_red', 'khazix_w_red', 'khazix_e_red', 'khazix_r_red'] },
+    Heimerdinger: { R: ['heimerdinger_q2', 'heimerdinger_w2', 'heimerdinger_e2'] },
+    // 케인 Q·E 는 한쪽 폼 설명만 문장에 있다 (아래 ICON_REJECT 참고)
+    Qiyana:      { Q: ['qiyana_q2_blue', 'qiyana_q2_red', 'qiyana_q2_green'] },  // 얼음 · 바위 · 야생
+    TwistedFate: { W: ['cardmaster_blue', 'cardmaster_red', 'cardmaster_gold'] }, // 파랑 · 빨강 · 금색
+    // 아펠리오스 무기 순서는 문장과 같게 — 만월총·절단검·중력포·화염포·반월검
+    Aphelios: {
+        P: ['calibrum_m', 'severum_m', 'gravitum_m', 'infernum_m', 'crescendum_m'],
+        Q: ['calibrum_m', 'severum_m', 'gravitum_m', 'infernum_m', 'crescendum_m'],
+        R: ['calibrum_u', 'severum_u', 'gravitum_u', 'infernum_u', 'crescendum_u'],
+    },
+};
+
+const ICON_SLOT = {
+    // 무기별 궁 변형 5종. 무기 이름이 곧 파일명이라 슬롯 글자가 없다
+    Aphelios: { calibrum_u: 'R', severum_u: 'R', gravitum_u: 'R', infernum_u: 'R', crescendum_u: 'R' },
+    // 점화 강화판 — 파일명이 스킬 영문명이다
+    Brand: { brandsear: 'Q', brandpillarofflame: 'W', brandconflagration: 'E', brandpyroclasm: 'R' },
+    Corki: { corki_thepackage: 'R' },
+    Elise: { elisespiderq: 'Q', elisespiderw: 'W', elisespidere: 'E' },
+    Graves: { graveshighnoon: 'R' },
+    Hwei: { hweiwashbrush: 'W' },
+    Katarina: { katarina_daggerspin: 'P' },
+    Lillia: { lillia_icon_buff_speedup: 'Q' },
+    Riven: { rivenwindscar: 'R' },
+    Rumble: { rumble_junkyardtitan3: 'P' },
+    TwistedFate: { cardmaster_gold: 'W', cardmaster_premonition: 'R' },
+    Twitch: { twitch_deadlyvenom: 'P' },
+    Vladimir: { vladimir_tidesofblood: 'E' },
+    Zyra: { zyrapq: 'P' },
 };
 
 function findExtraIcons(bin, alias, binSpells) {
@@ -315,6 +523,8 @@ function findExtraIcons(bin, alias, binSpells) {
         const m = JSON.stringify(o).match(/"(ASSETS\/[^"]*Icons2D\/[^"]+\.dds)"/i);
         return m ? m[1] : null;
     };
+    // 한 객체에 아이콘이 여러 개 박혀 있을 수 있다 (본체의 [기본, 강화] 배열)
+    const filesOf = (o) => [...JSON.stringify(o).matchAll(/"(ASSETS\/[^"]*Icons2D\/[^"]+\.dds)"/gi)].map(m => m[1]);
     //   ★ 일부 챔피언은 파일 이름 앞에 icon_/icons_ 가 붙는다
     //     (icons_ksante_q2, icon_ambessa_q2, icons_smolder_q2).
     //     이걸 안 벗기면 "챔피언 이름으로 시작" 조건에 걸려 통째로 빠진다.
@@ -322,50 +532,108 @@ function findExtraIcons(bin, alias, binSpells) {
     const nameOf = (f) => f.split('/').pop().toLowerCase().replace(/\.dds$/, '').replace(/^icons?_/, '');
 
     const main = (rec.spells || []).slice(0, 4);
+    const passive = rec.mCharacterPassiveSpell;
+    const SLOTS = ['Q', 'W', 'E', 'R'];
+
+    // 기본 아이콘 = 본체 스펠·패시브가 들고 있는 **첫 번째** 아이콘.
+    //   배열이면 [기본, 강화, ...] 순이라 0번만 기본이고 나머지는 전부 하위 아이콘이다.
     const baseIcon = {};
-    ['Q', 'W', 'E', 'R'].forEach((k, i) => {
-        const f = main[i] && bin[main[i]] ? fileOf(bin[main[i]]) : null;
-        if (f) baseIcon[k] = nameOf(f);
+    const baseNames = [];
+    [...main, passive].forEach((s, i) => {
+        if (!s || !bin[s]) return;
+        const f = fileOf(bin[s]);
+        if (!f) return;
+        const n = nameOf(f);
+        baseNames.push(n);
+        baseIcon[i < 4 ? SLOTS[i] : 'P'] = n;
     });
-    const skip = new Set([...main, rec.mCharacterPassiveSpell]);
+    const isBase = new Set(baseNames);
 
     // 두 번째 폼은 아래 박스로 따로 나가므로 아이콘 줄에서 뺀다.
     const f2 = FORM2[alias] || {};
-    const f2Objs = new Set(['Q', 'W', 'E', 'R'].map(k => f2[k]).filter(Boolean));
+    const f2Objs = new Set(SLOTS.map(k => f2[k]).filter(Boolean));
     const f2Icons = new Set([...f2Objs].map(n => {
         const o = findSpellObj(bin, alias, n);
         const f = o ? fileOf(o) : null;
         return f ? nameOf(f) : null;
     }).filter(Boolean));
 
+    // 받아들일 파일명 접두사.
+    //   ★ 챔피언 alias 와 파일명이 다른 경우가 많다 — 워윅 wolfman_, 제드 shadowninja_,
+    //     샤코 jester_, 트페 cardmaster_, 벨베스 bv_, 나르 메가폼 gnarbig_.
+    //     그래서 alias 만 보면 안 되고 **기본 아이콘의 접두사**도 같이 받는다.
+    //     (구버전 아이콘인 wolfman_/shadowninja_ 는 기본 아이콘이 warwick_/zed_ 라서
+    //      이 규칙만으로 자동으로 걸러진다 — 의도한 결과다)
+    const prefixes = new Set([low]);
+    baseNames.forEach(n => {
+        const m = n.match(/^([a-z]{3,}?)(?=[_qwerp0-9]|$)/);
+        if (m) prefixes.add(m[1]);
+    });
+    Object.keys(ICON_SLOT[alias] || {}).forEach(f => prefixes.add(f));
+    const mine = (f) => [...prefixes].some(p => f.startsWith(p));
+
     const out = {};
     const seen = new Set();
+    const force = ICON_FORCE_SLOT[alias] || {};
+    const push = (slot0, file, path) => {
+        const slot = force[file] || slot0;   // 강제 지정이 자동 판별을 이긴다
+        if (!slot || seen.has(file)) return;
+        if (isBase.has(file) || f2Icons.has(file)) return;
+        if (file === baseIcon[slot]) return;
+        seen.add(file);
+        (out[slot] = out[slot] || []).push({ file, url: ICON_BASE + path.toLowerCase().replace(/\.dds$/, '.png') });
+    };
+    const usable = (file) =>
+        mine(file) && !ICON_NOISE.test(file) && !ICON_NOISE2.test(file)
+        && !ICON_OLD.has(file) && !ICON_DUP.has(file) && !ICON_REJECT.has(file);
+
+    // ① 본체·패시브의 아이콘 배열 — **인덱스가 곧 슬롯**이라 이름을 안 봐도 된다.
+    //    옛 방식이 통째로 놓치던 부류다 (그웬 R2·R3, 신드라 전 슬롯, 사이온 R2).
+    [...main, passive].forEach((s, i) => {
+        if (!s || !bin[s]) return;
+        const slot = i < 4 ? SLOTS[i] : 'P';
+        [...new Set(filesOf(bin[s]))].slice(1).forEach(p => {
+            const file = nameOf(p);
+            if (usable(file)) push(slot, file, p);
+        });
+    });
+
+    // ② 별도 스펠 객체 — 슬롯을 이름에서 캐낸다.
     for (const k of Object.keys(bin)) {
         if (!k.startsWith(`Characters/${alias}/Spells/`) || !bin[k] || !bin[k].mSpell) continue;
-        if (skip.has(k) || f2Objs.has(k.split('/').pop())) continue;
-        const f = fileOf(bin[k]);
-        if (!f) continue;
-        // ★ 일부 챔피언은 파일 이름 앞에 icon_/icons_ 가 붙는다
-        //   (icons_ksante_q2, icon_ambessa_q2, icons_smolder_q2).
-        //   이걸 안 벗기면 "챔피언 이름으로 시작" 조건에 걸려 통째로 빠진다.
-        const file = nameOf(f);
-        if (!file.startsWith(low)) continue;
-        // ★ 숫자는 2 이상만. 1 은 기본 아이콘이고(Garen_E1, Syndra_Q1),
-        //   0 은 게임에 안 쓰는 내부용이다 — Thresh_E0 가 그래서 잘못 들어갔었다
-        //   (위키 확인: 쓰레쉬 E 는 아이콘이 하나뿐이고 .gif/.png 는 같은 그림이다).
-        const m = file.slice(low.length).replace(/^_/, '').match(/^([qwer])([2-9])/);
-        if (!m) continue;
-        const slot = m[1].toUpperCase();
-        if (file === baseIcon[slot] || f2Icons.has(file) || seen.has(file)) continue;
-        seen.add(file);
-        (out[slot] = out[slot] || []).push({ file, url: ICON_BASE + f.toLowerCase().replace(/\.dds$/, '.png') });
+        if (f2Objs.has(k.split('/').pop())) continue;
+        const objName = k.split('/').pop();
+        for (const p of [...new Set(filesOf(bin[k]))]) {
+            const file = nameOf(p);
+            if (seen.has(file) || isBase.has(file) || !usable(file)) continue;
+            // 파일명에서 접두사를 떼고 남은 첫 글자가 슬롯이다.
+            //   ★ 뒤에 영문이 이어지면 안 된다 — rivenwindscar 의 w, gragasexplosivecask 의 e 를
+            //     슬롯으로 오인한다. 그래서 (?![a-z]) 를 붙인다.
+            let slot = null;
+            const pre = [...prefixes].filter(x => file.startsWith(x)).sort((a, b) => b.length - a.length)[0] || '';
+            let m = file.slice(pre.length).replace(/^_/, '').match(/^([qwerp])(?![a-z])/);
+            if (m) slot = m[1].toUpperCase();
+            // 파일명으로 안 되면 스펠 객체 이름을 본다 (RengarWEmp -> W)
+            if (!slot) {
+                m = objName.replace(new RegExp('^' + alias, 'i'), '').match(/^_?([QWERP])(?![a-z])/);
+                if (m) slot = m[1].toUpperCase();
+            }
+            // 그래도 안 되면 손으로 적어 둔 표
+            if (!slot) slot = (ICON_SLOT[alias] || {})[file] || null;
+            if (slot) push(slot, file, p);
+        }
     }
     // 손으로 적어 둔 보완분
     const ex = EXTRA_ICONS[alias];
     if (ex) {
         for (const slot of Object.keys(ex)) {
+            // ★ 중복 검사는 **슬롯 안에서만** 한다 (2026-08-10).
+            //   예전엔 챔피언 전체로 봐서, 아펠리오스 P 와 Q 가 같은 무기 아이콘을
+            //   쓰는데 **Q 쪽이 통째로 비어 버렸다.** 슬롯이 다르면 같은 그림을 써도 된다.
+            const here = new Set((out[slot] || []).map(x => x.file));
             for (const file of ex[slot]) {
-                if (seen.has(file)) continue;
+                if (here.has(file)) continue;
+                here.add(file);
                 seen.add(file);
                 (out[slot] = out[slot] || []).push({
                     file,
@@ -375,7 +643,15 @@ function findExtraIcons(bin, alias, binSpells) {
         }
     }
     // 파일 이름 순으로 정렬해야 q2 -> q3 순서가 된다.
-    for (const slot of Object.keys(out)) out[slot].sort((a, b) => a.file.localeCompare(b.file));
+    //   ★ ICON_ORDER 에 적힌 슬롯은 그 순서를 먼저 따른다 (르블랑 R = Q·W·E 순).
+    const ord = ICON_ORDER[alias] || {};
+    for (const slot of Object.keys(out)) {
+        out[slot].sort((a, b) => a.file.localeCompare(b.file));
+        const want = ord[slot];
+        if (!want) continue;
+        const rank = (f) => { const i = want.indexOf(f); return i < 0 ? want.length : i; };
+        out[slot].sort((a, b) => rank(a.file) - rank(b.file));
+    }
     return out;
 }
 
@@ -400,6 +676,16 @@ const MAX_RANK = {
     Elise:   { Q: 5, W: 5, E: 5, R: 4 },   // 〃
     Yuumi:   { Q: 6, W: 5, E: 5, R: 3 },   // 1레벨에 W 공짜라 Q 만 6랭크
 };
+// ★ Data Dragon 과 CommunityDragon 의 챔피언 ID 철자가 다른 경우.
+//   app.js 는 **DD 의 `champ.id`** 로 customValues / customTemplates 를 조회한다.
+//   그래서 파일에 적히는 키는 반드시 DD 철자여야 한다. CD 철자로 나가면 조회가
+//   통째로 실패해서 **문장·수치를 다 버리고 DD 툴팁으로 폴백**한다
+//   (피들스틱이 이 경우였다 — 화면에 `[스탯 비례]` 같은 미해결 토큰이 찍혔다).
+//   ★ bin 경로·스펠 조회는 CD 철자(alias)를 그대로 써야 하므로 **출력 키에만** 적용할 것.
+//   ★ `build_champion_data.js` 에도 같은 표가 있다. 어긋나면 템플릿과 값의 키가 갈린다.
+const DD_ID = { FiddleSticks: 'Fiddlesticks' };
+const ddId = (alias) => DD_ID[alias] || alias;
+
 const rankOf = (alias, key) =>
     (MAX_RANK[alias] && MAX_RANK[alias][key]) || (key === 'R' ? 3 : 5);
 
@@ -1391,7 +1677,8 @@ async function main() {
         }
 
         // 손으로 쓴 피해량 줄은 재생성해도 살린다.
-        const carried = extractVV(oldValues, alias);
+        // 옛 파일이 CD 철자로 쓰여 있을 수 있어 양쪽 다 본다 (키를 바꾼 첫 실행 대비)
+        const carried = Object.assign(extractVV(oldValues, alias), extractVV(oldValues, ddId(alias)));
 
         let v1, bin;
         try { v1 = await get(`${CD}/champions/${c.id}.json`); }
@@ -1415,7 +1702,11 @@ async function main() {
         // ---- 패시브 ----
         // 문장은 stringtable 에서 온다. build_champion_data.js 와 같은 경로를 써야
         // 템플릿의 {pN} 번호와 여기서 매기는 pN 이 어긋나지 않는다.
-        const passiveRaw = getPassiveTooltip(bin, alias, strings);
+        //   ★ 중첩형 {{키_@인덱스@}} 도 **build 와 똑같이** 풀어야 한다 (2026-08-10).
+        //     안 풀면 여기서는 자리를 1개(@GameModeInteger@)로 세는데 템플릿엔
+        //     풀린 문장의 자리가 4개 들어가서, 화면에 `{p2}` 같은 게 그대로 찍힌다.
+        //     케인 P 가 실제로 그랬다. NESTED_INDEX 는 두 파일이 항상 같아야 한다.
+        const passiveRaw = resolveNested(getPassiveTooltip(bin, alias, strings), strings);
         const passiveNames = passiveRaw
             ? [...new Set([...String(passiveRaw)
                 .replace(/@SpellModifierDescriptionAppend@/gi, '')
@@ -1424,13 +1715,21 @@ async function main() {
 
         const previewLines = [];
         const lines = [];
+        // 패시브도 하위 아이콘을 가진다 (신드라 P2, 케인 암살자/그림자 패시브,
+        //   카타리나 단검 회수, 피들스틱 P2 등 17자리). QWER 쪽과 달리 이 블록은
+        //   따로 만들어져서 원래 icons 줄이 안 붙고 있었다 — 2026-08-09 추가.
+        const pIcons = extraIcons.P;
+        const pIconLine = pIcons && pIcons.length
+            ? `            "icons": [${pIcons.map(x => q(x.url)).join(', ')}],`
+            : null;
         if (!passiveNames.length) {
-            // 빈칸이 없어도 손으로 쓴 피해량 줄이 있으면 한 줄짜리로 못 줄인다.
-            if (carried.P && (carried.P.v1 !== undefined || carried.P.v2 !== undefined)) {
+            // 빈칸이 없어도 손으로 쓴 피해량 줄이나 아이콘이 있으면 한 줄짜리로 못 줄인다.
+            if (pIconLine || (carried.P && (carried.P.v1 !== undefined || carried.P.v2 !== undefined))) {
                 lines.push(`        "P": {`);
-                if (carried.P.v1 !== undefined) lines.push(carried.P.v1);
-                if (carried.P.v2 !== undefined) lines.push(carried.P.v2);
+                if (carried.P && carried.P.v1 !== undefined) lines.push(carried.P.v1);
+                if (carried.P && carried.P.v2 !== undefined) lines.push(carried.P.v2);
                 lines.push(`            "cooldown": "-",`);
+                if (pIconLine) lines.push(pIconLine);
                 lines.push(`            "cost": "-"`);
                 lines.push(`        },`);
             } else {
@@ -1469,6 +1768,7 @@ async function main() {
             if (carried.P && carried.P.v1 !== undefined) lines.push(carried.P.v1);
             if (carried.P && carried.P.v2 !== undefined) lines.push(carried.P.v2);
             lines.push(`            "cooldown": "-",`);
+            if (pIconLine) lines.push(pIconLine);
             lines.push(`            "cost": "-"`);
             lines.push(`        },`);
         }
@@ -1591,6 +1891,19 @@ async function main() {
                     const stripped = txt.replace(/\s*\([^()]*@[^()]*\)/g, (paren) =>
                         fillOne(paren).ok ? paren : '');
                     const { ok, out } = fillOne(stripped.replace(/\s+/g, ' ').trim());
+                    // ★ 소모값 괄호는 인게임에서 **"지금 이 순간의 절대값"** 을 보여주는 자리다.
+                    //   자크 Q 가 인게임에선 "현재 체력의 8% (56) 소모" 로 뜬다 — 56 은 그때의
+                    //   현재 체력 695 의 8% 다. 우리는 고정값이 없어서 수식이 그대로 튀어나온다
+                    //   ("0.08 x 최대 체력의 100% x 현재 체력의 100%"). 그건 버리는 게 맞다.
+                    //   ★ 단 계수 괄호는 진짜 정보라 살려야 한다 — 올라프 E "(+ 총 공격력의 50%)".
+                    //   그래서 **`+` 로 시작하거나(계수) 순수 숫자면(절대값) 살리고 나머지는 버린다.**
+                    //   (`STAT_NAMES` 에 14=현재 체력을 넣기 전에는 수식이 안 풀려서 괄호가
+                    //    통째로 버려졌고, 그래서 우연히 결과가 맞았다. 이름을 알려주니 오히려
+                    //    나빠져서 이 규칙을 넣었다 — 2026-08-10)
+                    const dropRuntimeParen = (t) => t.replace(/\s*\(([^()]+)\)/g, (m0, inner) => {
+                        const s = inner.trim();
+                        return (s.startsWith('+') || /^[\d\s./%~-]+$/.test(s)) ? m0 : '';
+                    });
                     // 괄호가 본문과 같은 말을 반복하면 지운다.
                     //   블라디미르 E 가 "최대 체력의 8% (최대 체력의 8%) 소모" 로 나왔다.
                     const dedup = (t) => {
@@ -1602,7 +1915,7 @@ async function main() {
                         }
                         return r.replace(/\s+/g, ' ').trim();
                     };
-                    if (ok) { cost = dedup(out); costFromText.push(`${c.name} ${key} = ${cost}`); }
+                    if (ok) { cost = dedup(dropRuntimeParen(out)); costFromText.push(`${c.name} ${key} = ${cost}`); }
                     else costTextFail.push(`${c.name} ${key} = ${txt}`);
                 }
                 // 문구로도 못 채웠으면 manaUiOverride 를 쓴다 (킨드레드 E = 50).
@@ -1626,6 +1939,13 @@ async function main() {
             lines.push(`            "cooldown": ${q(cd)},`);
             lines.push(`            "cost": ${q(cost)},`);
             // 같은 스킬에 아이콘이 여러 개 달리는 자리 (재시전·취소·진화·1·2·3타).
+            // 첫 번째 폼 라벨. 폼이 두 개인 챔피언의 기본 스킬에만 붙는다.
+            //   ★ 폼2 로 대체되는 슬롯에만 붙인다 — 클레드는 Q 만 바뀌므로 W·E·R 엔 안 붙는다
+            const f1 = FORM2[alias];
+            if (f1 && f1.label1 && f1[key]) lines.push(`            "form1": ${q(f1.label1)},`);
+            // 기본 아이콘 교체 (벨베스 Q). app.js 가 `img` 가 있으면 DD 것 대신 쓴다.
+            const ov = (ICON_OVERRIDE[alias] || {})[key];
+            if (ov) lines.push(`            "img": ${q(`${ICON_BASE}assets/characters/${alias.toLowerCase()}/hud/icons2d/${ov}.png`)},`);
             const ei = extraIcons[key];
             if (ei && ei.length) {
                 lines.push(`            "icons": [${ei.map(x => q(x.url)).join(', ')}],`);
@@ -1693,7 +2013,7 @@ async function main() {
             }
         }
 
-        entries.push(`    "${alias}": { // ${c.name}\n${lines.join('\n')}\n    },`);
+        entries.push(`    "${ddId(alias)}": { // ${c.name}\n${lines.join('\n')}\n    },`);
 
         if (PREVIEW.includes(alias)) {
             console.log(`--- ${c.name} (${alias}) ---`);
