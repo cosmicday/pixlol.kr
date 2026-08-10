@@ -17,6 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const { loadStringTable, getPassiveTooltip } = require('./stringtable');
+const { getBin, cacheStats } = require('./bincache');
 
 // ------------------------------------------------------------
 // 설정
@@ -452,7 +453,8 @@ async function main() {
         let bin = null;
         try {
             const low = alias.toLowerCase();
-            bin = await getJson(`${BIN}/${low}/${low}.bin.json`);
+            // ★ bin 로컬 캐시 (7일). 패치 후에는 `--refresh` 를 붙일 것.
+            bin = await getBin(`${BIN}/${low}/${low}.bin.json`, low);
         } catch (e) {
             binFails.push(`${c.name} (${e.message})`);
         }
@@ -576,7 +578,9 @@ async function main() {
         valueEntries.push(`    "${ddId(alias)}": { // ${c.name}\n${valLines.join('\n')}\n    },`);
 
         console.log(`  (${n + 1}/${champions.length}) ${c.name}`);
-        await sleep(DELAY);
+        // ★ 캐시에서 나왔으면 CD 를 안 때린 것이라 기다릴 필요가 없다.
+        //   173명 x 120~150ms = 20~26초를 통째로 아낀다.
+        if (cacheStats().fromCache === 0) await sleep(DELAY);
     }
 
     console.log('[5/5] 파일 쓰는 중...');

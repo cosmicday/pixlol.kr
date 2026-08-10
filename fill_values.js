@@ -14,6 +14,7 @@
 const fs = require('fs');
 const path = require('path');
 const { loadStringTable, getPassiveTooltip } = require('./stringtable');
+const { getBin, cacheStats } = require('./bincache');
 
 const WRITE = process.argv.includes('--write');
 
@@ -1686,7 +1687,9 @@ async function main() {
 
         try {
             const low = alias.toLowerCase();
-            bin = await get(`${BIN}/${low}/${low}.bin.json`);
+            // ★ bin 은 로컬에 캐시한다 (7일). 표 한 줄 고치고 다시 돌리는 반복이
+            //   1~2분에서 몇 초로 줄어든다. 패치 후에는 `--refresh` 를 붙일 것.
+            bin = await getBin(`${BIN}/${low}/${low}.bin.json`, low);
         } catch (e) {
             binFails.push(`${c.name} bin(${e.message})`);
             await sleep(DELAY);
@@ -2023,7 +2026,9 @@ async function main() {
             console.log(`  (${n + 1}/${champions.length})`);
         }
 
-        await sleep(DELAY);
+        // ★ 캐시에서 나왔으면 CD 를 안 때린 것이라 기다릴 필요가 없다.
+        //   173명 x 120~150ms = 20~26초를 통째로 아낀다.
+        if (cacheStats().fromCache === 0) await sleep(DELAY);
     }
 
     console.log('\n' + '='.repeat(60));
