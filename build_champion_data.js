@@ -328,6 +328,13 @@ const KEEP_TEXT = {
     //   bin 에도 없다 — `RengarPassiveBonetoothBuff1~5` 는 껍데기고 값은 버프 스크립트 안이다.
     //   롤위키 "1% – 36% (based on Trophies) bonus AD" 를 보고 손으로 적었다 (2026-08-10)
     Rengar: ['P'],
+    //   ★ "<슬롯>_rules" = 구분선 아래 회색 글씨. 여기도 손질한 자리는 적어야 한다 (2026-08-12).
+    //     세 자리 모두 **"현재 내 챔피언의 값 / 최대값"** 형태라 앞쪽 현재값을 지웠다.
+    //     그냥 두면 `?` 가 되어 회색 글씨가 통째로 안 나갔다. 나무위키도 셋 다 현재값을 안 적는다.
+    //       에코 R  — `[{p4}]` 가 W 단축키 아이콘 자리였다 (spell.EkkoW:HotKey)
+    //       크산테 Q — `{p7} / 120` 의 앞쪽. 나무위키도 "n / 120" 이라고만 적는다
+    //       유나라 W — `({p8}% / 100%)` 의 앞쪽. 나무위키는 이 괄호를 통째로 안 적는다
+    Ekko: ['R_rules'], KSante: ['Q_rules'], Yunara: ['W_rules'],
     //   드레이븐 P — "획득한 총 골드 / 최고 골드 획득량" 두 줄을 지웠다.
     //   `<stattracking>` 태그가 붙은 자리로, **인게임에서 실시간으로 세는 누적값**이라
     //   고정값이 없다(우리 데이터엔 `1 (중첩당)` 이라는 뜻 없는 값이 들어왔다).
@@ -510,7 +517,9 @@ async function main() {
         const passiveNote = passiveRaw ? 'stringtable' : 'CD 요약본 — 빈칸 없음, 직접 다듬을 것';
         if (keepArr.P) tplLines.push(keepArr.P);
         else tplLines.push(`        "P": ${q(passive.text)}, // ${(data.passive && data.passive.name) || ''} — ${passiveNote}`);
-        if (passive.rules) {
+        // 손질한 회색 글씨는 KEEP_TEXT 로 물려받는다 (표에 "<슬롯>_rules" 를 적어 둔다)
+        if (keepArr.P_rules) { tplLines.push(keepArr.P_rules); belowMade.push(`${c.name} P`); }
+        else if (passive.rules) {
             tplLines.push(`        "P_rules": ${q(passive.rules)}, // 구분선 아래 회색 글씨`);
             belowMade.push(`${c.name} P`);
         }
@@ -535,7 +544,8 @@ async function main() {
             const { text, names } = conv;
             if (keepArr[key]) tplLines.push(keepArr[key]);
             else tplLines.push(`        "${key}": ${q(text)}, // ${spell.name}`);
-            if (conv.rules) {
+            if (keepArr[key + '_rules']) { tplLines.push(keepArr[key + '_rules']); belowMade.push(`${c.name} ${key}`); }
+            else if (conv.rules) {
                 tplLines.push(`        "${key}_rules": ${q(conv.rules)}, // 구분선 아래 회색 글씨`);
                 belowMade.push(`${c.name} ${key}`);
             }

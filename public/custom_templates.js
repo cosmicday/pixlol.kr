@@ -1231,7 +1231,7 @@ const customTemplates = {
         "E": "에코가 돌진합니다. 다음 기본 공격이 강화되어 사거리가 늘어나고 에코가 대상 쪽으로 순간이동하며 <magicdamage>{p1}의 마법 피해</magicdamage>를 추가로 입힙니다.", // 시간 도약
         "E_rules": "<rules>에코는 돌진 중 다른 스킬을 사용할 수 있습니다.</rules>", // 구분선 아래 회색 글씨
         "R": "에코가 시간을 되돌려 경직 상태에 빠지며 4초 전에 있던 지점으로 되돌아가 근처의 적에게 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 <healing>체력을 {p2}</healing> 회복합니다. 회복량은 이 4초 동안 에코가 잃은 체력에 따라 증가하며, 잃은 체력 1%당 회복량이 {p3}% 증가합니다.", // 시공간 붕괴
-        "R_rules": "<rules>에코가 [{p4}] 평행 시간 교차의 구체를 통과하면 폭발합니다.</rules><br><rules>경직 상태에 빠진 유닛은 움직이거나 행동할 수 없으며 대상으로 지정할 수 없는 무적 상태가 됩니다.</rules>", // 구분선 아래 회색 글씨
+        "R_rules": "<rules>에코가 <spellname>평행 시간 교차</spellname>의 구체를 통과하면 폭발합니다.</rules><br><rules>경직 상태에 빠진 유닛은 움직이거나 행동할 수 없으며 대상으로 지정할 수 없는 무적 상태가 됩니다.</rules>", // 구분선 아래 회색 글씨 — 원문의 [{p4}] 는 W 단축키 아이콘 자리(spell.EkkoW:HotKey)라 지웠다. 스킬 이름이 이미 어느 스킬인지 말해 준다
     },
     "Elise": { // 엘리스
         "P": "엘리스는 궁극기를 가지고 게임을 시작하여 <keywordmajor>인간 형태</keywordmajor>와 <keywordmajor>거미 형태</keywordmajor>로 변신할 수 있습니다.<br><br><keywordmajor>인간 형태:</keywordmajor> 엘리스의 스킬이 적에게 적중하면 휴면 상태의 <keywordmajor>새끼 거미</keywordmajor>를 얻습니다. (최대 {p1})<br><br><keywordmajor>거미 형태:</keywordmajor> 기본 공격 시 추가로 <magicdamage>{p2}의 마법 피해</magicdamage>를 입히고, <healing>{p3}의 체력</healing>을 회복합니다.", // 거미 여왕 — stringtable
@@ -1389,13 +1389,24 @@ const customTemplates = {
         // ★ 배열 = 하위 스킬을 파트로 쪼개 눈 것. app.js 가 아이콘 + 구분선으로 나눠 그린다.
         //   0번은 스킬 본체(기본 아이콘), 1번부터 values.icons[i-1] 과 짝이 된다.
         "Q": [
-            "<passive>기본 지속 효과:</passive> 유나라가 <onhit>적중 시</onhit> <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 기본 공격이 <evolve>방출을 {p2}</evolve>(챔피언일 경우 <evolve>방출 {p3}</evolve>) 생성합니다.<br><passive>사용 시:</passive> 유나라가 <evolve>방출을 {p4}</evolve> 소모하여 {p5}초 동안 <attackspeed>공격 속도를 {p6}</attackspeed> 얻고 <onhit>적중 시</onhit> <magicdamage>{p7}의 마법 피해</magicdamage>를 추가로 입힙니다. 지속시간 동안 유나라의 기본 공격이 주변 적에게 확산되어 <physicaldamage>{p8}의 물리 피해</physicaldamage>를 입힙니다.",
+            "<passive>기본 지속 효과:</passive> 유나라가 <onhit>적중 시</onhit> <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 기본 공격이 <evolve>방출을 {p2}</evolve>(챔피언일 경우 <evolve>방출 {p3}</evolve>) 생성합니다.",
+            "<active>사용 시:</active> 유나라가 <evolve>방출을 {p4}</evolve> 소모하여 {p5}초 동안 <attackspeed>공격 속도를 {p6}</attackspeed> 얻고 <onhit>적중 시</onhit> <magicdamage>{p7}의 마법 피해</magicdamage>를 추가로 입힙니다. 지속시간 동안 유나라의 기본 공격이 주변 적에게 확산되어 <physicaldamage>{p8}의 물리 피해</physicaldamage>를 입힙니다.",
             "<keywordmajor>초월 상태</keywordmajor>: 이 스킬이 즉시 활성화되어 {p9}초 동안 지속됩니다."
-        ], // 영혼 단련
+        ], // 영혼 단련 — 파트 3개. 기본 지속 효과(흑백 yunara_q) / 사용 시(컬러 yunara_q2) / 초월 상태(궁 yunara_r)
         "Q_rules": "<rules>확산 공격에는 치명타가 적용될 수 있으며 <onhit>적중 시</onhit> 효과가 {p10}%만큼 적용됩니다. 확산 공격은 <scalehealth>체력이 {p11}</scalehealth> 미만인 미니언에게 {p12}의 피해를 입힙니다.</rules>", // 구분선 아래 회색 글씨
-        "W": "유나라가 기도의 구슬을 던져 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 <status>{p2} 둔화시킵니다. 둔화 효과는 {p3}초에 걸쳐 감소합니다</status>. 기도의 구슬은 초당 <magicdamage>{p4}의 마법 피해</magicdamage>를 추가로 입힙니다.<br><br><keywordmajor>초월 상태 - 파멸의 궤적</keywordmajor>: 유나라가 빛줄기를 발사해 <magicdamage>{p5}의 마법 피해</magicdamage>를 입히고 <status>{p6} 둔화시킵니다. 둔화 효과는 {p7}초에 걸쳐 감소합니다</status>.", // 심판의 궤적 | 파멸의 궤적
-        "W_rules": "<rules>시전 시간은 영구적인 <attackspeed>공격 속도</attackspeed>({p8}% /{p9}%)에 비례합니다. 심판의 궤적은 미니언에게 {p10}의 피해를 입히고 스킬의 초당 피해량은 체력이 낮은 적을 처형합니다. 파멸의 궤적은 궁극기 효과를 얻습니다.</rules>", // 구분선 아래 회색 글씨
-        "E": "{p1}초 동안 유나라의 <speed>이동 속도가 {p2}</speed> 증가합니다. 적 챔피언에게 접근 시 <speed>이동 속도가 {p3}</speed>까지 증가합니다.<br><br><keywordmajor>초월 상태 - 닿지 않는 그림자</keywordmajor>: 유나라가 지정한 방향으로 돌진합니다.", // 칸메이의 발자취 | 닿지 않는 그림자
+        // ★ 배열 = 하위 스킬을 파트로 쪼개 눈 것. app.js 가 아이콘 + 구분선으로 나눠 그린다.
+        //   0번은 스킬 본체(기본 아이콘), 1번부터 values.icons[i-1] 과 짝이 된다.
+        "W": [
+            "유나라가 기도의 구슬을 던져 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 <status>{p2} 둔화시킵니다. 둔화 효과는 {p3}초에 걸쳐 감소합니다</status>. 기도의 구슬은 초당 <magicdamage>{p4}의 마법 피해</magicdamage>를 추가로 입힙니다.",
+            "<keywordmajor>초월 상태 - 파멸의 궤적</keywordmajor>: 유나라가 빛줄기를 발사해 <magicdamage>{p5}의 마법 피해</magicdamage>를 입히고 <status>{p6} 둔화시킵니다. 둔화 효과는 {p7}초에 걸쳐 감소합니다</status>."
+        ], // 심판의 궤적 | 파멸의 궤적 — 초월 파트는 yunara_rw 아이콘
+        "W_rules": "<rules>시전 시간은 영구적인 <attackspeed>공격 속도</attackspeed>에 비례합니다. ({p9}%까지 적용) <spellname>심판의 궤적</spellname>은 미니언에게 {p10}의 피해를 입히고 스킬의 초당 피해량은 체력이 낮은 적을 처형합니다. <spellname>파멸의 궤적</spellname>은 궁극기 효과를 얻습니다.</rules>", // 구분선 아래 회색 글씨 — 원문은 "({p8}% / {p9}%)" 인데 앞쪽이 현재 내 챔피언의 공격 속도라 고정값이 없다. 나무위키도 이 괄호를 안 적는다
+        // ★ 배열 = 하위 스킬을 파트로 쪼개 눈 것. app.js 가 아이콘 + 구분선으로 나눠 그린다.
+        //   0번은 스킬 본체(기본 아이콘), 1번부터 values.icons[i-1] 과 짝이 된다.
+        "E": [
+            "{p1}초 동안 유나라의 <speed>이동 속도가 {p2}</speed> 증가합니다. 적 챔피언에게 접근 시 <speed>이동 속도가 {p3}</speed>까지 증가합니다.",
+            "<keywordmajor>초월 상태 - 닿지 않는 그림자</keywordmajor>: 유나라가 지정한 방향으로 돌진합니다."
+        ], // 칸메이의 발자취 | 닿지 않는 그림자 — 초월 파트는 yunara_re 아이콘
         "E_rules": "<rules>칸메이의 발자취 사용 시 유나라가 <keyword>유체화</keyword> 상태가 됩니다. 닿지 않는 그림자는 궁극기 효과를 얻습니다.</rules>", // 구분선 아래 회색 글씨
         "R": "유나라가 {p1}초 동안 <keywordmajor>초월 상태</keywordmajor>에 돌입해 지속시간 동안 기본 스킬을 강화합니다.", // 자기 초월
     },
@@ -1883,7 +1894,7 @@ const customTemplates = {
     "KSante": { // 크산테
         "P": "크산테의 스킬이 적중한 적에게 표식을 남깁니다. 표식이 남은 적을 공격하면 <physicaldamage>{p1}+적 최대 체력의 {p2}에 해당하는 물리 피해</physicaldamage>를 입히고 표식을 소모합니다.<br><br><keywordmajor>총공세</keywordmajor>: 크산테의 기본 공격, 스킬, 기본 지속 효과가 적 최대 체력의 {p3}에 해당하는 물리 피해를 추가로 입힙니다.", // 불굴의 본능 — stringtable
         "Q": "크산테가 무기를 내리쳐 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입히고 {p2}초 동안 적에게 {p3}%의 <status>둔화</status> 효과를 적용합니다. 적중 시 {p4}초 동안 엔토포 타격 중첩을 1회 얻습니다. 2회 중첩되면 {p5}초 동안 적들을 <status>기절</status>시키고 <status>끌어당기는</status> 충격파를 발사합니다.<br><br><keywordmajor>총공세</keywordmajor>: 재사용 대기시간이 {p6}% 감소합니다.", // 엔토포 타격
-        "Q_rules": "<rules>추가 <scalearmor>방어력</scalearmor> 및 <scalemr>마법 저항력</scalemr>만큼 재사용 대기시간 및 시전 시간 감소: {p7} / {p8}.</rules>", // 구분선 아래 회색 글씨
+        "Q_rules": "<rules>추가 <scalearmor>방어력</scalearmor> 및 <scalemr>마법 저항력</scalemr>에 비례해 재사용 대기시간 및 시전 시간이 감소합니다. (합계 {p8}까지 적용)</rules>", // 구분선 아래 회색 글씨 — 원문은 "{p7} / {p8}" 인데 앞쪽이 현재 내 챔피언의 값이라 고정값이 없다. 나무위키도 "n / 120" 이라고만 적는다
         "W": "크산테가 무기를 치켜들며 {p1}~{p2}초 동안 방어 태세에 돌입합니다. 이때 크산테는 저지 불가 상태가 되며 받는 피해가 {p3}% 감소합니다. 이후 전방으로 돌진하며 <physicaldamage>{p4}+최대 체력의 {p5}에 해당하는 물리 피해</physicaldamage>를 입힙니다. 적중당한 적은 <status>뒤로 밀려나며</status> {p6}~{p7}초(충전 시간에 비례) 동안 <status>기절</status>합니다.<br><br><keywordmajor>총공세:</keywordmajor> 재사용 대기시간이 초기화됩니다. 피해의 {p8}~{p9}%만큼 <truedamage>고정 피해</truedamage>(충전 시간에 비례)를 추가로 입힙니다. 피해량 감소 효과가 {p10}%까지 증가하며 돌진 속도가 증가하지만 더는 적을 <status>뒤로 밀어내거나</status> <status>기절</status>시키지 않습니다.", // 길을 여는 자
         "W_rules": "<rules>충전 시간이 {p11}%가 되면 최대 효과에 도달합니다.<br>몬스터를 상대로는 최대 {p12}의 피해를 입힙니다.</rules>", // 구분선 아래 회색 글씨
         "E": "크산테가 돌진해 {p1}초 동안 <shield>{p2}의 피해를 흡수하는 보호막</shield>을 얻습니다. 아군에게 돌진하면 돌진 사거리가 크게 증가하며 아군도 같이 <shield>보호막</shield>을 얻습니다.<br><br><keywordmajor>총공세</keywordmajor>: 재사용 대기시간이 {p3}% 감소하고 돌진 속도가 증가합니다.", // 발놀림

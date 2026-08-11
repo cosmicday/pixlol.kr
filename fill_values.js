@@ -348,6 +348,13 @@ const EXTRA_ICONS = {
         P: ['calibrum_m', 'severum_m', 'gravitum_m', 'infernum_m', 'crescendum_m'],
         Q: ['calibrum_m', 'severum_m', 'gravitum_m', 'infernum_m', 'crescendum_m'],
     },
+    //   ★ 유나라는 R(자기 초월) 을 켜면 W·E 가 다른 스킬로 바뀐다
+    //     (심판의 궤적 -> 파멸의 궤적, 칸메이의 발자취 -> 닿지 않는 그림자).
+    //     `Yunara_RW.dds` / `Yunara_RE.dds` 가 실재하는데 **스펠 객체가 아니라 버프 쪽에
+    //     붙어 있어서** 자동 탐색(스펠 객체만 훑는다)에 안 걸린다. 2026-08-12 확인.
+    //   Q 의 초월 파트는 전용 아이콘이 없어서(라이엇이 안 만들었다) 궁 아이콘을 쓴다.
+    //     Q 는 `yunara_q2`(컬러, 사용 시) 가 스펠 객체에서 자동으로 잡히므로 여기 안 적는다.
+    Yunara: { Q: ['yunara_r'], W: ['yunara_rw'], E: ['yunara_re'] },
 };
 
 // 기본 아이콘(Data Dragon 것)이 인게임과 다를 때 갈아끼운다.
@@ -357,6 +364,18 @@ const EXTRA_ICONS = {
 //     상태 표시라 사이트에 다 넣을 값이 없다 — 꽉 찬 것 하나만 쓴다 (인게임 확인 2026-08-10).
 const ICON_OVERRIDE = {
     Belveth: { Q: 'bv_q_15' },
+    //   ★ 유나라 Q — DD 기본 아이콘은 `yunara_q`(흑백 구슬) 인데, 스킬 칸에서는
+    //     컬러판(`yunara_q2`) 이 훨씬 알아보기 좋다. 설명 첫 파트("기본 지속 효과") 옆에는
+    //     흑백을 그대로 두고 싶어서 아래 BODY_ICON 을 같이 쓴다 (2026-08-12).
+    Yunara: { Q: 'yunara_q2' },
+};
+
+// 배열 템플릿의 **0번 파트** 옆에만 쓰는 아이콘. 스킬 칸(버튼·이름) 아이콘과 다르게 하고 싶을 때.
+//   ICON_OVERRIDE 로 버튼을 컬러로 바꾸면 0번 파트까지 같이 컬러가 된다 — 둘 다
+//   `values.img` 를 보기 때문이다. 여기 적으면 0번 파트만 따로 지정된다.
+//   유나라 Q 가 유일한 사례: 버튼은 컬러(활성 상태), "기본 지속 효과" 옆은 흑백(비활성 상태).
+const BODY_ICON = {
+    Yunara: { Q: 'yunara_q' },
 };
 
 // ─── 2026-08-09: 전수 방식으로 교체 ─────────────────────────────────────
@@ -886,6 +905,112 @@ const foldProduct = (a, b) => {
     return out.every(x => x === out[0]) ? String(out[0]) : out.join(' / ');
 };
 
+// ------------------------------------------------------------
+//  "A x M" 을 사람이 읽는 문장으로 바꾼다 (2026-08-12).
+//
+//  foldProduct / foldRankMultiplier 가 숫자 하나로 못 접은 배율이 화면에 그대로 찍히는데,
+//  `x 1 + 0.3 x (치명타 피해량의 100% - 1)` 처럼 **무엇에 무엇이 곱해지는지 안 보인다.**
+//
+//  두 가지로 나눈다:
+//   1. 배율이 숫자(랭크별 배열·범위 포함)면 → `A의 N%` 로 적는다. 라이엇 툴팁과 같은 어법이다
+//      (모데카이저 Q `x 1.3 / 1.35 / ...` -> `의 130 / 135 / ...%`)
+//   2. 그 외(스탯이 섞인 식)는 → 괄호로 묶어 `A x (M)` 으로만 만든다.
+//      뜻을 바꾸진 못해도 **어디까지가 배율인지는 보이게** 한다
+//
+//  ★ 1 미만 배율은 `의 N%` 로 안 바꾼다. `A의 3.7%` 처럼 "깎는 값" 으로 읽혀야 하는데
+//    원래 뜻이 그런지 자리마다 달라서 함부로 못 바꾼다 (블라디미르 P 가 그 경우).
+// ------------------------------------------------------------
+// ★ 게임의 **기본 치명타 피해량**. 배율 식에 든 `치명타 피해량의 100%` 를 숫자로 접는 데 쓴다.
+//
+//   bin 의 배율은 `1 + k x (치명타 피해량 - 1)` 꼴이라 그대로 찍으면 계산식이 화면에 남는다.
+//   200% 는 나무위키 3자리로 교차 확인했다 (2026-08-12):
+//     가렌 E   k=0.3 -> x1.3  (무한의 대검 x1.39)
+//     미포 Q   k=0.5 -> x1.5  (무한의 대검 x1.65)
+//     미포 R   k=0.3 -> x1.3  (무한의 대검 x1.39)
+//   1 + k(C-1) 에 C=2.0 을 넣으면 셋 다 정확히 맞는다. C=1.75 면 하나도 안 맞는다.
+//
+//   ★ 라이엇이 기본 치명타 피해량을 바꾸면 **여기 한 줄만** 고치면 된다.
+//     `추가 치명타 피해량`(아이템으로 얻는 초과분)은 일부러 안 접는다 — 사람마다 다르고,
+//     문장에 남아 있는 편이 정보가 된다 (탈론 Q·케넨 W).
+const CRIT_DAMAGE = 2.0;
+
+// 배율 식을 숫자 하나로 계산해 본다. 못 하면 null.
+//   `치명타 피해량의 N%` 만 상수로 바꿔 넣고, 남은 게 순수 사칙연산이면 계산한다.
+const evalMultiplier = (expr) => {
+    const src = String(expr);
+    // ★ `/` 는 나눗셈이 아니라 **랭크 구분자**다. 하나라도 있으면 손대면 안 된다.
+    //   `1 + 0.3 / 0.375 / 0.45 / 0.525 / 0.6`(람머스 W)를 나눗셈으로 계산해서
+    //   `664.4%` 라는 엉터리가 나왔다. `6 / 7 / 8 / 9 / 10 - 1`(멜 Q)도 같은 사고였다.
+    if (src.includes('/')) return null;
+    // 치명타 피해량이 든 식만 손댄다. 다른 배율까지 접으면 영향 범위를 못 가늠한다.
+    if (!src.includes('치명타 피해량')) return null;
+    // `추가 치명타 피해량`(아이템으로 얻는 초과분)은 사람마다 달라서 상수로 못 바꾼다
+    if (src.includes('추가 치명타 피해량')) return null;
+    let s = src.replace(/치명타 피해량의 (-?[\d.]+)%/g,
+        (m0, n) => `(${parseFloat(n) / 100}*${CRIT_DAMAGE})`);
+    if (/[가-힣]/.test(s)) return null;             // 다른 스탯이 남아 있으면 못 접는다
+    if (!/^[\d.+\-*()\sx]+$/.test(s)) return null;
+    s = s.replace(/\sx\s/g, '*');
+    let v;
+    try { v = Function(`"use strict";return (${s});`)(); } catch { return null; }
+    return Number.isFinite(v) ? String(tidy(v)) : null;
+};
+
+const NUMLIST = /^-?[\d.]+(\s*[~/]\s*-?[\d.]+)*$/;
+// 괄호 짝이 맞는지. "(A) x (B)" 처럼 겉이 괄호로 시작·끝나도 한 덩어리가 아닐 수 있다.
+const balanced = (s) => {
+    let d = 0;
+    for (const ch of s) {
+        if (ch === '(') d++;
+        else if (ch === ')' && --d < 0) return false;
+    }
+    return d === 0;
+};
+const timesText = (a, m) => {
+    const mt = String(m).trim();
+    // 뒤에 붙은 "(레벨에 따라)" 같은 꼬리는 떼고 숫자만 본다
+    const tail = mt.match(/\s*\([^()]*\)$/);
+    const head = (tail ? mt.slice(0, tail.index) : mt).trim();
+    const suffix = tail ? tail[0] : '';
+
+    // 치명타 배율처럼 상수만 넣으면 숫자가 되는 식은 먼저 접는다 (CRIT_DAMAGE 주석 참고)
+    if (!NUMLIST.test(head)) {
+        const ev = evalMultiplier(head);
+        if (ev !== null) return timesText(a, ev + suffix);
+    }
+
+    if (NUMLIST.test(head)) {
+        const nums = head.split(/[~/]/).map(x => parseFloat(x));
+        // x 1 은 의미가 없다. 꼬리만 남긴다 (벨베스 P "x 1 (중첩당)")
+        if (nums.every(n => n === 1)) return suffix ? `${a}${suffix}` : a;
+
+        if (nums.length === 1 && !suffix) {
+            // ① 왼쪽이 "스탯의 N%" 하나면 **계수를 직접 곱한다.**
+            //    `주문력의 5% x 5` 를 `주문력의 5%의 500%` 로 적으면 오히려 더 안 읽힌다.
+            //    그웬 Q(짤깍 5회)가 이 경우다 -> `주문력의 25%`
+            const st = a.match(/^(.*의)\s*(-?[\d.]+(?:\s*\/\s*-?[\d.]+)*)%$/);
+            if (st) return `${st[1]} ${st[2].replace(/-?[\d.]+/g, x => String(tidy(parseFloat(x) * nums[0])))}%`;
+
+            // ② 왼쪽이 이미 "... x N" 으로 끝나면 배율끼리 먼저 접는다 (자크 R 의 이중 곱).
+            //    바깥 괄호 한 겹은 벗기고 본다 — 앞 단계의 wrap() 이 씌워 둔 것이라
+            //    `((A) x 0.5) x 3` 처럼 괄호로 끝나 정규식이 안 걸린다.
+            const bare = /^\(.*\)$/.test(a) && balanced(a.slice(1, -1)) ? a.slice(1, -1) : a;
+            const tm = bare.match(/^(.*)\sx\s(-?[\d.]+)$/);
+            if (tm) {
+                const k = tidy(parseFloat(tm[2]) * nums[0]);
+                return timesText(tm[1], String(k));
+            }
+        }
+
+        if (nums.every(n => n >= 1)) {
+            const pct = head.replace(/-?[\d.]+/g, (x) => String(tidy(parseFloat(x) * 100)));
+            return `${a}의 ${pct}%${suffix}`;
+        }
+    }
+    // 덧셈·뺄셈이 든 배율은 괄호로 묶어야 어디까지가 배율인지 보인다
+    return / [+-] /.test(mt) ? `${a} x (${mt})` : `${a} x ${mt}`;
+};
+
 // 랭크마다 다른 배율(미포 R "x 14 / 16 / 18", 흐웨이 Q "x 2 / 2.375 / ...")을 계산식 안으로 접는다.
 //   랭크 i 는 배율 k_i 를 스칼라로 걸어 계산식을 돌린 뒤 그 결과에서 i번째 랭크 칸만 뽑는다(대각선).
 //   그렇게 만든 랭크별 문자열 R개를 다시 합친다. 뼈대가 어긋나면 null 을 돌려 예전 "x ..." 표기를 남긴다.
@@ -1100,7 +1225,7 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             const folded = foldProduct(a, b);
             if (folded !== null) return folded;
             const wrap = (x) => / [+-] /.test(x) ? `(${x})` : x;
-            return `${wrap(a)} x ${wrap(b)}`;
+            return timesText(wrap(a), b);
         }
 
         case 'EffectValueCalculationPart': {
@@ -1319,7 +1444,7 @@ function guessPart(part, spell, maxRank, mult, depth) {
         // 위 ProductOfSubParts 와 같은 이유로 배율을 안 싣는다.
         const a = partToText(part.mPart1, spell, maxRank, 1, depth + 1);
         const b = partToText(part.mPart2, spell, maxRank, 1, depth + 1);
-        return (a && b) ? `${a} x ${b}` : null;
+        return (a && b) ? timesText(a, b) : null;
     }
     if (part.mSubpart) return partToText(part.mSubpart, spell, maxRank, mult, depth + 1);
 
@@ -1342,7 +1467,13 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
         //   (그웬 R -> "90 / 150 / 210 (+ 주문력의 30%)" = lolwiki 와 일치).
         //   랭크별 배열처럼 숫자 하나로 못 접는 배율은 예전처럼 x 로 남긴다
         //   (모데카이저 Q 의 "x 1.3 / 1.35 / 1.4 / 1.45 / 1.5").
-        if (m !== null && /^-?[\d.]+$/.test(m)) {
+        // ★ 치명타 배율만은 기본값에 녹이지 않고 "…의 130%" 로 따로 보여 준다 (2026-08-12).
+        //   녹이면 가렌 E 가 `5.2 / 9.1 / 13 / 16.9 / 20.8` 처럼 소수점투성이가 되고,
+        //   나무위키 표기(×1.3)와도 모양이 달라져서 대조가 어렵다.
+        //   판별은 **배율 조각 안에 치명타 피해량(mStat 9)이 있는지**로 한다 —
+        //   partToText 를 거치고 나면 이미 `1.3` 이라 숫자만 봐서는 구분할 수 없다.
+        const isCritMult = /"mStat"\s*:\s*9\b/.test(JSON.stringify(calc.mMultiplier || {}));
+        if (!isCritMult && m !== null && /^-?[\d.]+$/.test(m)) {
             return calcToText(base, spell, maxRank, mult * parseFloat(m), depth + 1);
         }
         // 랭크별로 다른 배율("14 / 16 / 18")도 접어 본다. 실패하면 아래 예전 표기로 떨어진다.
@@ -1354,7 +1485,7 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
         }
         const inner = calcToText(base, spell, maxRank, mult, depth + 1);
         if (!inner) return null;
-        return m ? `${inner} x ${m}` : inner;
+        return m ? timesText(inner, m) : inner;
     }
 
     // 버프 유무로 계산식이 갈리는 형태 (카이사 Q MaxDamageDisplay).
@@ -1433,9 +1564,12 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
     if (rest.length) out += ` (${signedTerms(rest.map(asPercent))})`;
     if (multText) {
         const mt = (calc.mDisplayAsPercent && !/%$/.test(multText)) ? multText + '%' : multText;
-        out = `${mt} x ${out}`;
+        // 곱은 순서를 안 가리므로 표기 순서(mt 먼저)는 그대로 두고 뒷쪽만 다듬는다.
+        //   카이사 E: "55 / ... / 75% x 1 ~ 2" -> "55 / ... / 75%의 100 ~ 200%"
+        out = timesText(mt, out);
     }
-    return out;
+    // 배율이 접히면서 이미 % 로 끝나는 항에 % 가 또 붙는 자리가 있다 (케이틀린 P).
+    return String(out).replace(/%%+/g, '%');
 }
 
 // 플레이스홀더 이름 하나를 해결
@@ -2084,6 +2218,9 @@ async function main() {
             // 기본 아이콘 교체 (벨베스 Q). app.js 가 `img` 가 있으면 DD 것 대신 쓴다.
             const ov = (ICON_OVERRIDE[alias] || {})[key];
             if (ov) lines.push(`            "img": ${q(`${ICON_BASE}assets/characters/${alias.toLowerCase()}/hud/icons2d/${ov}.png`)},`);
+            // 배열 템플릿 0번 파트 전용 아이콘 (유나라 Q). app.js 가 img 대신 이걸 쓴다.
+            const bi = (BODY_ICON[alias] || {})[key];
+            if (bi) lines.push(`            "imgBody": ${q(`${ICON_BASE}assets/characters/${alias.toLowerCase()}/hud/icons2d/${bi}.png`)},`);
             const ei = extraIcons[key];
             if (ei && ei.length) {
                 lines.push(`            "icons": [${ei.map(x => q(x.url)).join(', ')}],`);

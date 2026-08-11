@@ -3828,7 +3828,10 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                             || `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${champ.spells[slotIdx].image.full}`;
                     }
                     return tpl.map((part, i) => {
-                        const icon = i === 0 ? baseImg : extra[i - 1];
+                        // ★ values.imgBody 는 **0번 파트 전용** 아이콘이다 (2026-08-12).
+                        //   스킬 칸(버튼·이름)은 values.img 를 쓰는데, 그 둘을 다르게 하고 싶을 때만 쓴다.
+                        //   유나라 Q 가 유일한 사례 — 버튼은 컬러(활성), "기본 지속 효과" 옆은 흑백(비활성).
+                        const icon = i === 0 ? (values.imgBody || baseImg) : extra[i - 1];
                         // ★ 아이콘을 **첫 글줄 한가운데**에 맞춘다 (2026-08-10).
                         //   컨테이너가 align-items:flex-start 라 아이콘 위와 텍스트 블록 위가
                         //   맞춰지는데, 실제 화면에서는 **아이콘이 글자보다 위로 떠 보인다.**
@@ -3989,7 +3992,9 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             keywordstealth { color: #d182be; font-weight: bold; }
             evolve { color: #bc3598; font-weight: bold; }
             danger { color: #ff0000; font-weight: bold; }
-            rules { color: #5a5955; }
+            /* ★ 인게임 실측값은 #5a5955 인데 우리 배경이 인게임 툴팁보다 어두워서
+                 거의 안 읽혔다. 밝기만 올린 값이다 (색상·채도는 그대로). 2026-08-12 */
+            rules { color: #918f86; }
             /* 라벨류는 전부 "기본 지속 효과:" 색으로 통일한다.
                인게임은 스킬마다 미묘하게 다르지만(니코 W 는 사용 시만 연노랑,
                갈리오 W 는 충전 시작 시가 또 다름) 통일하는 쪽이 읽기 낫다는 판단. */
