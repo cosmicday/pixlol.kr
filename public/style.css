@@ -2691,16 +2691,22 @@ body::before {
     text-align: center;
     border-radius: 8px;
     padding: 12px;
-    position: absolute;
+    /* ★ absolute 가 아니라 fixed 다 (2026-08-11).
+       스킬 본문(.champ-skill-body)이 overflow-y: auto 라 **가로도 같이 잘린다**
+       (한 축이 visible 이 아니면 다른 축도 auto 로 계산된다).
+       그래서 화면 좌우 끝의 각주 상자가 잘려 보였다. fixed 는 어떤 조상도 자르지 못한다.
+       대신 좌표를 CSS 로 못 잡으므로 app.js 의 positionFootnote() 가 hover 때 찍어 준다
+       — 각주 중심 정렬은 그대로 유지한다. */
+    position: fixed;
     z-index: 99999;
-    top: 150%;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 0;
+    left: 0;
+    transform: translate(-50%, 6px);
     border: 1px solid rgba(167, 139, 250, 0.3);
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.8);
     font-size: 12px;
     font-weight: normal;
-    transition: opacity 0.15s ease, top 0.15s ease, visibility 0s linear 0.15s;
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
 }
 
 .custom-footnote-content::before {
@@ -2715,12 +2721,14 @@ body::before {
 .custom-footnote:hover .custom-footnote-content {
     visibility: visible;
     opacity: 1;
-    top: 180%;
+    transform: translate(-50%, 12px);
     transition-delay: 0s;
 }
 
+/* ★ 커서는 각주(.custom-footnote)의 pointer 를 그대로 물려받게 둔다.
+   예전엔 crosshair 를 줘서 그래프에 올리는 순간 손모양이 십자로 바뀌었다. */
 .graph-point {
-    cursor: crosshair;
+    cursor: inherit;
 }
 
 .graph-point circle {
@@ -2741,6 +2749,25 @@ body::before {
 }
 
 .graph-point:hover .point-label {
+    display: block;
+}
+
+/* ★ 세로 히트존 (2026-08-11)
+   점(r=3.5px) 18개가 촘촘해서 정확히 올리기가 매우 어려웠다.
+   drawGraph 가 각 점 **바로 앞에** 그 점이 담당하는 x 구간을 덮는 투명 사각형을 깐다.
+   인접 형제 선택자(+)로 "커서가 그 세로 구간에 있으면 바로 뒤 점을 켠다".
+   박스 전체가 아니라 그래프(svg) 영역 안에서만 반응한다. */
+.graph-hit {
+    cursor: inherit;
+}
+
+.graph-hit:hover+.graph-point circle {
+    r: 6;
+    stroke: #fff;
+    stroke-width: 2;
+}
+
+.graph-hit:hover+.graph-point .point-label {
     display: block;
 }
 
@@ -3430,6 +3457,11 @@ body::before {
     gap: 24px;
     overflow-y: auto;
     padding-right: 5px;
+    /* ★ 스크롤바 자리를 처음부터 비워 둔다.
+       스킬 데이터가 늦게 로드되면서 내용이 넘치면 그때 스크롤바가 생기는데,
+       그만큼(약 15px) 본문 폭이 줄어 **설명이 다시 줄바꿈되며 덜컹인다.**
+       stable 은 스크롤이 필요 없어도 자리를 미리 잡아 두어 폭이 안 변한다. */
+    scrollbar-gutter: stable;
 }
 
 .champ-skill-box {

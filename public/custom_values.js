@@ -9,8 +9,11 @@ const drawGraph = (id, color, dataArr) => {
     let points = "";
     let elements = "";
 
+    // 점 x좌표를 먼저 다 구해 둔다. 아래 "세로 히트존" 이 이웃 점과의 중간을 알아야 한다.
+    const xs = dataArr.map((_, i) => padX + (i / (dataArr.length - 1)) * (width - padX * 2));
+
     dataArr.forEach((val, index) => {
-        let x = padX + (index / (dataArr.length - 1)) * (width - padX * 2);
+        let x = xs[index];
         let y = (height - padY) - (val / max) * (height - padY * 2);
         points += `${x},${y} `;
 
@@ -18,24 +21,56 @@ const drawGraph = (id, color, dataArr) => {
         let textY = y - 10;
         if (textY < 12) textY = y + 18;
 
-        // 수정됨: 개별 점(circle)과 수치(text)를 하나의 그룹(g)으로 묶음
+        // ★ 세로 히트존 (2026-08-11)
+        //   예전엔 반지름 3.5px 점에 정확히 올려야만 수치가 떴다. 18개가 촘촘해서 매우 어렵다.
+        //   그래서 각 점이 "담당하는 x 구간"을 그래프 높이만큼 덮는 투명 사각형을 깔고,
+        //   CSS 인접 선택자(.graph-hit:hover + .graph-point)로 바로 뒤 점을 켠다.
+        //   구간은 이웃 점과의 중간까지다. 양 끝은 그래프 가장자리까지 늘린다.
+        const left = index === 0 ? 0 : (xs[index - 1] + x) / 2;
+        const right = index === dataArr.length - 1 ? width : (x + xs[index + 1]) / 2;
+
+        //   ★ 히트존이 반드시 <g> **바로 앞**에 와야 한다. CSS 가 + 로 짝짓기 때문이다.
         elements += `
+        <rect class="graph-hit" x="${left}" y="0" width="${right - left}" height="${height}" fill="transparent" />
         <g class="graph-point">
             <circle cx="${x}" cy="${y}" r="3.5" fill="${color}" />
-            <text class="point-label" x="${x}" y="${textY}" text-anchor="middle" fill="${color}">Lv.${index + 1}: ${val}</text>
+            <text class="point-label" x="${x}" y="${textY}" text-anchor="middle" fill="#fff">Lv.${index + 1}: ${val}</text>
         </g>`;
     });
 
     return `<span class="custom-footnote">[${id}]
         <span class="custom-footnote-content">
-            <div style="font-size: 11px; margin-bottom: 8px; color: #aaa;">레벨별 성장 수치 (Lv.1 ~ 18)</div>
+            <div style="font-size: 11px; margin-bottom: 8px; color: #fff;">레벨별 성장 수치 (Lv.1 ~ 18)</div>
             <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow: visible;">
                 <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" />
                 ${elements}
-                <text x="${padX}" y="${height - 2}" fill="#888" font-size="10" text-anchor="middle">1</text>
-                <text x="${width - padX}" y="${height - 2}" fill="#888" font-size="10" text-anchor="middle">18</text>
+                <text x="${padX}" y="${height - 2}" fill="#fff" font-size="10" text-anchor="middle">1</text>
+                <text x="${width - padX}" y="${height - 2}" fill="#fff" font-size="10" text-anchor="middle">18</text>
                 <text x="5" y="10" fill="${color}" font-size="11" font-weight="bold">${max}</text>
             </svg>
+        </span>
+    </span>`;
+};
+
+// ==========================================
+// ★ 계단식 성장 각주 생성 헬퍼 함수
+// 사용법: drawSteps("각주번호", "선색상", [[1, 12], [7, 18], [13, 24]])
+//
+//   레벨마다 조금씩 크는 게 아니라 **특정 레벨에서만 값이 바뀌는** 스킬용이다.
+//   (나서스 P 생명력 흡수 12/18/24 는 1·7·13레벨에서만 바뀐다)
+//   이런 자리는 꺾은선으로 그리면 계단이 완만한 상승처럼 보여서 오해를 준다.
+// ==========================================
+const drawSteps = (id, color, pairs) => {
+    const rows = pairs.map(([lv, val]) => `
+        <div style="display:flex; justify-content:space-between; gap:14px; padding:2px 0;">
+            <span style="color:#fff;">Lv.${lv}</span>
+            <span style="color:${color}; font-weight:bold;">${val}</span>
+        </div>`).join('');
+
+    return `<span class="custom-footnote">[${id}]
+        <span class="custom-footnote-content">
+            <div style="font-size: 11px; margin-bottom: 6px; color: #fff;">${pairs.map(p => p[0]).join(' / ')}레벨에 상승</div>
+            <div style="font-size: 12px; min-width: 96px;">${rows}</div>
         </span>
     </span>`;
 };

@@ -2086,6 +2086,35 @@ document.addEventListener('click', (e) => {
 });
 
 // ==========================================
+// 각주 상자 위치잡기
+// ------------------------------------------
+//   ★ 각주 상자(.custom-footnote-content)는 position: fixed 다.
+//     스킬 본문(.champ-skill-body)이 overflow-y: auto 라 **가로도 같이 잘려서**
+//     (한 축이 visible 이 아니면 다른 축도 auto 로 계산된다)
+//     화면 좌우 끝의 각주가 잘려 보였다. fixed 는 어떤 조상도 자르지 못한다.
+//
+//   대신 fixed 는 CSS 로 "부모 기준 가운데" 를 못 잡으므로 여기서 좌표를 찍어 준다.
+//   각주 표시([1]) 의 가로 중심에 상자 중심을 맞춘다 — 기존 위치 그대로다.
+//   (CSS 의 transform: translate(-50%, ...) 가 가운데 정렬과 아래 간격을 맡는다)
+//
+//   화면 밖으로 나가도 밀어 넣지 않는다. "영역을 침범해서라도 그대로 보여준다" 가 목적이다.
+// ==========================================
+function positionFootnote(fn) {
+    const box = fn.querySelector('.custom-footnote-content');
+    if (!box) return;
+    const r = fn.getBoundingClientRect();
+    box.style.left = (r.left + r.width / 2) + 'px';
+    box.style.top = r.bottom + 'px';
+}
+
+//   mouseover 는 자식에서도 올라오므로 closest 로 각주를 찾는다.
+//   :hover 로 보이기 **전에** 좌표가 찍히도록 mouseover 를 쓴다 (mouseenter 는 위임이 안 된다).
+document.addEventListener('mouseover', (e) => {
+    const fn = e.target instanceof Element ? e.target.closest('.custom-footnote') : null;
+    if (fn) positionFootnote(fn);
+}, true);
+
+// ==========================================
 // [6] 즐겨찾기 및 최근기록 로직
 // ==========================================
 let currentDropdownTab = 'favorites';
@@ -3743,10 +3772,19 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                   && (values[k] === '' || String(values[k]).includes('?'))
             );
 
+            // ★ 챔피언 레벨에 따라 변하는 수치의 각주(그래프 / 계단 목록).
+            //   custom_graphs.js 에 따로 있다 — 값(custom_values.js)도 문장(custom_templates.js)도
+            //   스크립트가 매번 새로 찍기 때문에 거기 써 넣으면 재생성 때 날아간다.
+            //   값 **바로 뒤**에 이어 붙여서 색칠된 수치의 마지막 글자에 각주가 달리게 한다.
+            const graphs = (typeof customGraphs !== 'undefined' && customGraphs[champ.id]
+                && customGraphs[champ.id][spellKey]) || {};
+
             if (tpl && !unfilled) {
                 const fill = (t) => {
                     let x = t;
-                    for (let key in values) x = x.split(`{${key}}`).join(values[key]);
+                    for (let key in values) {
+                        x = x.split(`{${key}}`).join(values[key] + (graphs[key] || ''));
+                    }
                     return x;
                 };
                 const bodyStyle = 'color: #ddd; line-height: 1.6; font-size: 14px;';
