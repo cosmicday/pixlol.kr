@@ -245,6 +245,14 @@ body::before {
     user-select: none;
 }
 
+/* index.html 의 인라인 style 을 옮긴 것. 값은 같다 (폰에서 숨기려고 클래스가 필요했다) */
+.dropdown-hint {
+    font-size: 11px;
+    color: #777;
+    font-weight: normal;
+    cursor: default;
+}
+
 .favorite-list {
     max-height: 200px;
     overflow-y: auto;
@@ -2829,14 +2837,19 @@ body::before {
         display: none !important;
     }
 
-    /* 전적 리스트 매치 박스 */
+    /* 전적 리스트 매치 박스
+       ★ 예전엔 justify-content: center 였는데, 칸들이 데스크톱 고정폭(115+103+80)을
+         그대로 들고 있어서 폰 안쪽 폭(약 314px)에 안 들어갔다. 그래서 .pix-stats 가
+         혼자 다음 줄로 넘어가고, 남은 두 칸이 가운데로 몰려 챔프와 KDA 사이가 뻥 뚫렸다.
+         아래 .pix-champ/.pix-kda/.pix-stats 의 width:auto 와 한 쌍이다 —
+         셋을 내용 크기로 줄여야 한 줄에 들어가고, 그때 space-between 이 의미가 있다. */
     .pix-game {
         flex-wrap: wrap;
         height: auto;
-        padding: 15px;
-        padding-right: 35px;
-        gap: 10px;
-        justify-content: center;
+        padding: 12px 34px 12px 12px;
+        gap: 10px 0;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .pix-info {
@@ -2852,10 +2865,18 @@ body::before {
         display: none;
     }
 
+    /* 고정폭을 풀어 내용 크기로 줄인다. 챔프 약 104px(아이콘48+스펠22+룬22) +
+       KDA 약 75px + 지표 약 80px = 260px 라 한 줄에 들어간다. */
     .pix-champ,
     .pix-kda,
     .pix-stats {
+        width: auto;
         margin-left: 0;
+    }
+
+    .pix-stats {
+        padding-left: 0;
+        text-align: right;
     }
 
     .pix-players,
@@ -2863,9 +2884,11 @@ body::before {
         display: none !important;
     }
 
+    /* ★ 가운데 정렬이면 아이템 개수(빈 칸 포함)에 따라 줄 시작점이 카드마다 달라져
+       목록 전체가 들쭉날쭉해 보인다. 챔프 아이콘 기준으로 왼쪽에 고정한다. */
     .pix-items-box {
         width: 100%;
-        align-items: center;
+        align-items: flex-start;
         margin-top: 10px;
         margin-left: 0;
     }
@@ -2873,7 +2896,7 @@ body::before {
     .pix-items {
         display: flex;
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: flex-start;
     }
 
     /* 상세 전적 테이블 가로 스크롤 허용 */
@@ -3504,5 +3527,147 @@ body::before {
 
     .champ-skill-meta {
         text-align: left;
+    }
+}
+
+/* =========================================
+   16. 랭킹 표 + 검색 드롭다운 헤더 (2026-08-11)
+   -----------------------------------------
+   ★ 랭킹 표 값들은 원래 app.js 안에 인라인 style= 로 있던 것을 그대로 옮긴 것이다.
+     min-width:600px 이 인라인이라 @media 로 풀 수가 없었고, 그래서 폰에서
+     LP·승률 칸이 화면 밖으로 밀려 옆으로 스크롤해야 보였다.
+     색(lpColor·승률색)만 계산값이라 app.js 의 인라인에 남아 있다.
+   ========================================= */
+.rank-table-wrap {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: #1a1a2e;
+    overflow-x: auto;
+}
+
+.rank-table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.rank-table thead {
+    background: #2b1a52;
+    color: #a78bfa;
+}
+
+.rank-table th {
+    padding: 15px;
+}
+
+.rank-table td {
+    padding: 12px;
+}
+
+.rank-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rank-table .rank-num {
+    width: 60px;
+    text-align: center;
+}
+
+.rank-table td.rank-num {
+    color: #777;
+}
+
+.rank-table .rank-name {
+    text-align: left;
+    padding-left: 30px;
+}
+
+.rank-table td.rank-name {
+    font-weight: bold;
+    color: #ddd;
+}
+
+.rank-table .rank-lp {
+    text-align: center;
+    font-weight: bold;
+}
+
+.rank-table th.rank-wr {
+    text-align: center;
+}
+
+.rank-table td.rank-wr {
+    text-align: left;
+    padding-left: 20px;
+}
+
+.rank-wr-num {
+    display: inline-block;
+    width: 45px;
+    text-align: right;
+}
+
+.rank-wl {
+    font-size: 11px;
+    color: #555;
+    margin-left: 8px;
+}
+
+@media (max-width: 768px) {
+    /* 600px 제한을 풀고 칸을 좁혀 390px 안에 4열을 다 넣는다.
+       순위 36 + LP 46 + 승률 52 = 134px, 남는 폭이 전부 닉네임으로 간다. */
+    .rank-table {
+        min-width: 0;
+        font-size: 13px;
+    }
+
+    .rank-table th {
+        padding: 12px 4px;
+    }
+
+    .rank-table td {
+        padding: 10px 4px;
+    }
+
+    .rank-table .rank-num {
+        width: 36px;
+    }
+
+    .rank-table .rank-name {
+        padding-left: 8px;
+        /* 긴 닉네임은 줄바꿈으로 넘긴다. 말줄임으로 자르면 누구인지 알 수 없다 */
+        word-break: break-all;
+    }
+
+    .rank-table td.rank-wr {
+        text-align: center;
+        padding-left: 4px;
+    }
+
+    .rank-wr-num {
+        width: auto;
+        text-align: center;
+    }
+
+    /* (324W 269L) 은 폰에서 뺀다. 승률만으로 충분하고 이게 한 열을 통째로 잡아먹었다 */
+    .rank-wl {
+        display: none;
+    }
+
+    /* 검색 드롭다운 헤더: 안내 문구가 탭을 밀어내 "즐겨/찾기" 로 쪼개고 있었다.
+       탭 두 개가 한 줄에 들어가는 게 먼저다. */
+    .search-dropdown-header {
+        padding: 10px 14px;
+        gap: 10px;
+    }
+
+    .dropdown-tab {
+        white-space: nowrap;
+    }
+
+    .dropdown-hint,
+    .dropdown-hint-divider {
+        display: none;
     }
 }

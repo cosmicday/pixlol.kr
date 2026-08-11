@@ -71,8 +71,11 @@
                         <span id="tab-favorites" class="dropdown-tab active" onclick="switchTab('favorites')">★ 즐겨찾기</span>
                         <span class="tab-divider">|</span>
                         <span id="tab-recent" class="dropdown-tab" onclick="switchTab('recent')">🔍 최근기록</span>
-                        <span class="tab-divider">|</span>
-                        <span style="font-size: 11px; color: #777; font-weight: normal; cursor: default;">즐겨찾기 및 최근기록은 10개까지 저장됩니다.</span>
+                        <!-- 안내 문구는 폰에서 숨긴다 (앞의 구분선까지 같이).
+                             탭 두 개가 한 줄에 들어가는 게 먼저다 — 이 문구 때문에
+                             "즐겨/찾기" "최근/기록" 까지 두 줄로 쪼개지고 있었다. -->
+                        <span class="tab-divider dropdown-hint-divider">|</span>
+                        <span class="dropdown-hint">즐겨찾기 및 최근기록은 10개까지 저장됩니다.</span>
                     </div>
                     <div id="dropdown-list" class="favorite-list"></div>
                 </div>

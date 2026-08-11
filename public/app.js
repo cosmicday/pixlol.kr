@@ -2481,14 +2481,17 @@ function renderRankingPage(page) {
     const totalPages = Math.ceil(fullRankingData.length / RANKING_ITEMS_PER_PAGE);
 
     let tableHtml = `
-        <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: #1a1a2e; overflow-x: auto;">
-            <table style="width:100%; min-width:600px; border-collapse: collapse; font-size: 14px;">
-                <thead style="background: #2b1a52; color: #a78bfa;">
+        <!-- ★ 인라인 style 을 클래스로 뺐다 (2026-08-11). min-width:600px 이 인라인이라
+             @media 로 못 풀었고, 폰에서 LP·승률 칸이 화면 밖으로 밀려 옆으로 스크롤해야
+             보였다. 값은 그대로고 색만 계산값이라 인라인에 남는다. style.css 16번 절 참고. -->
+        <div class="rank-table-wrap">
+            <table class="rank-table">
+                <thead>
                     <tr>
-                        <th style="width: 60px; padding: 15px; text-align: center;">순위</th>
-                        <th style="padding: 15px; text-align: left; padding-left: 30px;">닉네임</th>
-                        <th style="padding: 15px; text-align: center;">LP</th>
-                        <th style="padding: 15px; text-align: center;">승률</th>
+                        <th class="rank-num">순위</th>
+                        <th class="rank-name">닉네임</th>
+                        <th class="rank-lp">LP</th>
+                        <th class="rank-wr">승률</th>
                     </tr>
                 </thead>
                 <tbody class="ranking-body">
@@ -2504,15 +2507,15 @@ function renderRankingPage(page) {
         else if (actualIndex <= 1000) lpColor = "#d33148";
 
         tableHtml += `
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <td style="width: 60px; padding: 12px; color: #777; text-align: center;">${actualIndex}</td>
-                <td style="padding: 12px; text-align: left; font-weight: bold; color: #ddd; padding-left: 30px;">
+            <tr>
+                <td class="rank-num">${actualIndex}</td>
+                <td class="rank-name">
                     <span class="summoner-link" onclick="document.getElementById('summoner-input').value='${player.displayName}'; document.getElementById('search-btn').click();" title="${player.displayName} 검색">${player.displayName}</span>
                 </td>
-                <td style="padding: 12px; color: ${lpColor}; font-weight: bold; text-align: center;">${player.leaguePoints}</td>
-                <td style="padding: 12px; text-align: left; padding-left: 20px;">
-                    <span style="display: inline-block; width: 45px; text-align: right; color: ${winRate >= 55 ? '#f87171' : '#60a5fa'}">${winRate}%</span>
-                    <span style="font-size: 11px; color: #555; margin-left: 8px;">(${player.wins}W ${player.losses}L)</span>
+                <td class="rank-lp" style="color: ${lpColor};">${player.leaguePoints}</td>
+                <td class="rank-wr">
+                    <span class="rank-wr-num" style="color: ${winRate >= 55 ? '#f87171' : '#60a5fa'}">${winRate}%</span>
+                    <span class="rank-wl">(${player.wins}W ${player.losses}L)</span>
                 </td>
             </tr>
         `;
