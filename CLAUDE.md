@@ -55,6 +55,17 @@
 | `check_data_sources.js` | 확인 전용 |
 | `probe_spell_fields.js` | 확인 전용 |
 | `bincache.js` | 챔피언 bin 로컬 캐시 (아래) |
+| `build_level_curves.js` | 레벨 1~18 곡선 생성 → `level_curves.json`, `champion_stats_by_level.json` |
+| `add_level_graphs.js` | 곡선을 각주로 → `public/custom_graphs.js` |
+
+**★ 패치가 오면 이 순서로 다시 돌린다** (앞이 뒤의 입력이라 순서가 중요하다):
+
+```
+node build_champion_data.js --refresh     # 문장
+node fill_values.js --refresh --write     # 수치 (custom_values.new.js → 확인 후 이름 변경)
+node build_level_curves.js --write        # 레벨 곡선
+node add_level_graphs.js --write          # 각주 (custom_values.js 를 읽으므로 위가 먼저)
+```
 
 **`bincache.js` — 재실행이 166초에서 9초가 된다 (2026-08-10 추가).**
 두 생성 스크립트가 챔피언 173명 bin 을 매번 새로 받던 걸 `.cache/bin/` 에 7일 캐시한다.
@@ -258,6 +269,18 @@
      (→ `NamedDataValue` `NumTicks`=7) 였다. **`f` 자리를 만나면 본체의 계산식·DataValue
      이름부터 훑어볼 것.** 제일 싸게 풀리는 경우다
 - 인게임 확인 결과 원본은 **`확인결과.md`** (루트, gitignore됨). 항목별 근거가 다 적혀 있으니 작업 재개 전에 먼저 읽을 것
+- **`피해량_위키대조.md`** (루트, gitignore됨) — 2026-08-11 위키 전수 대조 보고서.
+  173챔피언 / 751스킬 / 피해량·계수 1225자리를 lolwiki·나무위키와 대조한 결과와
+  고친 버그 4종의 근거가 다 있다. **"위키가 우리보다 틀린 경우" 도 정리돼 있으니
+  수치를 의심하기 전에 먼저 볼 것**
+- **`레벨곡선_정리.md`** (루트, gitignore됨) — 레벨 곡선 데이터 설명서.
+  성장 공식 g(N), 곡선 5종, DD `attackdamageperlevel` 이 깨진 건, 각주 구조
+- **`level_curves.json`** (커밋됨) — 스킬 레벨 곡선 425자리 / 141챔피언.
+  키가 `bin alias(소문자) → 슬롯 → 계산식 이름` 인데 계산식 이름이
+  `custom_values.js` 줄 뒤 주석과 같아서 **그대로 조인된다**
+- **`champion_stats_by_level.json`** (커밋됨) — 챔피언 스탯 173명 x 18레벨.
+  **아직 사이트에서 안 쓴다.** 스탯 그래프를 붙일 때 쓰면 되는데 347KB 라
+  **base + perLevel 만 내려주고 g(N) 을 클라이언트에서 계산하는 쪽이 훨씬 가볍다**
 
 ### 폴백을 푸는 두 번째 방법 — "문장에서 빼기" (2026-08-09)
 
@@ -342,14 +365,20 @@
    - **`.champ-skill-body` 에 `scrollbar-gutter: stable` 이 필요하다.** 스킬 데이터가 늦게 로드되며
      스크롤바가 생기면 본문 폭이 15px쯤 줄어 **설명이 다시 줄바꿈되며 덜컹였다**
 
-9. ~~`v1`·`v2` 직접 작성 (옛 항목)~~ **과제에서 뺐다 (2026-08-09).** 수치가 이미 문장 안에
-   전부 들어가 있어서(3211/3228) 채워봐야 같은 숫자를 두 번 보여줄 뿐이다.
-   709자리를 손으로 쓰는 비용에 비해 얻는 게 없다. **비어 있으면 구분선까지
-   통째로 숨겨지므로 지금 화면에 아무 영향이 없다.**
-   `custom_values.js` 맨 위의 `drawGraph()` 헬퍼도 아직 한 번도 안 쓰였다.
-   구분선·그래프는 별도 계획이 있으니 그때 이 칸을 쓰면 된다
+   **`v1`/`v2` 는 여전히 비어 있고 그대로 두는 게 맞다.** 수치가 이미 문장 안에 다 들어가 있어서
+   채우면 같은 숫자를 두 번 보여줄 뿐이다(각주를 v1 에 넣었다가 그 이유로 문장 안으로 옮겼다).
+   비어 있으면 구분선까지 통째로 숨겨지므로 화면에 아무 영향이 없다.
+
 9. ~~스킬 설명 색 일괄 적용~~ **완료 (2026-08-09).** 43종 전부 인게임 스크린샷에서
    픽셀을 뽑아 실측했다. `app.js` 의 `<style>` 블록에 있고, 값 근거는 그 주석 참고
 10. `STAT_NAMES` 나머지 추정값 확인 — 5(스킬 가속), 11(추가 공격력), 13(추가 체력).
     **1·6·8·9·12는 확인 끝** (9는 이동 속도가 아니라 **치명타 피해량**. 2026-08-08 정정)
-11. 파일 정리 — `public/custom_templates.bak.js`, `public/custom_values.bak.js`(둘 다 배포되면 웹에서 받아짐), `fill_values.old.js`, `custom_values.js.bak-0808`, `public/custom_values.js.bak-*`, `로고였던것.png`, 루트 `lulubackground.webp`. `database.sqlite`는 `server.js`가 참조하는지 확인하고 판단
+11. **곱셈 표시 잔여 9자리** (2026-08-11). `x N` 이라는 날 계산식이 화면에 남는 자리다.
+    145 → 9 까지 줄였고 **남은 건 숫자 하나로 못 접는다**:
+    치명타 피해량이 변수로 들어가는 식(루시안 R, 미포 Q·R, 제리 W, 탈론 Q),
+    배율 자체가 스탯인 식(볼리베어 W), `~` 범위 배율(모데카이저 Q, 유미 R), 중첩식(블라디미르 P).
+    `rendered.json` 에서 `/\sx\s[\d.]/` 로 뽑을 수 있다. MANUAL 로 손질하는 수밖에 없다
+12. **문장이 통째로 깨진 자리** — 아이번 P(`15 ~ 0.006` 으로 범위가 거꾸로), 블라디미르 P
+    (`(추가 최대 체력의 100% + 1.6 x 주문력의 -100%) x 0.037`), 브라이어 P(식이 중첩 복제).
+    값을 못 읽는 수준이라 MANUAL 대상이다. 자세한 목록은 `피해량_위키대조.md`
+13. 파일 정리 — `public/custom_templates.bak.js`, `public/custom_values.bak.js`(둘 다 배포되면 웹에서 받아짐), `fill_values.old.js`, `custom_values.js.bak-0808`, `public/custom_values.js.bak-*`, `로고였던것.png`, 루트 `lulubackground.webp`. `database.sqlite`는 `server.js`가 참조하는지 확인하고 판단
