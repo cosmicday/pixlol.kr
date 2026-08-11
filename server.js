@@ -98,7 +98,12 @@ function renderIndexHtml() {
     let html = fs.readFileSync(path.join(PUBLIC_DIR, 'index.html'), 'utf8');
 
     // 같은 서버에서 주는 .js / .css 참조에만 버전을 붙인다 (CDN 주소는 그대로)
-    html = html.replace(/(src|href)="\/([A-Za-z0-9_\-.]+\.(?:js|css))"/g, (match, attr, file) => {
+    //
+    // ★ data-src 도 같이 잡는다 (2026-08-11). 챔피언 페이지 전용 데이터 3종은
+    //   index.html 에서 바로 안 받고 app.js 가 챔피언 탭에 들어갈 때 붙인다.
+    //   그때 src 로 두면 브라우저가 미리 받아버리므로 data-src 로 재워 두는데,
+    //   여기서 버전을 안 붙이면 custom_values.js 를 고쳐도 옛 수치가 그대로 나온다.
+    html = html.replace(/(src|href|data-src)="\/([A-Za-z0-9_\-.]+\.(?:js|css))"/g, (match, attr, file) => {
         try {
             const v = Math.floor(fs.statSync(path.join(PUBLIC_DIR, file)).mtimeMs);
             return `${attr}="/${file}?v=${v}"`;

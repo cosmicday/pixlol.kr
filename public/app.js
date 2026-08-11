@@ -3510,6 +3510,38 @@ window.toggleChampLine = function (matchId, pid, kind) {
 // ==========================================
 // ★ 챔피언 목록 및 상세 페이지 로직
 // ==========================================
+
+// ★ 챔피언 페이지 전용 데이터 지연 로드 (2026-08-11).
+//   custom_templates.js + custom_values.js + custom_lore.js 가 gzip 142KB 인데
+//   전부 selectChampion() 안에서만 쓰인다. index.html 에서 바로 받으면
+//   전적검색만 하러 온 사람도 그만큼 기다리게 되므로 챔피언 탭에서 처음 받는다.
+//
+//   index.html 이 <script class="lazy-champ-data" data-src="..."> 로 재워 두고
+//   (src 로 두면 브라우저가 즉시 받아버린다) 여기서 진짜 script 로 바꿔 붙인다.
+//   data-src 값에는 server.js 가 ?v=mtime 을 이미 붙여 놨다 — 그대로 써야
+//   custom_values.js 를 고쳤을 때 브라우저가 새로 받는다.
+let champDataPromise = null;
+function loadChampionData() {
+    if (champDataPromise) return champDataPromise;
+
+    const tags = Array.from(document.querySelectorAll('script.lazy-champ-data[data-src]'));
+    champDataPromise = Promise.all(tags.map(tag => new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        // ★ async = false 를 꼭 줘야 한다. 동적으로 만든 script 는 기본이 async 라
+        //   받아지는 대로 실행돼서 순서가 안 정해진다. false 면 셋을 병렬로 받되
+        //   문서에 넣은 순서대로 실행한다 (지금은 서로 참조가 없지만 순서는 지켜 둔다).
+        s.async = false;
+        s.src = tag.dataset.src;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('챔피언 데이터를 받지 못했습니다: ' + tag.dataset.src));
+        document.head.appendChild(s);
+    })));
+
+    // 실패했으면 캐시를 비워서 다음에 탭을 다시 눌렀을 때 재시도되게 한다.
+    champDataPromise.catch(() => { champDataPromise = null; });
+    return champDataPromise;
+}
+
 async function showChampions(requestedChampId = null, classicMode = false) {
     currentChampMode = classicMode ? 'classic' : 'normal';
     if (!window.location.pathname.startsWith('/champions')) {
@@ -3525,6 +3557,11 @@ async function showChampions(requestedChampId = null, classicMode = false) {
         // ★ 버전 동기화를 반드시 기다린다. 안 기다리면 기본값(구버전)으로 받아서
         //   신규 챔피언이 목록에서 사라진다 — 로크가 이 경우였다 (2026-08-10).
         if (ddragonReady) await ddragonReady;
+
+        // ★ 문장·수치·스토리를 여기서 처음 받는다. selectChampion() 이 바로 아래에서
+        //   불리므로 반드시 목록 그리기 전에 끝나 있어야 한다.
+        //   두 fetch 가 서로 안 기다리게 챔피언 목록과 같이 출발시킨다.
+        const champDataLoaded = loadChampionData();
 
         const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/champion.json`);
         const data = await res.json();
@@ -3553,8 +3590,11 @@ async function showChampions(requestedChampId = null, classicMode = false) {
                 <h1 class="ranking-title">${classicMode ? '챔피언 정보 (클래식)' : '챔피언 정보'}</h1>
             </div>
             
-            <div style="display: flex; gap: 20px; align-items: flex-start; width: 100%;">
-                <div style="width: 280px; flex-shrink: 0; background: #1a1a2e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; height: 75vh; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px;">
+            <!-- ★ 여기 세 덩이는 인라인 style 이었는데 클래스로 뺐다 (2026-08-11).
+                 인라인은 스타일시트를 이겨서 @media 로 못 덮는다 — 폰에서 280px 목록이
+                 그대로 버텨 상세 영역에 60px 밖에 안 남았다. style.css 15번 절 참고. -->
+            <div class="champ-page-wrap">
+                <div class="champ-list-pane">
         `;
 
         html += champList.map(champ => `
@@ -3569,13 +3609,20 @@ async function showChampions(requestedChampId = null, classicMode = false) {
 
         html += `
                 </div>
-                <div id="champ-detail-area" style="flex: 1; background: #1a1a2e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; height: 75vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                <div id="champ-detail-area" class="champ-detail-pane">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png" style="width: 80px; opacity: 0.3; margin-bottom: 20px;">
                     <div style="color: #9aa4af; font-size: 18px;">👈 왼쪽에서 챔피언을 선택해주세요.</div>
                 </div>
             </div>
         `;
         champsContainer.innerHTML = html;
+
+        // 목록을 먼저 그려 두고 여기서 기다린다. 아래 selectChampion() 이
+        // customTemplates / customValues / customLore 를 바로 읽기 때문이다.
+        // 못 받았으면 아래 catch 가 잡는다 — 조용히 DD 툴팁으로 흘려보내면
+        // `[스탯 비례]` 같은 미해결 토큰이 그대로 찍히므로 차라리 실패를 알린다.
+        // (loadChampionData 가 실패 시 캐시를 비우므로 탭을 다시 누르면 재시도된다)
+        await champDataLoaded;
 
         if (requestedChampId) {
             const target = champList.find(c => c.id.toLowerCase() === requestedChampId.toLowerCase());
@@ -3924,8 +3971,8 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             .skill-damage-line { color: #ddd; font-size: 14px; line-height: 1.7; }
             .skill-damage-line + .skill-damage-line { margin-top: 6px; }
         </style>
-        <div style="display: flex; gap: 30px; height: 100%;">
-            <div style="display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
+        <div class="champ-skill-layout">
+            <div class="champ-skill-btns">
                 ${window.currentChampSkills.map((skill, idx) => `
                     <div onclick="playSkill(${idx})" id="skill-btn-${idx}" class="skill-btn" style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s; background: rgba(255,255,255,0.02);">
                         <img src="${skill.img}" style="width: 48px; height: 48px; border-radius: 8px; border: 2px solid transparent;" id="skill-img-${idx}">
@@ -3937,9 +3984,9 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     </div>
                 `).join('')}
             </div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; padding-right: 5px;">
-                <div style="background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 25px; flex-shrink: 0;">
-                    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 15px;">
+            <div class="champ-skill-body">
+                <div class="champ-skill-box">
+                    <div class="champ-skill-head">
                         
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <div style="display: flex; gap: 5px;">
@@ -3958,7 +4005,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                                 <h3 id="champ-skill-name-header" style="color: #fff; font-size: 18px; font-weight: bold; margin: 0;"></h3>
                             </div>
                         </div>
-                        <div style="text-align: right; color: #aaa; font-size: 13px; font-weight: bold; line-height: 1.7;">
+                        <div class="champ-skill-meta">
                             <div id="champ-skill-cooldown-header" style="color:#ddd;"></div>
                             <div id="champ-skill-cost-header" style="color: #ddd;"></div>
                             <div id="champ-skill-stats-header" style="color: #9aa4af; font-weight: normal; font-size: 12px; margin-top: 4px;"></div>
@@ -3975,8 +4022,8 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
 
                 <!-- ★ 두 번째 폼 박스 (니달리 쿠거·엘리스 거미·제이스 대포·나르 메가).
                      첫 박스와 같은 모양으로 바로 아래에 쌓인다. 해당 없으면 통째로 숨긴다. -->
-                <div id="champ-skill2-box" style="background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 25px; flex-shrink: 0; display: none;">
-                    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 15px;">
+                <div id="champ-skill2-box" class="champ-skill-box" style="display: none;">
+                    <div class="champ-skill-head">
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <img id="champ-skill2-icon" src="" style="width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
                             <div>
@@ -3984,7 +4031,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                                 <h3 id="champ-skill2-name" style="color: #fff; font-size: 18px; font-weight: bold; margin: 0;"></h3>
                             </div>
                         </div>
-                        <div style="text-align: right; color: #aaa; font-size: 13px; font-weight: bold; line-height: 1.7;">
+                        <div class="champ-skill-meta">
                             <div id="champ-skill2-cooldown" style="color:#ddd;"></div>
                             <div id="champ-skill2-cost" style="color:#ddd;"></div>
                         </div>
@@ -4029,8 +4076,8 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         `;
 
         detailArea.innerHTML = `
-            <div style="width: 100%; height: 100%; display: flex; flex-direction: column;">
-                <div style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 20px; flex-shrink: 0; background: rgba(0,0,0,0.2); border-top-left-radius: 12px; border-top-right-radius: 12px;">
+            <div class="champ-detail-inner">
+                <div class="champ-tab-bar">
                     <button class="champ-tab-btn active" onclick="switchChampTab(event, 'skills')" style="padding: 15px 20px; background: transparent; border: none; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; border-bottom: 3px solid #a78bfa;">스킬</button>
                     <!-- ▼▼ 비공개 처리 (스킨 · 배경 탭) ▼▼
                          되살릴 때: 이 주석 두 줄만 풀면 된다. 탭 내용(skinsHtml · loreHtml)과
@@ -4039,7 +4086,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'lore')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">배경</button>
                          ▲▲ 비공개 처리 끝 ▲▲ -->
                 </div>
-                <div style="flex: 1; overflow-y: auto; padding: 30px;">
+                <div class="champ-tab-scroll">
                     <div id="champ-tab-skills" class="champ-tab-content" style="display: block; height: 100%;">${skillsHtml}</div>
                     <div id="champ-tab-skins" class="champ-tab-content" style="display: none; height: 100%;">${skinsHtml}</div>
                     <div id="champ-tab-lore" class="champ-tab-content" style="display: none;">${loreHtml}</div>

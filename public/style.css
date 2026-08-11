@@ -3275,3 +3275,234 @@ body::before {
     width: 16px !important;
     height: 16px !important;
 }
+/* =========================================
+   15. 챔피언 페이지 레이아웃 및 모바일 (2026-08-11)
+   -----------------------------------------
+   ★ 아래 값들은 원래 app.js 안에 인라인 style= 로 박혀 있던 것을 그대로 옮긴 것이다.
+     인라인은 스타일시트를 이기기 때문에 @media 로 덮을 수가 없었고, 그래서
+     챔피언 페이지만 폰에서 통째로 깨져 있었다 (280px 목록이 버텨서 상세에 60px만 남음).
+     데스크톱 표시는 옮기기 전과 같다. 모바일 전용 규칙은 맨 아래 @media 블록에만 있다.
+   ========================================= */
+.champ-page-wrap {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.champ-list-pane {
+    width: 280px;
+    flex-shrink: 0;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    height: 75vh;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.champ-detail-pane {
+    flex: 1;
+    /* ★ 이것만 원래 인라인에 없던 값이다. flex 자식의 기본 min-width 는 auto 라
+       긴 스킬 설명이 칸을 밀어내 페이지에 가로 스크롤을 만든다. 내용이 들어맞을
+       때는 아무 차이가 없고, 넘칠 때만 칸 안에서 줄바꿈되게 한다. */
+    min-width: 0;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.champ-detail-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.champ-tab-bar {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0 20px;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.2);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.champ-tab-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px;
+    min-height: 0;
+}
+
+.champ-skill-layout {
+    display: flex;
+    gap: 30px;
+    height: 100%;
+}
+
+.champ-skill-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.champ-skill-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.champ-skill-box {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    flex-shrink: 0;
+}
+
+.champ-skill-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.champ-skill-meta {
+    text-align: right;
+    color: #aaa;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1.7;
+}
+
+/* 태블릿·좁은 노트북: 목록만 줄여도 상세가 살아난다 */
+@media (max-width: 1100px) {
+    .champ-list-pane {
+        width: 220px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* #champions-container 는 인라인에 padding-bottom 만 있어서 좌우가 0이었다.
+       longhand 라 인라인의 padding-bottom 과 안 부딪힌다. */
+    #champions-container {
+        margin-top: 20px !important;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* 인라인 height: 80px 라 !important 가 필요하다.
+       .ranking-title 이 폰에서 세로 배치(2913줄)로 바뀌면서 80px 를 넘긴다. */
+    #champ-page-header {
+        height: auto !important;
+        margin-bottom: 12px !important;
+    }
+
+    .champ-page-wrap {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* 목록: 폭을 다 쓰고 2열 격자로 깐다. 173명을 한 줄씩 쌓으면 스크롤이 두 배다.
+       높이를 화면 1/3로 묶어서 상세가 첫 화면에 같이 보이게 한다. */
+    .champ-list-pane {
+        width: 100%;
+        height: auto;
+        max-height: 34vh;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        align-content: start;
+        padding: 10px;
+    }
+
+    .champ-sidebar-item {
+        gap: 8px !important;
+        padding: 6px 8px !important;
+        min-width: 0;
+    }
+
+    .champ-sidebar-item img {
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    /* 두 칸으로 쪼개면 "아우렐리온 솔" 같은 긴 이름이 칸을 넘는다 */
+    .champ-sidebar-item>div {
+        font-size: 12px !important;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ★ 고정 높이(75vh)를 풀어 페이지 자체가 스크롤되게 한다. 안 그러면
+       작은 상자 안에서 또 스크롤해야 해서 폰에서 쓰기 어렵다.
+       부모가 auto 가 되면 안쪽 height:100% 들도 따라서 auto 로 풀린다.
+       (.champ-tab-content 만 인라인이라 !important 가 필요하다) */
+    .champ-detail-pane,
+    .champ-detail-inner {
+        height: auto;
+    }
+
+    .champ-tab-content {
+        height: auto !important;
+    }
+
+    .champ-tab-bar {
+        padding: 0 10px;
+    }
+
+    .champ-tab-scroll {
+        padding: 15px;
+        overflow-y: visible;
+    }
+
+    /* 스킬 버튼을 왼쪽 세로줄에서 위쪽 가로줄로. P Q W E R 이 한눈에 들어온다 */
+    .champ-skill-layout {
+        flex-direction: column;
+        gap: 16px;
+        height: auto;
+    }
+
+    .champ-skill-btns {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .champ-skill-body {
+        overflow-y: visible;
+        padding-right: 0;
+        gap: 16px;
+    }
+
+    .champ-skill-box {
+        padding: 15px;
+    }
+
+    /* 이름과 쿨타임·소모값이 좁은 폭에서 서로 밀지 않게 아래로 떨군다 */
+    .champ-skill-head {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .champ-skill-meta {
+        text-align: left;
+    }
+}

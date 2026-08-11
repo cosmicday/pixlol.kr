@@ -3,16 +3,31 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- maximum-scale / user-scalable 을 뺐다 (2026-08-11). 스킬 설명이 14px 인데
+         확대를 막고 있었고, iOS 사파리는 이 지시를 원래 무시해서 안드로이드에서만
+         못 늘어나 동작도 갈렸다. 확대는 열어 두는 게 맞다. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pixlol.kr - 전적검색</title>
     
     <link rel="stylesheet" href="/style.css">
     <link rel="icon" href="/favicon.ico">
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/custom_templates.js"></script>
-    <script src="/custom_values.js"></script>
-    <script src="/custom_lore.js"></script>
+    <!-- defer: 파싱을 막지 않는다. defer 끼리는 문서 순서대로 실행되므로
+         chart.js 가 app.js 보다 항상 먼저 돈다. 둘 다 DOMContentLoaded 전에 끝난다. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- ▼▼ 챔피언 페이지 전용 데이터 (지연 로드) ▼▼
+         gzip 142KB 라 첫 화면에서 받으면 전적검색만 하러 온 사람도 다 기다린다.
+         셋 다 selectChampion() 안에서만 쓰이고, 거기로 가는 길은 showChampions()
+         하나뿐이라 그 앞에서 한 번 받으면 된다 (app.js 의 loadChampionData).
+
+         ★ src 가 아니라 data-src 인 이유: src 로 두면 브라우저가 즉시 받아버린다.
+           server.js 의 ?v= 자동 주입이 data-src 도 잡도록 맞춰 뒀으니
+           캐시 무효화는 그대로 살아 있다. 셋의 순서·개수를 바꾸면 app.js 는
+           그대로 따라가지만, 이름을 바꾸면 server.js 정규식 대상인지 확인할 것. -->
+    <script class="lazy-champ-data" data-src="/custom_templates.js"></script>
+    <script class="lazy-champ-data" data-src="/custom_values.js"></script>
+    <script class="lazy-champ-data" data-src="/custom_lore.js"></script>
 </head>
 
 <body>
@@ -195,9 +210,14 @@
         </footer>
     </main>
 
+    <!-- ▼▼ 비공개 처리 (통계 · 장인랭킹 데이터) ▼▼
+         app.js 의 HIDE_UNFINISHED_PAGES 가 true 라 두 페이지에 못 들어가는데도
+         mastersData.js 하나가 gzip 200KB 다. 첫 로드 용량의 절반이 여기였다.
+         되살릴 때: 위 nav 주석과 함께 이 두 줄을 풀고 HIDE_UNFINISHED_PAGES 를 false 로.
     <script src="/statsData.js"></script>
     <script src="/mastersData.js"></script>
-    <script src="/app.js"></script>
+         ▲▲ 비공개 처리 끝 ▲▲ -->
+    <script defer src="/app.js"></script>
 
 </body>
 </html>
