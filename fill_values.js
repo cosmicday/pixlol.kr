@@ -15,6 +15,10 @@ const fs = require('fs');
 const path = require('path');
 const { loadStringTable, getPassiveTooltip } = require('./stringtable');
 const { getBin, cacheStats } = require('./bincache');
+// 구분선 아래 회색 글씨. build_champion_data.js 와 **같은 모듈**을 써야 자리 수가 안 어긋난다.
+//   문장은 build 가 "<슬롯>_rules" 로 찍고, 그 안의 {pN} 값을 여기서 채운다.
+//   ★ 회색 글씨를 desc **뒤에** 이어 붙인다. build 쪽도 뒤에 붙이므로 번호가 같아진다.
+const { belowLineMap, textOfSpellObj } = require('./belowline');
 
 const WRITE = process.argv.includes('--write');
 
@@ -1836,8 +1840,11 @@ async function main() {
         //     풀린 문장의 자리가 4개 들어가서, 화면에 `{p2}` 같은 게 그대로 찍힌다.
         //     케인 P 가 실제로 그랬다. NESTED_INDEX 는 두 파일이 항상 같아야 한다.
         const passiveRaw = resolveNested(getPassiveTooltip(bin, alias, strings), strings);
-        const passiveNames = passiveRaw
-            ? [...new Set([...String(passiveRaw)
+        // 구분선 아래 회색 글씨. build 가 본문 뒤에 이어 붙여 번호를 매기므로 여기도 뒤에 붙인다.
+        const belowMap = belowLineMap(bin, alias, strings);
+        const passiveSrc = (passiveRaw || '') + (belowMap.P || '');
+        const passiveNames = passiveSrc
+            ? [...new Set([...String(passiveSrc)
                 .replace(/@SpellModifierDescriptionAppend@/gi, '')
                 .matchAll(/@([A-Za-z0-9_.*+\-/():]+?)@/g)].map(x => x[1].trim()))]
             : [];
@@ -1908,7 +1915,9 @@ async function main() {
             if (!['Q', 'W', 'E', 'R'].includes(key) || seenKey.has(key)) continue;
             seenKey.add(key);
 
-            const desc = (s.dynamicDescription || '').replace(/@SpellModifierDescriptionAppend@/gi, '');
+            // 구분선 아래 회색 글씨를 **뒤에** 이어 붙인다 (build 와 같은 순서).
+            const desc = ((s.dynamicDescription || '') + (belowMap[key] || ''))
+                .replace(/@SpellModifierDescriptionAppend@/gi, '');
             // ★ ':' 포함. build_champion_data.js 의 convertDescription 과 반드시 같아야 한다.
             //   여기가 어긋나면 문장의 {pN} 개수와 값의 pN 개수가 안 맞는다.
             const names = [...new Set([...desc.matchAll(/@([A-Za-z0-9_.*+\-/():]+?)@/g)].map(x => x[1].trim()))];
@@ -2105,7 +2114,7 @@ async function main() {
                 const raw = lk && lk.keyTooltip ? strings[String(lk.keyTooltip).toLowerCase()] : null;
                 if (!raw) continue;
 
-                const f2Names = [...new Set([...String(raw)
+                const f2Names = [...new Set([...String(raw + (textOfSpellObj(obj, strings) || ''))
                     .replace(/@SpellModifierDescriptionAppend@/gi, '')
                     .matchAll(/@([A-Za-z0-9_.*+\-/():]+?)@/g)].map(x => x[1].trim()))];
 

@@ -3789,6 +3789,30 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 };
                 const bodyStyle = 'color: #ddd; line-height: 1.6; font-size: 14px;';
 
+                // ★ 구분선 아래 작은 회색 글씨 (2026-08-12).
+                //   인게임 툴팁에서 본문 아래에 한 칸 띄고 깔리는 부연 설명이다
+                //   ("이 스킬은 피해를 입힐 때 효과가 발동합니다." 등).
+                //   CD 의 dynamicDescription 에는 아예 없고, 라이엇이 따로 관리하는
+                //   stringtable 키(keyTooltipExtendedBelowLine)에서 온다.
+                //   build_champion_data.js 가 "<슬롯>_rules" 로 찍어 둔다 — belowline.js 참고.
+                //
+                //   ★ 가드는 **회색 글씨만** 버린다. 본문 가드처럼 통째로 폴백시키면
+                //     부연 설명 하나 때문에 멀쩡한 스킬 문장이 DD 툴팁으로 떨어진다.
+                //     값을 못 구한 자리가 9군데 있다 (드레이븐 R·파이크 R 등 f 계열).
+                const rulesTpl = (typeof customTemplates !== 'undefined' && customTemplates[champ.id])
+                    ? customTemplates[champ.id][spellKey + '_rules'] : null;
+                const rulesBad = rulesTpl && Object.keys(values).some(
+                    k => /^p[0-9]+$/.test(k)
+                        && rulesTpl.includes(`{${k}}`)
+                        && (values[k] === '' || String(values[k]).includes('?'))
+                );
+                //   글자 크기는 본문 14px 보다 한 단계 작게 (인게임도 작다).
+                //   색은 <rules> 태그가 낸다 — app.js <style> 의 #5a5955, 인게임 실측값이다.
+                const rulesHtml = (rulesTpl && !rulesBad)
+                    ? `<div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 14px 0;"></div>`
+                    + `<div class="skill-rules" style="line-height: 1.55; font-size: 13px;">${fill(rulesTpl)}</div>`
+                    : '';
+
                 // ★ 배열 템플릿 = 하위 스킬(재시전·2타·3타·진화)을 아이콘과 함께 구분선으로 나눈다.
                 //   0번은 스킬 본체라 기본 아이콘, 1번부터는 values.icons[i-1] 을 쓴다.
                 //   (icons 는 findExtraIcons 가 bin 에서 뽑아 둔 추가 아이콘 배열이다)
@@ -3818,10 +3842,11 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                             ? `<img src="${icon}" style="width: 34px; height: 34px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12); flex-shrink: 0; ${iconPull}" onerror="this.style.visibility='hidden'">`
                             : `<div style="width: 34px; flex-shrink: 0;"></div>`;
                         return `<div style="display: flex; gap: 12px; align-items: flex-start;">${imgTag}<div style="flex: 1; ${bodyStyle}">${fill(part)}</div></div>`;
-                    }).join('<div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 14px 0;"></div>');
+                    }).join('<div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 14px 0;"></div>')
+                        + rulesHtml;
                 }
 
-                return `<div style="margin-bottom: 10px; ${bodyStyle}">${fill(tpl)}</div>`;
+                return `<div style="margin-bottom: 10px; ${bodyStyle}">${fill(tpl)}</div>` + rulesHtml;
             }
 
             return `<div style="margin-bottom: 10px; color: #ddd; line-height: 1.6; font-size: 14px;">${riotDesc}</div>`;
@@ -3990,6 +4015,16 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                keywordname 탐 켄치 R "고정"·"심연 잠수", slow 가렌 W "60%의 강인함",
                level 애니비아 P, stattracking 드레이븐 P (뒤 둘은 스샷에 강조색 자체가 없었다). */
             keywordname, stattracking, level { color: inherit; }
+            /* activerank 는 구분선 아래 회색 글씨에서만 나온다 (볼리베어 E 한 자리).
+               인게임 색을 실측한 적이 없으므로 색을 지어내지 않고 본문색을 따라간다. */
+            activerank { color: inherit; }
+            /* ★ 구분선 아래 회색 글씨(.skill-rules) 안에서는 라벨류를 인라인으로 되돌린다.
+                 위 규칙이 display:block 이라 문장 한가운데서 줄이 끊긴다 —
+                 이렐리아 W 의 "<charge>충전</charge>이 끝나면" 이 세 줄로 갈라졌다.
+                 여기서는 라벨이 아니라 그냥 단어로 쓰인다. */
+            .skill-rules active, .skill-rules passive, .skill-rules charge,
+            .skill-rules release, .skill-rules toggle, .skill-rules tap, .skill-rules hold
+                { display: inline; margin-top: 0; }
             /* --- 문장에 안 쓰이는 태그. 확인 대상이 아니다 --- */
             gold { color: #ffd700; font-weight: bold; }
             b { font-weight: bold; }
@@ -4298,12 +4333,20 @@ window.playSkill = function (index) {
         el.play().catch(() => { });
     };
 
-    setVideo(document.getElementById('champ-skill-video'), skill.id);
+    // ★ 라이엇이 파일 번호를 어긋나게 올린 자리 (2026-08-12 전수 조사).
+    //   173챔피언 x P/Q/W/E/R x 1~5 를 전부 두드려 본 결과, 슬롯당 영상은 하나뿐이고
+    //   두 번째 영상(Q2·W2·E2·R2)은 폼이 둘인 5명(나르·엘리스·제이스·니달리·렉사이)에만 있다.
+    //   자헨만 Q 영상이 `Q1` 이 아니라 `Q2` 로 올라가 있어서 우리 화면에서 통째로 안 나왔다.
+    //   (로크·신 짜오는 아예 영상이 없다. 우리 코드는 실패하면 조용히 숨기니 그대로 두면 된다)
+    const VIDEO_ID_FIX = { '0904': { Q1: 'Q2' } };   // 4자리 키 -> { 원래id: 실제id }
+    const fixId = (id) => (VIDEO_ID_FIX[window.currentChampPaddedKey] || {})[id] || id;
+
+    setVideo(document.getElementById('champ-skill-video'), fixId(skill.id));
 
     // 두 번째 폼도 자기 영상이 따로 있다 (나르 메가 Q2·W2·E2 등)
     const v2El = document.getElementById('champ-skill2-video');
     if (v2El) {
-        if (skill.form2) setVideo(v2El, skill.keyChar + '2');
+        if (skill.form2) setVideo(v2El, fixId(skill.keyChar + '2'));
         else { v2El.style.display = 'none'; v2El.removeAttribute('src'); delete v2El.dataset.want; }
     }
 };

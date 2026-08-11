@@ -18,6 +18,8 @@ const fs = require('fs');
 const path = require('path');
 const { loadStringTable, getPassiveTooltip } = require('./stringtable');
 const { getBin, cacheStats } = require('./bincache');
+// 구분선 아래 회색 글씨. fill_values.js 와 **같은 모듈**을 써야 자리 수가 안 어긋난다.
+const { BELOW_SEP, belowLineMap, textOfSpellObj } = require('./belowline');
 
 // ------------------------------------------------------------
 // 설정
@@ -126,7 +128,9 @@ const KNOWN_TAGS = new Set([
     'spellname', 'keyword', 'keywordname', 'recast', 'toggle', 'onhit',
     'tap', 'hold', 'charge', 'release', 'evolve', 'scalelevel',
     'gold', 'armorpen', 'attackspeed', 'lifesteal', 'omnivamp',
-    'danger', 'specialrules', 'slow', 'b', 'i', 'font'
+    'danger', 'specialrules', 'slow', 'b', 'i', 'font',
+    // 구분선 아래 회색 글씨에서만 나오는 태그 (2026-08-12)
+    'activerank', 'stattracking', 'level'
 ]);
 
 // CD 태그 -> app.js 가 아는 태그로 바꿔치기
@@ -263,6 +267,30 @@ function convertDescription(raw, championAlias) {
     text = text.replace(/[ \t]{2,}/g, ' ').trim();
 
     return { text, names };
+}
+
+// ------------------------------------------------------------
+// 본문 + 구분선 아래 회색 글씨를 **한 번에** 변환한다.
+//
+//   ★ 따로 변환하면 안 된다. convertDescription 은 {pN} 을 1번부터 새로 매기므로
+//     회색 글씨만 따로 돌리면 본문의 {p1} 과 번호가 겹친다.
+//   ★ 회색 글씨를 **뒤에** 붙이는 게 핵심이다. 이름은 처음 나온 순서로 번호를 받으니
+//     본문의 기존 번호는 하나도 안 바뀌고, 새 자리만 뒤에 붙는다.
+//     (그래서 손으로 쓴 배열 템플릿 keepArr 의 {pN} 이 그대로 유효하다)
+// ------------------------------------------------------------
+function convertWithBelow(raw, below, alias) {
+    if (!below) {
+        const r = convertDescription(raw, alias);
+        return { text: r.text, rules: '', names: r.names };
+    }
+    const r = convertDescription(String(raw || '') + BELOW_SEP + below, alias);
+    const i = r.text.indexOf(BELOW_SEP);
+    if (i === -1) return { text: r.text, rules: '', names: r.names };   // 표식이 사라졌으면 포기
+    return {
+        text: r.text.slice(0, i).trim(),
+        rules: r.text.slice(i + BELOW_SEP.length).trim(),
+        names: r.names
+    };
 }
 
 // ------------------------------------------------------------
@@ -426,6 +454,7 @@ async function main() {
     const form2Fails = [];       // FORM2 에 적혀 있는데 툴팁을 못 찾은 것
     const binFails = [];         // bin 을 못 받은 챔피언
     const passiveFallback = [];  // 패시브 툴팁을 못 찾아 CD 요약문으로 떨어진 챔피언
+    const belowMade = [];        // 구분선 아래 회색 글씨를 붙인 자리
 
     for (let n = 0; n < champions.length; n++) {
         const c = champions[n];
@@ -464,7 +493,9 @@ async function main() {
 
         // 툴팁을 못 찾으면 예전처럼 CD 요약문으로 떨어진다.
         const passiveSrc = passiveRaw || (data.passive && data.passive.description) || '';
-        const passive = convertDescription(passiveSrc, alias);
+        // 구분선 아래 회색 글씨 (bin 의 keyTooltipExtendedBelowLine). belowline.js 주석 참고
+        const belowMap = bin ? belowLineMap(bin, alias, strings) : {};
+        const passive = convertWithBelow(passiveSrc, belowMap.P, alias);
 
         const tplLines = [];
         const valLines = [];
@@ -479,6 +510,10 @@ async function main() {
         const passiveNote = passiveRaw ? 'stringtable' : 'CD 요약본 — 빈칸 없음, 직접 다듬을 것';
         if (keepArr.P) tplLines.push(keepArr.P);
         else tplLines.push(`        "P": ${q(passive.text)}, // ${(data.passive && data.passive.name) || ''} — ${passiveNote}`);
+        if (passive.rules) {
+            tplLines.push(`        "P_rules": ${q(passive.rules)}, // 구분선 아래 회색 글씨`);
+            belowMade.push(`${c.name} P`);
+        }
 
         valLines.push(`        "P": {`);
         passive.names.forEach((name, i) => {
@@ -496,9 +531,14 @@ async function main() {
             if (seen.has(key)) continue; // 변신 챔피언의 두 번째 세트는 건너뜀
             seen.add(key);
 
-            const { text, names } = convertDescription(spell.dynamicDescription || spell.description, alias);
+            const conv = convertWithBelow(spell.dynamicDescription || spell.description, belowMap[key], alias);
+            const { text, names } = conv;
             if (keepArr[key]) tplLines.push(keepArr[key]);
             else tplLines.push(`        "${key}": ${q(text)}, // ${spell.name}`);
+            if (conv.rules) {
+                tplLines.push(`        "${key}_rules": ${q(conv.rules)}, // 구분선 아래 회색 글씨`);
+                belowMade.push(`${c.name} ${key}`);
+            }
 
             const maxRank = rankOf(alias, key);
 
@@ -557,8 +597,13 @@ async function main() {
                 //   합친 이름 뒷조각으로 채운다 (렉사이 굴 파기 스킬이 이 경우).
                 const nm = String(nameRaw || '').split('/')[0].trim();
 
-                const { text, names } = convertDescription(raw, alias);
+                const conv2 = convertWithBelow(raw, textOfSpellObj(obj, strings), alias);
+                const { text, names } = conv2;
                 tplLines.push(`        "${slot}2": ${q(text)}, // ${nm} — ${f2.label}`);
+                if (conv2.rules) {
+                    tplLines.push(`        "${slot}2_rules": ${q(conv2.rules)}, // 구분선 아래 회색 글씨`);
+                    belowMade.push(`${c.name} ${slot}2`);
+                }
 
                 valLines.push(`        "${slot}2": {`);
                 names.forEach((name, i) => valLines.push(`            "p${i + 1}": "?", // ${name}`));
@@ -611,6 +656,12 @@ async function main() {
         for (const [tag, champ] of unknownTags) {
             console.log(`  <${tag}>   (예: ${champ})`);
         }
+    }
+
+    if (belowMade.length) {
+        const champCount = new Set(belowMade.map(x => x.split(' ')[0])).size;
+        console.log(`\n[구분선 아래 회색 글씨] ${belowMade.length}자리 / ${champCount}챔피언 — "<슬롯>_rules" 키로 붙였다`);
+        console.log(`  ${belowMade.join(', ')}`);
     }
 
     if (arrayKept.length) {

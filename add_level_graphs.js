@@ -121,7 +121,10 @@ for (const l of src) {
     const m = l.match(/"(p\d+)":\s*"(.*?)",\s*\/\/\s*(.+?)\s*$/);
     if (!m || m[2].indexOf('(레벨에 따라)') === -1) continue;
 
-    const tpl = String((templates[champ] || {})[slot] || '');
+    // ★ 구분선 아래 회색 글씨("<슬롯>_rules") 도 화면에 나가는 문장이라 같이 본다 (2026-08-12).
+    //   여기에도 레벨에 따라 크는 값이 들어 있다 (가렌 Q 의 강화 공격 지속시간 등).
+    const t = templates[champ] || {};
+    const tpl = String(t[slot] || '') + String(t[slot + '_rules'] || '');
     if (tpl.indexOf('{' + m[1] + '}') === -1) continue;      // 문장에 안 쓰이는 자리는 건너뛴다
     const curve = findCurve(champ.toLowerCase(), slot, m[3]);
     if (!curve) continue;
