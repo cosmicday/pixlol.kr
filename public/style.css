@@ -2767,6 +2767,14 @@ body::before {
         height: 220px;
     }
 
+    /* 검색창이 화면 끝에서 끝까지 닿았다. .search-box-wrapper 가 width:100% 인데
+       이 상자에 좌우 패딩이 없어서다. 드롭다운·에러문구가 전부 wrapper 기준
+       position:absolute 라 wrapper 를 줄이는 대신 부모에 패딩을 준다. */
+    .main-search-section {
+        padding-left: 28px;
+        padding-right: 28px;
+    }
+
     .search-box {
         flex-direction: column;
         border-radius: 15px;
@@ -2795,6 +2803,12 @@ body::before {
     .pix-content-wrap {
         flex-direction: column;
         padding: 0 10px;
+        /* ★ 세로로 세울 때 align-items 도 같이 풀어야 한다 (2026-08-11).
+           데스크톱에선 가로 배치라 flex-start 가 "위쪽 정렬" 이지만, column 이 되면
+           같은 값이 "왼쪽 정렬 + 내용 크기로 축소" 가 된다. 그래서 랭킹 표 상자가
+           화면 폭을 안 채우고 줄어든 채 왼쪽에 붙었다. 좁은 폰(360·390)은 내용이
+           폭을 넘겨서 안 보였고 412px 부터 오른쪽에 20~38px 가 남았다. */
+        align-items: stretch;
     }
 
     .pix-sidebar {
@@ -3380,6 +3394,34 @@ body::before {
     flex-shrink: 0;
 }
 
+/* P Q W E R 버튼 한 개. 값은 app.js 인라인에서 그대로 옮긴 것이다.
+   background 와 img 의 border-color 는 playSkill() 이 인라인으로 덮어써서
+   선택된 버튼을 표시한다 — 그건 계산값이라 여기 두면 안 된다. */
+.skill-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: 0.2s;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.skill-btn-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+}
+
+.skill-btn-key {
+    color: #9aa4af;
+    font-weight: bold;
+    width: 24px;
+    font-size: 16px;
+}
+
 .champ-skill-body {
     flex: 1;
     min-width: 0;
@@ -3441,14 +3483,22 @@ body::before {
         gap: 12px;
     }
 
-    /* 목록: 폭을 다 쓰고 2열 격자로 깐다. 173명을 한 줄씩 쌓으면 스크롤이 두 배다.
-       높이를 화면 1/3로 묶어서 상세가 첫 화면에 같이 보이게 한다. */
+    /* 목록: 2열 격자로 깐다. 173명을 한 줄씩 쌓으면 스크롤이 두 배다.
+       높이를 화면 1/3로 묶어서 상세가 첫 화면에 같이 보이게 한다.
+
+       ★ 칸을 1fr 로 늘리지 않고 130px 로 고정한다 (2026-08-11).
+         1fr 이면 화면이 넓어질수록 칸만 커져서 146~181px 까지 늘어났다
+         (아이콘 32px 옆에 빈 공간만 붙는다). 상자 자체도 max-width 로 묶고
+         가운데 정렬해서 화면을 꽉 채우지 않게 했다. */
     .champ-list-pane {
         width: 100%;
+        max-width: 320px;
+        margin: 0 auto;
         height: auto;
         max-height: 34vh;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fill, 130px);
+        justify-content: center;
         align-content: start;
         padding: 10px;
     }
@@ -3507,6 +3557,28 @@ body::before {
         flex-wrap: wrap;
         justify-content: center;
         gap: 8px;
+    }
+
+    /* ★ 버튼 하나를 96px → 44px 로 줄여 5개를 한 줄에 넣는다 (2026-08-11).
+       가로 배치(아이콘 48 + 여백 12 + 글자칸 24 + 패딩 12)로는 5개가 512px 라
+       스킬 칸(300px 대)에 못 들어가서 두 줄로 접혔다. 아이콘 위·글자 아래로
+       세우면 44 x 5 + 여백 32 = 252px 라 360px 폰에서도 한 줄이다.
+       위 flex-wrap 은 그대로 둔다 — 새 슬롯이 생겨도 안 넘치게 하는 보험이다. */
+    .skill-btn {
+        flex-direction: column;
+        gap: 3px;
+        padding: 6px 2px;
+    }
+
+    .skill-btn-img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .skill-btn-key {
+        width: auto;
+        font-size: 13px;
+        line-height: 1;
     }
 
     .champ-skill-body {

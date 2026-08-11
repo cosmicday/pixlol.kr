@@ -3977,13 +3977,18 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         <div class="champ-skill-layout">
             <div class="champ-skill-btns">
                 ${window.currentChampSkills.map((skill, idx) => `
-                    <div onclick="playSkill(${idx})" id="skill-btn-${idx}" class="skill-btn" style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s; background: rgba(255,255,255,0.02);">
-                        <img src="${skill.img}" style="width: 48px; height: 48px; border-radius: 8px; border: 2px solid transparent;" id="skill-img-${idx}">
+                    <!-- ★ 인라인 style 을 클래스로 뺐다 (2026-08-11). 폰에서 버튼 하나가
+                         96px 라 5개면 512px 였고, 스킬 칸이 300px 대라 두 줄로 접혔다.
+                         인라인이라 @media 로 줄일 수가 없었다. 값은 그대로고
+                         모바일 규칙만 style.css 15번 절 @media 에 있다.
+                         background·borderColor 는 playSkill 이 인라인으로 덮어쓴다. -->
+                    <div onclick="playSkill(${idx})" id="skill-btn-${idx}" class="skill-btn">
+                        <img src="${skill.img}" class="skill-btn-img" id="skill-img-${idx}">
                         <!-- ★ 라벨은 배열 인덱스가 아니라 skill.keyChar 로 붙인다.
                              인덱스로 매기면 슬롯이 하나라도 빠졌을 때 뒤가 통째로 밀린다
                              (아펠리오스는 E 가 없어서 R 버튼에 E 가 찍혔었다).
                              패시브만 keyChar 가 '패시브' 라 예외로 P 를 쓴다. -->
-                        <div style="color: #9aa4af; font-weight: bold; width: 24px; font-size: 16px;">${skill.isPassive ? 'P' : skill.keyChar}</div>
+                        <div class="skill-btn-key">${skill.isPassive ? 'P' : skill.keyChar}</div>
                     </div>
                 `).join('')}
             </div>
