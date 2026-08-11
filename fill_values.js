@@ -82,9 +82,21 @@ const MANUAL = {
   //     "여섯 번 일으켜 최대 체력의 9.0%", 회색 줄이 "각 번개 = 1.5% ~ 3.0% + 0.006%".
   //     회당 값과 AP 계수에 각각 x6 을 실은 값. 근본 원인은 guessPart 의 x100 배율
   //     누락이라 그쪽이 고쳐지면 이 줄은 빼도 된다.
+  // 2026-08-11 인게임 확인분 (위키 대조 6건 중 2건이 우리 오답이었다).
+  //   누누 W: bin 의 NoImpactSnowballDamage(최대 x0.333)를 최소 피해로 쓰고 있었는데
+  //     그건 "안 맞았을 때" 값이다. 인게임 툴팁도 60 으로 찍히지만 실제로 때려보면 36 —
+  //     최소 = 최대의 20% 가 맞다(양 위키도 36/45/54/63/72). bin 에 0.2 가 없어서 손으로 넣는다.
+  //   키아나 Q: 두 번째 대상은 TremorDamage(x0.6)가 아니라 FalloffMod(x0.75)다.
+  //     bin 에 EnchantedFalloff/VanillaFalloff 라는 별도 계산식이 있는데 그쪽을 못 잡았다.
+  '누누와 윌럼프 W / NoImpactSnowballDamage': '36 / 45 / 54 / 63 / 72 (+ 주문력의 30%)',
+  '키아나 Q / TremorDamage': '52.5 / 75 / 97.5 / 120 / 142.5 (+ 추가 공격력의 63.75%)',
+
   '미스 포츈 P / Spell.MissFortuneViciousStrikes:LoveTapRefund': '2',
   '타릭 P / CDR': '1 ~ 2 (스킬 가속에 따라)',
-  '우디르 Q / EmpoweredLightningBonusMax': '9 ~ 18% (레벨에 따라) (+ 주문력의 0.036%)',
+  //   ★ 2026-08-11: 계수를 0.036% -> 3.6% 로 고쳤다. StatBy* 조각이 mult 를 무시하던
+  //     버그(아래 partToText 주석 참고) 때문에 100배 작게 적혀 있었다.
+  //     lolwiki 우디르 Q 각성 번개가 "+0.6% per 100 AP" (회당) 이고 6회 총합이라 3.6%.
+  '우디르 Q / EmpoweredLightningBonusMax': '9 ~ 18% (레벨에 따라) (+ 주문력의 3.6%)',
 
   // 2026-08-09 폴백 해제 후 화면에 드러난 자리들.
   //   스몰더: BuffCounterByNamedDataValue 조각이 "0.25 (중첩당)" 이라는 분수를 그대로 낸다.
@@ -847,6 +859,65 @@ const applyStatFormula = (name, formula) => {
     return name;
 };
 
+// 순수 숫자(또는 랭크별 숫자 배열) 두 개를 곱해서 하나로 접는다.
+//   접을 수 없으면 null 을 돌려 호출부가 "a x b" 를 그대로 쓰게 한다.
+//   "1 / 1 / 1" 처럼 전부 같으면 한 칸으로 줄인다 (levelsToText 와 같은 규칙).
+const foldProduct = (a, b) => {
+    // x 1 은 아무 의미가 없다. 반대쪽을 그대로 돌려준다.
+    //   (타릭 P "25 ~ 93 (레벨에 따라) x 1" 처럼 한쪽이 숫자가 아니어도 지울 수 있다)
+    if (String(a).trim() === '1') return String(b);
+    if (String(b).trim() === '1') return String(a);
+    const parse = (t) => {
+        const s = String(t).trim();
+        if (!/^-?[\d.]+(\s*\/\s*-?[\d.]+)*$/.test(s)) return null;
+        const arr = s.split('/').map(x => parseFloat(x));
+        return arr.every(n => Number.isFinite(n)) ? arr : null;
+    };
+    const A = parse(a), B = parse(b);
+    if (!A || !B) return null;
+    if (A.length !== B.length && A.length !== 1 && B.length !== 1) return null;
+    const n = Math.max(A.length, B.length);
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(tidy(A[A.length === 1 ? 0 : i] * B[B.length === 1 ? 0 : i]));
+    return out.every(x => x === out[0]) ? String(out[0]) : out.join(' / ');
+};
+
+// 랭크마다 다른 배율(미포 R "x 14 / 16 / 18", 흐웨이 Q "x 2 / 2.375 / ...")을 계산식 안으로 접는다.
+//   랭크 i 는 배율 k_i 를 스칼라로 걸어 계산식을 돌린 뒤 그 결과에서 i번째 랭크 칸만 뽑는다(대각선).
+//   그렇게 만든 랭크별 문자열 R개를 다시 합친다. 뼈대가 어긋나면 null 을 돌려 예전 "x ..." 표기를 남긴다.
+//   ★ "~" 가 든 결과는 건너뛴다. 모데카이저 Q 의 "0 ~ 45 (레벨에 따라)" 처럼 범위 양 끝이
+//     랭크마다 갈리면 "0 ~ 58.5 / 60.75 / ..." 라는 읽을 수 없는 표기가 되기 때문이다.
+const foldRankMultiplier = (renderScaled, ranks) => {
+    const NUM = /-?\d+(?:\.\d+)?/g;
+    const GROUP = /-?\d+(?:\.\d+)?(?:\s*\/\s*-?\d+(?:\.\d+)?)+/g;
+    const pickRank = (text, i) => String(text).replace(GROUP, (g) => {
+        const parts = g.split("/").map(s => s.trim());
+        return parts[Math.min(i, parts.length - 1)];
+    });
+    const rows = [];
+    for (let i = 0; i < ranks.length; i++) {
+        const raw = renderScaled(ranks[i]);
+        if (raw === null || raw === undefined) return null;
+        if (String(raw).indexOf("~") !== -1) return null;
+        rows.push(pickRank(raw, i));
+    }
+    const skel = rows.map(r => r.replace(NUM, "#"));
+    if (!skel.every(s => s === skel[0])) return null;
+    const nums = rows.map(r => r.match(NUM) || []);
+    if (!nums.every(n => n.length === nums[0].length)) return null;
+    const merged = nums[0].map((_, p) => {
+        const col = nums.map(n => n[p]);
+        return col.every(v => v === col[0]) ? col[0] : col.join(" / ");
+    });
+    let k = 0;
+    return rows[0].replace(NUM, () => merged[k++]);
+};
+
+// 값이 "점수" 가 아니라 "소수 비율(0~1)" 로 들어오는 스탯.
+//   4 = 공격 속도, 8 = 치명타 확률, 9 = 치명타 피해량, 18 = 생명력 흡수.
+//   이 넷은 계산식 배율(mDisplayAsPercent 의 x100 등)을 실으면 안 된다.
+const FRACTION_STATS = new Set([4, 8, 9, 18]);
+
 const statName = (id, hint, formula) => {
     // mStat 이 0(주문력)이면 JSON 에서 필드가 통째로 빠진다. undefined 는 0 으로 본다.
     if (id === undefined || id === null) id = 0;
@@ -895,18 +966,36 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
         case 'NumberCalculationPart':
             return tidy((part.mNumber || 0) * mult);
 
+        // ★ 2026-08-11: 이 두 조각이 mult 를 통째로 무시하고 100 만 곱하고 있었다.
+        //   calcToText 는 `mult * percent * selfMult` 를 내려보내는데(1264행),
+        //   기본값 조각만 그걸 먹고 계수 조각은 못 먹어서 둘의 배율이 어긋났다.
+        //   증상 두 가지가 같은 뿌리였다:
+        //     1) mMultiplier 가 있는 계산식 — 기본값엔 배수가 걸리고 계수엔 안 걸림
+        //        (아칼리 E ×0.3, 룰루 Q ×0.5, 릴리아 W ×3, 마스터 이 Q ×0.25)
+        //     2) mDisplayAsPercent:true 인 체력 % 피해 — percent=100 을 계수가 못 받아
+        //        `주문력의 0.03%` 처럼 100배 작게 나감 (렐 E, 판테온 W, 트런들 R ...)
+        //   쉔 Q 처럼 base 가 이미 % 단위인(DisplayAsPercent 없는) 자리는 mult=1 이라 그대로다.
+        //   ★ 단, 스탯 자체가 "소수(0~1)" 로 들어오는 것들은 mult 를 실으면 안 된다.
+        //     공격 속도 0.5 = 50%, 치명타 확률 1.0 = 100% 처럼 이미 비율이라
+        //     mDisplayAsPercent 의 x100 을 또 먹으면 100배로 튄다.
+        //     (진 P `치명타 확률의 35%`, 야스오·요네 P `치명타 피해량의 100%`,
+        //      닐라 Q/R, 세나 P 가 이 경우였다 — 전부 위키와 맞던 값이다)
+        //     물리 관통력·이동 속도·체력·방어력 등은 "점수" 라 mult 대상이 맞다.
         case 'StatByNamedDataValueCalculationPart': {
             const d = dv(part.mDataValue);
-            const ratio = d ? levelsToText(d.values, maxRank, 100) : null;
+            const m = FRACTION_STATS.has(part.mStat === undefined ? 0 : part.mStat) ? 1 : mult;
+            const ratio = d ? levelsToText(d.values, maxRank, 100 * m) : null;
             const s = statName(part.mStat, ratio === null ? null : ratio + '%', part.mStatFormula);
             if (!d || s === null) return null;
             return `${s}의 ${ratio}%`;
         }
 
         case 'StatByCoefficientCalculationPart': {
-            const s = statName(part.mStat, tidy((part.mCoefficient || 0) * 100) + '%', part.mStatFormula);
+            const m = FRACTION_STATS.has(part.mStat === undefined ? 0 : part.mStat) ? 1 : mult;
+            const coef = tidy((part.mCoefficient || 0) * 100 * m);
+            const s = statName(part.mStat, coef + '%', part.mStatFormula);
             if (s === null) return null;
-            return `${s}의 ${tidy((part.mCoefficient || 0) * 100)}%`;
+            return `${s}의 ${coef}%`;
         }
 
         case 'ByCharLevelInterpolationCalculationPart': {
@@ -1000,6 +1089,12 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             //   0.16 x (1 + ...) 라는 원래 뜻과 달라진다.
             //   ★ 뺄셈도 같이 봐야 한다. joinTerms 가 음수 항을 " - " 로 적기 때문에
             //     ' + ' 만 보면 괄호를 놓쳐서 뜻이 달라진다.
+            // ★ 2026-08-11: 양쪽이 순수 숫자면 곱해서 접는다.
+            //   예전엔 "150 x 0.01", "6 x 2.5", "0.15 x 2", "x 1" 같은 날 계산식이
+            //   그대로 화면에 찍혔다 (나르 R, 카타리나 R, 오리아나 P, 타릭 P).
+            //   랭크별 배열끼리도 칸 수가 맞으면 칸끼리 곱한다. 한쪽이 값 하나면 전체에 곱한다.
+            const folded = foldProduct(a, b);
+            if (folded !== null) return folded;
             const wrap = (x) => / [+-] /.test(x) ? `(${x})` : x;
             return `${wrap(a)} x ${wrap(b)}`;
         }
@@ -1016,8 +1111,16 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             return (s2 !== null && sub !== null) ? `${s2}의 ${sub}%` : null;
         }
 
-        case 'AbilityResourceByCoefficientCalculationPart':
-            return `최대 마나의 ${tidy((part.mCoefficient || 0) * 100)}%`;
+        case 'AbilityResourceByCoefficientCalculationPart': {
+            // ★ 2026-08-11: mStatFormula 를 안 봐서 전부 "최대 마나" 로 나가고 있었다.
+            //   라이즈 Q/W/E 가 mStatFormula=2(추가)인데 "최대 마나" 로 찍혀
+            //   lolwiki `bonus mana` / 나무위키 `추가 마나` 와 어긋났다.
+            //   (카사딘 R 은 이 조각을 안 쓰므로 영향 없음 — 거긴 실제로 최대 마나가 맞다)
+            const res = part.mStatFormula === 2 ? '추가 마나'
+                : part.mStatFormula === 1 ? '기본 마나'
+                    : '최대 마나';
+            return `${res}의 ${tidy((part.mCoefficient || 0) * 100)}%`;
+        }
 
         case 'BuffCounterByCoefficientCalculationPart':
             return `${tidy((part.mCoefficient || 0) * mult)} (중첩당)`;
@@ -1025,13 +1128,19 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
         case 'ByCharLevelFormulaCalculationPart': {
             // ★ 두 군데가 틀려서 이 분기는 지금까지 한 번도 값을 못 읽고 "0 ~ 0"만 냈다.
             //   1) 필드 이름이 mValues 가 아니라 values 다. 전수 조사 15자리 전부 values.
-            //   2) 배열이 31칸(레벨 1~31)이라 마지막 칸은 31레벨 값이다.
-            //      우리는 18레벨 기준이므로 인덱스 17에서 잘라야 한다.
-            //      (노틸러스 P: 마지막 칸 188, 18레벨은 110)
+            //   2) 배열이 31칸이라 마지막 칸을 그대로 쓰면 안 된다.
+            //      ※ "31칸 = 레벨 1~31" 로 읽었던 게 아래 2026-08-11 정정의 원인이다.
             const vals = findField(part, 'values');
-            if (!Array.isArray(vals) || !vals.length) return null;
-            const a = tidy(vals[0] * mult);
-            const b = tidy(vals[Math.min(17, vals.length - 1)] * mult);
+            if (!Array.isArray(vals) || vals.length < 2) return null;
+            // ★ 2026-08-11 정정: 배열은 31칸 = 레벨 0~30 이라 "인덱스 = 레벨" 이다.
+            //   레벨1 = vals[1], 레벨18 = vals[18]. 예전엔 vals[0]/vals[17] 을 써서
+            //   이 분기가 만드는 11자리 전부가 정확히 레벨 한 칸씩 낮게 나갔다.
+            //   (노틸러스 P: idx0=8 idx1=14 idx17=110 idx18=116 idx30=188 — 위키 값이 14~116)
+            //   위키 대조로 확인된 8자리: 노틸러스P 럭스P 레오나P 브라움P 카직스P
+            //   그레이브즈P 카타리나P 렝가W. 그레이브즈·카타리나·렝가의 "0 ~" 시작값도
+            //   전부 이것 때문이었다(레벨0 값이 0이라서). 별개 버그가 아니다.
+            const a = tidy(vals[1] * mult);
+            const b = tidy(vals[Math.min(18, vals.length - 1)] * mult);
             return levelRange(a, b);
         }
 
@@ -1221,9 +1330,26 @@ function calcToText(calc, spell, maxRank, mult, depth = 0) {
     // 다른 계산식을 배율만 바꿔 재사용하는 형태
     if (calc.mModifiedGameCalculation) {
         const base = findCalc(spell, calc.mModifiedGameCalculation);
+        const m = calc.mMultiplier ? partToText(calc.mMultiplier, spell, maxRank, 1, depth + 1) : null;
+        // ★ 2026-08-11: 배율이 숫자 하나로 접히면 안쪽 계산식에 실어서 내려보낸다.
+        //   예전엔 `${inner} x ${m}` 으로 날것을 붙여서 화면에 계산식이 그대로 찍혔다
+        //   ("30 / 50 / 70 (+ 주문력의 10%) x 3"). 게다가 배율이 기본값에만 걸린 것처럼
+        //   읽혀서 계수를 오해하기 쉬웠다. 내려보내면 기본값·계수가 같이 접힌다
+        //   (그웬 R -> "90 / 150 / 210 (+ 주문력의 30%)" = lolwiki 와 일치).
+        //   랭크별 배열처럼 숫자 하나로 못 접는 배율은 예전처럼 x 로 남긴다
+        //   (모데카이저 Q 의 "x 1.3 / 1.35 / 1.4 / 1.45 / 1.5").
+        if (m !== null && /^-?[\d.]+$/.test(m)) {
+            return calcToText(base, spell, maxRank, mult * parseFloat(m), depth + 1);
+        }
+        // 랭크별로 다른 배율("14 / 16 / 18")도 접어 본다. 실패하면 아래 예전 표기로 떨어진다.
+        if (m !== null && /^-?[\d.]+(\s*\/\s*-?[\d.]+)+$/.test(m)) {
+            const ranks = m.split('/').map(x => parseFloat(x.trim()));
+            const folded = foldRankMultiplier(
+                (k) => calcToText(base, spell, maxRank, mult * k, depth + 1), ranks);
+            if (folded !== null) return folded;
+        }
         const inner = calcToText(base, spell, maxRank, mult, depth + 1);
         if (!inner) return null;
-        const m = calc.mMultiplier ? partToText(calc.mMultiplier, spell, maxRank, 1, depth + 1) : null;
         return m ? `${inner} x ${m}` : inner;
     }
 
