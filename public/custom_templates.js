@@ -1,5 +1,5 @@
 // 이 파일은 build_champion_data.js 가 생성했습니다.
-// 생성 시각: 2026-08-12T12:36:16.803Z
+// 생성 시각: 2026-08-12T23:31:56.952Z
 // 문장은 CommunityDragon 에서 가져왔고, {p1} {p2} 자리는 직접 채워야 합니다.
 
 const customTemplates = {
@@ -209,7 +209,7 @@ const customTemplates = {
         "W_rules": "<rules>유체화 상태인 유닛은 다른 유닛을 통과할 수 있습니다.</rules>", // 구분선 아래 회색 글씨
         "E": "드레이븐이 수평으로 도끼를 던져 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입히고 <status>뒤로 밀어내며</status> {p2}초 동안 {p3}% <status>둔화</status>시킵니다.", // 비켜서라
         "R": "드레이븐이 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입히는 대형 도끼 2개를 투척합니다. 챔피언에게 적중하거나 <recast>재사용</recast>하면 도끼가 드레이븐에게 돌아옵니다. 적에게 명중할 때마다 피해량이 {p2}% (최소: {p3}%) 감소합니다.<br><br>적 챔피언이 <keywordmajor>죽음의 소용돌이</keywordmajor>에 피해를 입어 체력이 드레이븐의 현재 <keywordmajor>드레이븐의 리그</keywordmajor> 중첩({p4})의 {p5}% 이하가 되면 드레이븐이 해당 챔피언을 처치합니다.", // 죽음의 소용돌이
-        "R_rules": "<rules>도끼가 돌아올 때 피해량 감소가 초기화됩니다.<br>드레이븐의 리그 소용돌이 처형: {p6}</rules>", // 구분선 아래 회색 글씨
+        "R_rules": "<rules>도끼가 돌아올 때 피해량 감소가 초기화됩니다.</rules>", // 구분선 아래 회색 글씨
     },
     "Ryze": { // 라이즈
         "P": "라이즈의 최대 마나량이 <scalemana>{p1}%</scalemana> 증가합니다. 스킬 사용 시 <scalemana>추가 마나</scalemana>에 비례하여 추가 피해를 입힙니다.", // 비전 연마 — stringtable
@@ -1045,7 +1045,7 @@ const customTemplates = {
             "아우렐리온 솔이 하늘에서 별을 뽑아 땅으로 떨어뜨려 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고, 적을 {p2}초 동안 <status>기절</status>시키고, 적중한 챔피언 하나당 <font color='#3458eb'>별가루 {p3}개</font>를 흡수합니다.<br><font color='#3458eb'>별가루 {p4}개</font>를 모으면 다음 <spellname>유성</spellname>을 <spellname>천상 강림</spellname>으로 바꿉니다.",
             "<spellname>천상 강림</spellname>: 아우렐리온 솔이 우주에서 별자리 하나만큼의 분노를 내려 넓은 범위에 있는 적에게 <magicdamage>{p5}의 마법 피해</magicdamage>를 입히고, 적중한 적을 {p2}초 동안 <status>공중으로 띄워 올립니다</status>. 또한, 거대한 충격파를 퍼뜨려 챔피언과 에픽 몬스터에게 <magicdamage>{p6}의 마법 피해</magicdamage>를 입히고 적중한 모든 적을 1초 동안 {p7}% <status>둔화</status>시킵니다."
         ], // 유성 / 천상 강림
-        "R_rules": "<rules><spellname>천상 강림</spellname>까지 모은 <font color='#3458eb'>별가루</font>: <font color='#3458eb'>{p8}/{p4}</font></rules>", // 구분선 아래 회색 글씨
+        "R_rules": "<rules><spellname>천상 강림</spellname>에 필요한 <font color='#3458eb'>별가루</font>: <font color='#3458eb'>{p4}</font></rules>", // 구분선 아래 회색 글씨
     },
     "Ivern": { // 아이번
         "P": "아이번은 에픽 몬스터를 제외한 몬스터를 공격하지 않습니다. 대신 마우스 오른쪽 버튼으로 몬스터를 누르면 <healing>{p1}의 체력</healing>과 <scalemana>{p2}의 마나</scalemana>를 소모하여 자라나는 <font color='#55FF00'>수풀</font>을 만듭니다.<br><br><font color='#55FF00'>수풀</font>:<li> {p3}초에 걸쳐 성장합니다<li> 아이번은 완전히 성장한 수풀을 수확해 캠프를 해방하고 골드와 경험치를 얻을 수 있습니다<li> 또한, 아이번은 <spellname>강타</spellname>를 <font color='#55FF00'>수풀</font>에 사용해 즉시 성장시켜 캠프를 해방하고 골드와 경험치를 얻을 수 있습니다", // 숲의 친구 — stringtable
@@ -1093,8 +1093,8 @@ const customTemplates = {
         "P": "아크샨이 기본 공격 후 두 번째 공격을 발사해서 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다. 두 번째 공격을 도중에 취소하면 <speed>이동 속도가 {p2}</speed> 증가했다가 {p3}초에 걸쳐 원래대로 돌아옵니다.<br><br>기본 공격 또는 스킬이 세 번째로 적중할 때마다 <magicdamage>{p4}의 마법 피해</magicdamage>를 추가로 입힙니다. 대상이 챔피언인 경우, {p5}초간 <shield>{p6}의 피해</shield>를 흡수하는 보호막을 얻습니다. (재사용 대기시간 {p7}초)<br><br>", // 비열한 싸움 — stringtable
         "Q": "아크샨이 부메랑을 던져 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다. 적에게 적중할 때마다 부메랑의 사거리가 증가합니다.<br><br>부메랑이 챔피언에게 적중하면 아크샨의 <speed>이동 속도가 {p2}</speed> 증가했다가 {p3}초에 걸쳐 원래대로 돌아옵니다.", // 복수의 부메랑
         "Q_rules": "<rules>챔피언이 아닌 대상에게는 {p4}%의 피해를 입힙니다. 부메랑에 맞은 적의 모습이 잠시 드러납니다.</rules>", // 구분선 아래 회색 글씨
-        "W": "{{ Spell_AkshanW_Tooltip_{p1} }}", // 악당 처단
-        "W_rules": "<rules><keywordstealth>위장</keywordstealth> 상태일 때는 적 챔피언의 감지 범위 안에 들어가지 않는 한 시야에 보이지 않습니다.<br>위장 상태에서는 <keywordmajor>악당</keywordmajor>에게 향하는 흔적이 생성됩니다.<br>아크샨이 살아 있을 때만 악당 효과로 이득을 볼 수 있습니다.<br>획득한 총 골드: {p2}</rules>", // 구분선 아래 회색 글씨
+        "W": "<passive>기본 지속 효과</passive>: 적 챔피언이 아군을 처치하면 60초 동안 <keywordmajor>악당</keywordmajor>이 됩니다. <keywordmajor>악당</keywordmajor>이 아크샨에게 피해를 입은 후 3초 안에 죽으면 아크샨이 100골드를 얻고 처치된 아군들을 부활시키며 다른 적의 <keywordmajor>악당</keywordmajor> 효과를 전부 없앱니다.<br><br><active>사용 시</active>: 아크샨이 2초간 <keywordstealth>위장</keywordstealth> 상태가 됩니다. 벽 근처나 수풀 안에 있으면 영구적으로 유지됩니다. 이렇게 <keywordstealth>위장</keywordstealth>한 상태에서 <keywordmajor>악당</keywordmajor>에게 다가갈 때 <speed>이동 속도가 80 / 90 / 100 / 110 / 120</speed>, <scalemana>잃은 마나 재생이 12%</scalemana> 증가합니다.", // 악당 처단 — {{키_{pN}}} 중첩 참조라 자동으로 못 푼다. stringtable spell_akshanw_tooltip_1(협곡 판본)을 손으로 풀어 넣었다
+        "W_rules": "<rules><keywordstealth>위장</keywordstealth> 상태일 때는 적 챔피언의 감지 범위 안에 들어가지 않는 한 시야에 보이지 않습니다.<br>위장 상태에서는 <keywordmajor>악당</keywordmajor>에게 향하는 흔적이 생성됩니다.<br>아크샨이 살아 있을 때만 악당 효과로 이득을 볼 수 있습니다.</rules>", // 구분선 아래 회색 글씨
         // ★ 배열 = 하위 스킬을 파트로 쪼개 눈 것. app.js 가 아이콘 + 구분선으로 나눠 그린다.
         //   0번은 스킬 본체(기본 아이콘), 1번부터 values.icons[i-1] 과 짝이 된다.
         "E": [
@@ -1680,7 +1680,7 @@ const customTemplates = {
         "E": "초가스가 다음 세 번의 기본 공격 시 가시를 발사하여 <magicdamage>{p1}+대상 최대 체력의 {p2}에 해당하는 마법 피해</magicdamage>를 입힙니다. 피해를 입은 적은 {p3}% <status>둔화</status>했다가 {p4}초에 걸쳐 원래대로 돌아옵니다.", // 날카로운 가시
         "E_rules": "<rules>가시는 <spellname>포식</spellname> 중첩에 비례해 커지며 중첩당 최대 체력 비례 피해가 {p5}% 상승합니다.<br>몬스터의 경우 체력 비례 피해는 {p6}의 피해로 대체됩니다.</rules>", // 구분선 아래 회색 글씨
         "R": "초가스가 적을 게걸스럽게 먹어치워, 챔피언에게는 <truedamage>{p1}</truedamage>, 미니언과 정글 몬스터에게는 <truedamage>{p2}</truedamage>의 고정 피해를 입힙니다. 대상이 처치되면 초가스의 포식 중첩이 1 올라, 몸집이 커지며 <healing>최대 체력이 {p3}</healing> 오릅니다. 에픽 몬스터가 아닌 일반 정글 몬스터와 미니언 처치로는 최대 {p4}중첩까지만 얻을 수 있습니다.", // 포식
-        "R_rules": "<rules>현재 미니언 및 일반 정글 몬스터 중첩:</rules> <stattracking>{p5}/{p4}</stattracking><br><rules>중첩에 따라 초가스의 공격 사거리와 <spellname>포식</spellname> 사거리가 증가합니다.<br>중첩당 공격 사거리 {p6} (최대 {p7})<br>중첩당 포식 사거리 {p8} (최대 {p9})</rules>", // 구분선 아래 회색 글씨
+        "R_rules": "<rules>미니언 및 일반 정글 몬스터 중첩은 최대 {p4}까지 쌓입니다.<br>중첩에 따라 초가스의 공격 사거리와 <spellname>포식</spellname> 사거리가 증가합니다.<br>중첩당 공격 사거리 {p6} (최대 {p7})<br>중첩당 포식 사거리 {p8} (최대 {p9})</rules>", // 구분선 아래 회색 글씨
     },
     "Karma": { // 카르마
         "P": "카르마는 <spellname>만트라</spellname> 스킬을 가지고 게임을 시작합니다.<br><br>챔피언에게 스킬로 피해를 입히면 <spellname>만트라</spellname>의 재사용 대기시간이 {p1}초 줄어듭니다.", // 열정 응집 — stringtable
@@ -2083,7 +2083,7 @@ const customTemplates = {
         "E": "파이크가 돌진하며, 돌진을 시작했던 지점에 유령이 생성됩니다. 유령은 {p1}초 동안 적 챔피언을 <status>기절</status>시키고 <physicaldamage>{p2}의 물리 피해</physicaldamage>를 입힙니다.", // 망자의 물살
         "E_rules": "<rules><status>기절</status> 지속시간은 물리 관통력에 비례합니다.</rules>", // 구분선 아래 회색 글씨
         "R": "파이크가 X 모양의 영역 내에 있는 모든 적 챔피언에게 피해를 주며, 체력이 <scalead>{p1}</scalead> 미만인 적에게 순간이동하여 <danger>처형</danger>합니다. 체력이 기준 이상인 챔피언과 챔피언이 아닌 대상의 경우, 해당 수치(<physicaldamage>{p2}</physicaldamage>)의 {p3}%에 해당하는 물리 피해를 입습니다. <br><br>적 챔피언이 X 구역 안에서 처치되면 {p4}초 안에 이 스킬을 <recast>재사용</recast>할 수 있습니다. 해당 챔피언을 파이크가 처치했다면 마지막으로 처치를 도운 아군에게도 챔피언 처치 골드가 주어집니다. 파이크가 아니라 아군이 처치했어도 파이크에게 챔피언 처치 골드가 주어집니다.<br>", // 깊은 바다의 처형
-        "R_rules": "아군에게 나눠준 골드: <stattracking>{p5}</stattracking><br>혼자 획득한 골드: <stattracking>{p6}</stattracking>", // 구분선 아래 회색 글씨
+        "R_rules": "", // 구분선 아래 회색 글씨
     },
     "Pantheon": { // 판테온
         "P": "스킬 사용 또는 기본 공격을 {p1}회 하고 나면 다음 기본 스킬이 강화됩니다.", // 필멸자의 의지 — stringtable
