@@ -1,8 +1,13 @@
 // ==========================================
 // ★ 꺾은선 그래프 툴팁 생성 헬퍼 함수
-// 사용법: drawGraph("각주번호", "선색상", [1렙수치, 2렙수치, ..., 18렙수치])
+// 사용법: drawGraph("각주번호", "선색상", [1렙수치, 2렙수치, ..., 18렙수치], "제목(생략 가능)")
+//   ★ 4번째 인자는 값과 각주의 **단위가 다를 때**만 쓴다 (2026-08-12).
+//     아이번 P 는 값이 `기본 최대 체력의 15 ~ 0.006%` 인데 각주는 실제 소모량(94.5 -> 0.1)이라
+//     제목이 "레벨별 성장 수치" 면 퍼센트 곡선으로 오해한다.
+//   ★ 이 헬퍼는 fill_values.js 가 만드는 게 아니라 **이 파일 앞부분에 그대로 남는다.**
+//     valuesPrelude 가 `const customValues = {` 앞을 통째로 물려주므로 여기서 고치면 된다.
 // ==========================================
-const drawGraph = (id, color, dataArr) => {
+const drawGraph = (id, color, dataArr, title) => {
     let max = Math.max(...dataArr);
     let width = 210, height = 90, padX = 15, padY = 20;
 
@@ -40,7 +45,7 @@ const drawGraph = (id, color, dataArr) => {
 
     return `<span class="custom-footnote">[${id}]
         <span class="custom-footnote-content">
-            <div style="font-size: 11px; margin-bottom: 8px; color: #fff;">레벨별 성장 수치 (Lv.1 ~ 18)</div>
+            <div style="font-size: 11px; margin-bottom: 8px; color: #fff;">${title || '레벨별 성장 수치'} (Lv.1 ~ 18)</div>
             <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow: visible;">
                 <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" />
                 ${elements}

@@ -58,6 +58,41 @@ const load = (file, name) => {
 const templates = load(TEMPLATES, 'customTemplates');
 const curves = JSON.parse(fs.readFileSync(CURVES, 'utf8'));
 
+// ------------------------------------------------------------
+// ★ "스탯의 A ~ B%" 자리는 곡선에 그 스탯을 곱해야 진짜 값이 된다 (2026-08-12).
+//   아이번 P 가 유일한 사례다. 값은 `기본 최대 체력의 15 ~ 0.006%` 인데,
+//   퍼센트만 보면 "레벨 오를수록 싸진다" 로 읽힌다. **실제로는 그렇지 않다** —
+//   퍼센트는 줄지만 최대 체력이 늘어서 실제 소모량은 **6레벨에 정점(108)을 찍고**
+//   그 뒤로 떨어진다 (94.5 -> 108 -> 0.1). 나무위키도 `98 ~ 110 ~ 0` 이라고 적는다.
+//   그래서 각주만큼은 실제 소모량 곡선을 보여주고 제목도 따로 단다.
+//   ★ 파이프라인 순서상 안전하다 — champion_stats_by_level.json 은
+//     build_level_curves.js 가 이 스크립트보다 **먼저** 만든다.
+const STATS_BY_LEVEL = path.join(__dirname, 'champion_stats_by_level.json');
+const champStats = (() => {
+    try { return JSON.parse(fs.readFileSync(STATS_BY_LEVEL, 'utf8')); }
+    catch (e) { return {}; }
+})();
+
+// 값 문장의 스탯 이름 -> champion_stats_by_level.json 의 스탯 키
+const STAT_CURVE_KEY = {
+    '기본 최대 체력': '체력', '최대 체력': '체력',
+    '기본 마나': '마나', '최대 마나': '마나',
+};
+
+function scaleByStat(champ, valueText, curve) {
+    const m = valueText.match(/^([가-힣][가-힣 ]*?)의\s+[\d.]+\s*~\s*[\d.]+%/);
+    if (!m) return null;
+    const key = STAT_CURVE_KEY[m[1].trim()];
+    if (!key) return null;
+    const st = champStats[champ] && champStats[champ].스탯 && champStats[champ].스탯[key];
+    if (!Array.isArray(st) || st.length < 18) return null;
+    return {
+        ...curve,
+        values: curve.values.map((v, i) => Math.round(v * st[i] / 100 * 10) / 10),
+        title: `레벨별 실제 소모량`
+    };
+}
+
 const norm = (x) => String(x).toLowerCase().replace(/^spell\.[^:]*:/, '');
 function findCurve(alias, slot, calc) {
     const ch = curves[alias] || {};
@@ -94,6 +129,10 @@ function exprFor(id, curve, color) {
         };
     }
     const seg = (a, b) => v.slice(a - 1, b).join(', ');
+    // 제목은 값과 각주의 단위가 다를 때만 붙는다 (scaleByStat 가 달아 준다).
+    //   ★ custom_values.js 는 값이 큰따옴표 문자열이라 각주 HTML 에 " 를 쓰면 안 되는데,
+    //     여기는 값이 아니라 custom_graphs.js 에 나가는 코드라 큰따옴표가 안전하다.
+    const tail = curve.title ? `, "${curve.title}"` : '';
     return {
         isStep: false,
         text: [
@@ -101,7 +140,7 @@ function exprFor(id, curve, color) {
             `                    ${seg(1, 6)}, // 1~6렙`,
             `                    ${seg(7, 13)}, // 7~13렙`,
             `                    ${seg(14, 18)} // 14~18렙`,
-            `                ])`
+            `                ]${tail})`
         ].join('\n')
     };
 }
@@ -139,8 +178,10 @@ for (const l of src) {
     const t = templates[champ] || {};
     const tpl = String(t[slot] || '') + String(t[slot + '_rules'] || '');
     if (tpl.indexOf('{' + m[1] + '}') === -1) continue;      // 문장에 안 쓰이는 자리는 건너뛴다
-    const curve = findCurve(champ.toLowerCase(), slot, m[3]);
+    let curve = findCurve(champ.toLowerCase(), slot, m[3]);
     if (!curve) continue;
+    // "스탯의 A ~ B%" 자리는 곡선에 스탯을 곱해 실제 값으로 바꾼다 (위 주석 참고)
+    curve = scaleByStat(champ, m[2], curve) || curve;
 
     found[champ] = found[champ] || {};
     const list = (found[champ][slot] = found[champ][slot] || []);
