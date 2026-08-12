@@ -4344,16 +4344,17 @@ const statLabel = (k) => k.replace('(초당)', '/초');
 //    **점 바로 앞**에 깔고 CSS 인접 선택자로 켠다.
 //  · 숫자·라벨은 본문색을 쓴다. 색은 선과 점이 갖는다.
 // ------------------------------------------------------------
-function statGraphHtml(vals, color, extras = [], top = 0) {
+function statGraphHtml(vals, color, extras = [], axis = null) {
     const n = vals.length;
-    // ★ 천장은 **챔피언 값만** 보고 잡는다 (2026-08-12).
-    //   평균선까지 보고 잡으면 역할군 버튼을 켤 때마다 y 축이 다시 스케일되어
+    // ★ 축은 **밖에서 정해 받는다** (전 챔피언 범위, statGlobalRange).
+    //   여기서 챔피언·평균선을 보고 잡으면 역할군 버튼을 켤 때마다 다시 스케일되어
     //   **챔피언 곡선의 개형이 바뀐다** — 같은 챔피언인데 선이 납작해졌다 살아난다.
-    //   천장 밖으로 나가는 평균선은 clip 으로 자르고 범례에 "그래프 밖" 이라고 적는다.
-    //   값 자체는 범례와 말풍선에 숫자로 다 나오므로 잃는 정보가 없다.
-    top = top || Math.max(...vals) * 1.1 || 1;
-    const px = (i) => (i / (n - 1)) * 100;           // x: 0~100%
-    const py = (v) => (v / top) * 100;               // y: 바닥에서 0~100%
+    //   범위 밖으로 나가는 선은 clip 으로 자르고 범례에 "그래프 밖" 이라고 적는다.
+    let top = (axis && axis.top) || Math.max(...vals) * 1.1 || 1;
+    let bottom = (axis && axis.bottom) || 0;
+    if (!(top > bottom)) { bottom = 0; top = top || 1; }
+    const px = (i) => (i / (n - 1)) * 100;                    // x: 0~100%
+    const py = (v) => ((v - bottom) / (top - bottom)) * 100;  // y: 바닥에서 0~100%
     const poly = (arr) => arr.map((v, i) => `${px(i)},${100 - py(v)}`).join(' ');
 
     // 선은 viewBox 를 늘려 그린다. 굵기는 non-scaling-stroke 로 2px 을 지킨다.
@@ -4447,22 +4448,30 @@ function roleAvgVals(role, statKey) {
     return (roleAvgCache[ck] = cnt ? { vals: acc.map(x => x / cnt), count: cnt } : null);
 }
 
-// ★ y 축 천장 = **그 스탯 1위 챔피언의 값** (2026-08-12).
-//   내 챔피언 값으로 천장을 잡으면 어느 챔피언을 봐도 선이 화면을 꽉 채워서
-//   "이게 높은 건지 낮은 건지" 가 안 보인다. 전체 1위를 천장으로 두면 선의 높이가
-//   곧 순위 감각이 된다. 역할군 평균은 정의상 최댓값을 못 넘으니 축도 안 흔들린다.
-const statMaxCache = {};
-function statGlobalMax(statKey) {
-    if (statKey in statMaxCache) return statMaxCache[statKey];
-    let best = null;
+// ★ y 축 = **전 챔피언이 갖는 값의 범위** (2026-08-12).
+//   천장 = 18레벨 기준 1위 챔피언 / 바닥 = 1레벨 기준 꼴찌 챔피언.
+//   내 챔피언 값으로 축을 잡으면 어느 챔피언을 봐도 선이 화면을 꽉 채워서
+//   "이게 높은 건지 낮은 건지" 가 안 보인다. 전체 범위를 축으로 두면 선의 높이가
+//   곧 순위 감각이 된다.
+//   바닥이 0 이던 걸 "1레벨 최솟값" 으로 내린 이유: 어느 챔피언도 그 아래로는 안 가서
+//   0~최솟값 구간이 항상 비어 있었다. 잘라내면 같은 세로 길이에서 차이가 더 보인다.
+//   **역할군 평균·vs 챔피언도 이 범위를 못 벗어난다** (평균은 최소~최대 사이) —
+//   축이 누구를 켜든 안 흔들리는 이유다.
+const statRangeCache = {};
+function statGlobalRange(statKey) {
+    if (statKey in statRangeCache) return statRangeCache[statKey];
+    let hi = null, lo = null;
     for (const id in championStats) {
         const v = championStats[id].s[statKey];
         if (!v) continue;
-        // 성장은 단조증가라 18레벨이 최댓값이다. 그래도 양 끝을 다 본다.
-        const m = Math.max(statAtLevel(v, 1), statAtLevel(v, 18));
-        if (!best || m > best.max) best = { max: m, id, name: championStats[id].n };
+        const name = championStats[id].n;
+        const a = statAtLevel(v, 1), b = statAtLevel(v, 18);
+        // 성장은 단조증가라 18레벨이 최대·1레벨이 최소다. 그래도 양 끝을 다 본다.
+        const m = Math.max(a, b), n = Math.min(a, b);
+        if (!hi || m > hi.val) hi = { val: m, name };
+        if (!lo || n < lo.val) lo = { val: n, name };
     }
-    return (statMaxCache[statKey] = best);
+    return (statRangeCache[statKey] = (hi && lo) ? { hi, lo } : null);
 }
 
 window.toggleStatAvgRole = function (btn) {
@@ -4483,11 +4492,25 @@ window.toggleStatAvgRole = function (btn) {
 const VS_LINE = '#a78bfa';
 let vsChampId = null;
 
+// vs 상자는 **그래프가 떠 있을 때만** 쓸 수 있다. 겹칠 그래프가 없으면 눌러도
+// 아무 일이 안 일어나서, 꺼진 걸 눈에 보이게 해 두는 편이 낫다.
+function syncVsBox() {
+    const col = document.querySelector('.stat-vs-col');
+    if (!col) return;
+    const off = !openStatKey;
+    col.classList.toggle('off', off);
+    const input = col.querySelector('#vs-search-input');
+    if (input) {
+        input.disabled = off;
+        input.placeholder = off ? '스탯을 먼저 고르세요' : 'vs 챔피언 검색 (초성 가능)';
+        if (off) { input.value = ''; filterVsList(); }
+    }
+}
+
 window.pickVsChamp = function (id) {
+    if (!openStatKey) return;                       // 상자가 꺼져 있을 때의 안전장치
     vsChampId = (vsChampId === id) ? null : id;
     document.querySelectorAll('.vs-item').forEach(el => el.classList.toggle('on', el.dataset.id === vsChampId));
-    // 스탯을 아직 안 골랐으면 첫 줄(체력)을 열어 준다. 안 그러면 눌러도 아무 일도 안 일어난다.
-    if (!openStatKey) { const b = document.querySelector('.stat-tname:not([disabled])'); if (b) return toggleStatGraph(b.dataset.key); }
     drawStatPanel();
 };
 
@@ -4518,10 +4541,11 @@ function vsBoxHtml(selfId) {
                     <span>${name}</span>
                 </div>`;
     }).join('');
+    // 처음 그릴 때는 아직 스탯을 안 골랐으니 꺼진 채로 나간다 (syncVsBox 가 켜 준다).
     return `
-        <div class="stat-vs-col">
+        <div class="stat-vs-col off">
             <input id="vs-search-input" class="champ-search vs-search" type="text" autocomplete="off"
-                   placeholder="vs 챔피언 검색 (초성 가능)" oninput="filterVsList()">
+                   placeholder="스탯을 먼저 고르세요" oninput="filterVsList()" disabled>
             <div class="vs-list-wrap">
                 <div class="vs-list">${items}<div id="vs-list-empty" class="champ-list-empty" style="display:none">없음</div></div>
             </div>
@@ -4536,12 +4560,21 @@ function drawStatPanel() {
     if (!panel) return;
     const rec = championStats[window.currentChampStatsId];
     const v = openStatKey && rec && rec.s[openStatKey];
-    if (!v) { panel.classList.remove('open'); panel.innerHTML = ''; return; }
+    if (!v) {
+        panel.classList.remove('open'); panel.innerHTML = '';
+        // 그래프를 닫으면 겹칠 대상도 없다. vs 상자를 끄고 고른 챔피언도 푼다.
+        vsChampId = null;
+        document.querySelectorAll('.vs-item').forEach(el => el.classList.remove('on'));
+        syncVsBox();
+        return;
+    }
 
     const vals = Array.from({ length: 18 }, (_, i) => statAtLevel(v, i + 1));
-    // y 천장은 **전 챔피언 1위 값**이다. 챔피언·역할군 어느 쪽으로도 안 흔들린다.
-    const gmax = statGlobalMax(openStatKey);
-    const top = (gmax && gmax.max) || Math.max(...vals) * 1.1 || 1;
+    // y 축은 **전 챔피언 범위**(18레벨 최대 ~ 1레벨 최소)다.
+    // 챔피언·역할군·vs 어느 쪽으로도 안 흔들린다.
+    const gr = statGlobalRange(openStatKey);
+    const axis = gr ? { top: gr.hi.val, bottom: gr.lo.val } : null;
+    const top = gr ? gr.hi.val : (Math.max(...vals) * 1.1 || 1);
 
     // 겹쳐 그릴 선들. 범례는 column-reverse 라 **DOM 앞이 아래**다 —
     // 비교 챔피언을 맨 앞에 두면 범례 맨 아래 칸에 온다.
@@ -4600,14 +4633,14 @@ function drawStatPanel() {
             <div class="sgh-row">
                 <i class="stat-dot" style="background:${statColorOf(openStatKey)}"></i>
                 <b>${statLabel(openStatKey)}</b>
-                <span>레벨 1 → 18${gmax ? ` · 세로축 최대 ${fmtStat(gmax.max)}(${gmax.name})` : ''}</span>
+                <span>레벨 1 → 18${gr ? ` · 세로축 ${fmtStat(gr.lo.val)}(${gr.lo.name}) ~ ${fmtStat(gr.hi.val)}(${gr.hi.name})` : ''}</span>
             </div>
             <div class="sgh-row">
                 <span class="savg-title">역할군 평균</span>
                 <span class="savg-btns">${btns}</span>
             </div>
         </div>
-        ${statGraphHtml(vals, statColorOf(openStatKey), extras, top)}
+        ${statGraphHtml(vals, statColorOf(openStatKey), extras, axis)}
         <div class="savg-legend">${legend}</div>`;
 
     // ★ 범례는 DOM 상 그래프 **뒤**에 두고, 데스크톱에서만 제목 줄 자리로 끌어올린다.
@@ -4621,6 +4654,8 @@ function drawStatPanel() {
     const head = panel.querySelector('.stat-graph-head');
     const lg = panel.querySelector('.savg-legend');
     if (head && lg) lg.style.top = head.offsetHeight + 'px';
+
+    syncVsBox();
 }
 
 window.toggleStatGraph = function (key) {
@@ -4687,7 +4722,8 @@ window.renderChampStats = function (champId) {
             <div id="stat-graph-panel" class="stat-graph-panel"></div>
             ${vsBoxHtml(champId)}
         </div>
-        <div class="stat-foot">스탯 이름을 누르면 오른쪽에 1~18레벨 성장 곡선이 나옵니다. 레벨 성장은 직선이 아니라 중간이 완만합니다.<br>그래프 위 역할군 아이콘을 누르면 그 역할군 챔피언들의 레벨별 평균이 점선으로, 오른쪽에서 고른 챔피언은 실선으로 겹쳐집니다.</div>`;
+        <div class="stat-foot" id="stat-foot">스탯 이름을 누르면 오른쪽에 1~18레벨 성장 곡선이 나옵니다. 레벨 성장은 직선이 아니라 중간이 완만합니다.<br>그래프 위 역할군 아이콘을 누르면 그 역할군 챔피언들의 레벨별 평균이 점선으로, 오른쪽에서 고른 챔피언은 실선으로 겹쳐집니다.</div>`;
+    syncVsBox();
 };
 
 window.switchChampTab = function (event, tabName) {

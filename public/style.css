@@ -4000,6 +4000,10 @@ body::before {
     max-width: calc(100% - 20px);
     /* top 은 app.js 가 제목 줄 높이를 재서 넣는다. 아래에서 위로 자란다 */
     transform: translateY(-100%);
+    /* ★ 반드시 필요하다. 이 상자는 글자만 오른쪽에 몰려 있을 뿐 **가로 460px 을 통째로
+         덮는다.** 4줄째부터 역할군 버튼 줄 높이까지 올라와서, 없으면 버튼이 클릭을
+         못 받는다 — "4개 켜면 더 못 누르고 취소도 안 되던" 원인이 이것이었다. */
+    pointer-events: none;
     display: flex;
     /* ★ 한 칸으로만 쌓는다. 두 칸으로 접어 봤더니 왼쪽 칸이 제목 글자 위로 올라탔다.
          위로 자라는 건 제목 줄 위 빈 자리(탭 줄 오른쪽)라 6~7줄까지 들어간다. */
@@ -4223,6 +4227,19 @@ body::before {
 .vs-search {
     padding: 7px 10px;
     font-size: 12px;
+}
+
+/* 그래프가 안 떠 있으면 겹칠 대상이 없다. 눌러도 아무 일이 없느니 꺼진 걸 보여 준다 */
+.stat-vs-col.off {
+    opacity: 0.42;
+}
+
+.stat-vs-col.off .vs-list {
+    pointer-events: none;
+}
+
+.stat-vs-col.off .vs-search {
+    cursor: not-allowed;
 }
 
 /* ★ 목록은 **절대배치**다 (2026-08-12). 보통 흐름에 두면 172명 높이(6249px)가
