@@ -397,7 +397,7 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "50", // Effect2Amount
+            "p1": "50", // SlowAmount
             "p2": "60 / 110 / 160 / 210 / 260 (+ 주문력의 60%)", // ImpactDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -441,8 +441,8 @@ const customValues = {
     "Gwen": { // 그웬
         "P": {
             "p1": "1% (+ 주문력의 0.6%)", // PercentHealth1000Cuts
-            "p2": "50%", // HealingPercent
-            "p3": "10 ~ 25 (레벨에 따라) (+ 주문력의 6.5%)", // healcap
+            "p2": "67%", // HealingPercent
+            "p3": "12 ~ 40 (레벨에 따라) (+ 주문력의 7%)", // healcap
             "cooldown": "-",
             "cost": "-"
         },
@@ -703,8 +703,8 @@ const customValues = {
         },
         "Q": {
             "p1": "40 / 60 / 80 / 100 / 120 (+ 총 공격력의 100% + 1 (중첩당))", // TotalDamage
-            "p2": "3", // BasicStacks
-            "p3": "12", // BigStacks
+            "p2": "4", // BasicStacks
+            "p3": "10", // BigStacks
             "p4": "치명타 피해량의 100% x (40 / 60 / 80 / 100 / 120 + 총 공격력의 100%) (+ 1 (중첩당))", // CritDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -1061,7 +1061,7 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "4", // Effect3Amount
+            "p1": "4", // DotDuration
             "p2": "10 / 20 / 30 / 40 / 50 (+ 주문력의 5%)", // DamagePerSecond
             "p3": "4 ~ 10 (레벨에 따라)", // MaxTraps
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -2332,10 +2332,9 @@ const customValues = {
             "p2": "99", // SlowAmount*100
             "p3": "2", // SlowDuration
             "p4": "5", // Duration
-            "p5": "10 / 11 / 12", // ExecutionThreshold*100
+            "p5": "10 / 11 / 12% (+ 0.5 (중첩당))", // ExecuteTooltipCalc
             "p6": "0.5", // ExecuteThresholdPerStack*100
             "p7": "20", // CooldownReduction
-            "p8": "0.5 (중첩당)%", // ExecuteBonusCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 100 / 80",
@@ -2439,11 +2438,11 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "3 / 3.25 / 3.5 / 3.75 / 4", // Effect5Amount
+            "p1": "3 / 3.25 / 3.5 / 3.75 / 4", // MSDuration
             "p2": "25% (+ 주문력의 5%)", // TotalMS
-            "p3": "20 / 22.5 / 25 / 27.5 / 30", // Effect7Amount*100
-            "p4": "1.2 / 1.4 / 1.6 / 1.8 / 2", // Effect3Amount
-            "p5": "60", // Effect4Amount*-1
+            "p3": "20 / 22.5 / 25 / 27.5 / 30", // ASBonus*100
+            "p4": "1.2 / 1.4 / 1.6 / 1.8 / 2", // CCDuration
+            "p5": "60", // SlowAmount*-1
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "18",
@@ -2454,11 +2453,11 @@ const customValues = {
             }
         },
         "E": {
-            "p1": "6", // Effect1Amount
-            "p2": "2.5", // Effect7Amount
+            "p1": "6", // PixOnAllyDuration
+            "p2": "2.5", // ShieldDuration
             "p3": "70 / 110 / 150 / 190 / 230 (+ 주문력의 50%)", // TotalShield
             "p4": "70 / 110 / 150 / 190 / 230 (+ 주문력의 50%)", // TotalDamage
-            "p5": "4", // Effect6Amount
+            "p5": "4", // PixOnEnemyDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
@@ -3193,7 +3192,8 @@ const customValues = {
             }
         },
         "E": {
-            "p1": "60 / 80 / 100 / 120 / 140 (+ 주문력의 45%)", // TotalDamage
+            "p1": "5 / 7.5 / 10 / 12.5 / 15", // MagicPen*100
+            "p2": "60 / 80 / 100 / 120 / 140 (+ 주문력의 45%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "16 / 14 / 12 / 10 / 8",
@@ -3981,7 +3981,7 @@ const customValues = {
             "p4": "20", // MissingHealthDamage*100
             "p5": "100 / 250 / 400 (+ 추가 공격력의 150% + 주문력의 150%)", // MaxHealthOnDevour
             "p6": "25 / 75 / 125", // BonusAARange
-            "p7": "5 / 15 / 25", // TotalASMod*100
+            "p7": "6 / 13 / 20", // TotalASMod*100
             "p8": "45", // SteroidDuration
             "p9": "40", // StackThresholdForUpgrade
             "p10": "90", // SteroidDurationUpgrade
@@ -4362,8 +4362,8 @@ const customValues = {
     },
     "Vladimir": { // 블라디미르
         "P": {
-            "p1": "30", // Effect1Amount
-            "p2": "1.6", // Effect2Amount
+            "p1": "30", // HPforAP
+            "p2": "1.6", // APRatioBonusHP
             "p3": "(추가 최대 체력의 100% + 1.6 x 주문력의 -100%) x 0.037", // ApproximateAPBonusAvoidingRecursion
             "p4": "(추가 주문력의 100% + 0.033 x 추가 최대 체력의 -100%)의 169.6%", // ApproximateHPBonusAvoidingRecursion
             "cooldown": "-",
@@ -4373,7 +4373,7 @@ const customValues = {
             "p1": "80 / 100 / 120 / 140 / 160 (+ 주문력의 60%)", // BaseDamageTooltip
             "p2": "20 / 25 / 30 / 35 / 40 (+ 주문력의 35%)", // BaseHealTooltip
             "p3": "10 ~ 40 (레벨에 따라)", // MovementSpeedOnQ2
-            "p4": "2.5", // Effect8Amount
+            "p4": "2.5", // FrenzyDuration
             "p5": "148 / 185 / 222 / 259 / 296 (+ 주문력의 111%)", // EmpoweredDamageTooltip
             "p6": "30 ~ 200 (레벨에 따라)", // EmpoweredHealTooltip
             "p7": "5% (+ 주문력의 4%)", // EmpoweredHealPercentTooltip
@@ -4408,7 +4408,7 @@ const customValues = {
             "p2": "30 / 45 / 60 / 75 / 90 (+ 최대 체력의 1.5% + 주문력의 35%)", // MinDamageTooltip
             "p3": "60 / 90 / 120 / 150 / 180 (+ 최대 체력의 6% + 주문력의 80%)", // MaxDamageTooltip
             "p4": "40 / 45 / 50 / 55 / 60", // SlowPercent
-            "p5": "1.5", // Effect7Amount
+            "p5": "1.5", // MaxChannelTime
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "13 / 11 / 9 / 7 / 5",
@@ -4419,8 +4419,8 @@ const customValues = {
             }
         },
         "R": {
-            "p1": "4", // Effect4Amount
-            "p2": "10", // Effect2Amount
+            "p1": "4", // Duration
+            "p2": "10", // DamageAmp
             "p3": "150 / 250 / 350 (+ 주문력의 70%)", // Damage
             "p4": "60 / 100 / 140 (+ 주문력의 28%)", // SecondaryHealingTooltip
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -4659,11 +4659,11 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
-            "p1": "30 / 55 / 80 / 105 / 130 (+ 추가 공격력의 100%)", // BaseDamage
-            "p2": "9", // HealthDamagePercent
-            "p3": "20 / 25 / 30 / 35 / 40", // Slow_
+            "p1": "30 / 55 / 80 / 105 / 130 (+ 추가 공격력의 75%)", // BaseDamage
+            "p2": "7 / 7.5 / 8 / 8.5 / 9", // HealthDamagePercent
+            "p3": "20 / 23 / 26 / 29 / 32% (+ 추가 최대 체력의 0.8%)", // MoveSpeedMod
             "p4": "1", // DelayBetweenTwoHits
-            "p5": "75 / 105 / 135 / 165 / 195", // MaxHealthDamageToNonHeroes
+            "p5": "85 / 120 / 155 / 190 / 225", // MaxHealthDamageToNonHeroes
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "8 / 7 / 6 / 5 / 4",
@@ -4675,8 +4675,8 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "방어력의 12%", // BonusArmor
-            "p2": "마법 저항력의 12%", // BonusMR
+            "p1": "방어력의 16%", // BonusArmor
+            "p2": "마법 저항력의 16%", // BonusMR
             "p3": "40", // PassiveEmpoweredHealthPercent*100
             "p4": "40", // Haste
             "p5": "2", // Duration
@@ -6441,7 +6441,7 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
-            "p1": "60 / 80 / 100 / 120 / 140 (+ 주문력의 35 / 40 / 45 / 50 / 55%)", // TotalDamage
+            "p1": "75 / 95 / 115 / 135 / 155 (+ 주문력의 35 / 40 / 45 / 50 / 55%)", // TotalDamage
             "p2": "25", // SlowAmount*-100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -6454,11 +6454,11 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "10", // Effect1Amount
+            "p1": "10", // SoldierDuration
             "p2": "50 / 65 / 80 / 95 / 110 (+ 0 ~ 72 (레벨에 따라) + 주문력의 35 / 42.5 / 50 / 57.5 / 65%)", // TotalDamage
             "p3": "2", // MaxAmmo
             "p4": "50", // OnHitMultiplier*100
-            "p5": "25", // Effect9Amount
+            "p5": "25", // SubsequentDamageMod
             "p6": "20 ~ 100% (레벨에 따라)", // SecondaryTargetDamageMod
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -6471,7 +6471,7 @@ const customValues = {
             }
         },
         "E": {
-            "p1": "1.5", // Effect6Amount
+            "p1": "1.5", // ShieldDuration
             "p2": "70 / 110 / 150 / 190 / 230 (+ 주문력의 60%)", // TotalShield
             "p3": "70 / 110 / 150 / 190 / 230 (+ 주문력의 60%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -6485,7 +6485,7 @@ const customValues = {
         },
         "R": {
             "p1": "200 / 400 / 600 (+ 주문력의 75%)", // TotalDamage
-            "p2": "5", // Effect4Amount
+            "p2": "5", // WallDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 105 / 90",
@@ -7140,7 +7140,7 @@ const customValues = {
             "p2": "5", // StackDuration
             "p3": "17.5 / 21.25 / 25 / 28.75 / 32.5 (+ 추가 공격력의 5% + 주문력의 15%)", // BonusDamagePerStack
             "p4": "4", // MaxStacks
-            "p5": "10 / 9 / 8 / 7 / 6", // Effect2Amount
+            "p5": "10 / 9 / 8 / 7 / 6", // PerTargetCooldown
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "0.5 / 0.4 / 0.3 / 0.2 / 0.1",
@@ -8874,7 +8874,7 @@ const customValues = {
             }
         },
         "R": {
-            "p1": "3", // Effect3Amount
+            "p1": "3", // Duration
             "p2": "300 / 450 / 600 (+ 주문력의 150%)", // TotalHeal
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -8978,8 +8978,8 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "30 / 35 / 40 / 45 / 50", // Effect3Amount
-            "p2": "5", // Effect5Amount
+            "p1": "30 / 35 / 40 / 45 / 50", // EnergyRestoreDoubleHit
+            "p2": "5", // ShadowDurationTooltip
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "20 / 19 / 18 / 17 / 16",
@@ -9757,8 +9757,8 @@ const customValues = {
     "Camille": { // 카밀
         "P": {
             "p1": "2", // ShieldDuration
-            "p2": "최대 체력의 20%", // ShieldAmount
-            "p3": "18 ~ 10 (레벨에 따라)", // PassiveCooldown
+            "p2": "최대 체력의 10 ~ 20 (레벨에 따라)%", // ShieldAmount
+            "p3": "14 ~ 8 (레벨에 따라)", // PassiveCooldown
             "cooldown": "-",
             "cost": "-"
         },
@@ -9785,13 +9785,13 @@ const customValues = {
             "p1": "60 / 85 / 110 / 135 / 160 (+ 추가 공격력의 60%)", // BaseDamageTotal
             "p2": "80", // SlowPercentage
             "p3": "2", // SlowDuration
-            "p4": "6 / 6.5 / 7 / 7.5 / 8% (+ 추가 공격력의 2.5%)", // OuterEdgeTooltip
+            "p4": "7 / 7.5 / 8 / 8.5 / 9% (+ 추가 공격력의 2.5%)", // OuterEdgeTooltip
             "p5": "100", // OuterConeHealingRatio
             "p6": "50", // MonsterDamageReduction
             "p7": "300", // MonsterHealthDamageCap
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "15 / 14 / 13 / 12 / 11",
+            "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "50 / 55 / 60 / 65 / 70",
             "stats": {
                 "사거리": "610",
@@ -10073,14 +10073,14 @@ const customValues = {
             }
         },
         "E": {
-            "p1": "55 / 60 / 65 / 70 / 75%의 100 ~ 200%", // TotalMoveSpeed
+            "p1": "55 / 60 / 65 / 70 / 75% ~ 110 / 120 / 130 / 140 / 150%", // TotalMoveSpeed
             "p2": "4", // Effect2Amount
             "p3": "40 / 50 / 60 / 70 / 80", // Effect5Amount*100
             "p4": "0.5", // Effect4Amount
             "p5": "0.5", // Effect7Amount
             "p6": "?", // f10.1
             "p7": "100", // Effect6Amount
-            "p8": "0.6 ~ 0", // TotalCastTime
+            "p8": "1.2 ~ 0.6", // TotalCastTime
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
@@ -10194,8 +10194,8 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "50 / 60 / 70 / 80 / 90", // Effect4Amount
-            "p2": "1.25", // Effect2Amount
+            "p1": "50 / 60 / 70 / 80 / 90", // MovespeedAmount
+            "p2": "1.25", // MovespeedDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
@@ -10351,9 +10351,9 @@ const customValues = {
         },
         "R": {
             "p1": "0.5", // KennenRTickRate
-            "p2": "40 / 75 / 110 (+ 주문력의 22.5%)", // PerTickDamageCalculated
+            "p2": "40 / 80 / 120 (+ 주문력의 25%)", // PerTickDamageCalculated
             "p3": "3", // KennenRDuration
-            "p4": "20 / 40 / 60", // KennenRDefenses
+            "p4": "25 / 50 / 75", // KennenRDefenses
             "p5": "10", // DamageAmp*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -11110,7 +11110,7 @@ const customValues = {
         },
         "Q": {
             "p1": "15", // StackCooldown
-            "p2": "1 / 2 / 3 / 4 / 5", // Effect6Amount
+            "p2": "1 / 2 / 3 / 4 / 5", // MaxCharges
             "p3": "25 (+ 주문력의 15% + 최대 체력의 1%)", // HealingPerStack
             "p4": "25 (+ 주문력의 15% + 최대 체력의 1%)", // MaxStackHealing
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -11123,8 +11123,8 @@ const customValues = {
         },
         "W": {
             "p1": "방어력의 6 / 7 / 8 / 9 / 10%", // BonusArmor
-            "p2": "2.5", // Effect3Amount
-            "p3": "7 / 8 / 9 / 10 / 11", // Effect2Amount
+            "p2": "2.5", // ShieldDuration
+            "p3": "7 / 8 / 9 / 10 / 11", // ShieldHPRatio
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "15",
@@ -11136,9 +11136,9 @@ const customValues = {
             }
         },
         "E": {
-            "p1": "1", // Effect3Amount
+            "p1": "1", // ChargeDuration
             "p2": "90 / 130 / 170 / 210 / 250 (+ 주문력의 50% + 추가 방어력의 50%)", // TotalDamage
-            "p3": "1.5", // Effect2Amount
+            "p3": "1.5", // StunDuration
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",

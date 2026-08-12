@@ -1,5 +1,5 @@
 // 이 파일은 build_champion_data.js 가 생성했습니다.
-// 생성 시각: 2026-08-11T23:01:42.964Z
+// 생성 시각: 2026-08-12T12:36:16.803Z
 // 문장은 CommunityDragon 에서 가져왔고, {p1} {p2} 자리는 직접 채워야 합니다.
 
 const customTemplates = {
@@ -355,15 +355,15 @@ const customTemplates = {
             "로크가 자신의 영혼을 불태워 <attackspeed>공격 속도가 {p1}</attackspeed>, <speed>이동 속도가 {p2}</speed> 증가했다가 {p3}초에 걸쳐 원래대로 돌아옵니다.<br>{p4}초 동안 매초 <truedamage>현재 체력의 {p5}%에 해당하는 고정 피해</truedamage>를 입지만, 마지막으로 입은 피해량 <healing>{p6}</healing>만큼 <healing>체력을 회복</healing>하고, 잃은 체력 및 경과 시간에 비례해 <healing>{p7}의 체력</healing>을 추가로 회복합니다. 최대 <healing>남은 체력의 {p8}만큼 회복</healing>합니다.",
             "<recast>재사용</recast>하여 더 빨리 종료할 수 있습니다."
         ], // 영혼 점화
-        "W_rules": "<rules><status>방해</status>를 받는 동안에도 이 스킬을 사용할 수 있습니다.</rules>", // 구분선 아래 회색 글씨
+        "W_rules": "<rules><status>방해</status>를 받는 동안에도 이 스킬을 사용할 수 있습니다.</rules><br><rules>지속시간 동안 로크는 <keyword>유체화</keyword> 상태가 됩니다. 유체화 상태인 유닛은 다른 유닛을 통과할 수 있습니다.</rules>", // 구분선 아래 회색 글씨
         // ★ 배열 = 하위 스킬을 파트로 쪼개 눈 것. app.js 가 아이콘 + 구분선으로 나눠 그린다.
         //   0번은 스킬 본체(기본 아이콘), 1번부터 values.icons[i-1] 과 짝이 된다.
         "E": [
             "로크가 지정한 위치로 순간이동하며 주변 적에게 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다. ",
             "다음 기본 공격 시 대상에게 돌진하며 경로에 있는 모든 적에게 <magicdamage>{p2}의 마법 피해</magicdamage>를 입힙니다. 적중할 때마다 <keywordmajor>영혼의 대못</keywordmajor>을 소모합니다.<br><br>로크가 처치에 관여하면, 이 스킬의 재사용 대기시간이 초기화됩니다."
         ], // 잿빛 추격
-        "R": "로크가 적을 구속하는 유물을 지정한 위치로 던져 범위 내 적에게 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 {p2}% <status>둔화</status>시킵니다. 둔화 효과는 {p3}초에 걸쳐 사라집니다. 유물에 적중한 적에게 {p4}초 동안 표식이 남습니다. 표식이 남은 적 챔피언의 체력이 {p5}% 아래로 떨어지면 봉인되고 영향을 받은 다른 챔피언에게 남은 표식의 지속시간이 초기화됩니다.<br><br>지속시간이 끝난 후 챔피언이 1명 이상 봉인되었다면 유물이 땅에 떨어집니다. 로크가 유물을 획득하면 봉인된 챔피언 수에 비례해 처형 체력 기준치가 영구적으로 {p6}% 증가하고 현재 재사용 대기시간의 {p7}%를 돌려받습니다.<br>", // 연옥
-        "R_rules": "<rules>유물은 봉인 시점의 현재 스킬 재사용 대기시간만큼 지면에 남아 있습니다. <br>로크가 추가 처형 기준치를 {p8} 획득했습니다.</rules>", // 구분선 아래 회색 글씨
+        "R": "로크가 적을 구속하는 유물을 지정한 위치로 던져 범위 내 적에게 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 {p2}% <status>둔화</status>시킵니다. 둔화 효과는 {p3}초에 걸쳐 사라집니다. 유물에 적중한 적에게 {p4}초 동안 표식이 남습니다. 표식이 남은 적 챔피언의 체력이 <spellname>{p5}</spellname> 아래로 떨어지면 봉인되고 영향을 받은 다른 챔피언에게 남은 표식의 지속시간이 초기화됩니다.<br><br>지속시간이 끝난 후 챔피언이 1명 이상 봉인되었다면 유물이 땅에 떨어집니다. 로크가 유물을 획득하면 봉인된 챔피언 수에 비례해 처형 체력 기준치가 영구적으로 {p6}% 증가하고 전체 재사용 대기시간의 {p7}%를 돌려받습니다.<br>", // 연옥
+        "R_rules": "<rules>유물은 봉인 시점의 현재 스킬 재사용 대기시간만큼 지면에 남아 있습니다.</rules>", // 구분선 아래 회색 글씨
     },
     "Lucian": { // 루시안
         "P": "루시안은 스킬을 사용한 후 {p1}초 이내에 기본 공격을 하면 총을 두 번 연속 발사합니다. 두 번째 공격은 대상에 <physicaldamage>{p2}의 물리 피해</physicaldamage>를 입히며, 미니언을 상대로는 피해가 <physicaldamage>{p3}</physicaldamage>까지 증가합니다.<br><br><attention>경계: </attention>아군이 루시안에게 직접 회복 또는 보호막 효과를 부여하거나, 근처 적 챔피언이 <status>이동 불가</status> 상태가 되면 루시안의 권총이 <keywordmajor>과충전</keywordmajor> 상태가 되어 다음 {p4}회의 기본 공격 시 <magicdamage>{p5}의 마법 피해</magicdamage>를 추가로 입힙니다.", // 빛의 사수 — stringtable
@@ -380,7 +380,7 @@ const customTemplates = {
         "Q": "룰루와 픽스가 각자 예리한 마법 화살을 발사하여 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다. 적중당한 적은 {p2}% <status>둔화</status>되었다가 {p3}초에 걸쳐 원래대로 돌아옵니다.<br><br>적이 추가 마법 화살로 <magicdamage>{p4}의 마법 피해</magicdamage>를 입습니다.", // 반짝반짝 창
         "Q_rules": "<rules>미니언에게는 <magicdamage>{p5}%의 피해</magicdamage>를 입힙니다.</rules>", // 구분선 아래 회색 글씨
         "W": "아군에게 사용하면 {p1}초 동안 <speed>이동 속도가 {p2}</speed>, <attackspeed>공격 속도가 {p3}%</attackspeed> 증가합니다.<br><br>적에게 사용하면 룰루가 {p4}초 동안 적을 <status>변이</status>시킵니다.", // 변덕쟁이
-        "W_rules": "<rules><status>변이</status>된 대상은 <status>침묵</status> 및 <status>공격 불가</status> 상태가 되며 {p5} <status>둔화</status>합니다.</rules>", // 구분선 아래 회색 글씨
+        "W_rules": "<rules><status>변이</status>된 대상은 <status>침묵</status> 및 <status>공격 불가</status> 상태가 되며 {p5} <status>둔화</status>됩니다.</rules>", // 구분선 아래 회색 글씨
         "E": "아군에게 사용 시 픽스가 아군에게 날아가 {p1}초 동안 <spellname>요정 친구 픽스</spellname> 스킬을 부여합니다. 해당 아군이 챔피언이면 {p2}초 동안 <shield>{p3}의 피해를 흡수하는 보호막</shield>을 추가로 부여합니다.<br><br>적 챔피언에게 사용 시 픽스가 적을 방해하여 <magicdamage>{p4}의 마법 피해</magicdamage>를 입히며 {p5}초 동안 해당 적에 대한 <keywordstealth>절대 시야</keywordstealth>가 생깁니다.", // 도와줘, 픽스!
         "R": "룰루가 아군의 몸집을 키우며 주변 적을 {p1}초 동안 <status>공중으로 띄워 올립니다</status>. 몸집이 커진 아군은 {p2}초 동안 <healing>최대 체력이 {p3}</healing> 증가하며 주변 적을 {p4}% <status>둔화</status>시킵니다.", // 급성장
     },
@@ -514,7 +514,7 @@ const customTemplates = {
             "<active>사용 시:</active> 모데카이저가 축적한 피해를 <shield>보호막</shield>으로 전환합니다. 스킬을 <recast>재사용</recast>하면 <healing>남은 보호막의 {p3}%만큼 체력을 회복</healing>합니다.<br><br>최소 보호막 흡수량: <shield>{p4}</shield><br>최대 보호막 흡수량: <shield>{p5}</shield>"
         ], // 불멸
         "W_rules": "<rules>보호막 흡수량은 시간이 지남에 따라 감소합니다.<br>챔피언이 아닌 유닛으로부터 받는 피해는 75% 감소된 양만 흡수합니다.</rules>", // 구분선 아래 회색 글씨
-        "E": "<active>사용 시:</active> 적들을 자신 쪽으로 끌어당겨 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다.", // 죽음의 손아귀
+        "E": "<passive>기본 지속 효과:</passive> 모데카이저가 <magicpen>{p1}%의 마법 관통력</magicpen>을 얻습니다.<br><br><active>사용 시:</active> 적들을 자신 쪽으로 끌어당겨 <magicdamage>{p2}의 마법 피해</magicdamage>를 입힙니다.", // 죽음의 손아귀
         "R": "모데카이저가 챔피언 하나를 {p1}초 동안 죽음의 세계로 추방해 지속시간 동안 대상이 지닌 주요 능력치들의 {p2}%를 훔칩니다.<br><br>모데카이저가 죽음의 세계에서 적을 처치하면 영혼을 흡수하여 대상이 부활할 때까지 훔친 능력치를 유지합니다.", // 죽음의 세계
         "R_rules": "<rules>훔칠 수 있는 주요 능력치: <scaleap>주문력</scaleap>, <scalead>공격력</scalead>, <attackspeed>공격 속도</attackspeed>, <scalearmor>방어력</scalearmor>, <scalemr>마법 저항력</scalemr>, <scalehealth>최대 체력</scalehealth></rules>", // 구분선 아래 회색 글씨
     },
@@ -691,7 +691,7 @@ const customTemplates = {
         "R": "브랜드가 파괴적인 화염을 발사합니다. 화염은 브랜드나 다른 적에게 최대 5번 튕기며, 튕길 때마다 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다. 화염은 <keywordmajor>불길</keywordmajor> 중첩이 적은 챔피언에게 우선적으로 튕깁니다.<br><br>대상이 <keywordmajor>불타는</keywordmajor> 상태라면 잠시 {p2}% <status>둔화</status>됩니다.", // 파멸의 불덩이
     },
     "Vladimir": { // 블라디미르
-        "P": "<scalehealth>추가 체력 {p1}</scalehealth>당 블라디미르의 <scaleap>주문력이 1</scaleap> 증가합니다. 또한 <scaleap>주문력 1</scaleap>당 <scalehealth>최대 체력이 {p2}</scalehealth>만큼 증가합니다.<br><br><scaleap>추가 주문력: {p3}</scaleap><br><scalehealth>추가 체력: {p4}</scalehealth>", // 핏빛 계약 — stringtable
+        "P": "<scalehealth>추가 체력 {p1}당</scalehealth> 블라디미르의 <scaleap>주문력이 1</scaleap> 증가합니다. 또한 <scaleap>주문력 1</scaleap>당 <scalehealth>최대 체력이 {p2}</scalehealth>만큼 증가합니다.<br><br><scaleap>추가 주문력: {p3}</scaleap><br><scalehealth>추가 체력: {p4}</scalehealth>", // 핏빛 계약 — stringtable
         "Q": "블라디미르가 대상의 체력을 흡수하며 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 <healing>{p2}의 체력</healing>을 회복합니다. 스킬을 두 번 사용한 뒤에는 0.5초 동안 <speed>이동 속도가 {p3}%</speed> 증가하며 {p4}초 안에 이 스킬을 다시 사용하면 스킬이 강화됩니다.<br><br>강화된 스킬을 사용하면 <magicdamage>{p5}의 마법 피해</magicdamage>를 입히며 <healing>{p6}+잃은 체력의 {p7}</healing>만큼 추가로 회복합니다.", // 수혈
         "Q_rules": "<rules>미니언을 상대로는 강화된 체력 회복 효과가 30%로 감소합니다.</rules>", // 구분선 아래 회색 글씨
         "W": "블라디미르가 2초 동안 피의 웅덩이로 변하며 <keyword>대상으로 지정할 수 없는</keyword> <keyword>유체화</keyword> 상태가 되고 <speed>이동 속도가 {p1}%</speed> 증가했다가 {p2}초에 걸쳐 원래대로 돌아옵니다. 웅덩이에 있는 적은 {p3}% <status>둔화</status>됩니다.<br><br>웅덩이 위에 있는 적에게 지속시간 동안 <magicdamage>{p4}의 마법 피해</magicdamage>를 입히고 <healing>피해량의 {p5}만큼 체력</healing>을 회복합니다.", // 피의 웅덩이
@@ -751,7 +751,7 @@ const customTemplates = {
     },
     "Poppy": { // 뽀삐
         "P": "{p1}초마다 뽀삐가 다음 기본 공격 시 방패를 던집니다. 이때 사거리가 {p2} 증가하고 <magicdamage>{p3}의 추가 마법 피해</magicdamage>를 입힙니다. 방패는 대상을 맞힌 후 근처 바닥에 떨어집니다. 떨어진 방패를 주우면 <shield>{p4}의 피해를 흡수하는 보호막</shield>을 얻습니다. 방패는 적이 밟으면 파괴됩니다.<br><br>대상을 처치할 경우 방패가 바로 뽀삐에게 되돌아옵니다.", // 강철의 외교관 — stringtable
-        "Q": "뽀삐가 땅을 힘껏 내려쳐 <physicaldamage>{p1}</physicaldamage>+<physicaldamage>최대 체력의 {p2}%에 해당하는 물리 피해</physicaldamage>를 입히고 지대를 불안정하게 만듭니다. <br><br>불안정한 지대는 적을 {p3}% <status>둔화</status>시키고 {p4}초 뒤 폭발하여 <physicaldamage>{p1}</physicaldamage>+<physicaldamage>최대 체력의 {p2}%에 해당하는 물리 피해</physicaldamage>를 입힙니다.", // 망치 강타
+        "Q": "뽀삐가 땅을 힘껏 내려쳐 <physicaldamage>{p1}</physicaldamage>+<physicaldamage>최대 체력의 {p2}%에 해당하는 물리 피해</physicaldamage>를 입히고 지대를 불안정하게 만듭니다. <br><br>불안정한 지대는 적을 {p3} <status>둔화</status>시키고 {p4}초 뒤 폭발하여 <physicaldamage>{p1}</physicaldamage>+<physicaldamage>최대 체력의 {p2}%에 해당하는 물리 피해</physicaldamage>를 입힙니다.", // 망치 강타
         "Q_rules": "<rules>미니언 및 정글 몬스터가 대상일 때 공격당 최대 {p5}의 피해를 체력 비례 피해로 입힙니다.</rules>", // 구분선 아래 회색 글씨
         "W": "<passive>기본 지속 효과:</passive> 뽀삐가 <scalearmor>{p1}의 방어력</scalearmor>과 <scalemr>{p2}의 마법 저항력</scalemr>을 추가로 얻습니다. 뽀삐의 체력이 {p3}% 미만일 때는 효과가 두 배로 늘어납니다.<br><br><active>사용 시:</active> 뽀삐의 <speed>이동 속도가 {p4}%</speed> 증가하고 역장을 둘러 {p5}초 동안 주변에서 돌진하는 적을 막습니다. 가로막힌 적은 {p6}초 동안 <status>이동 스킬을 사용할 수 없고</status> {p7}% <status>둔화</status>되며 <magicdamage>{p8}의 마법 피해</magicdamage>를 입습니다.", // 굳건한 태세
         "E": "뽀삐가 하나의 적에게 돌진해 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입히고 앞으로 밀어냅니다. 적이 지형에 부딪히면 적이 {p2}초 동안 <status>기절</status>하고 <physicaldamage>{p1}의 추가 물리 피해</physicaldamage>를 입습니다.", // 용감한 돌진
@@ -1066,7 +1066,7 @@ const customTemplates = {
         "Q": "아지르가 모든 <keywordmajor>모래 병사</keywordmajor>를 지정한 위치로 보냅니다. 모래 병사는 통과한 적에게 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히며 1초 동안 {p2}% <status>둔화</status>시킵니다.", // 사막의 맹습
         "Q_rules": "<rules>여러 명의 <keywordmajor>모래 병사</keywordmajor>가 적을 맞혀도 추가 피해는 입히지 못합니다.</rules>", // 구분선 아래 회색 글씨
         "W": "아지르가 {p1}초 동안 <keywordmajor>모래 병사</keywordmajor> 하나를 소환합니다. <keywordmajor>모래 병사</keywordmajor> 근처에 있는 적을 공격하면 해당 병사에게 공격 명령을 내려 적이 있는 방향에 <magicdamage>{p2}의 마법 피해</magicdamage>를 입힙니다.<br><br>이 스킬은 {p3}회까지 충전됩니다.", // 일어나라!
-        "W_rules": "<rules><keywordmajor>모래 병사</keywordmajor>가 아지르의 첫 번째 대상에게 기본 공격을 가할 때 적중 시 효과를 {p4}%의 피해량으로 적용합니다. 적중 시 효과는 공격당 한 번씩만 적용됩니다.<br>여러 <keywordmajor>모래 병사</keywordmajor>가 같은 대상을 공격할 경우, 두 번째로 공격하는 모래 병사부터는 {p5}%의 피해를 입힙니다.<br><keywordmajor>모래 병사</keywordmajor>는 아지르의 공격 대상이 아닌 적에게 {p6}%의 피해를 입힙니다.<br>적 포탑 근처에서는 <keywordmajor>모래 병사</keywordmajor>가 두 배 빠르게 소멸됩니다.<br></rules>", // 구분선 아래 회색 글씨
+        "W_rules": "<rules><keywordmajor>모래 병사</keywordmajor>는 아지르의 주 대상에게 기본 공격당 한 번, {p4}% 피해량의 적중 시 효과를 적용합니다.<br>여러 <keywordmajor>모래 병사</keywordmajor>가 같은 대상을 공격할 경우, 두 번째로 공격하는 모래 병사부터는 {p5}%의 피해를 입힙니다.<br><keywordmajor>모래 병사</keywordmajor>는 아지르의 공격 대상이 아닌 적에게 {p6}%의 피해를 입힙니다.<br>적 포탑 근처에서는 <keywordmajor>모래 병사</keywordmajor>가 두 배 빠르게 소멸됩니다.<br></rules>", // 구분선 아래 회색 글씨
         "E": "아지르가 {p1}초 동안 <shield>{p2}의 피해를 흡수하는 보호막</shield>을 얻고 <keywordmajor>모래 병사</keywordmajor> 중 하나에게 돌진하여 통과하는 적들에게 <magicdamage>{p3}의 마법 피해</magicdamage>를 입힙니다.<br><br>아지르가 적 챔피언과 부딪치면 그 자리에서 멈추고 <keywordmajor>모래 병사</keywordmajor> 중첩을 얻습니다.", // 신기루
         "R": "아지르가 무장한 병사들을 일렬 횡대로 소환하여 돌진시키며, 적들을 <status>밀어내고</status> <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다. 병사들은 {p2}초 동안 남아 적의 길을 가로막습니다.", // 황제의 진영
     },

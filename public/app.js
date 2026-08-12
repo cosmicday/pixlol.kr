@@ -5,7 +5,7 @@
 //   그래서 "신규 챔피언이 다 들어 있는 버전" 이어야 한다.
 //   16.5.1 은 챔피언이 172명뿐이라 로크가 없었다 (16.15.1 은 233명). 2026-08-10 올림.
 //   새 챔피언이 목록에서 안 보이면 제일 먼저 이 값을 의심할 것.
-let ddragonVersion = "16.15.1";
+let ddragonVersion = "16.16.1";
 let allMatches = [];
 let activeFilters = [];
 let championIdMap = {};

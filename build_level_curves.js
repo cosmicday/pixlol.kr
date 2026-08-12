@@ -31,7 +31,7 @@ const path = require('path');
 const WRITE = process.argv.includes('--write');
 const CACHE_BIN = path.join(__dirname, '.cache', 'bin');
 const CACHE_DIR = path.join(__dirname, '.cache');
-const DD_VER = process.env.DD_VER || '16.15.1';
+const DD_VER = process.env.DD_VER || '16.16.1';
 
 // ------------------------------------------------------------
 // 성장 곡선
@@ -275,8 +275,13 @@ async function fetchDD() {
 //   bin 의 arType 은 숫자라 뜻을 추측하게 되는데, DD 는 "마나/기력/분노/투지/기류..." 처럼
 //   현지화된 이름을 그대로 준다. 추측으로 표를 만들면 안 된다 (CLAUDE.md 규칙).
 let PARTYPE = {};   // DD id -> 자원 이름
+// ★ fld 를 거쳐 해시 키와 실명을 **둘 다** 본다 (2026-08-12).
+//   예전엔 키 하나만 봐서 호출부가 hk('mrPerLevel') 로 해시를 직접 만들어 넘겼는데,
+//   16.16 패치부터 CD 가 이 이름을 실명으로 풀어 주면서 해시 키가 사라졌다.
+//   그 결과 **173명 전원의 마법 저항력 성장이 0 이 됐다** (기본값만 남아 수평선).
+//   자원(arBase/arPerLevel 등) 4자리도 같은 구조라 언제든 같은 사고가 난다.
 const mf = (o, k) => {
-    const v = o && o[k];
+    const v = fld(o, k);
     if (v === undefined || v === null) return undefined;
     return (typeof v === 'object') ? v.baseValue : v;
 };
@@ -291,10 +296,10 @@ function statCurvesFromBin(root, ddId) {
     out['체력 재생(초당)'] = grow(mf(root, 'baseStaticHPRegenModifiable'), mf(root, 'hpRegenPerLevelModifiable'));
     out['공격력'] = grow(mf(root, 'baseDamageModifiable'), mf(root, 'damagePerLevelModifiable'));
     out['방어력'] = grow(mf(root, 'baseArmorModifiable'), mf(root, 'armorPerLevelModifiable'));
-    out['마법 저항력'] = grow(mf(root, 'baseMR'), mf(root, hk('mrPerLevel')));
+    out['마법 저항력'] = grow(mf(root, 'baseMR'), mf(root, 'mrPerLevel'));
 
-    const arBase = mf(par, hk('arBaseModifiable')), arPer = mf(par, hk('arPerLevelModifiable'));
-    const arReg = mf(par, hk('arBaseStaticRegenModifiable')), arRegPer = mf(par, hk('arRegenPerLevelModifiable'));
+    const arBase = mf(par, 'arBaseModifiable'), arPer = mf(par, 'arPerLevelModifiable');
+    const arReg = mf(par, 'arBaseStaticRegenModifiable'), arRegPer = mf(par, 'arRegenPerLevelModifiable');
     // 자원 이름은 DD partype. 없으면 arType 숫자를 그대로 남겨 추측하지 않는다.
     const resName = PARTYPE[ddId] || (par.arType === undefined ? '없음' : ('자원' + par.arType));
     if (arBase !== undefined) out[resName] = grow(arBase, arPer);
@@ -351,7 +356,7 @@ function statCurvesFromBin(root, ddId) {
     const CHECK = [['hp', 'baseHPModifiable'], ['hpperlevel', 'hpPerLevelModifiable'],
     ['armor', 'baseArmorModifiable'], ['armorperlevel', 'armorPerLevelModifiable'],
     ['attackdamage', 'baseDamageModifiable'], ['attackdamageperlevel', 'damagePerLevelModifiable'],
-    ['spellblock', 'baseMR'], ['spellblockperlevel', hk('mrPerLevel')],
+    ['spellblock', 'baseMR'], ['spellblockperlevel', 'mrPerLevel'],
     ['movespeed', 'baseMoveSpeedModifiable'], ['attackrange', 'attackRangeModifiable']];
     let checked = 0, diff = [];
     for (const file of fs.readdirSync(CACHE_BIN)) {

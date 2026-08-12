@@ -1058,6 +1058,21 @@ const timesText = (a, m) => {
             }
         }
 
+        // ★ 범위 배율(`1 ~ 2`)은 양 끝을 각각 곱해 범위로 펼친다 (2026-08-12).
+        //   `55 / 60 / 65 / 70 / 75%의 100 ~ 200%` 는 곱셈이 두 겹이라 읽히지 않는다.
+        //   카이사 E 이동 속도가 이 자리다. 펼치면
+        //   `55 / 60 / 65 / 70 / 75% ~ 110 / 120 / 130 / 140 / 150%` — 롤위키 표기와 같다.
+        //   왼쪽이 순수 숫자 리스트일 때만 한다. 계수가 섞이면(`10 (+ 주문력의 50%)`)
+        //   양 끝을 곱할 수 없어 아래 `의 N%` 로 물러난다.
+        if (nums.length === 2 && /~/.test(head) && !suffix) {
+            const lm = a.match(/^(-?[\d.]+(?:\s*\/\s*-?[\d.]+)*)(%?)$/);
+            if (lm) {
+                const scale = (k) => lm[1].replace(/-?[\d.]+/g, x => String(tidy(parseFloat(x) * k)));
+                const lo = scale(nums[0]), hi = scale(nums[1]);
+                if (lo !== hi) return `${lo}${lm[2]} ~ ${hi}${lm[2]}`;
+            }
+        }
+
         if (nums.every(n => n >= 1)) {
             const pct = head.replace(/-?[\d.]+/g, (x) => String(tidy(parseFloat(x) * 100)));
             return `${a}의 ${pct}%${suffix}`;
@@ -1240,8 +1255,25 @@ function partToText(part, spell, maxRank, mult, depth = 0) {
             //     고정 숫자로 쓸 수 없다. 그래서 가질 수 있는 범위(바닥~천장)를 보여준다.
             //   예전엔 이 타입을 몰라서 합계만 적었고, 그 결과 카이사 E 가
             //   "추가 공격 속도의 100% + 100%" 로 나왔다. 없는 상수를 더한 것처럼 보인다.
-            if (part.mFloor === undefined || part.mCeiling === undefined) return null;
-            return `${tidy(part.mFloor * mult)} ~ ${tidy(part.mCeiling * mult)}`;
+            //   ★ 한쪽 끝이 null 인 "열린 clamp" 가 있다. undefined 만 걸러내면
+            //     null * mult = 0 이라 천장이 0 으로 찍힌다 — 카이사 E 충전시간이
+            //     `0.6 ~ 0` 으로 나가 "0초까지 줄어든다" 로 읽혔다 (2026-08-12).
+            const has = (v) => v !== undefined && v !== null;
+            if (has(part.mFloor) && has(part.mCeiling)) {
+                return `${tidy(part.mFloor * mult)} ~ ${tidy(part.mCeiling * mult)}`;
+            }
+            if (has(part.mFloor) || has(part.mCeiling)) {
+                // 열린 쪽의 실질 끝값 = "스탯이 0일 때의 합".
+                //   카이사 E: clamp(1.2 - 0.4 x 공격속도, 0.6, 없음) -> 공속 0 이면 1.2 다.
+                //   순서는 열린 끝(스탯 0) -> 닫힌 끝. 롤위키 `1.2 – 0.6` 과 같은 방향이다.
+                const open = sumAtZeroStats(part.mSubparts, spell, 0);
+                if (open === null) return null;
+                const closed = has(part.mFloor) ? part.mFloor : part.mCeiling;
+                const a = tidy(open * mult), b = tidy(closed * mult);
+                return a === b ? a : `${a} ~ ${b}`;
+            }
+            // 양쪽 다 없으면 clamp 의 뜻 자체가 안 잡힌다 (칼리스타 P). 손대지 않는다.
+            return null;
         }
 
         case 'ProductOfSubPartsCalculationPart': {
@@ -1395,6 +1427,61 @@ const joinTerms = (arr) =>
 // 위와 같지만 맨 앞 항에도 부호를 붙인다. " (+ 주문력의 80%)" 처럼 쓰는 자리용.
 const signedTerms = (arr) =>
     arr.map(t => /^-/.test(t) ? `- ${t.slice(1)}` : `+ ${t}`).join(' ');
+
+// ------------------------------------------------------------
+// 한쪽 끝이 열린 clamp 의 "열린 끝" 값을 구한다 (2026-08-12).
+//   스탯 비례 항을 0 으로 두고 나머지를 숫자로 더한다.
+//   ★ 랭크마다 값이 갈리면 물러난다(null). 범위 표기(`A ~ B`)와 랭크 표기(`a / b / c`)를
+//     한 칸에 섞으면 읽을 수 없는 문자열이 된다.
+// ------------------------------------------------------------
+// 배열이 전부 같은 값이면 그 값을, 아니면 null.
+//   skipFirst: DataValues 는 0번이 쓰레기라 1번부터 본다.
+function foldSame(arr, skipFirst) {
+    if (!Array.isArray(arr) || !arr.length) return null;
+    const a = (skipFirst && arr.length > 1) ? arr.slice(1) : arr;
+    return a.every(x => typeof x === 'number' && Math.abs(x - a[0]) < 1e-6) ? a[0] : null;
+}
+
+function numAtZeroStats(part, spell, depth) {
+    if (!part || typeof part !== 'object' || depth > 6) return null;
+    switch (part.__type) {
+        // 스탯 비례 항은 0 으로 둔다 — 그게 "열린 끝" 의 정의다.
+        case 'StatByCoefficientCalculationPart':
+        case 'StatByNamedDataValueCalculationPart':
+        case 'StatBySubPartCalculationPart':
+            return 0;
+        case 'NumberCalculationPart':
+            return part.mNumber || 0;
+        case 'EffectValueCalculationPart': {
+            const ea = (spell.mEffectAmount || [])[(part.mEffectIndex || 1) - 1];
+            return foldSame(ea && ea.value, false);
+        }
+        case 'NamedDataValueCalculationPart': {
+            const d = findDataValue(spell, part.mDataValue);
+            return d ? foldSame(d.values, true) : null;
+        }
+        case 'SumOfSubPartsCalculationPart':
+            return sumAtZeroStats(part.mSubparts, spell, depth + 1);
+        case 'ProductOfSubPartsCalculationPart': {
+            const a = numAtZeroStats(part.mPart1, spell, depth + 1);
+            const b = numAtZeroStats(part.mPart2, spell, depth + 1);
+            return (a === null || b === null) ? null : a * b;
+        }
+        default:
+            return null;
+    }
+}
+
+function sumAtZeroStats(parts, spell, depth) {
+    if (!Array.isArray(parts) || !parts.length) return null;
+    let total = 0;
+    for (const p of parts) {
+        const v = numAtZeroStats(p, spell, depth);
+        if (v === null) return null;
+        total += v;
+    }
+    return total;
+}
 
 function guessPart(part, spell, maxRank, mult, depth) {
     if (!part || typeof part !== 'object') return null;
