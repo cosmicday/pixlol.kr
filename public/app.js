@@ -3588,6 +3588,10 @@ const ROLE_KO = {
 // 라이엇 공식 역할군 아이콘 (인게임 챔피언 정보창에 쓰는 그 금색 문양).
 const ROLE_ICON = 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champion-details/global/default/role-icon-';
 
+// 챔피언 id → 역할군 배열(소문자). showChampions() 가 champion.json 을 받을 때 채운다.
+//   스탯 탭의 "역할군 평균" 이 이 표로 모집단을 고른다. 추가 요청은 없다.
+const champRoleMap = {};
+
 // 검색 대상 문자열. "한글이름|초성|영문id" 를 공백 없이 이어 붙여 한 번에 비교한다.
 //   초성 변환은 위쪽 "챔피언 필터 패널" 의 getChosung() 을 그대로 쓴다 — 표를 두 벌 두면 어긋난다.
 //   영문 id 도 넣는 이유: "garen" 처럼 영타로 치는 사람이 있어서다.
@@ -3659,6 +3663,10 @@ async function showChampions(requestedChampId = null, classicMode = false) {
         let champList = [];
         for (let key in data.data) {
             const c = data.data[key];
+            // ★ 역할군 표를 여기서 같이 채운다. 스탯 탭의 "역할군 평균" 이 이걸 본다.
+            //   목록 필터와 달리 **정규 챔피언만** 담는다 — 어느 탭으로 들어왔든 평균의
+            //   모집단이 같아야 값이 안 흔들린다 (클래식은 championStats 에도 없다).
+            if (!isClassicChamp(c.id)) champRoleMap[c.id] = (c.tags || []).map(t => t.toLowerCase());
             // 클래식 탭이면 Jade_ 계열만, 정규 탭이면 그 외만
             if (isClassicChamp(c.id) !== classicMode) continue;
             // tags = 역할군 (Fighter / Mage / Assassin / Marksman / Tank / Support).
@@ -4336,14 +4344,20 @@ const statLabel = (k) => k.replace('(초당)', '/초');
 //    **점 바로 앞**에 깔고 CSS 인접 선택자로 켠다.
 //  · 숫자·라벨은 본문색을 쓴다. 색은 선과 점이 갖는다.
 // ------------------------------------------------------------
-function statGraphHtml(vals, color) {
+function statGraphHtml(vals, color, extras = []) {
     const n = vals.length;
-    const top = Math.max(...vals) * 1.1 || 1;        // 라벨이 천장에 붙지 않게 여유
+    // 천장은 **모든 선**을 보고 잡는다. 챔피언 선만 보면 평균선이 위로 삐져나간다.
+    const top = Math.max(...vals, ...extras.flatMap(e => e.vals)) * 1.1 || 1;
     const px = (i) => (i / (n - 1)) * 100;           // x: 0~100%
     const py = (v) => (v / top) * 100;               // y: 바닥에서 0~100%
+    const poly = (arr) => arr.map((v, i) => `${px(i)},${100 - py(v)}`).join(' ');
 
     // 선은 viewBox 를 늘려 그린다. 굵기는 non-scaling-stroke 로 2px 을 지킨다.
-    const poly = vals.map((v, i) => `${px(i)},${100 - py(v)}`).join(' ');
+    //   평균선은 **먼저** 그려서 챔피언 선 아래에 깔린다 (겹치면 본인 값이 보여야 한다).
+    const avgLines = extras.map(e => `
+                <polyline points="${poly(e.vals)}" fill="none" stroke="${e.color}" stroke-width="1.5"
+                          stroke-dasharray="5 4" stroke-linejoin="round" stroke-linecap="round"
+                          vector-effect="non-scaling-stroke" opacity="0.9"/>`).join('');
 
     const grid = [6, 11, 16].map(lv => `
         <i class="g-grid" style="left:${px(lv - 1)}%"></i>
@@ -4354,17 +4368,21 @@ function statGraphHtml(vals, color) {
         const right = i === n - 1 ? 100 : (px(i) + px(i + 1)) / 2;
         // 양 끝에서는 말풍선이 잘리지 않게 정렬을 바꾼다
         const align = i <= 1 ? 'start' : (i >= n - 2 ? 'end' : 'mid');
+        // 평균선을 켜 뒀으면 같은 말풍선에 그 레벨의 평균도 같이 적는다.
+        // 선만 보고 눈대중하는 것보다 이쪽이 비교가 된다.
+        const cmp = extras.map(e =>
+            `<i class="g-cmp" style="color:${e.color}">${e.label} ${fmtStat(e.vals[i])}</i>`).join('');
         return `<i class="g-hit" style="left:${left}%; width:${right - left}%"></i>` +
             `<span class="g-pt g-a-${align}" style="left:${px(i)}%; bottom:${py(v)}%">` +
             `<i class="g-dot" style="background:${color}"></i>` +
-            `<b class="g-val">Lv.${i + 1} · ${fmtStat(v)}</b></span>`;
+            `<b class="g-val">Lv.${i + 1} · ${fmtStat(v)}${cmp}</b></span>`;
     }).join('');
 
     return `
     <div class="stat-graph-inner">
         <div class="g-plot">
-            <svg class="g-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="2"
+            <svg class="g-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${avgLines}
+                <polyline points="${poly(vals)}" fill="none" stroke="${color}" stroke-width="2"
                           stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
             </svg>
             ${grid}
@@ -4377,26 +4395,104 @@ function statGraphHtml(vals, color) {
     </div>`;
 }
 
+// ------------------------------------------------------------
+//  역할군 평균 비교 (2026-08-12)
+//
+//  그래프 위에 역할군 버튼 6개를 두고, 켜면 그 역할군 챔피언들의 **레벨별 평균**을
+//  점선으로 겹쳐 그린다. 챔피언 본인 선은 굵은 실선이라 항상 위에 온다.
+//  모집단은 champRoleMap (Data Dragon tags) ∩ championStats 다.
+// ------------------------------------------------------------
+
+// 평균선 색. 6개를 나란히 놓으므로 여기는 **색이 구분 역할**이라 색맹 대비가 필요하다.
+//   Okabe-Ito 팔레트에서 골랐다 (스탯 색 팔레트와는 다른 목적이다).
+const ROLE_LINE = {
+    fighter: '#e69f00', assassin: '#d55e00', mage: '#56b4e9',
+    marksman: '#009e73', tank: '#0072b2', support: '#cc79a7',
+};
+
+// 지금 켜 둔 비교용 역할군. 스탯을 바꿔도 유지된다 (챔피언 목록 필터와는 별개다).
+const avgRoles = new Set();
+
+// (역할군, 스탯) → 1~18레벨 평균. 값은 안 변하므로 한 번 구하면 캐시한다.
+const roleAvgCache = {};
+function roleAvgVals(role, statKey) {
+    const ck = role + '|' + statKey;
+    if (ck in roleAvgCache) return roleAvgCache[ck];
+    const acc = new Array(18).fill(0);
+    let cnt = 0;
+    for (const id in championStats) {
+        const roles = champRoleMap[id];
+        if (!roles || !roles.includes(role)) continue;
+        // ★ 자원은 챔피언마다 키 이름이 다르다(마나·기력·분노…). **같은 키를 가진 챔피언만**
+        //   센다 — 마나 평균에 기력을 섞으면 뜻이 없고, 자원 없는 챔피언을 0으로 넣으면
+        //   평균이 통째로 내려앉는다.
+        const v = championStats[id].s[statKey];
+        if (!v) continue;
+        for (let i = 0; i < 18; i++) acc[i] += statAtLevel(v, i + 1);
+        cnt++;
+    }
+    return (roleAvgCache[ck] = cnt ? { vals: acc.map(x => x / cnt), count: cnt } : null);
+}
+
+window.toggleStatAvgRole = function (btn) {
+    const r = btn.dataset.role;
+    if (avgRoles.has(r)) avgRoles.delete(r); else avgRoles.add(r);
+    drawStatPanel();
+};
+
 // 지금 그래프를 띄워 둔 스탯. 표를 다시 그려도 유지된다.
 let openStatKey = null;
 
-window.toggleStatGraph = function (key) {
-    openStatKey = (openStatKey === key) ? null : key;
-    document.querySelectorAll('.stat-tname').forEach(b => b.classList.toggle('on', b.dataset.key === openStatKey));
+function drawStatPanel() {
     const panel = document.getElementById('stat-graph-panel');
     if (!panel) return;
-    if (!openStatKey) { panel.classList.remove('open'); panel.innerHTML = ''; return; }
     const rec = championStats[window.currentChampStatsId];
-    const v = rec && rec.s[openStatKey];
+    const v = openStatKey && rec && rec.s[openStatKey];
     if (!v) { panel.classList.remove('open'); panel.innerHTML = ''; return; }
+
     const vals = Array.from({ length: 18 }, (_, i) => statAtLevel(v, i + 1));
+
+    // 켠 역할군 중 이 스탯의 표본이 있는 것만 선으로 만든다.
+    const extras = ROLE_ORDER.filter(r => avgRoles.has(r)).map(r => {
+        const a = roleAvgVals(r, openStatKey);
+        return a && { role: r, label: ROLE_KO[r], color: ROLE_LINE[r], vals: a.vals, count: a.count };
+    }).filter(Boolean);
+
+    const btns = ROLE_ORDER.map(r => {
+        const a = roleAvgVals(r, openStatKey);
+        const on = avgRoles.has(r) && a;
+        return `<button class="role-btn${on ? ' on' : ''}" data-role="${r}" data-label="${ROLE_KO[r]} 평균"
+                        style="--rc:${ROLE_LINE[r]}" onclick="toggleStatAvgRole(this)"
+                        aria-label="${ROLE_KO[r]} 평균"${a ? '' : ' disabled'}>
+                    <img src="${ROLE_ICON}${r}.png" alt="${ROLE_KO[r]}">
+                </button>`;
+    }).join('');
+
+    const legend = extras.map(e => `
+        <span class="savg-item">
+            <i class="savg-swatch" style="border-top-color:${e.color}"></i>${e.label} 평균
+            <b>${fmtStat(e.vals[0])} → ${fmtStat(e.vals[17])}</b>
+            <em>${e.count}명</em>
+        </span>`).join('');
+
     panel.classList.add('open');
     panel.innerHTML = `
         <div class="stat-graph-head">
             <i class="stat-dot" style="background:${statColorOf(openStatKey)}"></i>
             <b>${statLabel(openStatKey)}</b><span>레벨 1 → 18</span>
         </div>
-        ${statGraphHtml(vals, statColorOf(openStatKey))}`;
+        <div class="savg-bar">
+            <span class="savg-title">역할군 평균과 비교</span>
+            <span class="savg-btns">${btns}</span>
+        </div>
+        <div class="savg-legend">${legend}</div>
+        ${statGraphHtml(vals, statColorOf(openStatKey), extras)}`;
+}
+
+window.toggleStatGraph = function (key) {
+    openStatKey = (openStatKey === key) ? null : key;
+    document.querySelectorAll('.stat-tname').forEach(b => b.classList.toggle('on', b.dataset.key === openStatKey));
+    drawStatPanel();
 };
 
 window.renderChampStats = function (champId) {
@@ -4428,10 +4524,12 @@ window.renderChampStats = function (champId) {
             <td class="stat-t18">${v18}</td>
         </tr>`;
 
+    // ★ 안 크는 스탯(대부분의 이동 속도·사거리)도 누를 수 있다. 수평선이어도 그게 정보고,
+    //   역할군 평균과 겹쳐 보면 "안 크는데 남들보다 높다/낮다" 가 바로 보인다.
+    //   못 누르는 건 아래 자원 없는 챔피언의 "-" 줄뿐이다.
     let rows = order.map(k => {
         const vals = Array.from({ length: 18 }, (_, i) => statAtLevel(s[k], i + 1));
-        const grows = Math.abs(vals[17] - vals[0]) > 0.0001;
-        return row(k, statColorOf(k), fmtStat(vals[0]), fmtStat(vals[17]), grows);
+        return row(k, statColorOf(k), fmtStat(vals[0]), fmtStat(vals[17]), true);
     }).join('');
 
     // ★ 자원을 안 쓰는 챔피언(가렌·리븐·카타리나 등)에도 마나 칸을 만든다.
@@ -4452,7 +4550,7 @@ window.renderChampStats = function (champId) {
             </table>
             <div id="stat-graph-panel" class="stat-graph-panel"></div>
         </div>
-        <div class="stat-foot">스탯 이름을 누르면 오른쪽에 1~18레벨 성장 곡선이 나옵니다. 레벨 성장은 직선이 아니라 중간이 완만합니다.</div>`;
+        <div class="stat-foot">스탯 이름을 누르면 오른쪽에 1~18레벨 성장 곡선이 나옵니다. 레벨 성장은 직선이 아니라 중간이 완만합니다.<br>그래프 위 역할군 아이콘을 누르면 그 역할군 챔피언들의 레벨별 평균이 점선으로 겹쳐집니다.</div>`;
 };
 
 window.switchChampTab = function (event, tabName) {
