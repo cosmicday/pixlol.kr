@@ -9,3 +9,5 @@ database.sqlite
 # 앞의 / 는 "루트만" 이라는 뜻. public/riot.txt 와 public/ 안 이미지는 안 걸린다
 /*.txt
 !/CLAUDE.md
+# 파이프라인 중간 산출물 (확인 후 이름을 바꿔 쓰는 파일)
+*.new.js
