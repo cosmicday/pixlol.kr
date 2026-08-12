@@ -691,7 +691,7 @@ const customTemplates = {
         "R": "브랜드가 파괴적인 화염을 발사합니다. 화염은 브랜드나 다른 적에게 최대 5번 튕기며, 튕길 때마다 <magicdamage>{p1}의 마법 피해</magicdamage>를 입힙니다. 화염은 <keywordmajor>불길</keywordmajor> 중첩이 적은 챔피언에게 우선적으로 튕깁니다.<br><br>대상이 <keywordmajor>불타는</keywordmajor> 상태라면 잠시 {p2}% <status>둔화</status>됩니다.", // 파멸의 불덩이
     },
     "Vladimir": { // 블라디미르
-        "P": "<scalehealth>추가 체력 {p1}당</scalehealth> 블라디미르의 <scaleap>주문력이 1</scaleap> 증가합니다. 또한 <scaleap>주문력 1</scaleap>당 <scalehealth>최대 체력이 {p2}</scalehealth>만큼 증가합니다.<br><br><scaleap>추가 주문력: {p3}</scaleap><br><scalehealth>추가 체력: {p4}</scalehealth>", // 핏빛 계약 — stringtable
+        "P": "<scalehealth>추가 체력 {p1}당</scalehealth> 블라디미르의 <scaleap>주문력이 1</scaleap> 증가합니다. 또한 <scaleap>주문력 1</scaleap>당 <scalehealth>최대 체력이 {p2}</scalehealth>만큼 증가합니다.", // 핏빛 계약 — stringtable. "추가 주문력/추가 체력" 두 줄({p3}·{p4}) 제거 — 현재값이라 고정값이 없다
         "Q": "블라디미르가 대상의 체력을 흡수하며 <magicdamage>{p1}의 마법 피해</magicdamage>를 입히고 <healing>{p2}의 체력</healing>을 회복합니다. 스킬을 두 번 사용한 뒤에는 0.5초 동안 <speed>이동 속도가 {p3}%</speed> 증가하며 {p4}초 안에 이 스킬을 다시 사용하면 스킬이 강화됩니다.<br><br>강화된 스킬을 사용하면 <magicdamage>{p5}의 마법 피해</magicdamage>를 입히며 <healing>{p6}+잃은 체력의 {p7}</healing>만큼 추가로 회복합니다.", // 수혈
         "Q_rules": "<rules>미니언을 상대로는 강화된 체력 회복 효과가 30%로 감소합니다.</rules>", // 구분선 아래 회색 글씨
         "W": "블라디미르가 2초 동안 피의 웅덩이로 변하며 <keyword>대상으로 지정할 수 없는</keyword> <keyword>유체화</keyword> 상태가 되고 <speed>이동 속도가 {p1}%</speed> 증가했다가 {p2}초에 걸쳐 원래대로 돌아옵니다. 웅덩이에 있는 적은 {p3}% <status>둔화</status>됩니다.<br><br>웅덩이 위에 있는 적에게 지속시간 동안 <magicdamage>{p4}의 마법 피해</magicdamage>를 입히고 <healing>피해량의 {p5}만큼 체력</healing>을 회복합니다.", // 피의 웅덩이

@@ -4364,8 +4364,8 @@ const customValues = {
         "P": {
             "p1": "30", // HPforAP
             "p2": "1.6", // APRatioBonusHP
-            "p3": "(추가 최대 체력의 100% + 1.6 x 주문력의 -100%) x 0.037", // ApproximateAPBonusAvoidingRecursion
-            "p4": "(추가 주문력의 100% + 0.033 x 추가 최대 체력의 -100%)의 169.6%", // ApproximateHPBonusAvoidingRecursion
+            "p3": "(추가 최대 체력의 100% + 주문력의 -160%) x 0.037", // ApproximateAPBonusAvoidingRecursion
+            "p4": "(추가 주문력의 100% + 추가 최대 체력의 -3.3%)의 169.6%", // ApproximateHPBonusAvoidingRecursion
             "cooldown": "-",
             "cost": "-"
         },
@@ -6361,8 +6361,8 @@ const customValues = {
     },
     "Ivern": { // 아이번
         "P": {
-            "p1": "15 ~ 0.006 (레벨에 따라) x 기본 최대 체력의 1%", // HealthTooltip
-            "p2": "20 ~ 0.025 (레벨에 따라) x 기본 마나의 1%", // ManaTooltip
+            "p1": "기본 최대 체력의 15 ~ 0.006% (레벨에 따라)", // HealthTooltip
+            "p2": "기본 마나의 20 ~ 0.025% (레벨에 따라)", // ManaTooltip
             "p3": "40 ~ 1 (레벨에 따라)", // HarvestDuration
             "cooldown": "-",
             "cost": "-"
@@ -6759,7 +6759,7 @@ const customValues = {
         "R": {
             "p1": "125 / 175 / 225 (+ 추가 공격력의 20% + 주문력의 100%)", // MaxDamage
             "p2": "?", // f1
-            "p3": "100% (+ 30 x 치명타 확률의 100%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>100% (+ 30 x 치명타 확률의 130%)</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageModCalc
+            "p3": "100% (+ 치명타 확률의 3000%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>100% (+ 치명타 확률의 3900%)</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageModCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 110 / 100",
