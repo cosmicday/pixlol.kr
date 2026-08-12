@@ -138,7 +138,7 @@ const customValues = {
             "p6": "6", // ShredDuration
             "p7": "25", // ShredAmount*100
             "p8": "25", // ASPerTick*100
-            "p9": "4 / 7 / 10 / 13 / 16 (+ 총 공격력의 40 / 43 / 46 / 49 / 52%)의 130%", // CriticalDamage
+            "p9": "4 / 7 / 10 / 13 / 16 (+ 총 공격력의 40 / 43 / 46 / 49 / 52%)의 130%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>139%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "9 / 8.25 / 7.5 / 6.75 / 6",
@@ -244,7 +244,7 @@ const customValues = {
         },
         "Q": {
             "p1": "1", // GameModeInteger
-            "p2": "10 / 40 / 70 / 100 / 130 (+ 총 공격력의 100%)의 200%", // ShotCrit
+            "p2": "10 / 40 / 70 / 100 / 130 (+ 총 공격력의 100%)의 200%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>230%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // ShotCrit
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "4.5",
@@ -379,7 +379,7 @@ const customValues = {
         "P": {
             "p1": "총 공격력의 70 ~ 100.005 (레벨에 따라)%", // SingleBulletDamage
             "p2": "총 공격력의 70 ~ 100.005 (레벨에 따라)%", // MultiBulletDamage
-            "p3": "50%", // CritDamageMult
+            "p3": "50%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>65%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageMult
             "p4": "25", // StructureDamageReduction*100
             "cooldown": "-",
             "cost": "-"
@@ -2399,9 +2399,9 @@ const customValues = {
         },
         "R": {
             "p1": "3", // Duration
-            "p2": "22 + 치명타 확률의 100%", // TotalNumShots
+            "p2": "22 + 치명타 확률의 100%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>130%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // TotalNumShots
             "p3": "15 / 30 / 45 (+ 총 공격력의 25% + 주문력의 15%)", // DamagePerBullet
-            "p4": "22 + 치명타 확률의 100% x (15 / 30 / 45 + 총 공격력의 25% + 주문력의 15%)", // TotalDamage
+            "p4": "22 + 치명타 확률의 100% x (15 / 30 / 45 + 총 공격력의 25% + 주문력의 15%)<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>22 + 치명타 확률의 130% x (15 / 30 / 45 + 총 공격력의 25% + 주문력의 15%)</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // TotalDamage
             "p5": "100", // CritValueMod*100
             "p6": "200", // PercentDamageAmpToMinions
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -2819,7 +2819,7 @@ const customValues = {
             "p4": "5 / 10 / 15 / 20 / 25 + 총 공격력의 17.5%", // SubesquentDamage
             "p5": "35 / 70 / 105 / 140 / 175 (+ 총 공격력의 122.5%)", // SingleTotalDamage
             "p6": "75", // BaseOnHitMultiplier*100
-            "p7": "20 / 40 / 60 / 80 / 100 (+ 총 공격력의 70%)", // CritBonus
+            "p7": "20 / 40 / 60 / 80 / 100 (+ 총 공격력의 70%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>130%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritBonus
             "p8": "(20 / 40 / 60 / 80 / 100 + 총 공격력의 70%)의 175%", // SingleCritTotalDamage
             "p9": "60 / 85 / 110 / 135 / 160", // BonusMonsterDamage
             "p10": "20 / 19.5 / 19 / 18.5 / 18", // BasicAttackCDR
@@ -3369,7 +3369,7 @@ const customValues = {
         },
         "Q": {
             "p1": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 100% + 주문력의 35%)", // TotalDamageTooltip
-            "p2": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 100% + 주문력의 35%)의 150%", // TotalDamageCrit
+            "p2": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 100% + 주문력의 35%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // TotalDamageCrit
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
@@ -3417,7 +3417,7 @@ const customValues = {
             "p2": "14 / 16 / 18", // BaseWaves
             "p3": "20 / 30 / 40 (+ 총 공격력의 60% + 주문력의 25%)", // PhysicalDamagePerWave
             "p4": "280 / 480 / 720 (+ 총 공격력의 840 / 960 / 1080% + 주문력의 350 / 400 / 450%)", // TotalPhysicalDamage
-            "p5": "20 / 30 / 40 (+ 총 공격력의 60% + 주문력의 25%)의 130%", // CritDamagePerWave
+            "p5": "20 / 30 / 40 (+ 총 공격력의 60% + 주문력의 25%)의 130%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>139%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamagePerWave
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 110 / 100",
@@ -4513,7 +4513,7 @@ const customValues = {
             "p4": "25 / 40 / 55 / 70 / 85 (+ 총 공격력의 70%)", // TotalDamage
             "p5": "125", // HealModVsMonsters*100
             "p6": "100", // HealModVsMinions*100
-            "p7": "100% (+ 70%)", // HealthCritDamage
+            "p7": "100% (+ 70%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>100% (+ 91%)</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // HealthCritDamage
             "p8": "10 / 15 / 20 / 25 / 30", // MinDamageOnHit
             "p9": "80", // MonsterCapOnHit
             "p10": "60", // ActiveCritMod*100
@@ -4731,7 +4731,7 @@ const customValues = {
         },
         "Q": {
             "p1": "0 / 5 / 10 / 15 / 20 (+ 총 공격력의 110%)", // DamageCalc
-            "p2": "0 / 5 / 10 / 15 / 20 (+ 총 공격력의 110%)의 150%", // CriticalDamageCalc
+            "p2": "0 / 5 / 10 / 15 / 20 (+ 총 공격력의 110%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalDamageCalc
             "p3": "100", // LifestealMod*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -4941,7 +4941,7 @@ const customValues = {
         "Q": {
             "p1": "2.5 / 2.75 / 3 / 3.25 / 3.5", // StealthDuration
             "p2": "25 / 35 / 45 / 55 / 65 (+ 추가 공격력의 60%)", // TotalDamage
-            "p3": "160%", // QCritDamageMod
+            "p3": "160%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>178%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // QCritDamageMod
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "13 / 12.5 / 12 / 11.5 / 11",
@@ -6613,7 +6613,7 @@ const customValues = {
             "p1": "8 / 16 / 24 / 32 / 40 (+ 총 공격력의 25%)", // DamageToDeal
             "p2": "25", // OnHitDamageReduction*100
             "p3": "30", // AttackSpeedCoefficient*100
-            "p4": "8 / 16 / 24 / 32 / 40 (+ 총 공격력의 25%)의 150%", // CriticalCalc
+            "p4": "8 / 16 / 24 / 32 / 40 (+ 총 공격력의 25%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "18 / 16.5 / 15 / 13.5 / 12",
@@ -6759,7 +6759,7 @@ const customValues = {
         "R": {
             "p1": "125 / 175 / 225 (+ 추가 공격력의 20% + 주문력의 100%)", // MaxDamage
             "p2": "?", // f1
-            "p3": "100% (+ 30 x 치명타 확률의 100%)", // CritDamageModCalc
+            "p3": "100% (+ 30 x 치명타 확률의 100%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>100% (+ 30 x 치명타 확률의 130%)</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageModCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 110 / 100",
@@ -9117,7 +9117,7 @@ const customValues = {
             "p1": "30 / 70 / 110 / 150 / 190 (+ 총 공격력의 120% + 주문력의 50%)", // TotalDamage
             "p2": "2", // SlowDuration
             "p3": "30 / 35 / 40 / 45 / 50", // SlowPercent*100
-            "p4": "30 / 70 / 110 / 150 / 190 (+ 총 공격력의 120% + 주문력의 50%)의 150%", // WallDamage
+            "p4": "30 / 70 / 110 / 150 / 190 (+ 총 공격력의 120% + 주문력의 50%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // WallDamage
             "p5": "50", // CriticalEffectiveness*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -10369,7 +10369,7 @@ const customValues = {
         "P": {
             "p1": "5", // AttacksPerHeadshot
             "p2": "2", // BrushAttackTotal
-            "p3": "총 공격력의 60 ~ 100 (레벨에 따라) + 치명타 확률의 100%", // HeadShotBonusDamage
+            "p3": "총 공격력의 60 ~ 100 (레벨에 따라) + 치명타 확률의 100%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>130%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // HeadShotBonusDamage
             "p4": "35 / 80 / 125 / 170 / 215 (+ 추가 공격력의 30%)", // spell.CaitlynW:HeadshotBonusDamage
             "cooldown": "-",
             "cost": "-"
@@ -10657,7 +10657,7 @@ const customValues = {
         "P": {
             "p1": "20", // AttackConversion*100
             "p2": "총 공격력의 20%", // BasicAttackTOOLTIP
-            "p3": "총 공격력의 40%", // CriticalStrikeTOOLTIP
+            "p3": "총 공격력의 40%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>46%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalStrikeTOOLTIP
             "cooldown": "-",
             "cost": "-"
         },

@@ -1126,11 +1126,11 @@ const customTemplates = {
         //   0번은 스킬 본체(기본 아이콘), 1번부터 values.icons[i-1] 과 짝이 된다.
         "P": [
             "아펠리오스는 쌍둥이 누이 알룬이 만든 다섯 가지의 루나리 무기를 사용합니다. 한 번에 <b>주 무기</b>와 <b>보조 무기</b> 등 총 두 가지 무기를 사용할 수 있습니다. 각 무기는 고유의 기본 공격 및 [Q] 스킬을 가지고 있습니다.<br><br>각 무기에는 달빛 탄약이 <b>50</b>발씩 있으며 기본 공격과 [Q] 스킬 사용 시 소모합니다. 탄약을 모두 소모하면 그 무기는 대기열 맨 뒤로 이동하고, 다음 무기가 주 무기가 됩니다.<br><br>2레벨 도달 시 [Q] 스킬을 사용할 수 있으며 6레벨 도달 시 궁극기를 사용할 수 있습니다. 아펠리오스는 스킬 포인트로 스킬 레벨을 올리는 대신 영구 능력치를 획득합니다.<br><br><passive>무기별 기본 공격:</passive>",
-            "<li><b><i><font color='#00e6b8'>만월총</font></i></b>(소총): 공격 사거리가 <b>100</b> 증가합니다. 스킬에 맞은 적에게 <b>4.5</b>초 동안 표식을 남기며, 표식이 남은 적은 <b>1800</b> 사거리에서 보조 무기로 공격할 수 있습니다. 표식을 소모할 때마다 <physicaldamage>15 (+ 추가 공격력의 15%)의 추가 물리 피해</physicaldamage>를 입힙니다.</li>",
-            "<li><b><i><font color='#e6005c'>절단검</font></i></b>(낫 모양 권총): 입힌 피해량의 <healing>2 ~ 7.1% (레벨에 따라)</healing>만큼 체력을 회복합니다. (스킬로 입힌 피해는 <healing>5 ~ 17.75%</healing>) 체력이 가득 차 있으면 초과분이 <shield>10 ~ 160 (레벨에 따라) (+ 최대 체력의 6%)의 보호막</shield>이 됩니다.</li>",
-            "<li><b><i><font color='#a64dff'>중력포</font></i></b>(대포): 적을 <b>2.5</b>초 동안 <status>30% 둔화</status>시킵니다. <b>0.7</b>초 후 <b>10%</b>로 감소합니다.</li>",
-            "<li><b><i><font color='#1a75ff'>화염포</font></i></b>(화염 방사기): 첫 대상에게 <physicaldamage>총 공격력의 110%</physicaldamage>, 그 뒤 부채꼴 범위의 적에게 <physicaldamage>75 ~ 100% (레벨에 따라)</physicaldamage>의 피해를 입힙니다. (미니언은 <b>23 ~ 30%</b>)</li>",
-            "<li><b><i><font color='#ffffcc'>반월검</font></i></b>(투척 무기): 반월검을 던지고 돌아올 때까지 공격할 수 없습니다. 돌아오지 않은 반월검이 쌓일수록 공격력이 증가합니다. (최대 <b>20</b>개, <physicaldamage>총 공격력의 138.5%</physicaldamage>까지)</li>"
+            "<li><b><i><font color='#00e6b8'>만월총</font></i></b>: 공격 사거리가 <b>100</b> 증가합니다. 스킬에 맞은 적에게 <b>4.5</b>초 동안 표식을 남기며, 표식이 남은 적은 <b>1800</b> 사거리에서 보조 무기로 공격할 수 있습니다. 표식을 소모할 때마다 <physicaldamage>15 (+ 추가 공격력의 15%)의 추가 물리 피해</physicaldamage>를 입힙니다.</li>",
+            "<li><b><i><font color='#e6005c'>절단검</font></i></b>: 입힌 피해량의 <healing>2 ~ 7.1% (레벨에 따라)</healing>만큼 체력을 회복합니다. (스킬로 입힌 피해는 <healing>5 ~ 17.75%</healing>) 체력이 가득 차 있으면 초과분이 <shield>10 ~ 160 (레벨에 따라) (+ 최대 체력의 6%)의 보호막</shield>이 됩니다.</li>",
+            "<li><b><i><font color='#a64dff'>중력포</font></i></b>: 적을 <b>2.5</b>초 동안 <status>30% 둔화</status>시킵니다. <b>0.7</b>초 후 <b>10%</b>로 감소합니다.</li>",
+            "<li><b><i><font color='#1a75ff'>화염포</font></i></b>: 첫 대상에게 <physicaldamage>총 공격력의 110%</physicaldamage>, 그 뒤 부채꼴 범위의 적에게 <physicaldamage>75 ~ 100% (레벨에 따라)</physicaldamage>의 피해를 입힙니다. (미니언은 <b>23 ~ 30%</b>)</li>",
+            "<li><b><i><font color='#ffffcc'>반월검</font></i></b>: 반월검을 던지고 돌아올 때까지 공격할 수 없습니다. 돌아오지 않은 반월검이 쌓일수록 공격력이 증가합니다. (최대 <b>20</b>개, <physicaldamage>총 공격력의 138.5%</physicaldamage>까지)</li>"
         ], // 암살자와 예언자 — 무기 5종 설명으로 재작성 (2026-08-09). stringtable 원문의 "루나리 무기 순서" 블록은 현재 상태값이라 뺐다
         // ★ 배열 = 하위 스킬을 파트로 쪼개 눈 것. app.js 가 아이콘 + 구분선으로 나눠 그린다.
         //   0번은 스킬 본체(기본 아이콘), 1번부터 values.icons[i-1] 과 짝이 된다.
@@ -1150,7 +1150,7 @@ const customTemplates = {
             "챔피언에게 적중 시 폭발하는 달빛 에너지를 발사하여 주변 적에게 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다.<br><br>폭발 <b>0.3</b>초 후 적중한 모든 챔피언에게 하늘에서 공격이 쏟아져 <physicaldamage>총 공격력의 100%</physicaldamage>의 피해를 입히며, <onhit>적중 시</onhit> 효과가 적용됩니다.<br><br><passive>주 무기에 따른 추가 효과:</passive>",
             "<li><b><i><font color='#00e6b8'>만월총</font></i></b>: 강화된 표식을 남깁니다. 표식을 소모할 때마다 <physicaldamage>50 / 80 / 110의 추가 물리 피해</physicaldamage>를 입힙니다.</li>",
             "<li><b><i><font color='#e6005c'>절단검</font></i></b>: 적 챔피언을 한 명 이상 맞히면 <healing>체력을 250 / 350 / 450</healing> 회복합니다.</li>",
-            "<li><b><i><font color='#a64dff'>중력포</font></i></b>(대포): <status>둔화</status> 효과가 <b>99%</b>까지 증가하고, 이 둔화에 걸린 적은 <spellname>월식</spellname>으로 <b>1.35</b>초 동안 <status>속박</status>됩니다.</li>",
+            "<li><b><i><font color='#a64dff'>중력포</font></i></b>: <status>둔화</status> 효과가 <b>99%</b>까지 증가하고, 이 둔화에 걸린 적은 <spellname>월식</spellname>으로 <b>1.35</b>초 동안 <status>속박</status>됩니다.</li>",
             "<li><b><i><font color='#1a75ff'>화염포</font></i></b>: 최초 폭발이 <physicaldamage>50 / 100 / 150 (+ 추가 공격력의 25%)의 추가 물리 피해</physicaldamage>를 입힙니다. 이후 공격이 대상마다 <b>400</b> 범위로 퍼집니다.</li>",
             "<li><b><i><font color='#ffffcc'>반월검</font></i></b>: 처음 맞힌 적 챔피언에게서 반월검 <b>5</b>개가 추가로 돌아옵니다. (총 <b>6</b>개)</li>"
         ], // 월광포화 — 주 무기별 추가 효과 5종 추가 (2026-08-09, 롤위키)

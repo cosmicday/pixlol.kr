@@ -271,6 +271,7 @@ const crossHits = new Set();      // @spell.X:Y@ 교차 참조를 풀어낸 곳
 const crossMiss = [];             // 교차 참조인데 못 푼 곳
 const costFromText = [];          // CD 소모값 문구를 풀어서 채운 곳
 const costTextFail = [];          // 소모값 문구를 못 푼 곳
+const ieNotes = [];               // "무한의 대검 보유 시" 각주를 단 자리
 let spellIndex = {};              // 지금 처리 중인 챔피언의 스펠 객체 색인 (buildSpellIndex)
 
 // 툴팁 철자와 bin 철자가 어긋난 자리를 기록한다.
@@ -932,7 +933,53 @@ const foldProduct = (a, b) => {
 //   ★ 라이엇이 기본 치명타 피해량을 바꾸면 **여기 한 줄만** 고치면 된다.
 //     `추가 치명타 피해량`(아이템으로 얻는 초과분)은 일부러 안 접는다 — 사람마다 다르고,
 //     문장에 남아 있는 편이 정보가 된다 (탈론 Q·케넨 W).
-const CRIT_DAMAGE = 2.0;
+let CRIT_DAMAGE = 2.0;
+
+// 무한의 대검(아이템 3031)이 올려 주는 치명타 피해량. 라이엇 아이템 데이터에서 확인했다
+//   ("공격력 75 / 치명타 확률 25% / **치명타 피해량 30%**", 2026-08-12).
+//   그래서 무한의 대검을 들면 치명타 피해량이 200% -> 230% 가 되고,
+//   나무위키의 "무한의 대검 구비 시" 값과 정확히 맞는다 (가렌 E 139%, 미포 Q 165%).
+const IE_CRIT_DAMAGE = 0.3;
+
+// 이번 값을 만들면서 치명타 배율을 접었는가. 접었으면 무한의 대검 판본을 한 번 더 만들어 본다.
+let critTouched = false;
+
+// CRIT_DAMAGE 를 바꿔 값을 한 번 더 계산한다.
+//   ★ 검산용 로그가 두 번 쌓이면 안 된다 — 미리보기 출력이 통째로 두 배가 되고
+//     "이 자리를 어디서 건졌나" 목록이 거짓이 된다. 길이를 기억했다가 되돌린다.
+function withCritDamage(c, fn) {
+    const LOGS = [guessedList, viaField, dotList, caseList, zeroDrop, crossMiss];
+    const SETS = [manualUsed, caseSeen, hashHits, crossHits];
+    const lens = LOGS.map(a => a.length);
+    const snaps = SETS.map(s => new Set(s));
+    const prevC = CRIT_DAMAGE, prevT = critTouched;
+    CRIT_DAMAGE = c;
+    let out = null;
+    try { out = fn(); } catch { out = null; }
+    CRIT_DAMAGE = prevC;
+    critTouched = prevT;
+    LOGS.forEach((a, i) => { a.length = lens[i]; });
+    SETS.forEach((s, i) => { s.clear(); snaps[i].forEach(x => s.add(x)); });
+    return out;
+}
+
+// "무한의 대검 보유 시 …" 각주. 값이 실제로 달라질 때만 만든다.
+//   ★ 홑따옴표만 쓴다. custom_values.js 는 값이 큰따옴표 문자열이라 " 가 들어가면
+//     이스케이프되고, add_level_graphs.js 의 줄 파싱 정규식이 통째로 깨진다.
+function critFootnote(no, base, ie) {
+    // 꼬리의 "…의 N%" 만 달라지는 게 보통이다. 그러면 그 부분만 보여 준다
+    const mB = String(base).match(/^(.*)의 ([\d./~ ]+)%$/);
+    const mI = String(ie).match(/^(.*)의 ([\d./~ ]+)%$/);
+    let shown = String(ie);
+    if (mI && mB && mB[1] === mI[1]) shown = `${mI[2]}%`;          // 꼬리 배율만 다른 경우
+    else if (mI && mI[1] === String(base)) shown = `${mI[2]}%`;    // 기본값엔 배율이 없던 경우
+    return `<span class='custom-footnote'>[${no}]` +
+        `<span class='custom-footnote-content'>` +
+        `<div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div>` +
+        `<div style='font-size:12px; color:#ff9900; font-weight:bold;'>${shown}</div>` +
+        `<div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div>` +
+        `</span></span>`;
+}
 
 // 배율 식을 숫자 하나로 계산해 본다. 못 하면 null.
 //   `치명타 피해량의 N%` 만 상수로 바꿔 넣고, 남은 게 순수 사칙연산이면 계산한다.
@@ -953,7 +1000,9 @@ const evalMultiplier = (expr) => {
     s = s.replace(/\sx\s/g, '*');
     let v;
     try { v = Function(`"use strict";return (${s});`)(); } catch { return null; }
-    return Number.isFinite(v) ? String(tidy(v)) : null;
+    if (!Number.isFinite(v)) return null;
+    critTouched = true;      // 무한의 대검 판본을 만들어 볼 자리라는 표시
+    return String(tidy(v));
 };
 
 const NUMLIST = /^-?[\d.]+(\s*[~/]\s*-?[\d.]+)*$/;
@@ -983,6 +1032,13 @@ const timesText = (a, m) => {
         const nums = head.split(/[~/]/).map(x => parseFloat(x));
         // x 1 은 의미가 없다. 꼬리만 남긴다 (벨베스 P "x 1 (중첩당)")
         if (nums.every(n => n === 1)) return suffix ? `${a}${suffix}` : a;
+
+        // ★ 양쪽이 순수 숫자면 그냥 곱한다. `의 N%` 로 적으면 안 된다 —
+        //   `0.3 x 1.3` 이 `0.3의 130%` 가 되어 뒤쪽 계산이 통째로 어긋난다.
+        //   기본값(치명타 피해량 200%)에서는 배율이 딱 1 이라 위 줄에 걸려 안 보였고,
+        //   무한의 대검 판본(230%)을 만들면서 드러났다 (2026-08-12).
+        const fp = foldProduct(a, head);
+        if (fp !== null) return suffix ? `${fp}${suffix}` : fp;
 
         if (nums.length === 1 && !suffix) {
             // ① 왼쪽이 "스탯의 N%" 하나면 **계수를 직접 곱한다.**
@@ -2007,6 +2063,7 @@ async function main() {
             }
         } else {
             lines.push(`        "P": {`);
+            let noteNo = 0;   // 각주 번호는 스킬 안에서만 센다
             passiveNames.forEach((name, i) => {
                 total++;
                 ctx = `${c.name} P / ${name}`;
@@ -2015,6 +2072,7 @@ async function main() {
                 const manual = MANUAL[mKeyKo] !== undefined ? MANUAL[mKeyKo] : MANUAL[mKeyEn];
 
                 let val, tier;
+                critTouched = false;
                 if (manual !== undefined) {
                     val = manual;
                     tier = '수동';
@@ -2025,6 +2083,16 @@ async function main() {
                     ({ val, tier } = resolveFromPool(name, binSpells.P || [], 1));
                 }
 
+                let note = '';
+                if (critTouched && val !== null) {
+                    const ie = withCritDamage(CRIT_DAMAGE + IE_CRIT_DAMAGE,
+                        () => resolveFromPool(name, binSpells.P || [], 1).val);
+                    if (ie !== null && String(ie) !== String(val)) {
+                        note = critFootnote(++noteNo, val, ie);
+                        ieNotes.push(`${c.name} P / ${name}: ${val}  →  ${ie}`);
+                    }
+                }
+
                 if (val === null) stillUnknown.push(`${c.name} P / ${name}`);
                 else if (String(val).includes('(?)')) partial.push(`${c.name} P / ${name} = ${val}`);
                 else {
@@ -2032,7 +2100,7 @@ async function main() {
                     if (tier !== '본체' && tier !== '수동') rescued.push(`${c.name} P / ${name} = ${val}  [${tier}]`);
                 }
                 previewLines.push(`      P p${i + 1} (${name}) = ${val === null ? '?' : val}`);
-                lines.push(`            "p${i + 1}": ${q(val === null ? '?' : val)}, // ${name}`);
+                lines.push(`            "p${i + 1}": ${q((val === null ? '?' : val) + note)}, // ${name}`);
             });
             // 패시브는 원래 v1/v2 를 안 찍는다. 손으로 쓴 게 있을 때만 살려서 넣는다.
             if (carried.P && carried.P.v1 !== undefined) lines.push(carried.P.v1);
@@ -2068,6 +2136,7 @@ async function main() {
             };
             currentCooldown = lvTop(s.cooldownCoefficients, maxRank) || '-';
 
+            let noteNo = 0;   // 각주 번호는 스킬 안에서만 센다
             const pLines = names.map((name, i) => {
                 total++;
                 ctx = `${c.name} ${key} / ${name}`;
@@ -2078,12 +2147,24 @@ async function main() {
                 const manual = MANUAL[mKeyKo] !== undefined ? MANUAL[mKeyKo] : MANUAL[mKeyEn];
 
                 let val, tier;
+                critTouched = false;
                 if (manual !== undefined) {
                     val = manual;
                     tier = '수동';
                     manualUsed.add(MANUAL[mKeyKo] !== undefined ? mKeyKo : mKeyEn);
                 } else {
                     ({ val, tier } = resolveFromPool(name, pool, maxRank));
+                }
+
+                // 치명타 배율이 든 값이면 무한의 대검 판본을 만들어 보고, 달라지면 각주를 단다
+                let note = '';
+                if (critTouched && val !== null) {
+                    const ie = withCritDamage(CRIT_DAMAGE + IE_CRIT_DAMAGE,
+                        () => resolveFromPool(name, pool, maxRank).val);
+                    if (ie !== null && String(ie) !== String(val)) {
+                        note = critFootnote(++noteNo, val, ie);
+                        ieNotes.push(`${c.name} ${key} / ${name}: ${val}  →  ${ie}`);
+                    }
                 }
 
                 if (val === null) stillUnknown.push(`${c.name} ${key} / ${name}`);
@@ -2095,7 +2176,7 @@ async function main() {
                 previewLines.push(`      ${key} p${i + 1} (${name}) = ${val === null ? '?' : val}` +
                     (tier === '수동' ? '   <- 수동 확인값'
                         : (tier && tier !== '본체' ? `   <- ${tier} 객체` : '')));
-                return `            "p${i + 1}": ${q(val === null ? '?' : val)}, // ${name}`;
+                return `            "p${i + 1}": ${q((val === null ? '?' : val) + note)}, // ${name}`;
             });
 
             // bin 의 최상위 필드 (castRange, mana, cooldownTime ...)
@@ -2408,6 +2489,10 @@ async function main() {
     if (stillUnknown.length) {
         console.log(`\n[못 채운 값] ${stillUnknown.length}개 (앞 20개):`);
         stillUnknown.slice(0, 20).forEach(x => console.log(`  ${x}`));
+    }
+    if (ieNotes.length) {
+        console.log(`\n[무한의 대검 각주] ${ieNotes.length}자리 — 치명타 피해량 200% -> 230% 로 값이 달라지는 곳:`);
+        ieNotes.forEach(x => console.log(`  ${x}`));
     }
 
     if (WRITE) {

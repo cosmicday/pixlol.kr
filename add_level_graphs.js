@@ -111,6 +111,19 @@ function exprFor(id, curve, color) {
 // ★ 파일이 CRLF 일 수 있다. JS 정규식의 `.` 은 '\r' 을 안 먹으므로 미리 떼어낸다.
 const src = fs.readFileSync(VALUES, 'utf8').split(/\r?\n/);
 
+// ★ 값 안에 이미 각주가 들어 있는 자리가 있다 (fill_values.js 가 다는 "무한의 대검" 각주).
+//   번호가 겹치면 한 스킬에 [1] 이 두 개 생기므로, 있는 만큼 뒤에서 시작한다. 2026-08-12
+const preNotes = {};   // champ -> slot -> 이미 달린 각주 수
+{
+    let c = '', s = '';
+    for (const l of src) {
+        const mc = l.match(/^ {4}"([A-Za-z0-9'. ]+)": \{/); if (mc) { c = mc[1]; continue; }
+        const ms = l.match(/^ {8}"([PQWER]2?)": \{/); if (ms) { s = ms[1]; continue; }
+        const n = (l.match(/custom-footnote'>\[/g) || []).length;
+        if (n) (preNotes[c] = preNotes[c] || {})[s] = (preNotes[c]?.[s] || 0) + n;
+    }
+}
+
 let champ = '', slot = '';
 const found = {};      // champ -> slot -> [{p, expr}]
 let nGraph = 0, nStep = 0, nSkill = 0;
@@ -131,7 +144,8 @@ for (const l of src) {
 
     found[champ] = found[champ] || {};
     const list = (found[champ][slot] = found[champ][slot] || []);
-    const e = exprFor(String(list.length + 1), curve, colorFor(tpl, m[1]));
+    const base = (preNotes[champ] && preNotes[champ][slot]) || 0;
+    const e = exprFor(String(base + list.length + 1), curve, colorFor(tpl, m[1]));
     if (e.isStep) nStep++; else nGraph++;
     list.push({ p: m[1], text: e.text });
 }
