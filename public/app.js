@@ -4443,6 +4443,24 @@ function roleAvgVals(role, statKey) {
     return (roleAvgCache[ck] = cnt ? { vals: acc.map(x => x / cnt), count: cnt } : null);
 }
 
+// ★ y 축 천장 = **그 스탯 1위 챔피언의 값** (2026-08-12).
+//   내 챔피언 값으로 천장을 잡으면 어느 챔피언을 봐도 선이 화면을 꽉 채워서
+//   "이게 높은 건지 낮은 건지" 가 안 보인다. 전체 1위를 천장으로 두면 선의 높이가
+//   곧 순위 감각이 된다. 역할군 평균은 정의상 최댓값을 못 넘으니 축도 안 흔들린다.
+const statMaxCache = {};
+function statGlobalMax(statKey) {
+    if (statKey in statMaxCache) return statMaxCache[statKey];
+    let best = null;
+    for (const id in championStats) {
+        const v = championStats[id].s[statKey];
+        if (!v) continue;
+        // 성장은 단조증가라 18레벨이 최댓값이다. 그래도 양 끝을 다 본다.
+        const m = Math.max(statAtLevel(v, 1), statAtLevel(v, 18));
+        if (!best || m > best.max) best = { max: m, id, name: championStats[id].n };
+    }
+    return (statMaxCache[statKey] = best);
+}
+
 window.toggleStatAvgRole = function (btn) {
     const r = btn.dataset.role;
     if (avgRoles.has(r)) avgRoles.delete(r); else avgRoles.add(r);
@@ -4460,8 +4478,9 @@ function drawStatPanel() {
     if (!v) { panel.classList.remove('open'); panel.innerHTML = ''; return; }
 
     const vals = Array.from({ length: 18 }, (_, i) => statAtLevel(v, i + 1));
-    // y 천장은 챔피언 값만 보고 잡는다 — 역할군을 켜도 챔피언 곡선이 안 바뀌게.
-    const top = Math.max(...vals) * 1.1 || 1;
+    // y 천장은 **전 챔피언 1위 값**이다. 챔피언·역할군 어느 쪽으로도 안 흔들린다.
+    const gmax = statGlobalMax(openStatKey);
+    const top = (gmax && gmax.max) || Math.max(...vals) * 1.1 || 1;
 
     // 켠 역할군 중 이 스탯의 표본이 있는 것만 선으로 만든다.
     const extras = ROLE_ORDER.filter(r => avgRoles.has(r)).map(r => {
@@ -4495,7 +4514,8 @@ function drawStatPanel() {
     panel.innerHTML = `
         <div class="stat-graph-head">
             <i class="stat-dot" style="background:${statColorOf(openStatKey)}"></i>
-            <b>${statLabel(openStatKey)}</b><span>레벨 1 → 18</span>
+            <b>${statLabel(openStatKey)}</b>
+            <span>레벨 1 → 18${gmax ? ` · 세로축 최대 ${fmtStat(gmax.max)}(${gmax.name})` : ''}</span>
             <span class="savg-title">역할군 평균과 비교</span>
             <span class="savg-btns">${btns}</span>
         </div>

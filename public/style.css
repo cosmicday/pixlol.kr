@@ -4045,10 +4045,12 @@ body::before {
     padding: 22px 10px 20px;
 }
 
+/* ★ 높이는 왼쪽 표와 비슷하게 맞춘다 (표 405px, 이 칸 402px).
+     세로축 천장이 "전 챔피언 1위" 라 대부분의 챔피언은 선이 아래쪽에 깔린다 —
+     납작하면 그 아래쪽에서 아무것도 안 보인다. 가로는 460px 그대로다 (비율 무관). */
 .g-plot {
     position: relative;
-    /* 오른쪽 칸이 넓어서 납작하면 성장 곡선의 완만함이 안 보인다 */
-    height: 180px;
+    height: 320px;
 }
 
 .g-line {
@@ -4201,6 +4203,11 @@ body::before {
     /* 폰에서는 그래프도 전폭을 쓴다 (표 아래로 내려오므로 옆에 남는 자리가 없다) */
     .stat-graph-inner {
         max-width: none;
+    }
+
+    /* 표 옆이 아니라 아래라 높이를 맞출 이유가 없다. 320px 은 폰에서 너무 길다 */
+    .g-plot {
+        height: 220px;
     }
 
     .stat-trow th,
