@@ -598,4 +598,15 @@ node build_stats_page.js --write          # 스탯 탭 (champion_stats_by_level.
 12. **문장이 통째로 깨진 자리** — 아이번 P(`15 ~ 0.006` 으로 범위가 거꾸로), 블라디미르 P
     (`(추가 최대 체력의 100% + 1.6 x 주문력의 -100%) x 0.037`), 브라이어 P(식이 중첩 복제).
     값을 못 읽는 수준이라 MANUAL 대상이다. 자세한 목록은 `피해량_위키대조.md`
-13. 파일 정리 — `public/custom_templates.bak.js`, `public/custom_values.bak.js`(둘 다 배포되면 웹에서 받아짐), `fill_values.old.js`, `custom_values.js.bak-0808`, `public/custom_values.js.bak-*`, `로고였던것.png`, 루트 `lulubackground.webp`. `database.sqlite`는 `server.js`가 참조하는지 확인하고 판단
+13. ~~파일 정리~~ **완료 (2026-08-12).** 백업 44개(19MB)와 `fill_values.old.js`·
+    `lulubackground.webp`(참조 0건)를 지웠다. 작업 폴더가 30MB → 11MB
+    (`.git`·`.cache`·`node_modules` 제외).
+    - **`public/` 안 백업은 한 번도 커밋된 적이 없었다** (`git log --diff-filter=A` 로 확인).
+      배포는 git 으로 나가므로 **웹에 노출된 적이 없다.** "public 에 두면 웹에서 받아진다"
+      는 경고는 맞지만 실제로 새어 나간 적은 없었다는 뜻이다
+    - **`database.sqlite` 는 남겼다.** `server.js` 는 mongoose 만 쓰고 sqlite 드라이버가
+      아예 없어서 죽은 파일이 맞지만, 안에 `lp_history`·`summoners` 데이터가 들어 있다
+      (옛 버전 전적 데이터로 보인다). 지울 거면 git 히스토리에 남으니 언제든 복구된다
+    - 루트 백업은 `.gitignore` 대상이라 **git 에 없었다 = 지우면 못 되살린다.**
+      8/8~8/10 스크립트 중간 스냅샷이었고 파이프라인은 `--refresh --write` 로 언제든 다시 만든다
+    - **`.cache`(48MB) 는 남긴다.** 지워도 되지만 bin 재다운이 166초, stringtable 이 35MB다
