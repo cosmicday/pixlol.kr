@@ -4432,6 +4432,56 @@ body::before {
     color: #5f666e;
 }
 
+/* --- 검색 상자 안 X 버튼 (2026-08-12) ---
+   ★ 보임/숨김을 JS 로 켜지 않는다. `:placeholder-shown` 이 "값이 비었다" 와 같은 뜻이라
+     CSS 만으로 자동으로 처리된다. 입력이 있어야 X 가 뜨고, vs 상자처럼 disabled 인
+     자리는 값이 비어 있으니 저절로 숨는다.
+   ★ 싸개에 transform 을 주지 않는다. 조상에 transform 이 생기면 각주(.custom-footnote-content,
+     position:fixed)가 그걸 기준으로 잡혀 잘린다 — CLAUDE.md 의 각주 절 참고.
+     (버튼 자신의 transform 은 각주를 담지 않으므로 안전하다) */
+.search-wrap {
+    position: relative;
+    display: block;
+}
+
+/* X 가 글자를 가리지 않게 오른쪽에 자리를 낸다 */
+.search-wrap .champ-search,
+.search-wrap .cf-search {
+    padding-right: 32px;
+}
+
+.search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #cfd3d8;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity .12s, background .12s, color .12s;
+}
+
+.search-clear:hover {
+    background: rgba(255, 255, 255, 0.24);
+    color: #fff;
+}
+
+/* 값이 비면(=placeholder 가 보이면) 숨긴다 */
+.search-wrap input:placeholder-shown + .search-clear {
+    opacity: 0;
+    pointer-events: none;
+}
+
 .champ-search:focus {
     border-color: #a78bfa;
 }

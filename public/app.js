@@ -3612,6 +3612,19 @@ window.toggleChampRole = function (btn) {
     filterChampList();
 };
 
+// 검색 상자 안 X 버튼 (2026-08-12).
+//   ★ 어떤 필터 함수를 부를지 여기서 알 필요가 없다. 값을 지운 뒤 input 이벤트를
+//     다시 쏘면 각 상자가 자기 oninput(filterChampList / filterVsList /
+//     filterChampFilterList)을 알아서 돌린다. 상자가 늘어도 이 함수는 그대로다.
+//   보임/숨김은 CSS 의 :placeholder-shown 이 처리한다 (style.css 참고).
+window.clearSearchBox = function (btn) {
+    const input = btn.parentNode.querySelector('input');
+    if (!input || input.disabled) return;
+    input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
+};
+
 window.filterChampList = function () {
     const input = document.getElementById('champ-search-input');
     const q = (input ? input.value : '').replace(/\s+/g, '').toLowerCase();
@@ -3700,8 +3713,11 @@ async function showChampions(requestedChampId = null, classicMode = false) {
             <div class="champ-page-wrap">
                 <div class="champ-list-col">
                     <div class="champ-filter">
-                        <input id="champ-search-input" class="champ-search" type="text" autocomplete="off"
-                               placeholder="챔피언 검색 (초성 가능)" oninput="filterChampList()">
+                        <span class="search-wrap">
+                            <input id="champ-search-input" class="champ-search" type="text" autocomplete="off"
+                                   placeholder="챔피언 검색 (초성 가능)" oninput="filterChampList()">
+                            <button type="button" class="search-clear" onclick="clearSearchBox(this)" aria-label="검색어 지우기">&times;</button>
+                        </span>
                         <div class="role-btns">
                             ${ROLE_ORDER.map(r => `
                             <button class="role-btn" data-role="${r}" data-label="${ROLE_KO[r]}"
@@ -4544,8 +4560,11 @@ function vsBoxHtml(selfId) {
     // 처음 그릴 때는 아직 스탯을 안 골랐으니 꺼진 채로 나간다 (syncVsBox 가 켜 준다).
     return `
         <div class="stat-vs-col off">
-            <input id="vs-search-input" class="champ-search vs-search" type="text" autocomplete="off"
-                   placeholder="스탯을 먼저 고르세요" oninput="filterVsList()" disabled>
+            <span class="search-wrap">
+                <input id="vs-search-input" class="champ-search vs-search" type="text" autocomplete="off"
+                       placeholder="스탯을 먼저 고르세요" oninput="filterVsList()" disabled>
+                <button type="button" class="search-clear" onclick="clearSearchBox(this)" aria-label="검색어 지우기">&times;</button>
+            </span>
             <div class="vs-list-wrap">
                 <div class="vs-list">${items}<div id="vs-list-empty" class="champ-list-empty" style="display:none">없음</div></div>
             </div>

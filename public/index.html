@@ -128,8 +128,11 @@
                                     <div id="cf-recent" class="cf-recent"></div>
                                 </div>
                                 <div class="cf-right">
-                                    <input type="text" id="cf-search" class="cf-search" autocomplete="off"
-                                           placeholder="챔피언 검색 (가렌, ㄱㄹ, ...)" oninput="filterChampFilterList()">
+                                    <span class="search-wrap">
+                                        <input type="text" id="cf-search" class="cf-search" autocomplete="off"
+                                               placeholder="챔피언 검색 (가렌, ㄱㄹ, ...)" oninput="filterChampFilterList()">
+                                        <button type="button" class="search-clear" onclick="clearSearchBox(this)" aria-label="검색어 지우기">&times;</button>
+                                    </span>
                                     <div class="cf-title">챔피언 목록</div>
                                     <div id="cf-list" class="cf-list"></div>
                                 </div>
