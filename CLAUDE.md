@@ -157,11 +157,16 @@ node build_stats_page.js --write          # 스탯 탭 (champion_stats_by_level.
   Marksman 33 / Tank 46 / Support 43. **173명 전부 1~2개다 (0개도 3개도 없다).**
   CD `champion-summary.json` 의 `roles` 와 173명 전부 일치하므로 DD 만 봐도 된다.
   - 공식 아이콘: `rcp-fe-lol-champion-details/global/default/role-icon-<역할>.png` (금색 문양)
-  - **필터는 OR(하나라도 해당) 로 해야 한다.** 131명(76%)이 역할을 두 개 갖고 있어서
-    AND 로 걸면 결과가 거의 안 남는다
+  - **필터는 AND(켠 역할을 전부 가진 챔피언만) 다.** 처음엔 OR 로 만들었는데 2026-08-12에
+    AND 로 바꿨다. 전사+탱커 = 26명처럼 교집합이 쓸모 있게 나온다.
+    **역할이 최대 2개라 3개 이상 켜면 결과는 항상 0명이다 — 버그가 아니다**
   - `info` 도 같이 들어 있다 (attack/defense/magic/difficulty, 0~10). 아직 안 쓴다
 - **초성 검색 헬퍼 `getChosung()` 은 app.js 에 이미 있었다** (챔피언 필터 패널 절).
   새로 만들지 말 것 — 2026-08-12에 모르고 한 벌 더 만들어 `HANGUL_CHO` 중복 선언으로 깨졌다
+- **★ 챔피언 목록 항목을 숨길 땐 `style.display` 를 건드리지 말 것 (2026-08-12).**
+  항목은 인라인 `style` 에 `display: flex` 를 들고 있다. 되돌리려고 `''` 를 넣으면
+  **그 flex 까지 같이 지워져서** 아이콘과 이름이 세로로 쌓이며 상자가 통째로 깨진다.
+  `.filtered-out` 클래스로 끄고 CSS 에서 `display:none !important` 로 인라인을 이긴다
 - **★ 스탯 탭 (2026-08-12).** `public/champion_stats.js` = `build_stats_page.js` 가
   `champion_stats_by_level.json` 을 **압축한 것** (347KB → 68KB). 18칸을 그대로 안 내려주는 건
   모든 스탯이 `base + perLevel x g(N)` 한 식으로 복원되기 때문 —

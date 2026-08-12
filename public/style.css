@@ -4077,6 +4077,14 @@ body::before {
     visibility: visible;
 }
 
+/* ★ 검색·역할군에 안 걸린 항목. !important 가 필요하다 —
+     항목이 인라인 style 에 `display: flex` 를 들고 있어서 클래스만으로는 못 이긴다.
+     (예전엔 JS 가 style.display 를 '' 로 되돌렸는데, 그러면 인라인 flex 까지 지워져서
+      아이콘과 이름이 세로로 쌓이며 상자가 깨졌다) */
+.champ-sidebar-item.filtered-out {
+    display: none !important;
+}
+
 .champ-list-empty {
     grid-column: 1 / -1;
     padding: 30px 10px;

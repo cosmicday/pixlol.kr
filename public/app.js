@@ -3596,8 +3596,9 @@ function champSearchKey(champ) {
     return `${name}|${getChosung(name)}|${champ.id.toLowerCase()}`;
 }
 
-// 지금 켜져 있는 역할군. 여러 개 켜면 **하나라도 해당하면 통과**(OR)다 —
-//   챔피언의 76%가 역할을 두 개 갖고 있어서 AND 로 하면 결과가 거의 안 남는다.
+// 지금 켜져 있는 역할군. 여러 개 켜면 **전부 해당해야 통과**(AND)다.
+//   ★ 챔피언은 역할을 최대 2개까지만 가진다. 그래서 3개 이상 켜면 결과는 항상 0명이다.
+//     이건 버그가 아니라 데이터가 그런 것이다 (2026-08-12 확인).
 const activeChampRoles = new Set();
 
 window.toggleChampRole = function (btn) {
@@ -3616,9 +3617,14 @@ window.filterChampList = function () {
         const key = (el.dataset.search || '').toLowerCase();
         const roles = (el.dataset.roles || '').split(' ');
         const okText = !q || key.includes(q);
-        const okRole = activeChampRoles.size === 0 || roles.some(r => activeChampRoles.has(r));
+        // AND — 켠 역할군을 **전부** 가진 챔피언만 남는다
+        const okRole = [...activeChampRoles].every(r => roles.includes(r));
         const ok = okText && okRole;
-        el.style.display = ok ? '' : 'none';
+        // ★ style.display 를 건드리면 안 된다 (2026-08-12).
+        //   항목은 인라인 style 에 `display: flex` 를 갖고 있어서, 되돌리려고 '' 를 넣으면
+        //   그 flex 까지 같이 지워진다 → 아이콘과 이름이 세로로 쌓여 상자가 깨진다.
+        //   클래스로 끄고 CSS 에서 !important 로 인라인을 이긴다.
+        el.classList.toggle('filtered-out', !ok);
         if (ok) shown++;
     });
 
