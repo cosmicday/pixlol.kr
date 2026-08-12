@@ -152,6 +152,16 @@ node build_stats_page.js --write          # 스탯 탭 (champion_stats_by_level.
 - **`<charge>`·`<release>` 등 라벨 태그는 `display:block` 이라 회색 글씨 문장 중간에서
   줄을 끊는다.** `.skill-rules` 안에서만 `display:inline` 으로 되돌려 뒀다
   (이렐리아 W "…`<charge>`충전`</charge>`이 끝나면…" 이 세 줄로 갈라졌다)
+- **★ 역할군은 Data Dragon `champion.json` 의 `tags` 다 (2026-08-12).** 챔피언 페이지가
+  이미 받는 파일이라 **추가 요청이 0**이다. 6종 — Fighter 60 / Mage 75 / Assassin 47 /
+  Marksman 33 / Tank 46 / Support 43. **173명 전부 1~2개다 (0개도 3개도 없다).**
+  CD `champion-summary.json` 의 `roles` 와 173명 전부 일치하므로 DD 만 봐도 된다.
+  - 공식 아이콘: `rcp-fe-lol-champion-details/global/default/role-icon-<역할>.png` (금색 문양)
+  - **필터는 OR(하나라도 해당) 로 해야 한다.** 131명(76%)이 역할을 두 개 갖고 있어서
+    AND 로 걸면 결과가 거의 안 남는다
+  - `info` 도 같이 들어 있다 (attack/defense/magic/difficulty, 0~10). 아직 안 쓴다
+- **초성 검색 헬퍼 `getChosung()` 은 app.js 에 이미 있었다** (챔피언 필터 패널 절).
+  새로 만들지 말 것 — 2026-08-12에 모르고 한 벌 더 만들어 `HANGUL_CHO` 중복 선언으로 깨졌다
 - **★ 스탯 탭 (2026-08-12).** `public/champion_stats.js` = `build_stats_page.js` 가
   `champion_stats_by_level.json` 을 **압축한 것** (347KB → 68KB). 18칸을 그대로 안 내려주는 건
   모든 스탯이 `base + perLevel x g(N)` 한 식으로 복원되기 때문 —

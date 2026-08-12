@@ -3574,6 +3574,58 @@ function loadChampionData() {
     return champDataPromise;
 }
 
+// ============================================================
+//  챔피언 목록 필터 — 검색(초성 지원) + 역할군 (2026-08-12)
+// ============================================================
+
+// 역할군은 Data Dragon 의 champion.json `tags` 다. 이미 받는 파일이라 추가 요청이 없다.
+//   173명 전부 1~2개를 가진다 (0개도 3개도 없음).
+const ROLE_ORDER = ['fighter', 'assassin', 'mage', 'marksman', 'tank', 'support'];
+const ROLE_KO = {
+    fighter: '전사', assassin: '암살자', mage: '마법사',
+    marksman: '원거리 딜러', tank: '탱커', support: '서포터',
+};
+// 라이엇 공식 역할군 아이콘 (인게임 챔피언 정보창에 쓰는 그 금색 문양).
+const ROLE_ICON = 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champion-details/global/default/role-icon-';
+
+// 검색 대상 문자열. "한글이름|초성|영문id" 를 공백 없이 이어 붙여 한 번에 비교한다.
+//   초성 변환은 위쪽 "챔피언 필터 패널" 의 getChosung() 을 그대로 쓴다 — 표를 두 벌 두면 어긋난다.
+//   영문 id 도 넣는 이유: "garen" 처럼 영타로 치는 사람이 있어서다.
+function champSearchKey(champ) {
+    const name = champ.name.replace(/\s+/g, '');
+    return `${name}|${getChosung(name)}|${champ.id.toLowerCase()}`;
+}
+
+// 지금 켜져 있는 역할군. 여러 개 켜면 **하나라도 해당하면 통과**(OR)다 —
+//   챔피언의 76%가 역할을 두 개 갖고 있어서 AND 로 하면 결과가 거의 안 남는다.
+const activeChampRoles = new Set();
+
+window.toggleChampRole = function (btn) {
+    const r = btn.dataset.role;
+    if (activeChampRoles.has(r)) { activeChampRoles.delete(r); btn.classList.remove('on'); }
+    else { activeChampRoles.add(r); btn.classList.add('on'); }
+    filterChampList();
+};
+
+window.filterChampList = function () {
+    const input = document.getElementById('champ-search-input');
+    const q = (input ? input.value : '').replace(/\s+/g, '').toLowerCase();
+    let shown = 0;
+
+    document.querySelectorAll('.champ-sidebar-item').forEach(el => {
+        const key = (el.dataset.search || '').toLowerCase();
+        const roles = (el.dataset.roles || '').split(' ');
+        const okText = !q || key.includes(q);
+        const okRole = activeChampRoles.size === 0 || roles.some(r => activeChampRoles.has(r));
+        const ok = okText && okRole;
+        el.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+    });
+
+    const empty = document.getElementById('champ-list-empty');
+    if (empty) empty.style.display = shown ? 'none' : 'block';
+};
+
 async function showChampions(requestedChampId = null, classicMode = false) {
     currentChampMode = classicMode ? 'classic' : 'normal';
     if (!window.location.pathname.startsWith('/champions')) {
@@ -3603,7 +3655,9 @@ async function showChampions(requestedChampId = null, classicMode = false) {
             const c = data.data[key];
             // 클래식 탭이면 Jade_ 계열만, 정규 탭이면 그 외만
             if (isClassicChamp(c.id) !== classicMode) continue;
-            champList.push({ id: c.id, name: c.name });
+            // tags = 역할군 (Fighter / Mage / Assassin / Marksman / Tank / Support).
+            //   173명 전부 1~2개다 — 0개도 3개도 없다 (2026-08-12 확인).
+            champList.push({ id: c.id, name: c.name, tags: c.tags || [] });
         }
 
         // 예전에는 Data Dragon 이 신규 챔피언을 늦게 올려서 목록에 손으로 넣어 뒀다.
@@ -3611,6 +3665,10 @@ async function showChampions(requestedChampId = null, classicMode = false) {
         // 새 챔피언이 안 보이면 Data Dragon 반영을 기다리면 된다.
 
         champList.sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'));
+
+        // 목록을 다시 그리면 버튼도 새로 만들어진다. 켜져 있던 역할군 표시를 같이 비워야
+        // "버튼은 꺼져 보이는데 목록은 걸러져 있는" 상태가 안 생긴다.
+        activeChampRoles.clear();
 
         if (champList.length === 0) {
             champsContainer.innerHTML = `<div style='text-align:center; padding:100px 0; min-height:60vh; color:#9aa4af;'>표시할 챔피언이 없습니다.</div>`;
@@ -3626,13 +3684,26 @@ async function showChampions(requestedChampId = null, classicMode = false) {
                  인라인은 스타일시트를 이겨서 @media 로 못 덮는다 — 폰에서 280px 목록이
                  그대로 버텨 상세 영역에 60px 밖에 안 남았다. style.css 15번 절 참고. -->
             <div class="champ-page-wrap">
+                <div class="champ-list-col">
+                    <div class="champ-filter">
+                        <input id="champ-search-input" class="champ-search" type="text" autocomplete="off"
+                               placeholder="챔피언 검색 (초성 가능)" oninput="filterChampList()">
+                        <div class="role-btns">
+                            ${ROLE_ORDER.map(r => `
+                            <button class="role-btn" data-role="${r}" data-label="${ROLE_KO[r]}"
+                                    onclick="toggleChampRole(this)" aria-label="${ROLE_KO[r]}">
+                                <img src="${ROLE_ICON}${r}.png" alt="${ROLE_KO[r]}">
+                            </button>`).join('')}
+                        </div>
+                    </div>
                 <div class="champ-list-pane">
         `;
 
         html += champList.map(champ => `
-            <div onclick="selectChampion('${champ.id}', '${champ.name}')" id="champ-item-${champ.id}" class="champ-sidebar-item" 
+            <div onclick="selectChampion('${champ.id}', '${champ.name}')" id="champ-item-${champ.id}" class="champ-sidebar-item"
+                 data-search="${champSearchKey(champ)}" data-roles="${champ.tags.map(t => t.toLowerCase()).join(' ')}"
                  style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: rgba(255,255,255,0.02); border: 1px solid transparent; border-radius: 8px; cursor: pointer; transition: all 0.2s;"
-                 onmouseover="if(!this.classList.contains('active')) this.style.background='rgba(255,255,255,0.08)'" 
+                 onmouseover="if(!this.classList.contains('active')) this.style.background='rgba(255,255,255,0.08)'"
                  onmouseout="if(!this.classList.contains('active')) this.style.background='rgba(255,255,255,0.02)'">
                 <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${champ.id}.png" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;">
                 <div style="font-size: 14px; font-weight: bold; color: #fff;">${champ.name}</div>
@@ -3640,7 +3711,8 @@ async function showChampions(requestedChampId = null, classicMode = false) {
         `).join('');
 
         html += `
-                </div>
+                    <div id="champ-list-empty" class="champ-list-empty" style="display:none;">조건에 맞는 챔피언이 없습니다.</div>
+                </div></div>
                 <div id="champ-detail-area" class="champ-detail-pane">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png" style="width: 80px; opacity: 0.3; margin-bottom: 20px;">
                     <div style="color: #9aa4af; font-size: 18px;">👈 왼쪽에서 챔피언을 선택해주세요.</div>

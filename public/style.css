@@ -3354,13 +3354,25 @@ body::before {
     width: 100%;
 }
 
-.champ-list-pane {
+/* ★ 목록 상자 **위에** 검색·역할군 줄이 붙으면서 한 칸 더 감쌌다 (2026-08-12).
+     폭은 이 칸이 갖고, 상자는 100% 로 따라간다. 높이도 이 칸이 75vh 를 갖고
+     상자가 남은 만큼 늘어난다 — 안 그러면 필터 높이만큼 화면 밖으로 밀린다. */
+.champ-list-col {
     width: 280px;
     flex-shrink: 0;
+    height: 75vh;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.champ-list-pane {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
     background: #1a1a2e;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    height: 75vh;
     overflow-y: auto;
     padding: 15px;
     display: flex;
@@ -3489,7 +3501,7 @@ body::before {
 
 /* 태블릿·좁은 노트북: 목록만 줄여도 상세가 살아난다 */
 @media (max-width: 1100px) {
-    .champ-list-pane {
+    .champ-list-col {
         width: 220px;
     }
 }
@@ -3522,10 +3534,17 @@ body::before {
          1fr 이면 화면이 넓어질수록 칸만 커져서 146~181px 까지 늘어났다
          (아이콘 32px 옆에 빈 공간만 붙는다). 상자 자체도 max-width 로 묶고
          가운데 정렬해서 화면을 꽉 채우지 않게 했다. */
+    /* 폰에서는 감싼 칸이 폭·높이를 안 잡는다. 상자가 스스로 정하게 풀어 준다. */
+    .champ-list-col {
+        width: 100%;
+        height: auto;
+    }
+
     .champ-list-pane {
         width: 100%;
         max-width: 320px;
         margin: 0 auto;
+        flex: none;
         height: auto;
         max-height: 34vh;
         display: grid;
@@ -3944,5 +3963,132 @@ body::before {
 
     .stat-lv-quick {
         flex: 1;
+    }
+}
+
+/* =========================================
+   18. 챔피언 목록 필터 — 검색 + 역할군 (2026-08-12)
+   -----------------------------------------
+   목록 상자 **위**에 붙는 줄이다. 폭·높이는 .champ-list-col 이 잡는다 (15번 절).
+   역할군 아이콘은 라이엇 공식 파일을 그대로 쓴다
+   (rcp-fe-lol-champion-details/role-icon-*.png — 인게임 챔피언 정보창의 금색 문양).
+   ========================================= */
+.champ-filter {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.champ-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+}
+
+.champ-search::placeholder {
+    color: #5f666e;
+}
+
+.champ-search:focus {
+    border-color: #a78bfa;
+}
+
+.role-btns {
+    display: flex;
+    gap: 5px;
+}
+
+.role-btn {
+    flex: 1;
+    /* 아이콘만 있는 버튼이라 정사각형으로 잡는다 */
+    aspect-ratio: 1 / 1;
+    min-width: 0;
+    padding: 5px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.role-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* 꺼진 상태는 회색으로 죽여 둔다. 켜지면 원래 금색이 살아난다 */
+    filter: grayscale(1) brightness(0.75);
+    opacity: 0.65;
+    transition: filter 0.15s, opacity 0.15s;
+}
+
+.role-btn:hover img {
+    filter: none;
+    opacity: 1;
+}
+
+.role-btn.on {
+    background: rgba(167, 139, 250, 0.12);
+    border-color: #a78bfa;
+}
+
+.role-btn.on img {
+    filter: none;
+    opacity: 1;
+}
+
+/* 커서를 올리면 역할군 이름을 띄운다. 아이콘만 있어서 이게 없으면 뭐가 뭔지 모른다.
+   ★ 목록 상자가 overflow-y:auto 라 그 안에 두면 잘린다. 그래서 필터는 상자 **밖**에 있고,
+     말풍선도 버튼 아래(상자 위쪽 여백)로 띄운다. */
+.role-btn::after {
+    content: attr(data-label);
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s;
+    pointer-events: none;
+    z-index: 30;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+}
+
+.role-btn:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+.champ-list-empty {
+    grid-column: 1 / -1;
+    padding: 30px 10px;
+    text-align: center;
+    color: #9aa4af;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .champ-filter {
+        max-width: 320px;
+        margin: 0 auto;
+        width: 100%;
     }
 }
