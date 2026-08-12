@@ -3931,12 +3931,11 @@ body::before {
 }
 
 /* --- 오른쪽 그래프 칸 ---
-   ★ 폭에 상한을 둔다. flex:1 만 두면 넓은 화면에서 870px 까지 벌어지는데,
-     18개 점을 그렇게 늘려 놓으면 가로만 길고 변화는 안 보인다. */
+   ★ 폭 상한은 **칸이 아니라 그래프(.stat-graph-inner)** 에 건다.
+     칸까지 480px 로 묶었더니 범례가 두 줄로 접혔다 (2026-08-12 되돌림). */
 .stat-graph-panel {
     flex: 1;
     min-width: 0;
-    max-width: 480px;
     align-self: stretch;
     display: none;
 }
@@ -3945,15 +3944,10 @@ body::before {
     display: block;
 }
 
-/* --- 역할군 평균 비교 줄 (그래프 위) --- */
-.savg-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 10px 0;
-}
-
+/* --- 역할군 평균 비교 --- */
+/* 버튼은 제목 줄에 같이 둔다. 이 줄은 높이가 **항상 같아서** 아래 그래프가 안 흔들린다 */
 .savg-title {
+    margin-left: 8px;
     color: #5f666e;
     font-size: 11px;
     white-space: nowrap;
@@ -3991,13 +3985,13 @@ body::before {
     opacity: 0.65;
 }
 
-/* 말풍선이 그래프 위쪽에 뜨면 잘려 보인다. 여기선 버튼 아래로 띄운다 (기본과 같음) */
+/* ★ 범례는 **그래프 아래**다. 위에 두면 켠 개수에 따라 줄 수가 늘었다 줄었다 하면서
+     그래프가 위아래로 흔들린다 (2026-08-12). 아래면 몇 줄이 되든 그래프는 그대로다. */
 .savg-legend {
     display: flex;
     flex-wrap: wrap;
     gap: 4px 14px;
-    padding: 6px 10px 0;
-    min-height: 6px;
+    padding: 10px 10px 0;
 }
 
 .savg-item {
@@ -4029,6 +4023,7 @@ body::before {
 .stat-graph-head {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     padding: 0 10px 4px;
     color: #ddd;
@@ -4043,7 +4038,10 @@ body::before {
 /* ★ SVG 는 선만 그린다. 점·라벨·눈금은 전부 HTML 절대배치다.
      전부 SVG 로 그리고 preserveAspectRatio="none" 로 늘렸더니 글자와 점이
      가로로 3배 찌그러졌다 (viewBox 320 -> 실제 1100px). app.js 주석 참고. */
+/* ★ 가로 상한은 여기다. 18개 점을 870px 로 늘리면 가로만 길고 변화는 안 보인다.
+     칸(.stat-graph-panel)이 아니라 그래프에만 걸어야 제목·범례가 안 접힌다. */
 .stat-graph-inner {
+    max-width: 480px;
     padding: 22px 10px 20px;
 }
 
@@ -4198,6 +4196,10 @@ body::before {
 
     .stat-graph-panel {
         width: 100%;
+    }
+
+    /* 폰에서는 그래프도 전폭을 쓴다 (표 아래로 내려오므로 옆에 남는 자리가 없다) */
+    .stat-graph-inner {
         max-width: none;
     }
 

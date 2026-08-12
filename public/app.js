@@ -4344,20 +4344,29 @@ const statLabel = (k) => k.replace('(초당)', '/초');
 //    **점 바로 앞**에 깔고 CSS 인접 선택자로 켠다.
 //  · 숫자·라벨은 본문색을 쓴다. 색은 선과 점이 갖는다.
 // ------------------------------------------------------------
-function statGraphHtml(vals, color, extras = []) {
+function statGraphHtml(vals, color, extras = [], top = 0) {
     const n = vals.length;
-    // 천장은 **모든 선**을 보고 잡는다. 챔피언 선만 보면 평균선이 위로 삐져나간다.
-    const top = Math.max(...vals, ...extras.flatMap(e => e.vals)) * 1.1 || 1;
+    // ★ 천장은 **챔피언 값만** 보고 잡는다 (2026-08-12).
+    //   평균선까지 보고 잡으면 역할군 버튼을 켤 때마다 y 축이 다시 스케일되어
+    //   **챔피언 곡선의 개형이 바뀐다** — 같은 챔피언인데 선이 납작해졌다 살아난다.
+    //   천장 밖으로 나가는 평균선은 clip 으로 자르고 범례에 "그래프 밖" 이라고 적는다.
+    //   값 자체는 범례와 말풍선에 숫자로 다 나오므로 잃는 정보가 없다.
+    top = top || Math.max(...vals) * 1.1 || 1;
     const px = (i) => (i / (n - 1)) * 100;           // x: 0~100%
     const py = (v) => (v / top) * 100;               // y: 바닥에서 0~100%
     const poly = (arr) => arr.map((v, i) => `${px(i)},${100 - py(v)}`).join(' ');
 
     // 선은 viewBox 를 늘려 그린다. 굵기는 non-scaling-stroke 로 2px 을 지킨다.
     //   평균선은 **먼저** 그려서 챔피언 선 아래에 깔린다 (겹치면 본인 값이 보여야 한다).
-    const avgLines = extras.map(e => `
-                <polyline points="${poly(e.vals)}" fill="none" stroke="${e.color}" stroke-width="1.5"
-                          stroke-dasharray="5 4" stroke-linejoin="round" stroke-linecap="round"
-                          vector-effect="non-scaling-stroke" opacity="0.9"/>`).join('');
+    //   clip 은 **평균선에만** 건다 — SVG 통째로 overflow:hidden 을 주면 양 끝
+    //   x=0 / x=100 에서 챔피언 선의 굵기가 절반 잘려 끝이 얇아 보인다.
+    const avgLines = !extras.length ? '' : `
+                <defs><clipPath id="statClipY"><rect x="-20" y="0" width="140" height="100"/></clipPath></defs>
+                <g clip-path="url(#statClipY)">` + extras.map(e => `
+                    <polyline points="${poly(e.vals)}" fill="none" stroke="${e.color}" stroke-width="1.5"
+                              stroke-dasharray="5 4" stroke-linejoin="round" stroke-linecap="round"
+                              vector-effect="non-scaling-stroke" opacity="0.9"/>`).join('') + `
+                </g>`;
 
     const grid = [6, 11, 16].map(lv => `
         <i class="g-grid" style="left:${px(lv - 1)}%"></i>
@@ -4451,11 +4460,16 @@ function drawStatPanel() {
     if (!v) { panel.classList.remove('open'); panel.innerHTML = ''; return; }
 
     const vals = Array.from({ length: 18 }, (_, i) => statAtLevel(v, i + 1));
+    // y 천장은 챔피언 값만 보고 잡는다 — 역할군을 켜도 챔피언 곡선이 안 바뀌게.
+    const top = Math.max(...vals) * 1.1 || 1;
 
     // 켠 역할군 중 이 스탯의 표본이 있는 것만 선으로 만든다.
     const extras = ROLE_ORDER.filter(r => avgRoles.has(r)).map(r => {
         const a = roleAvgVals(r, openStatKey);
-        return a && { role: r, label: ROLE_KO[r], color: ROLE_LINE[r], vals: a.vals, count: a.count };
+        return a && {
+            role: r, label: ROLE_KO[r], color: ROLE_LINE[r], vals: a.vals, count: a.count,
+            off: a.vals.some(x => x > top),   // 천장 밖 → 선이 잘린다. 범례에 적어 준다
+        };
     }).filter(Boolean);
 
     const btns = ROLE_ORDER.map(r => {
@@ -4472,21 +4486,21 @@ function drawStatPanel() {
         <span class="savg-item">
             <i class="savg-swatch" style="border-top-color:${e.color}"></i>${e.label} 평균
             <b>${fmtStat(e.vals[0])} → ${fmtStat(e.vals[17])}</b>
-            <em>${e.count}명</em>
+            <em>${e.count}명${e.off ? ' · 그래프 밖' : ''}</em>
         </span>`).join('');
 
+    // ★ 범례는 **그래프 아래**다 (2026-08-12). 위에 두면 켠 개수에 따라 줄 수가 늘었다 줄었다
+    //   하면서 그래프가 위아래로 흔들린다. 그래프 위쪽은 높이가 고정된 것만 둔다.
     panel.classList.add('open');
     panel.innerHTML = `
         <div class="stat-graph-head">
             <i class="stat-dot" style="background:${statColorOf(openStatKey)}"></i>
             <b>${statLabel(openStatKey)}</b><span>레벨 1 → 18</span>
-        </div>
-        <div class="savg-bar">
             <span class="savg-title">역할군 평균과 비교</span>
             <span class="savg-btns">${btns}</span>
         </div>
-        <div class="savg-legend">${legend}</div>
-        ${statGraphHtml(vals, statColorOf(openStatKey), extras)}`;
+        ${statGraphHtml(vals, statColorOf(openStatKey), extras, top)}
+        <div class="savg-legend">${legend}</div>`;
 }
 
 window.toggleStatGraph = function (key) {
