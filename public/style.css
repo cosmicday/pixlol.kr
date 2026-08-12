@@ -3934,6 +3934,8 @@ body::before {
    ★ 폭 상한은 **칸이 아니라 그래프(.stat-graph-inner)** 에 건다.
      칸까지 480px 로 묶었더니 범례가 두 줄로 접혔다 (2026-08-12 되돌림). */
 .stat-graph-panel {
+    position: relative;
+    /* 범례(.savg-legend)를 제목 줄 자리로 끌어올리는 기준이다 */
     flex: 1;
     min-width: 0;
     align-self: stretch;
@@ -3985,13 +3987,25 @@ body::before {
     opacity: 0.65;
 }
 
-/* ★ 범례는 **그래프 아래**다. 위에 두면 켠 개수에 따라 줄 수가 늘었다 줄었다 하면서
-     그래프가 위아래로 흔들린다 (2026-08-12). 아래면 몇 줄이 되든 그래프는 그대로다. */
+/* ★ 범례는 제목 줄 오른쪽 끝에 **아래에서 위로** 쌓인다 (2026-08-12).
+     - column-reverse 라 DOM 앞이 아래다 (vs 챔피언이 맨 아래, 역할군이 그 위).
+     - absolute 라 몇 줄이 되든 **그래프가 안 밀린다.** 흐름에 두면 켤 때마다 위아래로 흔들린다.
+     - 늘어난 줄은 제목 줄 위 빈 자리로 올라간다. 그쪽은 탭 줄 오른쪽 여백이라 비어 있다. */
 .savg-legend {
+    position: absolute;
+    /* 오른쪽 끝은 **그래프의 오른쪽 끝**에 맞춘다 (칸이 아니라).
+       칸은 vs 상자 앞까지 넓어서 칸 끝에 붙이면 그래프에서 멀찍이 떨어져 보인다. */
+    left: 10px;
+    width: 460px;
+    max-width: calc(100% - 20px);
+    /* top 은 app.js 가 제목 줄 높이를 재서 넣는다. 아래에서 위로 자란다 */
+    transform: translateY(-100%);
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px 14px;
-    padding: 10px 10px 0;
+    /* ★ 한 칸으로만 쌓는다. 두 칸으로 접어 봤더니 왼쪽 칸이 제목 글자 위로 올라탔다.
+         위로 자라는 건 제목 줄 위 빈 자리(탭 줄 오른쪽)라 6~7줄까지 들어간다. */
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: 2px;
 }
 
 .savg-item {
@@ -4000,6 +4014,8 @@ body::before {
     gap: 5px;
     color: #9aa4af;
     font-size: 11px;
+    line-height: 1.25;
+    white-space: nowrap;
 }
 
 /* 색은 이 조각만 갖는다. 글자는 본문색을 쓴다. 선 모양(점선)까지 그래프와 맞춘다 */
@@ -4008,6 +4024,11 @@ body::before {
     height: 0;
     border-top: 2px dashed;
     /* 색은 인라인으로 border-top-color 를 준다 */
+}
+
+/* vs 챔피언은 평균이 아니라 실제 값이라 그래프에서도 실선이다 */
+.savg-swatch.solid {
+    border-top-style: solid;
 }
 
 .savg-item b {
@@ -4020,17 +4041,27 @@ body::before {
     font-style: normal;
 }
 
+/* 제목 줄 두 개(스탯 이름 / 역할군 버튼) + 오른쪽 끝 범례.
+   ★ position:relative 는 범례를 아래에서 위로 쌓기 위한 기준이다. */
+/* ★ 아래쪽 여백 34px 은 **범례가 쌓일 자리**다 (2026-08-12).
+     범례는 여기 바닥에서 위로 자라는데, 조상 `.champ-tab-scroll` 이 overflow:auto 라
+     패널 위쪽으로 넘어가면 잘린다. 이 여백만큼 시작점을 내려서 7줄이 다 들어가게 한다.
+     비어 있어도 자리를 차지하므로 켰다 껐다 해도 그래프가 안 움직인다. */
 .stat-graph-head {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 0 10px 4px;
+    position: relative;
+    padding: 0 10px 34px;
     color: #ddd;
     font-size: 13px;
 }
 
-.stat-graph-head span {
+.sgh-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 26px;
+}
+
+.sgh-row span {
     color: #5f666e;
     font-size: 11px;
 }
@@ -4050,7 +4081,7 @@ body::before {
      납작하면 그 아래쪽에서 아무것도 안 보인다. 가로는 460px 그대로다 (비율 무관). */
 .g-plot {
     position: relative;
-    height: 320px;
+    height: 290px;
 }
 
 .g-line {
@@ -4175,6 +4206,90 @@ body::before {
     transform: none;
 }
 
+/* --- vs 챔피언 검색 상자 (그래프 오른쪽 빈 자리) ---
+   왼쪽 챔피언 목록과 같은 구조(검색칸 + 목록)를 조금 작게 만든 것이다.
+   ★ 역할군 아이콘 줄은 일부러 뺐다 — 바로 위 "역할군 평균과 비교" 아이콘과
+     생김새가 같아서 두 줄이 나란히 있으면 뜻이 갈리지 않는다. */
+.stat-vs-col {
+    align-self: stretch;
+    flex-shrink: 0;
+    width: 200px;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vs-search {
+    padding: 7px 10px;
+    font-size: 12px;
+}
+
+/* ★ 목록은 **절대배치**다 (2026-08-12). 보통 흐름에 두면 172명 높이(6249px)가
+     그대로 칸 높이가 되고, `align-self: stretch` 는 그걸 막지 못한다 —
+     플렉스 줄의 높이를 정하는 게 바로 이 항목이라 자기 자신을 기준으로 늘어난다.
+     싸개만 flex:1 로 두고 목록을 그 안에 절대배치하면 높이 계산에서 빠져
+     줄 높이는 왼쪽 표(405px)가 정하고, 이 칸이 거기에 맞춰 늘어난다. */
+.vs-list-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+}
+
+.vs-list {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    /* 스크롤바가 생기며 항목 폭이 줄어 이름이 다시 줄바꿈되는 덜컹임을 막는다 */
+    scrollbar-gutter: stable;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+}
+
+.vs-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 7px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    color: #ddd;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.vs-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* 지금 겹쳐 그리는 챔피언. 그래프의 vs 선 색과 같은 보라다 */
+.vs-item.on {
+    background: rgba(167, 139, 250, 0.14);
+    border-color: #a78bfa;
+    color: #fff;
+}
+
+.vs-item img {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 5px;
+    object-fit: cover;
+}
+
+.vs-item span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.vs-item.filtered-out {
+    display: none;
+}
+
 /* --- 레벨과 무관한 값 --- */
 .stat-foot {
     margin-top: 14px;
@@ -4207,6 +4322,36 @@ body::before {
 
     /* 표 옆이 아니라 아래라 높이를 맞출 이유가 없다. 320px 은 폰에서 너무 길다 */
     .g-plot {
+        height: 220px;
+    }
+
+    /* 범례가 그래프 아래로 내려가므로 제목 아래 여백(범례 자리)이 필요 없다 */
+    .stat-graph-head {
+        padding-bottom: 4px;
+    }
+
+    /* 폰에서는 제목 줄 오른쪽에 범례를 놓을 자리가 없다 (제목 글자와 겹친다).
+       보통 흐름으로 떨어뜨려 제목 아래에 쌓는다. */
+    /* 폰에서는 제목 줄 오른쪽에 범례를 놓을 자리가 없다 (제목 글자와 겹친다).
+       DOM 상 그래프 뒤에 있으므로 정적 배치로 되돌리면 그래프 **아래**로 내려간다 —
+       그래프는 그대로 있고 범례만 아래로 늘어난다. */
+    .savg-legend {
+        position: static;
+        width: auto;
+        max-width: none;
+        transform: none;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 8px 10px 0;
+    }
+
+    .stat-vs-col {
+        width: 100%;
+    }
+
+    /* 폰에서는 위아래로 쌓이므로 늘릴 대상이 없다. 싸개에 직접 높이를 준다 */
+    .vs-list-wrap {
+        flex: none;
         height: 220px;
     }
 

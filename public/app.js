@@ -4363,8 +4363,9 @@ function statGraphHtml(vals, color, extras = [], top = 0) {
     const avgLines = !extras.length ? '' : `
                 <defs><clipPath id="statClipY"><rect x="-20" y="0" width="140" height="100"/></clipPath></defs>
                 <g clip-path="url(#statClipY)">` + extras.map(e => `
-                    <polyline points="${poly(e.vals)}" fill="none" stroke="${e.color}" stroke-width="1.5"
-                              stroke-dasharray="5 4" stroke-linejoin="round" stroke-linecap="round"
+                    <polyline points="${poly(e.vals)}" fill="none" stroke="${e.color}"
+                              stroke-width="${e.solid ? 2 : 1.5}"${e.solid ? '' : ' stroke-dasharray="5 4"'}
+                              stroke-linejoin="round" stroke-linecap="round"
                               vector-effect="non-scaling-stroke" opacity="0.9"/>`).join('') + `
                 </g>`;
 
@@ -4418,6 +4419,9 @@ const ROLE_LINE = {
     fighter: '#e69f00', assassin: '#d55e00', mage: '#56b4e9',
     marksman: '#009e73', tank: '#0072b2', support: '#cc79a7',
 };
+// 범례에서만 쓰는 짧은 이름. "원거리 딜러 평균 …" 은 줄이 길어서 역할군 버튼 오른쪽과
+// 맞물린다. 버튼 말풍선에는 정식 이름이 그대로 나온다.
+const ROLE_SHORT = { marksman: '원딜' };
 
 // 지금 켜 둔 비교용 역할군. 스탯을 바꿔도 유지된다 (챔피언 목록 필터와는 별개다).
 const avgRoles = new Set();
@@ -4467,6 +4471,63 @@ window.toggleStatAvgRole = function (btn) {
     drawStatPanel();
 };
 
+// ------------------------------------------------------------
+//  vs 챔피언 — 오른쪽 검색 상자에서 고른 챔피언을 그래프에 겹친다 (2026-08-12)
+//
+//  목록은 championStats 만 있으면 만들어진다 (키가 곧 DD id 라 아이콘 주소가 나온다).
+//  왼쪽 목록과 달리 **역할군 아이콘 줄은 안 넣었다** — 바로 위 "역할군 평균과 비교"
+//  아이콘과 생김새가 같아서 뜻이 갈리지 않는다.
+// ------------------------------------------------------------
+
+// 평균선(Okabe-Ito)과 안 겹치고 스탯 색과도 안 겹치는 색으로 사이트 강조색을 쓴다.
+const VS_LINE = '#a78bfa';
+let vsChampId = null;
+
+window.pickVsChamp = function (id) {
+    vsChampId = (vsChampId === id) ? null : id;
+    document.querySelectorAll('.vs-item').forEach(el => el.classList.toggle('on', el.dataset.id === vsChampId));
+    // 스탯을 아직 안 골랐으면 첫 줄(체력)을 열어 준다. 안 그러면 눌러도 아무 일도 안 일어난다.
+    if (!openStatKey) { const b = document.querySelector('.stat-tname:not([disabled])'); if (b) return toggleStatGraph(b.dataset.key); }
+    drawStatPanel();
+};
+
+window.filterVsList = function () {
+    const q = (document.getElementById('vs-search-input') || {}).value || '';
+    const k = q.replace(/\s+/g, '').toLowerCase();
+    let shown = 0;
+    document.querySelectorAll('.vs-item').forEach(el => {
+        const ok = !k || (el.dataset.search || '').includes(k);
+        el.classList.toggle('filtered-out', !ok);
+        if (ok) shown++;
+    });
+    const empty = document.getElementById('vs-list-empty');
+    if (empty) empty.style.display = shown ? 'none' : 'block';
+};
+
+function vsBoxHtml(selfId) {
+    const ids = Object.keys(championStats)
+        .filter(id => id !== selfId)                 // 자기 자신과 비교할 이유는 없다
+        .sort((a, b) => championStats[a].n.localeCompare(championStats[b].n, 'ko-KR'));
+    const items = ids.map(id => {
+        const name = championStats[id].n;
+        // 초성 헬퍼는 챔피언 필터 절의 getChosung() 을 그대로 쓴다. 표를 두 벌 두면 어긋난다.
+        const key = `${name.replace(/\s+/g, '')}|${getChosung(name.replace(/\s+/g, ''))}|${id}`.toLowerCase();
+        return `<div class="vs-item${vsChampId === id ? ' on' : ''}" data-id="${id}" data-search="${key}"
+                     onclick="pickVsChamp('${id}')" title="${name}">
+                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${id}.png" alt="">
+                    <span>${name}</span>
+                </div>`;
+    }).join('');
+    return `
+        <div class="stat-vs-col">
+            <input id="vs-search-input" class="champ-search vs-search" type="text" autocomplete="off"
+                   placeholder="vs 챔피언 검색 (초성 가능)" oninput="filterVsList()">
+            <div class="vs-list-wrap">
+                <div class="vs-list">${items}<div id="vs-list-empty" class="champ-list-empty" style="display:none">없음</div></div>
+            </div>
+        </div>`;
+}
+
 // 지금 그래프를 띄워 둔 스탯. 표를 다시 그려도 유지된다.
 let openStatKey = null;
 
@@ -4482,45 +4543,84 @@ function drawStatPanel() {
     const gmax = statGlobalMax(openStatKey);
     const top = (gmax && gmax.max) || Math.max(...vals) * 1.1 || 1;
 
+    // 겹쳐 그릴 선들. 범례는 column-reverse 라 **DOM 앞이 아래**다 —
+    // 비교 챔피언을 맨 앞에 두면 범례 맨 아래 칸에 온다.
+    const extras = [];
+
+    // vs 챔피언 (오른쪽 검색 상자에서 고른 챔피언). 평균이 아니라 실제 값이라 실선이다.
+    const vsRec = vsChampId && championStats[vsChampId];
+    const vsV = vsRec && vsRec.s[openStatKey];
+    if (vsV) {
+        extras.push({
+            label: vsRec.n, color: VS_LINE, solid: true,
+            vals: Array.from({ length: 18 }, (_, i) => statAtLevel(vsV, i + 1)),
+        });
+    }
+
     // 켠 역할군 중 이 스탯의 표본이 있는 것만 선으로 만든다.
-    const extras = ROLE_ORDER.filter(r => avgRoles.has(r)).map(r => {
+    ROLE_ORDER.filter(r => avgRoles.has(r)).forEach(r => {
         const a = roleAvgVals(r, openStatKey);
-        return a && {
-            role: r, label: ROLE_KO[r], color: ROLE_LINE[r], vals: a.vals, count: a.count,
+        if (a) extras.push({
+            role: r, label: (ROLE_SHORT[r] || ROLE_KO[r]) + ' 평균',
+            color: ROLE_LINE[r], vals: a.vals, count: a.count,
             off: a.vals.some(x => x > top),   // 천장 밖 → 선이 잘린다. 범례에 적어 준다
-        };
-    }).filter(Boolean);
+        });
+    });
 
     const btns = ROLE_ORDER.map(r => {
         const a = roleAvgVals(r, openStatKey);
         const on = avgRoles.has(r) && a;
-        return `<button class="role-btn${on ? ' on' : ''}" data-role="${r}" data-label="${ROLE_KO[r]} 평균"
+        // 표본 수(N명)는 범례가 아니라 여기 말풍선에 적는다. 범례 줄이 길어지면
+        // 역할군 버튼 오른쪽과 맞물린다.
+        return `<button class="role-btn${on ? ' on' : ''}" data-role="${r}" data-label="${ROLE_KO[r]} 평균${a ? ` (${a.count}명)` : ' (없음)'}"
                         style="--rc:${ROLE_LINE[r]}" onclick="toggleStatAvgRole(this)"
                         aria-label="${ROLE_KO[r]} 평균"${a ? '' : ' disabled'}>
                     <img src="${ROLE_ICON}${r}.png" alt="${ROLE_KO[r]}">
                 </button>`;
     }).join('');
 
-    const legend = extras.map(e => `
+    // 비교 챔피언이 이 스탯을 아예 안 가진 경우(가렌의 마나 등). 목록에는 켜져 있는데
+    // 선이 없으면 고장 난 것처럼 보이므로 이유를 적어 준다.
+    const vsNote = (vsRec && !vsV)
+        ? `<span class="savg-item"><em>${vsRec.n} — 이 스탯 없음</em></span>` : '';
+
+    const legend = vsNote + extras.map(e => `
         <span class="savg-item">
-            <i class="savg-swatch" style="border-top-color:${e.color}"></i>${e.label} 평균
+            <i class="savg-swatch${e.solid ? ' solid' : ''}" style="border-top-color:${e.color}"></i>${e.label}
             <b>${fmtStat(e.vals[0])} → ${fmtStat(e.vals[17])}</b>
-            <em>${e.count}명${e.off ? ' · 그래프 밖' : ''}</em>
+            ${e.off ? '<em>그래프 밖</em>' : ''}
         </span>`).join('');
 
-    // ★ 범례는 **그래프 아래**다 (2026-08-12). 위에 두면 켠 개수에 따라 줄 수가 늘었다 줄었다
-    //   하면서 그래프가 위아래로 흔들린다. 그래프 위쪽은 높이가 고정된 것만 둔다.
+    // ★ 범례는 제목 줄 오른쪽 끝에 **아래에서 위로** 쌓인다 (2026-08-12).
+    //   position:absolute + column-reverse 라 몇 줄이 되든 그래프가 안 밀린다.
+    //   (폰에서는 옆에 놓을 자리가 없어 제목 아래 보통 흐름으로 떨어진다 — style.css 참고)
     panel.classList.add('open');
     panel.innerHTML = `
         <div class="stat-graph-head">
-            <i class="stat-dot" style="background:${statColorOf(openStatKey)}"></i>
-            <b>${statLabel(openStatKey)}</b>
-            <span>레벨 1 → 18${gmax ? ` · 세로축 최대 ${fmtStat(gmax.max)}(${gmax.name})` : ''}</span>
-            <span class="savg-title">역할군 평균과 비교</span>
-            <span class="savg-btns">${btns}</span>
+            <div class="sgh-row">
+                <i class="stat-dot" style="background:${statColorOf(openStatKey)}"></i>
+                <b>${statLabel(openStatKey)}</b>
+                <span>레벨 1 → 18${gmax ? ` · 세로축 최대 ${fmtStat(gmax.max)}(${gmax.name})` : ''}</span>
+            </div>
+            <div class="sgh-row">
+                <span class="savg-title">역할군 평균</span>
+                <span class="savg-btns">${btns}</span>
+            </div>
         </div>
         ${statGraphHtml(vals, statColorOf(openStatKey), extras, top)}
         <div class="savg-legend">${legend}</div>`;
+
+    // ★ 범례는 DOM 상 그래프 **뒤**에 두고, 데스크톱에서만 제목 줄 자리로 끌어올린다.
+    //   - 폰(정적 배치)에서는 그대로 그래프 아래에 남아 그래프가 안 밀린다.
+    //   - 데스크톱에서는 bottom 을 제목 줄 끝에 맞춰야 하는데 제목 줄 높이가 글자
+    //     줄바꿈에 따라 달라질 수 있어서 CSS 상수 대신 여기서 재서 넣는다.
+    //     (translateY(-100%) 로 위로 자라므로 top 만 정해 주면 된다)
+    //   ★ 바닥은 제목 블록 끝이다. 제목 블록 아래쪽에 여백(padding-bottom)을 잡아 두고
+    //     거기서부터 위로 쌓는다 — 6역할군 + vs = 7줄이 다 들어가야 하는데,
+    //     조상 `.champ-tab-scroll` 이 overflow:auto 라 **패널 위쪽으로 넘어가면 잘린다.**
+    const head = panel.querySelector('.stat-graph-head');
+    const lg = panel.querySelector('.savg-legend');
+    if (head && lg) lg.style.top = head.offsetHeight + 'px';
 }
 
 window.toggleStatGraph = function (key) {
@@ -4537,6 +4637,8 @@ window.renderChampStats = function (champId) {
 
     const s = rec.s;
     openStatKey = null;
+    // 챔피언을 바꾸면 비교 대상도 푼다. 안 그러면 "가렌 vs 가렌" 이 생긴다.
+    vsChampId = null;
 
     // 줄 순서: 체력 / 체력 재생 / 자원 / 자원 재생 / 공격력 / 공격 속도 / 방어력 / 마법 저항력 /
     //          이동 속도 / 사거리.
@@ -4583,8 +4685,9 @@ window.renderChampStats = function (champId) {
                 <tbody>${rows}</tbody>
             </table>
             <div id="stat-graph-panel" class="stat-graph-panel"></div>
+            ${vsBoxHtml(champId)}
         </div>
-        <div class="stat-foot">스탯 이름을 누르면 오른쪽에 1~18레벨 성장 곡선이 나옵니다. 레벨 성장은 직선이 아니라 중간이 완만합니다.<br>그래프 위 역할군 아이콘을 누르면 그 역할군 챔피언들의 레벨별 평균이 점선으로 겹쳐집니다.</div>`;
+        <div class="stat-foot">스탯 이름을 누르면 오른쪽에 1~18레벨 성장 곡선이 나옵니다. 레벨 성장은 직선이 아니라 중간이 완만합니다.<br>그래프 위 역할군 아이콘을 누르면 그 역할군 챔피언들의 레벨별 평균이 점선으로, 오른쪽에서 고른 챔피언은 실선으로 겹쳐집니다.</div>`;
 };
 
 window.switchChampTab = function (event, tabName) {
