@@ -275,6 +275,22 @@ async function fetchDD() {
 //   bin 의 arType 은 숫자라 뜻을 추측하게 되는데, DD 는 "마나/기력/분노/투지/기류..." 처럼
 //   현지화된 이름을 그대로 준다. 추측으로 표를 만들면 안 된다 (CLAUDE.md 규칙).
 let PARTYPE = {};   // DD id -> 자원 이름
+let DD_STATS = {};  // DD id -> stats (bin 에 필드가 아예 없을 때의 폴백)
+
+// ★ bin 의 "필드 없음" 은 0 이 아니라 **라이엇 기본값** 이다 (2026-08-12).
+//   `baseStaticHPRegenModifiable` 이 없는 8명(케일·마오카이·밀리오·모데카이저·
+//   누누·라칸·유미·자크)에게 DD 는 전부 `hpregen 5`(= 초당 1.0)를 준다.
+//   0 으로 읽으면 **그 8명의 체력 재생이 통째로 죽고**, 스탯 탭 y 축 바닥까지
+//   0 으로 끌려 내려가 다른 챔피언 곡선도 같이 납작해진다.
+//   ★ **진짜 0 인 챔피언은 bin 에 `0` 이라고 명시돼 있다** (브라이어 — 체력 재생이
+//     없는 게 스킬 설명에도 적힌 챔피언이다). 생략과 명시는 이렇게 구분된다.
+//   DD 의 재생 수치는 5초당이고 우리는 초당이라 5로 나눈다.
+const pick = (a, b) => (a !== undefined ? a : b);
+const ddStat = (ddId, key, div) => {
+    const s = DD_STATS[ddId];
+    if (!s || s[key] === undefined || s[key] === null) return undefined;
+    return div ? s[key] / div : s[key];
+};
 // ★ fld 를 거쳐 해시 키와 실명을 **둘 다** 본다 (2026-08-12).
 //   예전엔 키 하나만 봐서 호출부가 hk('mrPerLevel') 로 해시를 직접 만들어 넘겼는데,
 //   16.16 패치부터 CD 가 이 이름을 실명으로 풀어 주면서 해시 키가 사라졌다.
@@ -293,7 +309,10 @@ function statCurvesFromBin(root, ddId) {
 
     const out = {};
     out['체력'] = grow(mf(root, 'baseHPModifiable'), mf(root, 'hpPerLevelModifiable'));
-    out['체력 재생(초당)'] = grow(mf(root, 'baseStaticHPRegenModifiable'), mf(root, 'hpRegenPerLevelModifiable'));
+    // ★ 이 줄만 DD 폴백이 걸려 있다. bin 에 필드가 없는 8명 때문이다 (위 ddStat 주석 참고)
+    out['체력 재생(초당)'] = grow(
+        pick(mf(root, 'baseStaticHPRegenModifiable'), ddStat(ddId, 'hpregen', 5)),
+        pick(mf(root, 'hpRegenPerLevelModifiable'), ddStat(ddId, 'hpregenperlevel', 5)));
     out['공격력'] = grow(mf(root, 'baseDamageModifiable'), mf(root, 'damagePerLevelModifiable'));
     out['방어력'] = grow(mf(root, 'baseArmorModifiable'), mf(root, 'armorPerLevelModifiable'));
     out['마법 저항력'] = grow(mf(root, 'baseMR'), mf(root, 'mrPerLevel'));
@@ -336,6 +355,7 @@ function statCurvesFromBin(root, ddId) {
     console.log('== 2) 챔피언 스탯 곡선 (bin 기준) ==');
     const dd = await fetchDD();
     for (const id of Object.keys(dd.data)) PARTYPE[id] = dd.data[id].partype;
+    for (const id of Object.keys(dd.data)) DD_STATS[id] = dd.data[id].stats;
     const ddIdOf = {};
     for (const id of Object.keys(dd.data)) ddIdOf[id.toLowerCase()] = id;
 
