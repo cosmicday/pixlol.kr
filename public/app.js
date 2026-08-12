@@ -4046,23 +4046,9 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
 
         const loreHtml = `<style>.champ-lore-text p { margin-bottom: 18px; color: #ddd; }</style><div class="champ-lore-text" style="font-size: 15px; line-height: 1.8; word-break: keep-all; padding: 10px; white-space: pre-wrap;">${displayLore}</div>`;
 
-        // ★ 스탯 탭 (2026-08-12). 내용은 renderChampStats 가 채운다 — 레벨 슬라이더로 다시 그려야 해서
-        //   한 번 찍고 끝나는 문자열이 아니다. 여기서는 껍데기만 만든다.
+        // ★ 스탯 탭 (2026-08-12). 내용은 renderChampStats 가 채운다.
         window.currentChampStatsId = champ.id;
-        const statsHtml = `
-            <div class="champ-stats-wrap">
-                <div class="stat-level-bar">
-                    <span class="stat-level-title">레벨</span>
-                    <input id="stat-level-range" class="stat-level-range" type="range" min="1" max="18" value="18"
-                           oninput="setStatLevel(this.value)">
-                    <span id="stat-level-label" class="stat-level-label">18</span>
-                    <span class="stat-level-quicks">
-                        ${[1, 6, 11, 16, 18].map(n =>
-            `<button class="stat-lv-quick${n === 18 ? ' on' : ''}" data-lv="${n}" onclick="setStatLevel(${n})">${n}</button>`).join('')}
-                    </span>
-                </div>
-                <div id="champ-stats-body"></div>
-            </div>`;
+        const statsHtml = `<div class="champ-stats-wrap"><div id="champ-stats-body"></div></div>`;
 
         // ★ HTML 틀 구성 (보조 아이콘 컨테이너 추가, 소모값 색상 #ddd 통일, 하단 커스텀 영역 확보)
         const skillsHtml = `
@@ -4285,7 +4271,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         `;
 
         playSkill(0);
-        renderChampStats(champ.id, 18);
+        renderChampStats(champ.id);
     } catch (error) { detailArea.innerHTML = `<div style="color:#f87171;">데이터를 불러오지 못했습니다.</div>`; }
 };
 
@@ -4298,11 +4284,13 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
 //    'x' 곱셈형: base x (1 + per x g(N))   ← 공격 속도만
 //  g(N) 은 라이엇 성장 곡선이라 **직선이 아니다** (레벨곡선_정리.md 참고).
 //
-//  막대 길이는 **전체 챔피언 중 최댓값 대비**다. 숫자만 봐선 감이 안 오는데
-//  "얘가 탱커 축인지 물몸인지" 가 한눈에 보이라고 넣었다.
+//  화면은 표가 본체다 (스탯 / 1레벨 / 18레벨). 스탯 이름을 누르면 그 줄 아래로
+//  1~18레벨 꺾은선이 펼쳐진다 — 중간 레벨 값은 그래프에 커서를 올리면 나온다.
 // ============================================================
 
 // 스탯별 색. 스킬 설명 팔레트(app.js <style>)와 같은 값을 써서 사이트 안에서 일관되게 보이게 한다.
+//   ★ 그래프는 스탯 하나당 선 하나(단일 시리즈)라 색이 "구분" 이 아니라 "이름표" 역할이다.
+//     그래서 여러 색을 나란히 놓을 때 필요한 색맹 대비 검증 대상이 아니다.
 const STAT_COLOR = {
     '체력': '#60e08f', '체력 재생(초당)': '#1f995c',
     '공격력': '#f26522', '공격 속도': '#ffe384',
@@ -4320,94 +4308,129 @@ const RESOURCE_COLOR = [
 const statColorOf = (name) => {
     if (STAT_COLOR[name]) return STAT_COLOR[name];
     const base = name.replace(/ 재생\(초당\)$/, '');
-    for (const [re, c] of RESOURCE_COLOR) if (re.test(base)) return /재생/.test(name) ? c + 'aa' : c;
+    for (const [re, c] of RESOURCE_COLOR) if (re.test(base)) return c;
     return '#9aa4af';
 };
 
-// 스탯별 전체 최댓값 (레벨마다 다르므로 레벨을 키로 캐시한다)
-const statMaxCache = {};
-function statMaxAt(level) {
-    if (statMaxCache[level]) return statMaxCache[level];
-    const max = {};
-    for (const id in championStats) {
-        const s = championStats[id].s;
-        for (const k in s) {
-            const v = statAtLevel(s[k], level);
-            if (!(k in max) || v > max[k]) max[k] = v;
-        }
-    }
-    // 자원은 이름이 제각각이라 "자원끼리" 한 묶음으로 봐야 막대 길이가 뜻을 갖는다
-    let resMax = 0, regenMax = 0;
-    for (const k in max) {
-        if (STAT_COLOR[k]) continue;
-        if (/재생\(초당\)$/.test(k)) regenMax = Math.max(regenMax, max[k]);
-        else resMax = Math.max(resMax, max[k]);
-    }
-    max.__자원 = resMax; max.__자원재생 = regenMax;
-    return (statMaxCache[level] = max);
-}
-
 const fmtStat = (v) => {
     const n = Math.round(v * 100) / 100;
-    return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0$/, '');
+    return Number.isInteger(n) ? String(n) : String(n);
+};
+// 화면에 쓰는 이름. "(초당)" 은 좁아서 "/초" 로 줄인다.
+const statLabel = (k) => k.replace('(초당)', '/초');
+
+// ------------------------------------------------------------
+//  1~18레벨 꺾은선
+//
+//  ★ SVG 는 **선만** 그리고 점·라벨·눈금은 HTML 로 얹는다 (2026-08-12).
+//    처음엔 전부 SVG 로 그리고 `preserveAspectRatio="none"` 으로 폭을 늘렸는데,
+//    **글자와 점이 가로로 3배 늘어나 찌그러졌다** (viewBox 320 → 실제 1100px).
+//    선은 늘어나도 되지만 글자·원은 안 된다. 그래서 좌표만 % 로 잡고
+//    나머지는 HTML 절대배치로 뺐다 — 폰이든 데스크톱이든 글자 크기가 그대로다.
+//
+//  · y 축은 0 부터 그린다. 밑을 자르면 조금 크는 값도 급상승처럼 보인다
+//    (마법 저항력 32 -> 58 은 실제로 완만하다).
+//  · 값 라벨은 **양 끝만** 찍는다. 18개 전부 찍으면 읽을 수 없다.
+//    중간 값은 커서를 올리면 나온다.
+//  · 점은 작아서 정확히 못 맞춘다 → 각 점이 담당하는 x 구간을 덮는 투명 칸을
+//    **점 바로 앞**에 깔고 CSS 인접 선택자로 켠다.
+//  · 숫자·라벨은 본문색을 쓴다. 색은 선과 점이 갖는다.
+// ------------------------------------------------------------
+function statGraphHtml(vals, color) {
+    const n = vals.length;
+    const top = Math.max(...vals) * 1.1 || 1;        // 라벨이 천장에 붙지 않게 여유
+    const px = (i) => (i / (n - 1)) * 100;           // x: 0~100%
+    const py = (v) => (v / top) * 100;               // y: 바닥에서 0~100%
+
+    // 선은 viewBox 를 늘려 그린다. 굵기는 non-scaling-stroke 로 2px 을 지킨다.
+    const poly = vals.map((v, i) => `${px(i)},${100 - py(v)}`).join(' ');
+
+    const grid = [6, 11, 16].map(lv => `
+        <i class="g-grid" style="left:${px(lv - 1)}%"></i>
+        <span class="g-ax" style="left:${px(lv - 1)}%">${lv}</span>`).join('');
+
+    const marks = vals.map((v, i) => {
+        const left = i === 0 ? 0 : (px(i - 1) + px(i)) / 2;
+        const right = i === n - 1 ? 100 : (px(i) + px(i + 1)) / 2;
+        // 양 끝에서는 말풍선이 잘리지 않게 정렬을 바꾼다
+        const align = i <= 1 ? 'start' : (i >= n - 2 ? 'end' : 'mid');
+        return `<i class="g-hit" style="left:${left}%; width:${right - left}%"></i>` +
+            `<span class="g-pt g-a-${align}" style="left:${px(i)}%; bottom:${py(v)}%">` +
+            `<i class="g-dot" style="background:${color}"></i>` +
+            `<b class="g-val">Lv.${i + 1} · ${fmtStat(v)}</b></span>`;
+    }).join('');
+
+    return `
+    <div class="stat-graph-inner">
+        <div class="g-plot">
+            <svg class="g-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="2"
+                          stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            </svg>
+            ${grid}
+            <span class="g-end g-start" style="bottom:${py(vals[0])}%">${fmtStat(vals[0])}</span>
+            <span class="g-end g-last" style="bottom:${py(vals[n - 1])}%">${fmtStat(vals[n - 1])}</span>
+            ${marks}
+            <span class="g-ax g-ax-first" style="left:0%">1</span>
+            <span class="g-ax g-ax-last" style="left:100%">18</span>
+        </div>
+    </div>`;
+}
+
+window.toggleStatGraph = function (key) {
+    const row = document.querySelector(`.stat-graph-row[data-key="${CSS.escape(key)}"]`);
+    const btn = document.querySelector(`.stat-tname[data-key="${CSS.escape(key)}"]`);
+    if (!row) return;
+    const open = row.classList.toggle('open');
+    if (btn) btn.classList.toggle('open', open);
 };
 
-window.renderChampStats = function (champId, level) {
+window.renderChampStats = function (champId) {
     const host = document.getElementById('champ-stats-body');
     if (!host) return;
     const rec = (typeof championStats !== 'undefined') ? championStats[champId] : null;
-    if (!rec) { host.innerHTML = `<div style="color:#9aa4af; padding:20px;">이 챔피언의 스탯 데이터가 없습니다.</div>`; return; }
+    if (!rec) { host.innerHTML = `<div class="stat-foot">이 챔피언의 스탯 데이터가 없습니다.</div>`; return; }
 
-    const lv = Math.min(18, Math.max(1, level | 0));
-    const max = statMaxAt(lv);
-    const s = rec.s;
+    const s = rec.s, f = rec.f || {};
 
-    // 보여줄 순서. 자원은 이름이 챔피언마다 달라서 남는 걸 자동으로 끼워 넣는다.
-    const fixedOrder = ['체력', '체력 재생(초당)'];
+    // 줄 순서: 체력 / 체력 재생 / 자원 / 자원 재생 / 공격력 / 공격 속도 / 방어력 / 마법 저항력.
+    //   자원은 챔피언마다 이름이 달라서(마나·기력·분노·투지…) 남는 키를 자동으로 끼워 넣는다.
     const resKeys = Object.keys(s).filter(k => !STAT_COLOR[k]);
-    const order = [...fixedOrder,
-    ...resKeys.filter(k => !/재생/.test(k)), ...resKeys.filter(k => /재생/.test(k)),
+    const order = ['체력', '체력 재생(초당)',
+        ...resKeys.filter(k => !/재생/.test(k)), ...resKeys.filter(k => /재생/.test(k)),
         '공격력', '공격 속도', '방어력', '마법 저항력'].filter(k => s[k]);
 
     const rows = order.map(k => {
-        const v = statAtLevel(s[k], lv);
-        const at1 = statAtLevel(s[k], 1), at18 = statAtLevel(s[k], 18);
-        const cap = STAT_COLOR[k] ? max[k] : (/재생/.test(k) ? max.__자원재생 : max.__자원);
-        const pct = cap > 0 ? Math.min(100, (v / cap) * 100) : 0;
+        const vals = Array.from({ length: 18 }, (_, i) => statAtLevel(s[k], i + 1));
         const color = statColorOf(k);
-        const grows = Math.abs(at18 - at1) > 0.0001;
-        const sub = grows ? `${fmtStat(at1)} → ${fmtStat(at18)}` : '레벨 무관';
+        const grows = Math.abs(vals[17] - vals[0]) > 0.0001;
         return `
-        <div class="stat-row">
-            <div class="stat-name">${k.replace('(초당)', '<span style="opacity:.6; font-size:11px;">/초</span>')}</div>
-            <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct.toFixed(1)}%; background:${color};"></div></div>
-            <div class="stat-val" style="color:${color};">${fmtStat(v)}</div>
-            <div class="stat-sub">${sub}</div>
-        </div>`;
+        <tr class="stat-trow">
+            <th scope="row">
+                <button class="stat-tname${grows ? '' : ' flat'}" data-key="${k}"
+                        ${grows ? `onclick="toggleStatGraph('${k}')"` : 'disabled'}>
+                    <i class="stat-dot" style="background:${color}"></i>${statLabel(k)}${grows ? '<span class="stat-caret">▾</span>' : ''}
+                </button>
+            </th>
+            <td>${fmtStat(vals[0])}</td>
+            <td class="stat-t18">${fmtStat(vals[17])}</td>
+        </tr>
+        ${grows ? `<tr class="stat-graph-row" data-key="${k}"><td colspan="3"><div class="stat-graph">${statGraphHtml(vals, color)}</div></td></tr>` : ''}`;
     }).join('');
 
-    // 레벨과 무관한 값들
-    const f = rec.f || {};
-    const fixedRows = ['이동 속도', '사거리'].filter(k => f[k] != null)
-        .map(k => `<span><b style="color:${statColorOf(k)};">${fmtStat(f[k])}</b> ${k}</span>`).join('');
-    const resName = f['자원 종류'] && f['자원 종류'] !== '없음' ? f['자원 종류'] : '자원 없음';
+    // 레벨과 무관한 값은 표 아래에 한 줄로. 그래프를 그릴 게 없다.
+    const fixed = ['이동 속도', '사거리'].filter(k => f[k] != null)
+        .map(k => `<span><i class="stat-dot" style="background:${statColorOf(k)}"></i>${k} <b>${fmtStat(f[k])}</b></span>`).join('');
+    // 자원 이름은 표에 이미 줄로 들어가 있다. 자원이 아예 없는 챔피언일 때만 알려 준다.
+    const resNote = order.some(k => !STAT_COLOR[k]) ? '' : `<span class="stat-res">자원 없음</span>`;
 
     host.innerHTML = `
-        <div class="stat-fixed-line">${fixedRows}<span style="color:#9aa4af;">${resName}</span></div>
-        <div class="stat-rows">${rows}</div>
-        <div class="stat-foot">막대 길이는 <b>같은 레벨 전체 챔피언 중 최댓값</b> 대비입니다. 자원(마나·기력 등)은 자원끼리 비교합니다.</div>`;
-};
-
-window.setStatLevel = function (n) {
-    const lv = Math.min(18, Math.max(1, n | 0));
-    const label = document.getElementById('stat-level-label');
-    const range = document.getElementById('stat-level-range');
-    if (label) label.textContent = lv;
-    if (range && Number(range.value) !== lv) range.value = lv;
-    document.querySelectorAll('.stat-lv-quick').forEach(b => {
-        b.classList.toggle('on', Number(b.dataset.lv) === lv);
-    });
-    renderChampStats(window.currentChampStatsId, lv);
+        <table class="stat-table">
+            <thead><tr><th>스탯</th><th>1레벨</th><th>18레벨</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <div class="stat-fixed-line">${fixed}${resNote}</div>
+        <div class="stat-foot">스탯 이름을 누르면 1~18레벨 성장 곡선이 펼쳐집니다. 레벨 성장은 직선이 아니라 중간이 완만합니다.</div>`;
 };
 
 window.switchChampTab = function (event, tabName) {

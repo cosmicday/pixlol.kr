@@ -3801,168 +3801,286 @@ body::before {
    데이터는 public/champion_stats.js (build_stats_page.js 생성).
    레벨별 값은 app.js 의 statAtLevel 이 계산한다 — 라이엇 성장 곡선이라 직선이 아니다.
    색은 스킬 설명 팔레트(app.js <style>)와 같은 값을 쓴다.
+
+   표가 본체고, 스탯 이름을 누르면 그 줄 아래로 1~18레벨 꺾은선이 펼쳐진다.
    ========================================= */
 .champ-stats-wrap {
     padding: 6px 4px 20px;
 }
 
-/* --- 레벨 슬라이더 줄 --- */
-.stat-level-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 12px 14px;
-    margin-bottom: 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
+.stat-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
 }
 
-.stat-level-title {
-    color: #9aa4af;
-    font-size: 13px;
-    font-weight: bold;
-    flex-shrink: 0;
-}
-
-.stat-level-range {
-    flex: 1;
-    min-width: 140px;
-    accent-color: #a78bfa;
-    cursor: pointer;
-}
-
-.stat-level-label {
-    width: 30px;
-    text-align: right;
-    color: #fff;
-    font-weight: bold;
-    font-size: 16px;
-    flex-shrink: 0;
-}
-
-.stat-level-quicks {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-}
-
-.stat-lv-quick {
-    min-width: 30px;
-    padding: 4px 0;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
+.stat-table thead th {
+    padding: 0 6px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     color: #9aa4af;
     font-size: 12px;
-    cursor: pointer;
+    font-weight: bold;
+    text-align: right;
 }
 
-.stat-lv-quick:hover {
-    color: #fff;
-    border-color: rgba(167, 139, 250, 0.5);
+/* 첫 칸(스탯 이름)만 왼쪽 정렬 */
+.stat-table thead th:first-child,
+.stat-trow th {
+    text-align: left;
 }
 
-.stat-lv-quick.on {
-    background: rgba(167, 139, 250, 0.15);
-    border-color: #a78bfa;
+.stat-trow th,
+.stat-trow td {
+    padding: 9px 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-weight: normal;
+}
+
+.stat-trow td {
+    text-align: right;
+    color: #9aa4af;
+    font-size: 14px;
+}
+
+/* 18레벨 값이 결과값이라 이쪽을 강조한다 */
+.stat-trow td.stat-t18 {
     color: #fff;
     font-weight: bold;
 }
 
-/* --- 레벨과 무관한 값 한 줄 --- */
+/* 스탯 이름 = 그래프를 여는 버튼 */
+.stat-tname {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: none;
+    color: #ddd;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.stat-tname:hover {
+    color: #fff;
+}
+
+.stat-tname.flat {
+    cursor: default;
+    opacity: 0.85;
+}
+
+/* 색은 여기(점)만 갖는다. 숫자·글씨는 본문색을 쓴다 */
+.stat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.stat-caret {
+    color: #5f666e;
+    font-size: 10px;
+    transition: transform 0.15s;
+}
+
+.stat-tname.open .stat-caret {
+    transform: rotate(180deg);
+    color: #a78bfa;
+}
+
+/* --- 펼쳐지는 그래프 줄 --- */
+.stat-graph-row>td {
+    padding: 0;
+    border: none;
+}
+
+.stat-graph {
+    height: 0;
+    overflow: hidden;
+    transition: height 0.18s ease-out;
+}
+
+.stat-graph-row.open .stat-graph {
+    height: 132px;
+}
+
+/* ★ SVG 는 선만 그린다. 점·라벨·눈금은 전부 HTML 절대배치다.
+     전부 SVG 로 그리고 preserveAspectRatio="none" 로 늘렸더니 글자와 점이
+     가로로 3배 찌그러졌다 (viewBox 320 -> 실제 1100px). app.js 주석 참고. */
+.stat-graph-inner {
+    padding: 22px 10px 20px;
+}
+
+.g-plot {
+    position: relative;
+    height: 86px;
+}
+
+.g-line {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* 6·11·16레벨 세로 눈금. 아주 옅게만 — 눈금이 선보다 눈에 띄면 안 된다 */
+.g-grid {
+    position: absolute;
+    top: -6px;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* 아래쪽 레벨 숫자 */
+.g-ax {
+    position: absolute;
+    top: 100%;
+    margin-top: 5px;
+    transform: translateX(-50%);
+    color: #5f666e;
+    font-size: 10px;
+}
+
+.g-ax-first {
+    transform: none;
+}
+
+.g-ax-last {
+    transform: translateX(-100%);
+}
+
+/* 양 끝 값 라벨 (1레벨 / 18레벨). 이 둘만 항상 보인다 */
+.g-end {
+    position: absolute;
+    margin-bottom: 8px;
+    color: #9aa4af;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.g-start {
+    left: 0;
+}
+
+.g-last {
+    right: 0;
+}
+
+/* 커서가 그래프 위에 있으면 고정 끝 라벨을 감춘다.
+   안 그러면 18레벨 점에 커서를 올렸을 때 "Lv.18 · 2356" 과 "2356" 이 겹쳐 찍힌다. */
+.g-plot:hover .g-end {
+    opacity: 0;
+}
+
+.g-end {
+    transition: opacity 0.1s;
+}
+
+/* ★ 점은 작아서 정확히 못 맞춘다. 각 점이 담당하는 x 구간을 덮는 투명 칸을
+     **점 바로 앞**에 깔고 인접 선택자로 켠다. 순서를 바꾸면 조용히 안 먹는다. */
+.g-hit {
+    position: absolute;
+    top: -22px;
+    bottom: -20px;
+}
+
+.g-pt {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.1s;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.g-hit:hover+.g-pt {
+    opacity: 1;
+}
+
+.g-dot {
+    position: absolute;
+    left: -4px;
+    bottom: -4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #12121f;
+}
+
+.g-val {
+    position: absolute;
+    bottom: 10px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    text-shadow: 0 0 4px #12121f, 0 0 4px #12121f;
+}
+
+.g-a-mid .g-val {
+    transform: translateX(-50%);
+}
+
+.g-a-end .g-val {
+    transform: translateX(-100%);
+}
+
+.g-a-start .g-val {
+    transform: none;
+}
+
+/* --- 레벨과 무관한 값 --- */
 .stat-fixed-line {
     display: flex;
     gap: 18px;
     flex-wrap: wrap;
-    padding: 0 4px 14px;
-    font-size: 13px;
-    color: #ddd;
-}
-
-/* --- 스탯 줄 --- */
-.stat-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.stat-row {
-    display: grid;
-    /* 이름 | 막대 | 값 | 1->18 */
-    grid-template-columns: 96px 1fr 76px 116px;
     align-items: center;
-    gap: 12px;
-    padding: 8px 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.stat-name {
-    color: #ddd;
+    padding: 14px 6px 0;
     font-size: 13px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.stat-bar {
-    height: 8px;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.stat-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    /* 레벨을 옮길 때 막대가 부드럽게 따라가야 "성장" 이 눈에 보인다 */
-    transition: width 0.18s ease-out;
-}
-
-.stat-val {
-    text-align: right;
-    font-weight: bold;
-    font-size: 14px;
-    font-variant-numeric: tabular-nums;
-}
-
-.stat-sub {
     color: #9aa4af;
-    font-size: 11px;
-    text-align: right;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
+}
+
+.stat-fixed-line span {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.stat-fixed-line b {
+    color: #fff;
+}
+
+.stat-fixed-line .stat-res {
+    color: #5f666e;
 }
 
 .stat-foot {
     margin-top: 14px;
-    padding: 0 4px;
+    padding: 0 6px;
     color: #5f666e;
     font-size: 11px;
     line-height: 1.6;
 }
 
-/* 폰에서는 "1 -> 18" 칸을 접는다. 이름·막대·값이 먼저다. */
 @media (max-width: 768px) {
-    .stat-row {
-        grid-template-columns: 78px 1fr 64px;
-        gap: 8px;
+
+    .stat-trow th,
+    .stat-trow td,
+    .stat-table thead th {
+        padding-left: 2px;
+        padding-right: 2px;
     }
 
-    .stat-sub {
-        grid-column: 2 / 4;
-        text-align: left;
-        margin-top: -4px;
+    .stat-tname {
+        font-size: 12px;
+        gap: 6px;
     }
 
-    .stat-level-quicks {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .stat-lv-quick {
-        flex: 1;
+    .stat-trow td {
+        font-size: 13px;
     }
 }
 
