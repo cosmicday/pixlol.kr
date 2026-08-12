@@ -373,12 +373,15 @@ function statCurvesFromBin(root, ddId) {
     console.log(`  챔피언 ${Object.keys(stats).length}명 x 18레벨`);
 
     // bin 과 교차검증 (겹치는 스탯만)
-    const CHECK = [['hp', 'baseHPModifiable'], ['hpperlevel', 'hpPerLevelModifiable'],
-    ['armor', 'baseArmorModifiable'], ['armorperlevel', 'armorPerLevelModifiable'],
-    ['attackdamage', 'baseDamageModifiable'], ['attackdamageperlevel', 'damagePerLevelModifiable'],
-    ['spellblock', 'baseMR'], ['spellblockperlevel', 'mrPerLevel'],
-    ['movespeed', 'baseMoveSpeedModifiable'], ['attackrange', 'attackRangeModifiable']];
-    let checked = 0, diff = [];
+    // ★ [DD 키, bin 필드, 단위 배율]. DD 의 재생 수치는 5초당이고 bin 은 초당이라 0.2 를 곱한다.
+    //   2026-08-12에 체력 재생 두 줄을 추가했다 — 없어서 8명이 0 으로 나가는 걸 못 잡았다.
+    const CHECK = [['hp', 'baseHPModifiable', 1], ['hpperlevel', 'hpPerLevelModifiable', 1],
+    ['hpregen', 'baseStaticHPRegenModifiable', 0.2], ['hpregenperlevel', 'hpRegenPerLevelModifiable', 0.2],
+    ['armor', 'baseArmorModifiable', 1], ['armorperlevel', 'armorPerLevelModifiable', 1],
+    ['attackdamage', 'baseDamageModifiable', 1], ['attackdamageperlevel', 'damagePerLevelModifiable', 1],
+    ['spellblock', 'baseMR', 1], ['spellblockperlevel', 'mrPerLevel', 1],
+    ['movespeed', 'baseMoveSpeedModifiable', 1], ['attackrange', 'attackRangeModifiable', 1]];
+    let checked = 0, diff = [], missing = {};
     for (const file of fs.readdirSync(CACHE_BIN)) {
         if (!file.endsWith('.json')) continue;
         let bin; try { bin = JSON.parse(fs.readFileSync(path.join(CACHE_BIN, file), 'utf8')); } catch (e) { continue; }
@@ -388,16 +391,32 @@ function statCurvesFromBin(root, ddId) {
         const ddId = Object.keys(dd.data).find(x => x.toLowerCase() === file.replace('.json', ''));
         if (!ddId) continue;
         const st = dd.data[ddId].stats;
-        for (const [ddF, binF] of CHECK) {
-            const raw = root[binF];
-            const bv = (raw && typeof raw === 'object') ? raw.baseValue : raw;
-            if (bv === undefined) continue;
+        for (const [ddF, binF, mul] of CHECK) {
+            // ★ mf 를 거친다. 예전엔 root[binF] 로 직접 봐서 **해시 키를 못 읽었고**,
+            //   그러면 아래 undefined 분기로 조용히 빠졌다. mrPerLevel 이 정확히 그 경우라
+            //   "CHECK 에 있는데도" 173명 MR 성장이 0 인 걸 못 잡았다 (2026-08-12).
+            const bv = mf(root, binF);
+            // ★ 못 읽은 필드를 조용히 건너뛰지 않는다. 그게 바로 사고가 숨는 자리다.
+            //   bin 의 "필드 없음" 은 0 이 아니라 **라이엇 기본값** 일 수 있다
+            //   (baseStaticHPRegen 이 없는 8명은 DD 가 전부 5 를 준다).
+            if (bv === undefined) { (missing[binF] = missing[binF] || []).push(ddId); continue; }
             checked++;
-            if (Math.abs(bv - (st[ddF] || 0)) > 0.02) diff.push(`${ddId}.${ddF}: DD ${st[ddF]} vs bin ${round(bv)}`);
+            const want = (st[ddF] || 0) * mul;
+            if (Math.abs(bv - want) > Math.max(0.02, Math.abs(want) * 0.005)) {
+                diff.push(`${ddId}.${ddF}: DD ${round(want)} vs bin ${round(bv)}`);
+            }
         }
     }
     console.log(`  bin 교차검증 ${checked}자리 중 불일치 ${diff.length}건`);
     diff.slice(0, 10).forEach(d => console.log('    ' + d));
+    const missKeys = Object.keys(missing);
+    if (missKeys.length) {
+        console.log(`  ★ bin 에서 못 읽은 필드 ${missKeys.length}종 — 0 으로 나가면 사고다. DD 값을 확인할 것:`);
+        for (const k of missKeys) {
+            const who = missing[k];
+            console.log(`    ${k}  ${who.length}명   ${who.slice(0, 6).join(', ')}${who.length > 6 ? ' ...' : ''}`);
+        }
+    }
 
     if (!WRITE) { console.log('\n미리보기였습니다. --write 를 붙이면 파일을 만듭니다.'); return; }
     fs.writeFileSync('level_curves.json', JSON.stringify(skills, null, 1));
