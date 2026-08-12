@@ -61,8 +61,12 @@ for (const id of Object.keys(src).sort()) {
         if (!Array.isArray(v) || v.length !== 18) { warn.push(`${id} ${k}`); continue; }
 
         if (noResource && !KNOWN.has(k)) continue;
-        // 전부 0 인 자리도 뺀다
-        if (v.every(x => x === 0)) continue;
+        // 전부 0 인 자리는 뺀다.
+        //   ★ 단 KNOWN(모든 챔피언이 갖는 스탯)은 0 이어도 줄을 남긴다 (2026-08-12).
+        //     브라이어가 유일한 대상인데, 체력 재생이 0 인 것은 **패시브 설명에도 적힌 특징**이라
+        //     ("브라이어는 기본 체력 재생이 없으며") 0 을 보여주는 쪽이 정보다.
+        //     줄을 통째로 빼면 "이 챔피언은 체젠 스탯이 없다" 로 읽히고 표 줄 수도 혼자 달라진다.
+        if (v.every(x => x === 0) && !KNOWN.has(k)) continue;
 
         let base, per, kind;
         if (k === '공격 속도') {
