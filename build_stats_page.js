@@ -36,6 +36,16 @@ let stats = 0, warn = [];
 
 const KNOWN = new Set(['체력', '체력 재생(초당)', '공격력', '공격 속도', '방어력', '마법 저항력']);
 
+// ★ 레벨에 따라 **기본 공격 사거리**가 늘어나는 챔피언. 18레벨까지의 증가폭이다.
+//   기본 스탯이 아니라 **패시브**에서 오는 값이라 bin 의 attackRange 에는 안 들어 있다.
+//   근거: level_curves.json 의 `tristana.P.BonusPassiveRange` = 0 -> 150 (성장하는 화력).
+//   ★ 나르도 `gnar.P.TotalAttackRange` = 0 -> 100 이 있지만 **넣으면 안 된다.**
+//     나르의 기본 사거리 175 는 **메가 나르(근접)** 값이라 여기에 100 을 더해도
+//     미니 나르 사거리가 안 나온다. 폼이 둘인 챔피언은 스탯 한 줄로 표현할 수 없다.
+//   ★ 이 성장은 g(N) 곡선이 아니라 **레벨당 일정**하다 (level_curves 가 "직선" 으로 분류).
+//     그래서 아래에서 방식 'l'(linear) 로 내보낸다.
+const RANGE_GROWTH = { Tristana: 150 };
+
 for (const id of Object.keys(src).sort()) {
     const S = src[id]['스탯'];
     const rec = { n: src[id]['이름'], s: {}, f: S['_고정'] || {} };
@@ -77,6 +87,17 @@ for (const id of Object.keys(src).sort()) {
         rec.s[k] = [r(base), r(per, 6), kind];
         stats++;
     }
+
+    // 이동 속도·사거리도 다른 스탯과 같은 줄로 내보낸다 (예전엔 표 밖에 따로 적었다).
+    //   거의 모든 챔피언이 레벨과 무관해서 1레벨 = 18레벨 이지만,
+    //   트리스타나처럼 사거리가 크는 챔피언이 있어서 줄로 두는 편이 맞다.
+    const f = rec.f;
+    if (f['이동 속도'] != null) { rec.s['이동 속도'] = [r(f['이동 속도']), 0, '+']; stats++; }
+    if (f['사거리'] != null) {
+        const grow = RANGE_GROWTH[id] || 0;
+        rec.s['사거리'] = [r(f['사거리']), r(grow / 17, 6), 'l'];
+        stats++;
+    }
     out[id] = rec;
 }
 
@@ -85,16 +106,18 @@ const body =
     `//   생성 시각: ${new Date().toISOString()}\n` +
     `//   원본: champion_stats_by_level.json (build_level_curves.js 가 만든다)\n` +
     `//\n` +
-    `// 값은 [기본값, 레벨당증가, 방식] 이다. 방식 '+' 는 덧셈형, 'x' 는 곱셈형(공격 속도).\n` +
-    `//   레벨 N 값 = base + per x g(N)      ('+')\n` +
-    `//              = base x (1 + per x g(N)) ('x')\n` +
+    `// 값은 [기본값, 레벨당증가, 방식] 이다.\n` +
+    `//   '+' 덧셈형   : base + per x g(N)         (대부분)\n` +
+    `//   'x' 곱셈형   : base x (1 + per x g(N))   (공격 속도)\n` +
+    `//   'l' 직선형   : base + per x (N-1)        (사거리 — 패시브 성장이라 곡선이 아니다)\n` +
     `//   g(N) = (N-1) x (0.7025 + 0.0175 x (N-1)),  g(1)=0, g(18)=17\n` +
     `// 챔피언 키는 **Data Dragon 철자**다 (app.js 가 champ.id 로 찾는다).\n\n` +
     `const championStats = ${JSON.stringify(out)};\n` +
     `const statGrowth = (N) => (N - 1) * (0.7025 + 0.0175 * (N - 1));\n` +
-    `const statAtLevel = (v, N) => v[2] === 'x'\n` +
-    `    ? v[0] * (1 + v[1] * statGrowth(N))\n` +
-    `    : v[0] + v[1] * statGrowth(N);\n`;
+    `const statAtLevel = (v, N) =>\n` +
+    `    v[2] === 'x' ? v[0] * (1 + v[1] * statGrowth(N)) :\n` +
+    `    v[2] === 'l' ? v[0] + v[1] * (N - 1) :\n` +
+    `                   v[0] + v[1] * statGrowth(N);\n`;
 
 console.log(`챔피언 ${Object.keys(out).length}명 / 스탯 ${stats}자리`);
 console.log(`원본 ${(fs.statSync(SRC).size / 1024).toFixed(0)}KB -> 압축 ${(Buffer.byteLength(body) / 1024).toFixed(0)}KB`);

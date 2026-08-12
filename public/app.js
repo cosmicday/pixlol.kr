@@ -4377,12 +4377,26 @@ function statGraphHtml(vals, color) {
     </div>`;
 }
 
+// 지금 그래프를 띄워 둔 스탯. 표를 다시 그려도 유지된다.
+let openStatKey = null;
+
 window.toggleStatGraph = function (key) {
-    const row = document.querySelector(`.stat-graph-row[data-key="${CSS.escape(key)}"]`);
-    const btn = document.querySelector(`.stat-tname[data-key="${CSS.escape(key)}"]`);
-    if (!row) return;
-    const open = row.classList.toggle('open');
-    if (btn) btn.classList.toggle('open', open);
+    openStatKey = (openStatKey === key) ? null : key;
+    document.querySelectorAll('.stat-tname').forEach(b => b.classList.toggle('on', b.dataset.key === openStatKey));
+    const panel = document.getElementById('stat-graph-panel');
+    if (!panel) return;
+    if (!openStatKey) { panel.classList.remove('open'); panel.innerHTML = ''; return; }
+    const rec = championStats[window.currentChampStatsId];
+    const v = rec && rec.s[openStatKey];
+    if (!v) { panel.classList.remove('open'); panel.innerHTML = ''; return; }
+    const vals = Array.from({ length: 18 }, (_, i) => statAtLevel(v, i + 1));
+    panel.classList.add('open');
+    panel.innerHTML = `
+        <div class="stat-graph-head">
+            <i class="stat-dot" style="background:${statColorOf(openStatKey)}"></i>
+            <b>${statLabel(openStatKey)}</b><span>레벨 1 → 18</span>
+        </div>
+        ${statGraphHtml(vals, statColorOf(openStatKey))}`;
 };
 
 window.renderChampStats = function (champId) {
@@ -4391,46 +4405,54 @@ window.renderChampStats = function (champId) {
     const rec = (typeof championStats !== 'undefined') ? championStats[champId] : null;
     if (!rec) { host.innerHTML = `<div class="stat-foot">이 챔피언의 스탯 데이터가 없습니다.</div>`; return; }
 
-    const s = rec.s, f = rec.f || {};
+    const s = rec.s;
+    openStatKey = null;
 
-    // 줄 순서: 체력 / 체력 재생 / 자원 / 자원 재생 / 공격력 / 공격 속도 / 방어력 / 마법 저항력.
+    // 줄 순서: 체력 / 체력 재생 / 자원 / 자원 재생 / 공격력 / 공격 속도 / 방어력 / 마법 저항력 /
+    //          이동 속도 / 사거리.
     //   자원은 챔피언마다 이름이 달라서(마나·기력·분노·투지…) 남는 키를 자동으로 끼워 넣는다.
     const resKeys = Object.keys(s).filter(k => !STAT_COLOR[k]);
     const order = ['체력', '체력 재생(초당)',
         ...resKeys.filter(k => !/재생/.test(k)), ...resKeys.filter(k => /재생/.test(k)),
-        '공격력', '공격 속도', '방어력', '마법 저항력'].filter(k => s[k]);
+        '공격력', '공격 속도', '방어력', '마법 저항력', '이동 속도', '사거리'].filter(k => s[k]);
 
-    const rows = order.map(k => {
-        const vals = Array.from({ length: 18 }, (_, i) => statAtLevel(s[k], i + 1));
-        const color = statColorOf(k);
-        const grows = Math.abs(vals[17] - vals[0]) > 0.0001;
-        return `
+    const row = (k, color, v1, v18, clickable) => `
         <tr class="stat-trow">
             <th scope="row">
-                <button class="stat-tname${grows ? '' : ' flat'}" data-key="${k}"
-                        ${grows ? `onclick="toggleStatGraph('${k}')"` : 'disabled'}>
-                    <i class="stat-dot" style="background:${color}"></i>${statLabel(k)}${grows ? '<span class="stat-caret">▾</span>' : ''}
+                <button class="stat-tname${clickable ? '' : ' flat'}" data-key="${k}"
+                        ${clickable ? `onclick="toggleStatGraph('${k}')"` : 'disabled'}>
+                    <i class="stat-dot" style="background:${color}"></i>${statLabel(k)}
                 </button>
             </th>
-            <td>${fmtStat(vals[0])}</td>
-            <td class="stat-t18">${fmtStat(vals[17])}</td>
-        </tr>
-        ${grows ? `<tr class="stat-graph-row" data-key="${k}"><td colspan="3"><div class="stat-graph">${statGraphHtml(vals, color)}</div></td></tr>` : ''}`;
+            <td>${v1}</td>
+            <td class="stat-t18">${v18}</td>
+        </tr>`;
+
+    let rows = order.map(k => {
+        const vals = Array.from({ length: 18 }, (_, i) => statAtLevel(s[k], i + 1));
+        const grows = Math.abs(vals[17] - vals[0]) > 0.0001;
+        return row(k, statColorOf(k), fmtStat(vals[0]), fmtStat(vals[17]), grows);
     }).join('');
 
-    // 레벨과 무관한 값은 표 아래에 한 줄로. 그래프를 그릴 게 없다.
-    const fixed = ['이동 속도', '사거리'].filter(k => f[k] != null)
-        .map(k => `<span><i class="stat-dot" style="background:${statColorOf(k)}"></i>${k} <b>${fmtStat(f[k])}</b></span>`).join('');
-    // 자원 이름은 표에 이미 줄로 들어가 있다. 자원이 아예 없는 챔피언일 때만 알려 준다.
-    const resNote = order.some(k => !STAT_COLOR[k]) ? '' : `<span class="stat-res">자원 없음</span>`;
+    // ★ 자원을 안 쓰는 챔피언(가렌·리븐·카타리나 등)에도 마나 칸을 만든다.
+    //   값은 "-" 다. 챔피언마다 표의 줄 수가 달라지면 옆에 붙는 그래프 칸 높이도 같이 흔들린다.
+    if (!resKeys.length) {
+        const dash = ['마나', '마나 재생(초당)']
+            .map(k => row(k, '#3a4048', '-', '-', false)).join('');
+        // 체력 재생 바로 뒤에 끼워 넣는다 (자원이 있는 챔피언과 같은 자리)
+        const at = rows.indexOf('</tr>', rows.indexOf('체력 재생')) + 5;
+        rows = rows.slice(0, at) + dash + rows.slice(at);
+    }
 
     host.innerHTML = `
-        <table class="stat-table">
-            <thead><tr><th>스탯</th><th>1레벨</th><th>18레벨</th></tr></thead>
-            <tbody>${rows}</tbody>
-        </table>
-        <div class="stat-fixed-line">${fixed}${resNote}</div>
-        <div class="stat-foot">스탯 이름을 누르면 1~18레벨 성장 곡선이 펼쳐집니다. 레벨 성장은 직선이 아니라 중간이 완만합니다.</div>`;
+        <div class="stat-layout">
+            <table class="stat-table">
+                <thead><tr><th>스탯</th><th>1레벨</th><th>18레벨</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <div id="stat-graph-panel" class="stat-graph-panel"></div>
+        </div>
+        <div class="stat-foot">스탯 이름을 누르면 오른쪽에 1~18레벨 성장 곡선이 나옵니다. 레벨 성장은 직선이 아니라 중간이 완만합니다.</div>`;
 };
 
 window.switchChampTab = function (event, tabName) {

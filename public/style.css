@@ -3808,10 +3808,38 @@ body::before {
     padding: 6px 4px 20px;
 }
 
+/* 표는 왼쪽에 좁게, 그래프는 오른쪽 남은 칸에 */
+.stat-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+/* ★ 표 폭은 **내용에 맞춘다** (width:auto). 전에는 100% 라 숫자 칸이 화면 끝까지 벌어졌다.
+     줄바꿈만 막으면 되므로 칸마다 nowrap 을 주고 최소 폭만 잡는다. */
 .stat-table {
-    width: 100%;
+    width: auto;
+    flex-shrink: 0;
     border-collapse: collapse;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.stat-table th,
+.stat-table td {
+    white-space: nowrap;
+}
+
+/* 숫자 칸이 값 길이에 따라 들쭉날쭉하지 않게 최소 폭만 준다 */
+.stat-trow td,
+.stat-table thead th:not(:first-child) {
+    min-width: 62px;
+}
+
+.stat-trow th,
+.stat-table thead th:first-child {
+    min-width: 108px;
+    padding-right: 18px;
 }
 
 .stat-table thead th {
@@ -3880,31 +3908,52 @@ body::before {
     flex-shrink: 0;
 }
 
-.stat-caret {
+/* 지금 그래프를 띄운 스탯 */
+.stat-tname.on {
+    color: #fff;
+    font-weight: bold;
+}
+
+.stat-tname.on::after {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    width: 3px;
+    height: 14px;
+    margin-top: -7px;
+    border-radius: 2px;
+    background: #a78bfa;
+}
+
+.stat-tname {
+    position: relative;
+}
+
+/* --- 오른쪽 그래프 칸 --- */
+.stat-graph-panel {
+    flex: 1;
+    min-width: 0;
+    align-self: stretch;
+    display: none;
+}
+
+.stat-graph-panel.open {
+    display: block;
+}
+
+.stat-graph-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px 4px;
+    color: #ddd;
+    font-size: 13px;
+}
+
+.stat-graph-head span {
     color: #5f666e;
-    font-size: 10px;
-    transition: transform 0.15s;
-}
-
-.stat-tname.open .stat-caret {
-    transform: rotate(180deg);
-    color: #a78bfa;
-}
-
-/* --- 펼쳐지는 그래프 줄 --- */
-.stat-graph-row>td {
-    padding: 0;
-    border: none;
-}
-
-.stat-graph {
-    height: 0;
-    overflow: hidden;
-    transition: height 0.18s ease-out;
-}
-
-.stat-graph-row.open .stat-graph {
-    height: 132px;
+    font-size: 11px;
 }
 
 /* ★ SVG 는 선만 그린다. 점·라벨·눈금은 전부 HTML 절대배치다.
@@ -3916,7 +3965,8 @@ body::before {
 
 .g-plot {
     position: relative;
-    height: 86px;
+    /* 오른쪽 칸이 넓어서 납작하면 성장 곡선의 완만함이 안 보인다 */
+    height: 180px;
 }
 
 .g-line {
@@ -4033,30 +4083,6 @@ body::before {
 }
 
 /* --- 레벨과 무관한 값 --- */
-.stat-fixed-line {
-    display: flex;
-    gap: 18px;
-    flex-wrap: wrap;
-    align-items: center;
-    padding: 14px 6px 0;
-    font-size: 13px;
-    color: #9aa4af;
-}
-
-.stat-fixed-line span {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-}
-
-.stat-fixed-line b {
-    color: #fff;
-}
-
-.stat-fixed-line .stat-res {
-    color: #5f666e;
-}
-
 .stat-foot {
     margin-top: 14px;
     padding: 0 6px;
@@ -4067,11 +4093,31 @@ body::before {
 
 @media (max-width: 768px) {
 
+    /* 폰에서는 옆에 그래프를 놓을 자리가 없다. 표 아래로 내린다. */
+    .stat-layout {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .stat-table {
+        width: 100%;
+    }
+
+    .stat-graph-panel {
+        width: 100%;
+    }
+
     .stat-trow th,
     .stat-trow td,
     .stat-table thead th {
         padding-left: 2px;
         padding-right: 2px;
+    }
+
+    .stat-trow th,
+    .stat-table thead th:first-child {
+        min-width: 92px;
+        padding-right: 8px;
     }
 
     .stat-tname {
