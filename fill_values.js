@@ -878,6 +878,13 @@ const applyPrecision = (text, p) => {
 //     추가 계수를 총 계수로 잘못 적고 있었다.
 const applyStatFormula = (name, formula) => {
     if (name === null) return null;
+    // ★ 주문력에는 기본/추가 구분이 없다 (2026-08-12 위키 대조).
+    //   챔피언 기본 스탯에 주문력이 아예 없어서 **총 AP = 추가 AP** 다. 그래서
+    //   라이엇 툴팁도 lolwiki 도 나무위키도 전부 그냥 "주문력" 이라고 쓴다.
+    //   bin 이 `mStatFormula: 2` 를 적어 둔 4자리(벨베스 W, 자크 E x2, 자크 R)가
+    //   `추가 주문력의 150%` 로 나가고 있었다 — 값은 맞지만 롤에 없는 개념이라 헷갈린다.
+    //   ★ 다른 스탯은 기본/추가 구분이 실제로 있으므로 여기만 예외다.
+    if (name === '주문력') return name;
     if (formula === 1) return name.startsWith('기본 ') ? name : `기본 ${name.replace(/^(총|추가) /, '')}`;
     if (formula === 2) return name.startsWith('추가 ') ? name : `추가 ${name.replace(/^(총|기본) /, '')}`;
     return name;
@@ -2077,8 +2084,16 @@ async function main() {
     console.log(WRITE ? '[모드] 파일 생성' : '[모드] 미리보기 — 아무 파일도 건드리지 않습니다\n');
 
     const oldValues = fs.existsSync(SRC_VALUES) ? fs.readFileSync(SRC_VALUES, 'utf8') : '';
-    const prelude = oldValues.indexOf('const customValues');
+    // ★ 파일 앞부분(drawGraph/drawSteps 헬퍼, 컬러 코드표)을 그대로 물려준다.
+    //   ★★ 경계를 indexOf 로 찾으므로 **주석 안에라도** 같은 글자가 앞에 있으면
+    //     거기서 잘려 헬퍼가 통째로 날아간다. 2026-08-12에 실제로 겪었다.
+    //     그래서 줄 맨 앞에서 시작하는 선언만 찾는다 (주석은 // 로 시작하니 안 걸린다).
+    const m = oldValues.match(/^const customValues/m);
+    const prelude = m ? m.index : -1;
     const valuesPrelude = prelude === -1 ? '' : oldValues.slice(0, prelude);
+    if (oldValues && prelude === -1) {
+        console.log('[주의] 기존 custom_values.js 에서 값 선언을 못 찾았습니다 — 헬퍼가 빠진 채로 생성됩니다.');
+    }
 
     // 패시브 문장은 CD v1 에 없어서 stringtable 에서 가져온다 (stringtable.js 주석 참고)
     const strings = await loadStringTable({ refresh: process.argv.includes('--refresh') });

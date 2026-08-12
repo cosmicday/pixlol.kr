@@ -4441,7 +4441,24 @@ body::before {
      (버튼 자신의 transform 은 각주를 담지 않으므로 안전하다) */
 .search-wrap {
     position: relative;
-    display: block;
+    /* ★ block 이 아니라 flex 다. block 이면 안의 input 이 inline-block 이라
+       baseline 아래 여백이 생기고, 그만큼 싸개가 높아져 X 가 아래로 밀린다. */
+    display: flex;
+}
+
+.search-wrap > input {
+    width: 100%;
+}
+
+/* ★ .cf-search 는 자기 margin-bottom(8px) 을 갖고 있었다. 싸개 안에 넣으면 그 여백이
+   싸개 높이에 들어가 X 가 4px 아래로 치우친다. 여백을 싸개로 옮긴다.
+   (다른 두 상자는 부모가 flex + gap 이라 margin 이 없어 이 문제가 없었다) */
+.cf-right > .search-wrap {
+    margin-bottom: 8px;
+}
+
+.search-wrap > .cf-search {
+    margin-bottom: 0;
 }
 
 /* X 가 글자를 가리지 않게 오른쪽에 자리를 낸다 */

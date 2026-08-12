@@ -5,7 +5,10 @@
 //     아이번 P 는 값이 `기본 최대 체력의 15 ~ 0.006%` 인데 각주는 실제 소모량(94.5 -> 0.1)이라
 //     제목이 "레벨별 성장 수치" 면 퍼센트 곡선으로 오해한다.
 //   ★ 이 헬퍼는 fill_values.js 가 만드는 게 아니라 **이 파일 앞부분에 그대로 남는다.**
-//     valuesPrelude 가 `const customValues = {` 앞을 통째로 물려주므로 여기서 고치면 된다.
+//     valuesPrelude 가 값 선언 시작 지점 앞을 통째로 물려주므로 여기서 고치면 된다.
+//   ★★ 이 위쪽 어디에도 값 선언과 똑같은 글자를 쓰지 말 것 (주석 안이라도).
+//     fill_values.js 가 indexOf 로 경계를 찾아서, 주석이 먼저 걸리면
+//     **그 앞까지만 물려주고 헬퍼가 통째로 날아간다.** 2026-08-12에 실제로 겪었다.
 // ==========================================
 const drawGraph = (id, color, dataArr, title) => {
     let max = Math.max(...dataArr);
@@ -3946,7 +3949,7 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "80 / 140 / 200 / 260 / 320 (+ 추가 주문력의 150%)", // Damage
+            "p1": "80 / 140 / 200 / 260 / 320 (+ 주문력의 150%)", // Damage
             "p2": "0.6 / 0.7 / 0.8 / 0.9 / 1", // Duration
             "p3": "2", // SlowDuration
             "p4": "30", // SlowPercent*100
@@ -4370,7 +4373,7 @@ const customValues = {
             "p1": "30", // HPforAP
             "p2": "1.6", // APRatioBonusHP
             "p3": "(추가 최대 체력의 100% + 주문력의 -160%) x 0.037", // ApproximateAPBonusAvoidingRecursion
-            "p4": "(추가 주문력의 100% + 추가 최대 체력의 -3.3%)의 169.6%", // ApproximateHPBonusAvoidingRecursion
+            "p4": "(주문력의 100% + 추가 최대 체력의 -3.3%)의 169.6%", // ApproximateHPBonusAvoidingRecursion
             "cooldown": "-",
             "cost": "-"
         },
@@ -8925,11 +8928,11 @@ const customValues = {
         "E": {
             "p1": "2", // DodgeDuration
             "p2": "25", // AoEDamageReduction
-            "p3": "40 / 70 / 100 / 130 / 160 (+ 추가 주문력의 70%)", // TotalDamage
+            "p3": "40 / 70 / 100 / 130 / 160 (+ 주문력의 70%)", // TotalDamage
             "p4": "4", // PercentHealthDamage
             "p5": "1", // StunDuration
             "p6": "20", // PercentIncreasedPerDodge*100
-            "p7": "80 / 140 / 200 / 260 / 320 (+ 추가 주문력의 140%)", // MaxDamage
+            "p7": "80 / 140 / 200 / 260 / 320 (+ 주문력의 140%)", // MaxDamage
             "p8": "8", // MaxPercentHealthDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -8943,7 +8946,7 @@ const customValues = {
         "R": {
             "p1": "2.5", // PassiveFallOffTime
             "p2": "75 / 130 / 185 (+ 주문력의 60%)", // OnHitDamage
-            "p3": "100 / 175 / 250 (+ 추가 주문력의 100%)", // SwingDamageTotal
+            "p3": "100 / 175 / 250 (+ 주문력의 100%)", // SwingDamageTotal
             "p4": "45 / 60 / 75 (+ 추가 공격력의 40%)", // BaseArmor
             "p5": "27 / 36 / 45 (+ 추가 공격력의 24%)", // BaseMR
             "p6": "8", // Duration
