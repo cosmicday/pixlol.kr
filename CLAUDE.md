@@ -57,6 +57,7 @@
 | `bincache.js` | 챔피언 bin 로컬 캐시 (아래) |
 | `build_level_curves.js` | 레벨 1~18 곡선 생성 → `level_curves.json`, `champion_stats_by_level.json` |
 | `add_level_graphs.js` | 곡선을 각주로 → `public/custom_graphs.js` |
+| `build_stats_page.js` | 챔피언 스탯 압축 → `public/champion_stats.js` (스탯 탭이 쓴다) |
 | `belowline.js` | 구분선 아래 회색 글씨 원문. **위 두 생성 스크립트가 같이 쓰는 모듈** |
 | `survey_belowline.js` | 확인 전용. 회색 글씨 전수조사 보고서를 찍는다 |
 
@@ -67,6 +68,7 @@ node build_champion_data.js --refresh     # 문장
 node fill_values.js --refresh --write     # 수치 (custom_values.new.js → 확인 후 이름 변경)
 node build_level_curves.js --write        # 레벨 곡선
 node add_level_graphs.js --write          # 각주 (custom_values.js 를 읽으므로 위가 먼저)
+node build_stats_page.js --write          # 스탯 탭 (champion_stats_by_level.json 이 입력)
 ```
 
 **`bincache.js` — 재실행이 166초에서 9초가 된다 (2026-08-10 추가).**
@@ -150,6 +152,18 @@ node add_level_graphs.js --write          # 각주 (custom_values.js 를 읽으�
 - **`<charge>`·`<release>` 등 라벨 태그는 `display:block` 이라 회색 글씨 문장 중간에서
   줄을 끊는다.** `.skill-rules` 안에서만 `display:inline` 으로 되돌려 뒀다
   (이렐리아 W "…`<charge>`충전`</charge>`이 끝나면…" 이 세 줄로 갈라졌다)
+- **★ 스탯 탭 (2026-08-12).** `public/champion_stats.js` = `build_stats_page.js` 가
+  `champion_stats_by_level.json` 을 **압축한 것** (347KB → 68KB). 18칸을 그대로 안 내려주는 건
+  모든 스탯이 `base + perLevel x g(N)` 한 식으로 복원되기 때문 —
+  **1376자리 전부 오차 0.0015 미만**인 걸 확인하고 줄였다. 공격 속도만 곱셈형(`x`)이다.
+  `app.js` 의 `statAtLevel()` 이 화면에서 계산하고, 레벨 슬라이더로 1~18을 오간다.
+  - **막대 길이는 "같은 레벨 전체 챔피언 중 최댓값" 대비다.** 숫자만 봐선 감이 안 온다
+  - **★ 자원 종류가 `없음` 인 챔피언은 자원 칸을 통째로 빼야 한다.** 대부분 0 인데
+    **비에고만 bin 에 10000 이 박혀 있어서**, 안 빼면 그게 전체 자원 최댓값이 되어
+    **다른 챔피언 마나 막대가 전부 뭉개진다** (라이즈 마나 1490 이 13% 로 보였다)
+- **`<li>` 에는 CSS 가 없어서 브라우저 기본 불릿(동그라미)이 찍히고 있었다 (2026-08-12).**
+  `li { display:block }` + `li::before { content:'- ' }` 로 줄표로 바꿨다.
+  DD 폴백 경로(`cleanTooltipText`)는 원래부터 `<li>` 를 `- ` 로 바꾸고 있어서 이제 양쪽이 같다
 - **아펠리오스 무기 이름 뒤 `(소총)` `(대포)` 같은 분류는 안 적는다 (2026-08-12).**
   P 5건 + R 1건을 지웠다. R 은 중력포에만 붙어 있었는데 2026-08-09에 손으로 쓰면서
   하나만 빠뜨린 것이었다. **무기 이름은 색으로 이미 구분된다**
@@ -361,8 +375,8 @@ node add_level_graphs.js --write          # 각주 (custom_values.js 를 읽으�
   키가 `bin alias(소문자) → 슬롯 → 계산식 이름` 인데 계산식 이름이
   `custom_values.js` 줄 뒤 주석과 같아서 **그대로 조인된다**
 - **`champion_stats_by_level.json`** (커밋됨) — 챔피언 스탯 173명 x 18레벨.
-  **아직 사이트에서 안 쓴다.** 스탯 그래프를 붙일 때 쓰면 되는데 347KB 라
-  **base + perLevel 만 내려주고 g(N) 을 클라이언트에서 계산하는 쪽이 훨씬 가볍다**
+  **2026-08-12부터 스탯 탭이 쓴다.** `build_stats_page.js` 가 base + perLevel 로 압축해
+  `public/champion_stats.js`(68KB) 를 만들고, g(N) 은 화면에서 계산한다
 
 ### 폴백을 푸는 두 번째 방법 — "문장에서 빼기" (2026-08-09)
 

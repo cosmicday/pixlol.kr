@@ -3968,6 +3968,24 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
 
         const loreHtml = `<style>.champ-lore-text p { margin-bottom: 18px; color: #ddd; }</style><div class="champ-lore-text" style="font-size: 15px; line-height: 1.8; word-break: keep-all; padding: 10px; white-space: pre-wrap;">${displayLore}</div>`;
 
+        // ★ 스탯 탭 (2026-08-12). 내용은 renderChampStats 가 채운다 — 레벨 슬라이더로 다시 그려야 해서
+        //   한 번 찍고 끝나는 문자열이 아니다. 여기서는 껍데기만 만든다.
+        window.currentChampStatsId = champ.id;
+        const statsHtml = `
+            <div class="champ-stats-wrap">
+                <div class="stat-level-bar">
+                    <span class="stat-level-title">레벨</span>
+                    <input id="stat-level-range" class="stat-level-range" type="range" min="1" max="18" value="18"
+                           oninput="setStatLevel(this.value)">
+                    <span id="stat-level-label" class="stat-level-label">18</span>
+                    <span class="stat-level-quicks">
+                        ${[1, 6, 11, 16, 18].map(n =>
+            `<button class="stat-lv-quick${n === 18 ? ' on' : ''}" data-lv="${n}" onclick="setStatLevel(${n})">${n}</button>`).join('')}
+                    </span>
+                </div>
+                <div id="champ-stats-body"></div>
+            </div>`;
+
         // ★ HTML 틀 구성 (보조 아이콘 컨테이너 추가, 소모값 색상 #ddd 통일, 하단 커스텀 영역 확보)
         const skillsHtml = `
         <style>
@@ -4020,6 +4038,12 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                keywordname 탐 켄치 R "고정"·"심연 잠수", slow 가렌 W "60%의 강인함",
                level 애니비아 P, stattracking 드레이븐 P (뒤 둘은 스샷에 강조색 자체가 없었다). */
             keywordname, stattracking, level { color: inherit; }
+            /* ★ <li> 에 CSS 가 없어서 브라우저 기본 불릿(동그라미)이 찍히고 있었다 (2026-08-12).
+                 <ul> 없이 <li> 만 쓰는 문장이라 마커가 글 밖으로 삐져나오기도 했다.
+                 인게임 툴팁은 동그라미가 아니라 짧은 줄표를 쓴다. DD 폴백 경로도
+                 cleanTooltipText 가 <li> 를 "- " 로 바꾸고 있어서 이제 양쪽이 같아졌다. */
+            li { display: block; margin: 2px 0; }
+            li::before { content: '- '; color: #9aa4af; }
             /* activerank 는 구분선 아래 회색 글씨에서만 나온다 (볼리베어 E 한 자리).
                인게임 색을 실측한 적이 없으므로 색을 지어내지 않고 본문색을 따라간다. */
             activerank { color: inherit; }
@@ -4165,6 +4189,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             <div class="champ-detail-inner">
                 <div class="champ-tab-bar">
                     <button class="champ-tab-btn active" onclick="switchChampTab(event, 'skills')" style="padding: 15px 20px; background: transparent; border: none; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; border-bottom: 3px solid #a78bfa;">스킬</button>
+                    <button class="champ-tab-btn" onclick="switchChampTab(event, 'stats')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스탯</button>
                     <!-- ▼▼ 비공개 처리 (스킨 · 배경 탭) ▼▼
                          되살릴 때: 이 주석 두 줄만 풀면 된다. 탭 내용(skinsHtml · loreHtml)과
                          switchChampTab 은 그대로라 바로 살아난다.
@@ -4174,6 +4199,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 </div>
                 <div class="champ-tab-scroll">
                     <div id="champ-tab-skills" class="champ-tab-content" style="display: block; height: 100%;">${skillsHtml}</div>
+                    <div id="champ-tab-stats" class="champ-tab-content" style="display: none;">${statsHtml}</div>
                     <div id="champ-tab-skins" class="champ-tab-content" style="display: none; height: 100%;">${skinsHtml}</div>
                     <div id="champ-tab-lore" class="champ-tab-content" style="display: none;">${loreHtml}</div>
                 </div>
@@ -4181,7 +4207,129 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         `;
 
         playSkill(0);
+        renderChampStats(champ.id, 18);
     } catch (error) { detailArea.innerHTML = `<div style="color:#f87171;">데이터를 불러오지 못했습니다.</div>`; }
+};
+
+// ============================================================
+//  스탯 탭 (2026-08-12)
+//
+//  데이터는 `public/champion_stats.js` (build_stats_page.js 생성).
+//  [기본값, 레벨당증가, 방식] 만 들어 있고 레벨별 값은 여기서 계산한다.
+//    '+' 덧셈형: base + per x g(N)
+//    'x' 곱셈형: base x (1 + per x g(N))   ← 공격 속도만
+//  g(N) 은 라이엇 성장 곡선이라 **직선이 아니다** (레벨곡선_정리.md 참고).
+//
+//  막대 길이는 **전체 챔피언 중 최댓값 대비**다. 숫자만 봐선 감이 안 오는데
+//  "얘가 탱커 축인지 물몸인지" 가 한눈에 보이라고 넣었다.
+// ============================================================
+
+// 스탯별 색. 스킬 설명 팔레트(app.js <style>)와 같은 값을 써서 사이트 안에서 일관되게 보이게 한다.
+const STAT_COLOR = {
+    '체력': '#60e08f', '체력 재생(초당)': '#1f995c',
+    '공격력': '#f26522', '공격 속도': '#ffe384',
+    '방어력': '#f0ba57', '마법 저항력': '#4fdfff',
+    '이동 속도': '#fffdc9', '사거리': '#cdfafa',
+};
+// 자원은 챔피언마다 이름이 다르다. 색은 인게임 자원바 느낌으로 묶는다.
+const RESOURCE_COLOR = [
+    [/마나|기류/, '#189ce7'],
+    [/기력/, '#f1c40f'],
+    [/분노|피의 샘|핏빛 격노/, '#e74c3c'],
+    [/열기/, '#e67e22'],
+    [/흉포|용기|투지|보호막/, '#a78bfa'],
+];
+const statColorOf = (name) => {
+    if (STAT_COLOR[name]) return STAT_COLOR[name];
+    const base = name.replace(/ 재생\(초당\)$/, '');
+    for (const [re, c] of RESOURCE_COLOR) if (re.test(base)) return /재생/.test(name) ? c + 'aa' : c;
+    return '#9aa4af';
+};
+
+// 스탯별 전체 최댓값 (레벨마다 다르므로 레벨을 키로 캐시한다)
+const statMaxCache = {};
+function statMaxAt(level) {
+    if (statMaxCache[level]) return statMaxCache[level];
+    const max = {};
+    for (const id in championStats) {
+        const s = championStats[id].s;
+        for (const k in s) {
+            const v = statAtLevel(s[k], level);
+            if (!(k in max) || v > max[k]) max[k] = v;
+        }
+    }
+    // 자원은 이름이 제각각이라 "자원끼리" 한 묶음으로 봐야 막대 길이가 뜻을 갖는다
+    let resMax = 0, regenMax = 0;
+    for (const k in max) {
+        if (STAT_COLOR[k]) continue;
+        if (/재생\(초당\)$/.test(k)) regenMax = Math.max(regenMax, max[k]);
+        else resMax = Math.max(resMax, max[k]);
+    }
+    max.__자원 = resMax; max.__자원재생 = regenMax;
+    return (statMaxCache[level] = max);
+}
+
+const fmtStat = (v) => {
+    const n = Math.round(v * 100) / 100;
+    return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0$/, '');
+};
+
+window.renderChampStats = function (champId, level) {
+    const host = document.getElementById('champ-stats-body');
+    if (!host) return;
+    const rec = (typeof championStats !== 'undefined') ? championStats[champId] : null;
+    if (!rec) { host.innerHTML = `<div style="color:#9aa4af; padding:20px;">이 챔피언의 스탯 데이터가 없습니다.</div>`; return; }
+
+    const lv = Math.min(18, Math.max(1, level | 0));
+    const max = statMaxAt(lv);
+    const s = rec.s;
+
+    // 보여줄 순서. 자원은 이름이 챔피언마다 달라서 남는 걸 자동으로 끼워 넣는다.
+    const fixedOrder = ['체력', '체력 재생(초당)'];
+    const resKeys = Object.keys(s).filter(k => !STAT_COLOR[k]);
+    const order = [...fixedOrder,
+    ...resKeys.filter(k => !/재생/.test(k)), ...resKeys.filter(k => /재생/.test(k)),
+        '공격력', '공격 속도', '방어력', '마법 저항력'].filter(k => s[k]);
+
+    const rows = order.map(k => {
+        const v = statAtLevel(s[k], lv);
+        const at1 = statAtLevel(s[k], 1), at18 = statAtLevel(s[k], 18);
+        const cap = STAT_COLOR[k] ? max[k] : (/재생/.test(k) ? max.__자원재생 : max.__자원);
+        const pct = cap > 0 ? Math.min(100, (v / cap) * 100) : 0;
+        const color = statColorOf(k);
+        const grows = Math.abs(at18 - at1) > 0.0001;
+        const sub = grows ? `${fmtStat(at1)} → ${fmtStat(at18)}` : '레벨 무관';
+        return `
+        <div class="stat-row">
+            <div class="stat-name">${k.replace('(초당)', '<span style="opacity:.6; font-size:11px;">/초</span>')}</div>
+            <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct.toFixed(1)}%; background:${color};"></div></div>
+            <div class="stat-val" style="color:${color};">${fmtStat(v)}</div>
+            <div class="stat-sub">${sub}</div>
+        </div>`;
+    }).join('');
+
+    // 레벨과 무관한 값들
+    const f = rec.f || {};
+    const fixedRows = ['이동 속도', '사거리'].filter(k => f[k] != null)
+        .map(k => `<span><b style="color:${statColorOf(k)};">${fmtStat(f[k])}</b> ${k}</span>`).join('');
+    const resName = f['자원 종류'] && f['자원 종류'] !== '없음' ? f['자원 종류'] : '자원 없음';
+
+    host.innerHTML = `
+        <div class="stat-fixed-line">${fixedRows}<span style="color:#9aa4af;">${resName}</span></div>
+        <div class="stat-rows">${rows}</div>
+        <div class="stat-foot">막대 길이는 <b>같은 레벨 전체 챔피언 중 최댓값</b> 대비입니다. 자원(마나·기력 등)은 자원끼리 비교합니다.</div>`;
+};
+
+window.setStatLevel = function (n) {
+    const lv = Math.min(18, Math.max(1, n | 0));
+    const label = document.getElementById('stat-level-label');
+    const range = document.getElementById('stat-level-range');
+    if (label) label.textContent = lv;
+    if (range && Number(range.value) !== lv) range.value = lv;
+    document.querySelectorAll('.stat-lv-quick').forEach(b => {
+        b.classList.toggle('on', Number(b.dataset.lv) === lv);
+    });
+    renderChampStats(window.currentChampStatsId, lv);
 };
 
 window.switchChampTab = function (event, tabName) {
