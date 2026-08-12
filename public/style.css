@@ -3933,16 +3933,15 @@ body::before {
 /* --- 오른쪽 그래프 칸 ---
    ★ 폭 상한은 **칸이 아니라 그래프(.stat-graph-inner)** 에 건다.
      칸까지 480px 로 묶었더니 범례가 두 줄로 접혔다 (2026-08-12 되돌림). */
+/* ★ 그래프가 없어도 **자리는 그대로 차지한다** (2026-08-12).
+     `display:none` 이었을 땐 스탯을 누를 때마다 이 칸이 생겼다 없어지면서
+     오른쪽 vs 상자가 좌우로 튀었다. 빈 채로 두면 폭만 잡고 아무것도 안 그린다. */
 .stat-graph-panel {
     position: relative;
     /* 범례(.savg-legend)를 제목 줄 자리로 끌어올리는 기준이다 */
     flex: 1;
     min-width: 0;
     align-self: stretch;
-    display: none;
-}
-
-.stat-graph-panel.open {
     display: block;
 }
 
@@ -4085,7 +4084,9 @@ body::before {
      납작하면 그 아래쪽에서 아무것도 안 보인다. 가로는 460px 그대로다 (비율 무관). */
 .g-plot {
     position: relative;
-    height: 290px;
+    /* 277 = 왼쪽 표(405px)에서 제목 블록·여백을 뺀 값. 칸 높이가 표와 같아야
+       오른쪽 vs 상자 높이도 스탯을 열고 닫을 때 안 흔들린다 */
+    height: 277px;
 }
 
 .g-line {
@@ -4330,6 +4331,12 @@ body::before {
 
     .stat-graph-panel {
         width: 100%;
+    }
+
+    /* 폰에서는 위아래로 쌓이므로 빈 칸이 자리를 지킬 이유가 없다.
+       그냥 두면 빈 칸 몫의 간격(14px)이 표와 vs 상자 사이에 남는다. */
+    .stat-graph-panel:not(.open) {
+        display: none;
     }
 
     /* 폰에서는 그래프도 전폭을 쓴다 (표 아래로 내려오므로 옆에 남는 자리가 없다) */
