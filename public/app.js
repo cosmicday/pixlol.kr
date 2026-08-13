@@ -1948,6 +1948,37 @@ function getChosung(str) {
     }).join('');
 }
 
+// ★ 영문 자판을 두벌식 한글 자모로 (2026-08-13).
+//   한영 전환 없이 초성 검색을 하려는 것이다 — "d" -> "ㅇ", "rf" -> "ㄱㄹ".
+//   ★ 검색어는 이미 toLowerCase() 를 거쳐 들어오므로 Shift 조합(ㅃㅉㄸㄲㅆ)은 못 만든다.
+//     챔피언 이름 초성에 된소리가 없어서 지금은 문제가 안 된다.
+const QWERTY_KO = {
+    q: 'ㅂ', w: 'ㅈ', e: 'ㄷ', r: 'ㄱ', t: 'ㅅ', y: 'ㅛ', u: 'ㅕ', i: 'ㅑ', o: 'ㅐ', p: 'ㅔ',
+    a: 'ㅁ', s: 'ㄴ', d: 'ㅇ', f: 'ㄹ', g: 'ㅎ', h: 'ㅗ', j: 'ㅓ', k: 'ㅏ', l: 'ㅣ',
+    z: 'ㅋ', x: 'ㅌ', c: 'ㅊ', v: 'ㅍ', b: 'ㅠ', n: 'ㅜ', m: 'ㅡ',
+};
+
+const qwertyToKo = (s) => {
+    let out = '', hit = false;
+    for (const ch of s) {
+        const k = QWERTY_KO[ch];
+        if (k) { out += k; hit = true; } else out += ch;
+    }
+    return hit ? out : '';
+};
+
+// ★ 검색어 고르기 — **자판 매핑이 하나라도 맞으면 그걸 쓴다.**
+//   항목마다 따로 판단하면 안 된다. "d" 를 쳤을 때 어떤 항목은 ㅇ(초성)으로,
+//   어떤 항목은 영문 id 의 d 로 걸려서 **드레이븐·다리우스가 같이 나온다** —
+//   그게 바로 없애려던 증상이다. 그래서 전체를 한 번 훑어 질의를 먼저 정한다.
+//   자판 매핑으로 아무것도 안 나오면 원문으로 되돌린다 (영문명 "garen" 검색이 살아난다).
+function pickSearchQuery(keys, q) {
+    if (!q) return q;
+    const ko = qwertyToKo(q);
+    if (ko && ko !== q && keys.some(k => k.includes(ko))) return ko;
+    return q;
+}
+
 let champFilterCache = null;
 
 async function loadChampFilterList() {
@@ -2034,14 +2065,18 @@ function champFilterRow(id, sub = '') {
 }
 
 function filterChampFilterList() {
-    const q = (document.getElementById('cf-search').value || '').trim().toLowerCase();
-    const rows = document.querySelectorAll('#cf-list .cf-item');
+    const raw = (document.getElementById('cf-search').value || '').trim().toLowerCase();
+    const rows = [...document.querySelectorAll('#cf-list .cf-item')];
 
-    rows.forEach(row => {
+    // 세 자리(이름·초성·영문 id)를 한 줄로 합쳐서 본다 — 질의를 하나로 정해야 하기 때문이다
+    const keys = rows.map(row => {
         const name = (row.dataset.name || '').toLowerCase();
-        const id = (row.dataset.id || '').toLowerCase();
-        const cho = getChosung(row.dataset.name || '').toLowerCase();
-        const hit = !q || name.includes(q) || id.includes(q) || cho.includes(q);
+        return `${name}|${getChosung(row.dataset.name || '').toLowerCase()}|${(row.dataset.id || '').toLowerCase()}`;
+    });
+    const q = pickSearchQuery(keys, raw);
+
+    rows.forEach((row, i) => {
+        const hit = !q || keys[i].includes(q);
         row.style.display = hit ? 'flex' : 'none';
     });
 }
@@ -3627,10 +3662,14 @@ window.clearSearchBox = function (btn) {
 
 window.filterChampList = function () {
     const input = document.getElementById('champ-search-input');
-    const q = (input ? input.value : '').replace(/\s+/g, '').toLowerCase();
+    const raw = (input ? input.value : '').replace(/\s+/g, '').toLowerCase();
     let shown = 0;
 
-    document.querySelectorAll('.champ-sidebar-item').forEach(el => {
+    // 영문 자판 -> 한글 자모. 맞는 게 있으면 그 질의를 쓴다 (pickSearchQuery 주석 참고)
+    const els = [...document.querySelectorAll('.champ-sidebar-item')];
+    const q = pickSearchQuery(els.map(el => (el.dataset.search || '').toLowerCase()), raw);
+
+    els.forEach(el => {
         const key = (el.dataset.search || '').toLowerCase();
         const roles = (el.dataset.roles || '').split(' ');
         const okText = !q || key.includes(q);
@@ -4532,9 +4571,11 @@ window.pickVsChamp = function (id) {
 
 window.filterVsList = function () {
     const q = (document.getElementById('vs-search-input') || {}).value || '';
-    const k = q.replace(/\s+/g, '').toLowerCase();
+    const raw = q.replace(/\s+/g, '').toLowerCase();
     let shown = 0;
-    document.querySelectorAll('.vs-item').forEach(el => {
+    const els = [...document.querySelectorAll('.vs-item')];
+    const k = pickSearchQuery(els.map(el => el.dataset.search || ''), raw);
+    els.forEach(el => {
         const ok = !k || (el.dataset.search || '').includes(k);
         el.classList.toggle('filtered-out', !ok);
         if (ok) shown++;
