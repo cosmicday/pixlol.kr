@@ -4486,7 +4486,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     ${skinList.map((skin, index) => `
                         <div class="skin-item${index === 0 ? ' active' : ''}" data-i="${index}" onclick="selectSkin(${index})">
                             <img class="skin-item-img" src="${skin.thumb}" alt="" loading="lazy">
-                            <div class="skin-item-name">${escapeHtml(skin.name)}</div>
+                            <div class="skin-item-name">${skin.gem ? `<img class="skin-gem" src="${skin.gem}" alt="">` : ''}${escapeHtml(skin.name)}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -5179,6 +5179,38 @@ window.playChampVoice = function (champKey, type) {
 
 const CD_ASSET_BASE = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/';
 
+// ★ 등급 보석 아이콘. 라이엇이 이름으로 올려 둔 6종이 전부다 (2026-08-13 디렉터리 확인).
+//   `kRare`(19개)·`kNoRarity`(832개)는 파일이 아예 없다 — 인게임에서도 보석이 없는 등급이라
+//   빈칸으로 두는 게 맞다. `rare.png` 는 404 다.
+const SKIN_GEM = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/rarity-gem-icons/';
+const SKIN_RARITY_GEM = {
+    kEpic: 'epic', kLegendary: 'legendary', kMythic: 'mythic',
+    kUltimate: 'ultimate', kExalted: 'exalted', kTranscendent: 'transcendent'
+};
+
+function skinGemUrl(rarity) {
+    const g = SKIN_RARITY_GEM[rarity];
+    return g ? SKIN_GEM + g + '.png' : null;
+}
+
+// 신화 정수 아이콘. 경로는 CD 의 `v1/lolcurrency.json` 이 알려준다
+//   (`lol_mythic_essence` → mythic-essence-icon.svg). 15x18 짜리 svg 고 그라데이션이
+//   파일 안에 들어 있어서 어두운 배경에서도 그대로 보인다.
+const ME_ICON = CD_ASSET_BASE + 'assets/currencies/images/mythic-essence-icon.svg';
+
+// ★ 가격은 `public/skin_prices.js`(build_skin_prices.js 생성)에서 온다.
+//   숫자 = RP, "m150" = 150 신화 정수, 키 없음 = 판매 대상이 아님(배틀패스·랭크 보상 등).
+//   ★ 등급으로 가격을 추측하면 안 된다 — 전설 123개 중 2개가 975 고,
+//     궁극 7개 중 하나가 2775 다. 반드시 이 표를 볼 것
+//   ★ HTML 을 돌려준다. 값이 우리가 만든 표의 **숫자**라 이스케이프할 게 없고,
+//     신화 정수는 글자 대신 아이콘으로 나가야 해서 태그가 필요하다
+function skinPriceHtml(champKey, skinNum) {
+    const v = (typeof skinPrices !== 'undefined' && skinPrices[champKey] || {})[skinNum];
+    if (v === undefined) return '';
+    if (typeof v === 'number') return v + 'RP';
+    return Number(String(v).slice(1)) + ` <img class="me-icon" src="${ME_ICON}" alt="신화 정수" title="신화 정수">`;
+}
+
 // ★ CD 가 주는 경로는 `/lol-game-data/assets/ASSETS/Characters/...` 꼴인데
 //   실제 파일은 **전부 소문자**다. 대문자를 그대로 붙이면 404 가 난다
 function cdAssetUrl(p) {
@@ -5199,7 +5231,13 @@ async function fetchCdSkins(champKey) {
             thumb: cdAssetUrl(s.splashPath),
             // 원본이 없는 스킨이 있을 수 있으니 얼굴 중심 판본으로 물러난다
             full: cdAssetUrl(s.uncenteredSplashPath) || cdAssetUrl(s.splashPath),
-            desc: s.description || ''
+            desc: s.description || '',
+            gem: skinGemUrl(s.rarity),
+            // ★ 기본 스킨엔 가격을 안 붙인다 (2026-08-13). 위키의 `cost` 가 기본 스킨 자리에선
+            //   **스킨값이 아니라 챔피언 가격**이다 (이렐리아·트런들 등 880 짜리가 그 예다).
+            //   "기본 스킨 - 880RP" 로 내보내면 없는 상품을 파는 말이 된다.
+            //   스킨 id = 챔피언숫자키 x 1000 + 스킨번호. 가격표가 그 두 값으로 짜여 있다
+            price: s.isBase ? '' : skinPriceHtml(Math.floor(s.id / 1000), s.id % 1000)
         }));
     } catch (e) {
         return null;
@@ -5218,8 +5256,16 @@ window.selectSkin = function (index) {
     const skin = list[index];
     const img = document.getElementById('skin-view-img');
     if (img) img.src = skin.full;
+
+    // (등급 아이콘) 이름 - 가격.  가격을 모르는 스킨은 " - " 까지 통째로 뺀다
     const nameEl = document.getElementById('skin-view-name');
-    if (nameEl) nameEl.textContent = skin.name;
+    if (nameEl) {
+        nameEl.innerHTML =
+            (skin.gem ? `<img class="skin-gem skin-gem-lg" src="${skin.gem}" alt="">` : '')
+            + escapeHtml(skin.name)
+            // price 는 skinPriceHtml 이 만든 HTML 이라 이스케이프하면 안 된다 (아이콘 태그가 들어 있다)
+            + (skin.price ? ` <span class="skin-view-price">- ${skin.price}</span>` : '');
+    }
 
     // 설명이 없는 스킨이 많다(2146개 중 315개가 빈칸). 없으면 줄을 통째로 접는다
     const descEl = document.getElementById('skin-view-desc');

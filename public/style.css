@@ -3447,6 +3447,21 @@ body::before {
     line-height: 1.35;
 }
 
+/* 등급 보석. 에픽·전설·신화·궁극·고귀·초월 6종만 있고 그 아래 등급은 아이콘이 없다.
+   이름 앞에 붙으므로 줄 높이를 안 밀도록 vertical-align 을 맞춰 둔다. */
+.skin-gem {
+    height: 13px;
+    width: auto;
+    vertical-align: -2px;
+    margin-right: 4px;
+}
+
+.skin-gem-lg {
+    height: 20px;
+    vertical-align: -3px;
+    margin-right: 7px;
+}
+
 .skin-item.active .skin-item-name {
     color: #fff;
     font-weight: bold;
@@ -3464,8 +3479,14 @@ body::before {
 /* ★ 그림 자리도 비율을 못 박는다. 스킨을 바꿀 때마다 높이가 달라지면
    아래의 이름·설명이 위아래로 튄다 (원본 스플래시는 1215x717 로 거의 일정하지만
    얼굴 중심 판본으로 물러난 스킨은 1280x720 이라 미세하게 다르다) */
+/* ★ 폭에 상한을 두고 가운데 정렬한다 (2026-08-13).
+   칸을 꽉 채우면(704px) 그림 높이만 415px 이라 **설명이 스크롤해야 보였다.**
+   500px 로 줄이면 높이가 295px 가 되어, 제일 긴 설명(멜 293자)까지 한 화면에 들어간다.
+   계산: 295(그림) + 28(이름) + 10(여백) + 207(293자 ≒ 9줄) = 540 < 555(칸 높이). */
 .skin-view-frame {
     width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
     aspect-ratio: 1215 / 717;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 12px;
@@ -3481,17 +3502,38 @@ body::before {
     display: block;
 }
 
+/* 그림 폭에 맞춰 같은 500px 칸 안에 세운다 — 그림만 가운데면 글이 붕 떠 보인다 */
 .skin-view-name {
-    margin-top: 16px;
-    font-size: 20px;
+    margin: 16px auto 0 auto;
+    max-width: 500px;
+    font-size: 19px;
     font-weight: bold;
     color: #fff;
+    text-align: center;
     flex-shrink: 0;
 }
 
+/* 가격은 이름보다 한 단계 눌러 둔다 — 이름이 먼저 읽혀야 한다 */
+.skin-view-price {
+    font-size: 15px;
+    font-weight: normal;
+    color: #a78bfa;
+    margin-left: 2px;
+    white-space: nowrap;
+}
+
+/* 신화 정수 아이콘 (원본 15x18 세로형). 숫자 뒤에 붙으므로 글자 밑선에 맞춘다 */
+.me-icon {
+    height: 16px;
+    width: auto;
+    vertical-align: -3px;
+    margin-left: 1px;
+}
+
 .skin-view-desc {
-    margin-top: 10px;
-    font-size: 14px;
+    margin: 10px auto 0 auto;
+    max-width: 500px;
+    font-size: 13.5px;
     color: #9aa4af;
     line-height: 1.7;
     word-break: keep-all;

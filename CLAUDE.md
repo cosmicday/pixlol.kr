@@ -104,6 +104,60 @@ DD 폴백도 같은 레이아웃을 타므로 경로가 하나다.
 - **목록은 자기 스크롤을 갖는다.** 바깥 스크롤에 맡기면 스킨 24개짜리에서
   오른쪽 큰 그림이 화면 밖으로 밀려난다
 
+### 스킨 등급 아이콘 · 가격 (2026-08-13)
+
+목록에는 `(등급 보석) 스킨 이름`, 오른쪽에는 `(보석) 이름 - 1820RP` 로 나간다.
+
+- **등급 보석은 CD 에 이름으로 6종만 있다** — `v1/rarity-gem-icons/` 의
+  `epic` / `legendary` / `mythic` / `ultimate` / `exalted` / `transcendent`.
+  **`rare.png` 는 404 다.** `kRare`(19개)·`kNoRarity`(832개)는 인게임에서도 보석이 없는
+  등급이라 빈칸으로 두는 게 맞다. (같은 폴더의 `1.png`~`11_large.png` 는 번호판인데
+  스킨 데이터의 `rarityGemPath`·`regionRarityId` 가 **2146개 전부 null/0** 이라 못 쓴다)
+
+**★★ 가격은 CommunityDragon 에 없다. 롤위키에서 받아 온다.**
+CD 스킨 객체 23개 필드에 가격이 없고, `v1/` 아래 60여 개 json 에 store/catalog 도 없다
+(`rcp-fe-lol-store` 는 css·png 뿐, `loot.json` 은 TFT 맵용). 스토어 API 는 로그인이 필요하다.
+→ 롤위키 **`Module:SkinData/data`** (Lua 표 2.08MB) 를 `build_skin_prices.js` 가 받아
+`public/skin_prices.js` (19KB) 를 만든다. **한 번 받으면 되고 런타임 의존은 없다.**
+
+- 위키 표는 들여쓰기가 완전히 일정해서(챔피언 2칸 / 필드 4칸 / 스킨 6칸 / 스킨필드 8칸)
+  Lua 를 해석할 필요 없이 그 층만 보면 된다
+- **조인 키는 숫자다.** 위키의 챔피언 `id` = DD 숫자키, 스킨 `id` = 스킨 번호.
+  CD 스킨 id = `챔피언키 x 1000 + 번호` 라 정확히 맞는다. **이름으로 맞추려 하지 말 것** —
+  위키는 영문이고 챔피언명 표기도 다르다(`Nunu & Willump` 등)
+- 결과: **RP 1869 / 신화 정수 119 / 가격 없음 123** (합 2111 = CD 스킨 수와 일치).
+  가격 없음은 배틀패스·랭크 보상·코드 등 **애초에 파는 물건이 아닌 것들**이다.
+  위키에 항목 자체가 없는 건 3개뿐이다 (삼바 애니비아, 펄스 건 리븐, 불멸의 영웅 리븐)
+
+**★ 등급으로 가격을 추측하면 안 된다 (전수 확인).**
+
+| 등급 | 가격 |
+|---|---|
+| kLegendary | 1820 × 123 — 그런데 **975 가 2개** |
+| kEpic | 1350 × 976 — 그런데 **975 가 2개** |
+| kUltimate | 3250 × 6 — 그런데 **2775 가 1개** (기동총격여신 미포) |
+| kNoRarity | 975 / 520 / 750 / 880 / 790 / 585 / 260 / 390 / 460 / 5000 / 150000 … 제각각 |
+| kMythic | `cost` 가 전부 `"Special"` — 숫자가 아니다 |
+
+- **★ 신화 정수 가격은 `cost` 가 아니라 `distribution` 에 있다.**
+  프레스티지 스킨은 `cost="Special"` + `distribution="150 Mythic Essence"` 다.
+  100/125/150/200 네 종류가 있고 119자리다
+- **★ 기본 스킨의 `cost` 는 스킨값이 아니라 챔피언 가격이다.** 이렐리아·트런들·스웨인
+  등의 `880` 이 그것이다. 그대로 찍으면 **"기본 스킨 - 880RP" 라는 없는 상품**이 된다.
+  `isBase` 면 가격을 안 붙인다
+- 5000(바다사자 우르프)·150000(우르프 워윅)은 오류가 아니라 **라이엇의 농담 가격**이다
+- 표기는 콤마 없이 `1820RP` / `150 (신화 정수 아이콘)` 이다.
+  **아이콘 경로는 `v1/lolcurrency.json` 이 알려준다** (`lol_mythic_essence` →
+  `assets/currencies/images/mythic-essence-icon.svg`). 15x18 짜리 svg 고 그라데이션이
+  파일 안에 있어서 어두운 배경에서 그대로 보인다. RP·블루 에센스 아이콘도 같은 파일에 있다.
+  `skinPriceHtml()` 이 **HTML 을 돌려주므로 이스케이프하면 안 된다** — 값은 우리가 만든
+  표의 숫자라 위험이 없다
+
+**오른쪽 일러스트는 500px 상한 + 가운데 정렬이다.** 칸을 꽉 채우면(704px) 그림 높이만
+415px 이라 **설명이 스크롤해야 보였다.** 500px 면 높이가 295px 라
+`295 + 28(이름) + 10 + 207(제일 긴 설명 293자 ≒ 9줄) = 540 < 555(칸 높이)` 로 들어간다.
+**제일 긴 설명(멜 293자)으로 실측해 스크롤이 안 생기는 걸 확인했다.**
+
 **★★ 폰에서 페이지가 통째로 옆으로 늘어난 원인 — `align-items: flex-start` (2026-08-13).**
 `.champ-page-wrap` 은 폰에서 `flex-direction: column` 이 되는데 **기본 규칙의
 `align-items: flex-start` 가 그대로 남아 있었다.** 세로 배치에서 그건
@@ -176,6 +230,7 @@ puppeteer 없이도 된다 — **node 22+ 에 `WebSocket` 이 내장**이라
 | `build_level_curves.js` | 레벨 1~18 곡선 생성 → `level_curves.json`, `champion_stats_by_level.json` |
 | `add_level_graphs.js` | 곡선을 각주로 → `public/custom_graphs.js` |
 | `build_stats_page.js` | 챔피언 스탯 압축 → `public/champion_stats.js` (스탯 탭이 쓴다) |
+| `build_skin_prices.js` | 스킨 가격 → `public/skin_prices.js` (스킨 탭이 쓴다). **롤위키가 출처** — 위 "스킨 탭" 절 참고 |
 | `belowline.js` | 구분선 아래 회색 글씨 원문. **위 두 생성 스크립트가 같이 쓰는 모듈** |
 | `survey_belowline.js` | 확인 전용. 회색 글씨 전수조사 보고서를 찍는다 |
 
