@@ -4522,7 +4522,13 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'stats')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스탯</button>
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'skins')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스킨</button>
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'lore')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">배경</button>
+                    <!-- ▼▼ 비공개 처리 (대사 탭) ▼▼
+                         되살릴 때: 이 주석 한 줄만 풀면 된다. 탭 내용(quotesHtml)·renderChampQuotes·
+                         champion_quotes.js 는 그대로라 바로 살아난다.
+                         가린 이유: 라이엇이 공개하는 음성이 픽·밴 둘뿐이라 채울 게 대표 대사
+                         한 줄밖에 없다. 자세한 건 CLAUDE.md "인게임 대사" 절 참고.
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'quotes')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">대사</button>
+                         ▲▲ 비공개 처리 끝 ▲▲ -->
                 </div>
                 <div class="champ-tab-scroll">
                     <div id="champ-tab-skills" class="champ-tab-content" style="display: block; height: 100%;">${skillsHtml}</div>

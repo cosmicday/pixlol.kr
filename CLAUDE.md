@@ -286,7 +286,14 @@ CD 스킨 객체 23개 필드에 가격이 없고, `v1/` 아래 60여 개 json �
   `width / scrollWidth / min-width / overflow-x` 를 찍으니 **`.champ-page-wrap` 370px 인데
   자식 `.champ-detail-pane` 2234px** 라는 게 한 줄로 드러났다
 
-## 배경 탭 · 대사 탭 (2026-08-13 신설·공개)
+## 배경 탭 (공개) · 대사 탭 (비공개) — 2026-08-13 신설
+
+**대사 탭은 만들어 두고 가려 놨다** (`app.js` 탭 버튼의 `▼▼ 비공개 처리 ▼▼` 주석 한 줄).
+채울 게 대표 대사 한 줄뿐이라서다 — 아래 "인게임 대사" 절이 이유다.
+내용(`quotesHtml`)·`renderChampQuotes`·`champion_quotes.js` 는 그대로 남겨 뒀으니
+주석만 풀면 살아난다. **`champion_quotes.js`(18KB)는 지금 안 쓰이지만 계속 받는다** —
+되살릴 때 손댈 곳을 줄이려고 남긴 것이다.
+
 
 `build_champion_lore.js` 가 **라이엇 Universe** 에서 받아 두 파일을 만든다.
 
