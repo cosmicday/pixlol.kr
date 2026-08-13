@@ -3305,6 +3305,12 @@ body::before {
     height: 100%;
     display: flex;
     flex-direction: column;
+    /* ★ 위 .champ-detail-pane 과 **똑같은 이유**로 필요하다 (2026-08-13).
+       이것도 flex 자식이라 기본 min-width 가 auto 다. 바깥 칸만 0 으로 풀어 두면
+       안쪽이 대신 버텨서 결국 페이지가 옆으로 늘어난다 —
+       폰에서 스킨 목록(17칸 x 122px)이 가로 스크롤 안 되고 화면을 2202px 로 벌렸다.
+       내용이 들어맞을 때는 아무 차이가 없다. */
+    min-width: 0;
 }
 
 .champ-tab-bar {
@@ -3380,6 +3386,118 @@ body::before {
     scrollbar-gutter: stable;
 }
 
+/* -----------------------------------------
+   스킨 탭 (2026-08-13)
+   -----------------------------------------
+   왼쪽 얼굴 중심 썸네일 세로줄 + 오른쪽 원본 일러스트.
+   골격은 위 .champ-skill-layout 과 같다 — 스킬 탭과 같은 화면 문법으로 읽히게 한 것이다.
+   이미지 주소는 CommunityDragon 이고 app.js 의 fetchCdSkins 가 만든다.
+   ----------------------------------------- */
+.skin-layout {
+    display: flex;
+    gap: 24px;
+    height: 100%;
+}
+
+/* ★ 목록은 **자기 스크롤**을 갖는다. 스킨이 30개 넘는 챔피언이 있어서
+   바깥 스크롤에 맡기면 오른쪽 큰 그림이 화면 밖으로 밀려난다 */
+.skin-list {
+    width: 190px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding-right: 6px;
+    scrollbar-gutter: stable;
+}
+
+.skin-item {
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 5px;
+    margin-bottom: 6px;
+    border: 2px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.skin-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.skin-item.active {
+    background: rgba(167, 139, 250, 0.12);
+    border-color: #a78bfa;
+}
+
+/* ★ 16:9 를 못 박아 둔다. 이미지가 늦게 오면 높이가 0 이었다가 늘어나면서
+   목록 전체가 아래로 밀린다 — 스크롤 위치가 같이 튄다 */
+.skin-item-img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 6px;
+    display: block;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.skin-item-name {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #ddd;
+    text-align: center;
+    word-break: keep-all;
+    line-height: 1.35;
+}
+
+.skin-item.active .skin-item-name {
+    color: #fff;
+    font-weight: bold;
+}
+
+.skin-view {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+}
+
+/* ★ 그림 자리도 비율을 못 박는다. 스킨을 바꿀 때마다 높이가 달라지면
+   아래의 이름·설명이 위아래로 튄다 (원본 스플래시는 1215x717 로 거의 일정하지만
+   얼굴 중심 판본으로 물러난 스킨은 1280x720 이라 미세하게 다르다) */
+.skin-view-frame {
+    width: 100%;
+    aspect-ratio: 1215 / 717;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.skin-view-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.skin-view-name {
+    margin-top: 16px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.skin-view-desc {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #9aa4af;
+    line-height: 1.7;
+    word-break: keep-all;
+    flex-shrink: 0;
+}
+
 .champ-skill-box {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 12px;
@@ -3429,6 +3547,13 @@ body::before {
     .champ-page-wrap {
         flex-direction: column;
         gap: 12px;
+        /* ★ 세로로 쌓을 땐 stretch 여야 한다 (2026-08-13).
+           기본 규칙의 align-items:flex-start 가 그대로 남으면, 세로 배치에서는
+           그게 "자식 폭을 **내용에 맞춰라**" 라는 뜻이 되어 버린다.
+           스킬·스탯 탭은 글이라 줄바꿈돼서 티가 안 났는데, 스킨 목록처럼
+           안 줄어드는 칸이 가로로 늘어선 순간 그 내용 폭(2202px)이 그대로
+           칸 폭이 되어 **페이지 전체가 옆으로 늘어났다.** */
+        align-items: stretch;
     }
 
     /* 목록: 2열 격자로 깐다. 173명을 한 줄씩 쌓으면 스크롤이 두 배다.
@@ -3505,6 +3630,46 @@ body::before {
         flex-direction: column;
         gap: 16px;
         height: auto;
+    }
+
+    /* 스킨도 같은 방식으로 접는다 — 왼쪽 세로줄이 위쪽 가로 스크롤 띠가 된다.
+       폰에서 190px 를 목록에 내주면 정작 그림 볼 자리가 안 남는다 */
+    .skin-layout {
+        flex-direction: column;
+        gap: 14px;
+        height: auto;
+    }
+
+    .skin-list {
+        width: auto;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-right: 0;
+        padding-bottom: 6px;
+        scrollbar-gutter: auto;
+        /* ★ min-width 를 0 으로 내려야 한다. 플렉스 항목의 기본값이 auto 라
+           **내용보다 작아지지 못하고** 스킨 17개 x 122px = 2202px 가 그대로 칸 폭이 된다.
+           overflow-x:auto 를 줘도 소용없다 — 넘칠 일이 애초에 안 생기고
+           대신 페이지가 통째로 옆으로 늘어난다 (390px 화면에서 실측 2202px 였다) */
+        min-width: 0;
+    }
+
+    /* 가로 띠에서는 칸이 스스로 폭을 못 정하므로 못 박는다 */
+    .skin-item {
+        width: 122px;
+        flex-shrink: 0;
+        margin-bottom: 0;
+    }
+
+    .skin-item-name {
+        font-size: 11px;
+    }
+
+    .skin-view {
+        overflow-y: visible;
+        scrollbar-gutter: auto;
     }
 
     .champ-skill-btns {

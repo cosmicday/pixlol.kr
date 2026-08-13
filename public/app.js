@@ -4471,24 +4471,32 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         </div>
         `;
 
-        window.currentChampSkins = champ.skins;
-        window.currentChampIdForSkins = champId;
+        // ★ 스킨 목록은 CD 를 먼저 본다. 실패하면 DD 스플래시 한 장으로 물러나는데,
+        //   레이아웃은 같은 걸 쓴다 (썸네일과 큰 그림이 같은 파일이 될 뿐이다)
+        const cdSkins = await fetchCdSkins(champ.key);
+        const skinList = cdSkins || champ.skins.map(s => {
+            const url = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champId}_${s.num}.jpg`;
+            return { name: s.name === 'default' ? '기본 스킨' : s.name, thumb: url, full: url, desc: '' };
+        });
+        window.currentSkinList = skinList;
 
         const skinsHtml = `
-            <div id="skin-grid-view" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 10px;">
-                ${champ.skins.map((skin, index) => `
-                    <div style="text-align: center;" onclick="openSkinDetail(${index})">
-                        <img src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champId}_${skin.num}.jpg" style="width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                        <div style="margin-top: 8px; font-size: 13px; color: #fff; font-weight: bold;">${skin.name === 'default' ? '기본 스킨' : skin.name}</div>
+            <div class="skin-layout">
+                <div class="skin-list">
+                    ${skinList.map((skin, index) => `
+                        <div class="skin-item${index === 0 ? ' active' : ''}" data-i="${index}" onclick="selectSkin(${index})">
+                            <img class="skin-item-img" src="${skin.thumb}" alt="" loading="lazy">
+                            <div class="skin-item-name">${escapeHtml(skin.name)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="skin-view">
+                    <div class="skin-view-frame">
+                        <img id="skin-view-img" class="skin-view-img" src="" alt="">
                     </div>
-                `).join('')}
-            </div>
-            <div id="skin-detail-view" style="display: none; position: relative; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
-                <button onclick="closeSkinDetail()" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(167, 139, 250, 0.4); color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; z-index: 10; transition: 0.2s;" onmouseover="this.style.background='rgba(167, 139, 250, 0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'">← 목록으로</button>
-                <button onclick="prevSkin()" style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); background: rgba(0,0,0,0.5); border: 1px solid rgba(167, 139, 250, 0.4); color: #fff; padding: 15px 20px; border-radius: 8px; cursor: pointer; z-index: 10; font-size: 20px; transition: 0.2s;" onmouseover="this.style.background='rgba(167, 139, 250, 0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'">◀</button>
-                <button onclick="nextSkin()" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); background: rgba(0,0,0,0.5); border: 1px solid rgba(167, 139, 250, 0.4); color: #fff; padding: 15px 20px; border-radius: 8px; cursor: pointer; z-index: 10; font-size: 20px; transition: 0.2s;" onmouseover="this.style.background='rgba(167, 139, 250, 0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'">▶</button>
-                <img id="skin-detail-img" src="" style="max-width: 100%; max-height: 60vh; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
-                <div id="skin-detail-name" style="margin-top: 15px; font-size: 20px; color: #fff; font-weight: bold;"></div>
+                    <div id="skin-view-name" class="skin-view-name"></div>
+                    <div id="skin-view-desc" class="skin-view-desc"></div>
+                </div>
             </div>
         `;
 
@@ -4497,10 +4505,10 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 <div class="champ-tab-bar">
                     <button class="champ-tab-btn active" onclick="switchChampTab(event, 'skills')" style="padding: 15px 20px; background: transparent; border: none; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; border-bottom: 3px solid #a78bfa;">스킬</button>
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'stats')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스탯</button>
-                    <!-- ▼▼ 비공개 처리 (스킨 · 배경 탭) ▼▼
-                         되살릴 때: 이 주석 두 줄만 풀면 된다. 탭 내용(skinsHtml · loreHtml)과
-                         switchChampTab 은 그대로라 바로 살아난다.
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'skins')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스킨</button>
+                    <!-- ▼▼ 비공개 처리 (배경 탭) ▼▼
+                         되살릴 때: 이 주석 한 줄만 풀면 된다. 탭 내용(loreHtml)과
+                         switchChampTab 은 그대로라 바로 살아난다.
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'lore')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">배경</button>
                          ▲▲ 비공개 처리 끝 ▲▲ -->
                 </div>
@@ -4514,6 +4522,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         `;
 
         playSkill(0);
+        selectSkin(0);
         renderChampStats(champ.id);
     } catch (error) { detailArea.innerHTML = `<div style="color:#f87171;">데이터를 불러오지 못했습니다.</div>`; }
 };
@@ -5153,32 +5162,71 @@ window.playChampVoice = function (champKey, type) {
     });
 };
 
-window.openSkinDetail = function (index) {
+// ============================================================
+//  스킨 탭 (2026-08-13)
+//
+//  왼쪽에 얼굴 중심 썸네일을 세로로 쌓고, 누르면 오른쪽에 원본 일러스트가 뜬다.
+//  골격은 스킬 탭(.champ-skill-layout)과 같다.
+//
+//  ★ 데이터는 CommunityDragon 이다. Data Dragon 은 스플래시 한 장뿐이라
+//    "얼굴 중심" 판본도, 한국어 스킨 설명도 없다.
+//    CD `ko_kr/v1/champions/<숫자키>.json` 이 스킨마다 경로 4종을 직접 알려준다:
+//      splashPath(1280x720 얼굴 중심) / uncenteredSplashPath(1215x717 원본)
+//      tilePath(380 정사각) / loadScreenPath(308x560 세로)
+//  ★ 스킨 번호는 연속이 아니다 — 가렌은 86011 다음이 86013 이다(86012 는 없다).
+//    그래서 번호를 세서 만들지 말고 CD 가 준 목록을 그대로 쓴다
+// ============================================================
+
+const CD_ASSET_BASE = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/';
+
+// ★ CD 가 주는 경로는 `/lol-game-data/assets/ASSETS/Characters/...` 꼴인데
+//   실제 파일은 **전부 소문자**다. 대문자를 그대로 붙이면 404 가 난다
+function cdAssetUrl(p) {
+    return p ? CD_ASSET_BASE + String(p).replace('/lol-game-data/assets/', '').toLowerCase() : null;
+}
+
+// 실패하면 null 을 돌려준다 — 부르는 쪽이 DD 스플래시로 물러난다.
+// (클래식(Jade_) 챔피언은 CD 에 그 숫자키가 없을 수 있다)
+async function fetchCdSkins(champKey) {
+    try {
+        const res = await fetch(`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/ko_kr/v1/champions/${champKey}.json`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!Array.isArray(data.skins) || data.skins.length === 0) return null;
+
+        return data.skins.map(s => ({
+            name: s.isBase ? '기본 스킨' : s.name,
+            thumb: cdAssetUrl(s.splashPath),
+            // 원본이 없는 스킨이 있을 수 있으니 얼굴 중심 판본으로 물러난다
+            full: cdAssetUrl(s.uncenteredSplashPath) || cdAssetUrl(s.splashPath),
+            desc: s.description || ''
+        }));
+    } catch (e) {
+        return null;
+    }
+}
+
+window.selectSkin = function (index) {
+    const list = window.currentSkinList;
+    if (!list || !list[index]) return;
+
     window.currentSkinIndex = index;
-    document.getElementById('skin-grid-view').style.display = 'none';
-    document.getElementById('skin-detail-view').style.display = 'flex';
-    updateSkinDetail();
-};
+    document.querySelectorAll('.skin-item').forEach(el => {
+        el.classList.toggle('active', Number(el.dataset.i) === index);
+    });
 
-window.closeSkinDetail = function () {
-    document.getElementById('skin-detail-view').style.display = 'none';
-    document.getElementById('skin-grid-view').style.display = 'grid';
-};
+    const skin = list[index];
+    const img = document.getElementById('skin-view-img');
+    if (img) img.src = skin.full;
+    const nameEl = document.getElementById('skin-view-name');
+    if (nameEl) nameEl.textContent = skin.name;
 
-window.prevSkin = function () {
-    window.currentSkinIndex = (window.currentSkinIndex > 0) ? window.currentSkinIndex - 1 : window.currentChampSkins.length - 1;
-    updateSkinDetail();
-};
-
-window.nextSkin = function () {
-    window.currentSkinIndex = (window.currentSkinIndex < window.currentChampSkins.length - 1) ? window.currentSkinIndex + 1 : 0;
-    updateSkinDetail();
-};
-
-window.updateSkinDetail = function () {
-    const skin = window.currentChampSkins[window.currentSkinIndex];
-    document.getElementById('skin-detail-img').src = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${window.currentChampIdForSkins}_${skin.num}.jpg`;
-    document.getElementById('skin-detail-name').innerText = skin.name === 'default' ? '기본 스킨' : skin.name;
+    // 설명이 없는 스킨이 많다(2146개 중 315개가 빈칸). 없으면 줄을 통째로 접는다
+    const descEl = document.getElementById('skin-view-desc');
+    if (descEl) {
+        descEl.textContent = skin.desc;
+        descEl.style.display = skin.desc ? 'block' : 'none';
+    }
 };
 
 // ==========================================
