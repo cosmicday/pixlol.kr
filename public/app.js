@@ -2030,6 +2030,29 @@ function qwertyToKo(s) {
     return out;
 }
 
+// ★ 대소문자는 판단하지 않고 **가능한 해석을 전부 후보로 둔다** (2026-08-13).
+//   대문자 하나하나가 "Shift(된소리)" 인지 "caps 로 친 소문자" 인지 알 방법이 없다.
+//   "TMFPTNL"(쓰레쉬)이 그 예다 — 첫 T 는 ㅆ 이고 뒤의 T 는 ㅅ 이라 규칙으로 못 가른다.
+//   그래서 **된소리가 될 수 있는 자리(QWERTOP)만 켜고 끄는 조합**을 전부 만든다.
+//   그 자리가 4개를 넘으면 조합이 과해지므로 양 끝(전부 Shift / 전부 소문자)만 본다.
+//   덕분에 대소문자를 아예 신경 안 써도 되고, 된소리가 필요한 챔피언
+//   (쓰레쉬·뽀삐)만 자연히 Shift 해석 쪽으로 걸린다.
+function koCandidates(raw) {
+    const spots = [...raw].map((c, i) => (QWERTY_KO_SHIFT[c] ? i : -1)).filter(i => i >= 0);
+    const out = new Set();
+    if (spots.length && spots.length <= 4) {
+        for (let mask = 0; mask < (1 << spots.length); mask++) {
+            const arr = [...raw];
+            spots.forEach((pos, bit) => { if (!(mask & (1 << bit))) arr[pos] = arr[pos].toLowerCase(); });
+            out.add(qwertyToKo(arr.join('')).toLowerCase());
+        }
+    } else {
+        out.add(qwertyToKo(raw).toLowerCase());
+        out.add(qwertyToKo(raw.toLowerCase()).toLowerCase());
+    }
+    return [...out];
+}
+
 let champFilterCache = null;
 
 async function loadChampFilterList() {
@@ -2116,12 +2139,12 @@ function champFilterRow(id, sub = '') {
 }
 
 function filterChampFilterList() {
-    const q = qwertyToKo((document.getElementById('cf-search').value || '').trim()).toLowerCase();
+    const cands = koCandidates((document.getElementById('cf-search').value || '').trim());
 
     document.querySelectorAll('#cf-list .cf-item').forEach(row => {
         const name = (row.dataset.name || '').toLowerCase();
         const cho = getChosung(row.dataset.name || '').toLowerCase();
-        const hit = !q || name.includes(q) || cho.includes(q);
+        const hit = cands.some(c => name.includes(c) || cho.includes(c));
         row.style.display = hit ? 'flex' : 'none';
     });
 }
@@ -3708,13 +3731,13 @@ window.clearSearchBox = function (btn) {
 window.filterChampList = function () {
     const input = document.getElementById('champ-search-input');
     // ★ 영문은 **무조건** 한글 자판으로 읽는다 (폴백 없음). "rkfps" -> "가렌", "d" -> "ㅇ"
-    const q = qwertyToKo((input ? input.value : '').replace(/\s+/g, '')).toLowerCase();
+    const cands = koCandidates((input ? input.value : '').replace(/\s+/g, ''));
     let shown = 0;
 
     document.querySelectorAll('.champ-sidebar-item').forEach(el => {
         const key = (el.dataset.search || '').toLowerCase();
         const roles = (el.dataset.roles || '').split(' ');
-        const okText = !q || key.includes(q);
+        const okText = cands.some(c => key.includes(c));
         // AND — 켠 역할군을 **전부** 가진 챔피언만 남는다
         const okRole = [...activeChampRoles].every(r => roles.includes(r));
         const ok = okText && okRole;
@@ -4613,10 +4636,10 @@ window.pickVsChamp = function (id) {
 
 window.filterVsList = function () {
     const q = (document.getElementById('vs-search-input') || {}).value || '';
-    const k = qwertyToKo(q.replace(/\s+/g, '')).toLowerCase();
+    const cands = koCandidates(q.replace(/\s+/g, ''));
     let shown = 0;
     document.querySelectorAll('.vs-item').forEach(el => {
-        const ok = !k || (el.dataset.search || '').includes(k);
+        const ok = cands.some(c => (el.dataset.search || '').includes(c));
         el.classList.toggle('filtered-out', !ok);
         if (ok) shown++;
     });
