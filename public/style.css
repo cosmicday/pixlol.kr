@@ -3487,7 +3487,7 @@ body::before {
      그 상쇄가 620px 에서 끝난다. **더 키우려면 설명 글씨를 줄여야 한다.** */
 .skin-view-frame {
     width: 100%;
-    max-width: 600px;
+    max-width: 640px;
     margin: 0 auto;
     aspect-ratio: 1215 / 717;
     background: rgba(0, 0, 0, 0.3);
@@ -3521,7 +3521,7 @@ body::before {
        내용에 맞춰 줄었다 늘었다 하면서, 크로마를 고를 때마다(라벨 글자가 바뀐다)
        점들이 좌우로 밀린다 — 다음 점을 누르려는데 자리가 옮겨진다 */
     width: 100%;
-    max-width: 600px;
+    max-width: 640px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -3575,7 +3575,7 @@ body::before {
    셋(그림·이름·설명)의 max-width 는 항상 같이 움직여야 한다 */
 .skin-view-name {
     margin: 16px auto 0 auto;
-    max-width: 600px;
+    max-width: 640px;
     font-size: 19px;
     font-weight: bold;
     color: #fff;
@@ -3602,13 +3602,14 @@ body::before {
 
 .skin-view-desc {
     margin: 10px auto 0 auto;
-    max-width: 600px;
+    max-width: 640px;
     font-size: 13.5px;
     color: #9aa4af;
-    /* ★ 1.7 이 아니라 1.55 다 (2026-08-13). 크로마 줄이 들어오면서 12px 가 모자랐는데,
-       그림(600px)을 줄이는 대신 여기서 벌었다. 1.6 은 5px 부족하고 1.55 에서 맞는데 2px 밖에 안 남아, 여유를 두려고 1.5 로 뒀다.
-       **그림 폭과 이 값은 한 예산을 나눠 쓴다** — 하나를 키우면 다른 하나를 조여야 한다. */
-    line-height: 1.5;
+    /* ★ 1.7 이 맞다. 한때 1.5 로 조였는데 **불필요한 조임이었다** (2026-08-13).
+       크로마 줄이 2단(59px)이던 시절의 계산이었고, 한 줄(30px)로 합치면서 이미 여유가
+       생겨 있었다. 640px 에서도 1.5 든 1.7 이든 넘치는 스킨 수가 12개로 같다 —
+       **이 폭에서는 줄간격이 사실상 영향이 없다.** 읽기 편한 쪽을 쓴다. */
+    line-height: 1.7;
     word-break: keep-all;
     flex-shrink: 0;
 }
