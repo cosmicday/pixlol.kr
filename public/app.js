@@ -352,15 +352,7 @@ window.addEventListener('popstate', (event) => {
             if (filterArea) filterArea.style.display = "none";
             if (summaryArea) summaryArea.style.display = "none";
 
-            document.getElementById('user-profile').innerHTML = `
-                <div class="stats-header">
-                    <h1 class="ranking-title">
-                        <img src="https://opgg-static.akamaized.net/images/medals_new/challenger.png" style="position: absolute; right: 100%; margin-right: 12px; top: 50%; transform: translateY(-50%); width: 60px; height: 60px;">
-                        한국서버 솔로랭크 랭킹
-                    </h1>
-                    <p style="color: #9aa4af; margin-top: 10px; font-size: 14px;">약 10분마다 갱신됩니다.</p>
-                </div>
-            `;
+            renderRankingHeader();
             renderRankingPage(targetPage);
         } else {
             showRanking(targetPage);
@@ -2520,7 +2512,88 @@ async function showStats() {
 
 let fullRankingData = [];
 let currentRankingPage = 1;
+let rankingQuery = '';        // 닉네임 필터 (원문 그대로 들고 있다가 화면에 되돌려 준다)
+let rankingUpdatedAt = 0;     // 서버가 명단을 받아온 시각
 const RANKING_ITEMS_PER_PAGE = 50;
+
+// ★ 티어는 서버가 한 글자로 보내 준다 (server.js 의 TIER_CODE).
+//   순위 번호로 짐작하던 걸 대체한 것이다 — 마스터가 그마보다 LP 가 높은 일이 실제로 있다.
+const RANK_TIER_INFO = {
+    C: { name: '챌린저', short: '챌', color: '#ca8a04', icon: 'challenger' },
+    G: { name: '그랜드마스터', short: '그마', color: '#d33148', icon: 'grandmaster' },
+    M: { name: '마스터', short: '마', color: '#8b5cf6', icon: 'master' }
+};
+
+function rankTierInfo(code) {
+    return RANK_TIER_INFO[code] || RANK_TIER_INFO.M;
+}
+
+// "3분 전 갱신". 서버가 0 을 주면(아직 한 번도 안 받았으면) 예전 문구로 물러난다.
+function rankUpdatedText() {
+    if (!rankingUpdatedAt) return '약 10분마다 갱신됩니다.';
+    const mins = Math.floor((Date.now() - rankingUpdatedAt) / 60000);
+    if (mins < 1) return '방금 갱신됨 · 약 10분마다 갱신';
+    if (mins < 60) return `${mins}분 전 갱신 · 약 10분마다 갱신`;
+    return `${Math.floor(mins / 60)}시간 전 갱신 · 약 10분마다 갱신`;
+}
+
+// ★ 헤더는 showRanking 과 popstate 두 곳에서 그린다. 예전엔 같은 HTML 이 양쪽에
+//   복붙돼 있어서 한쪽만 고치면 뒤로가기로 들어왔을 때 다르게 보였다.
+function renderRankingHeader() {
+    const profileDiv = document.getElementById('user-profile');
+    profileDiv.innerHTML = `
+        <div class="stats-header">
+            <h1 class="ranking-title">
+                <img src="https://opgg-static.akamaized.net/images/medals_new/challenger.png" style="position: absolute; right: 100%; margin-right: 12px; top: 50%; transform: translateY(-50%); width: 60px; height: 60px;">
+                한국서버 솔로랭크 랭킹
+            </h1>
+            <p class="rank-updated" id="rank-updated">${rankUpdatedText()}</p>
+            <div class="rank-search-box">
+                <input type="text" id="rank-search" class="rank-search" autocomplete="off"
+                       placeholder="닉네임 검색 (초성 · 영문 자판 그대로)"
+                       oninput="onRankingSearch(this.value)">
+                <button type="button" class="rank-search-clear" id="rank-search-clear"
+                        onclick="onRankingSearch('')" title="검색어 지우기">&times;</button>
+            </div>
+        </div>
+    `;
+
+    // 뒤로가기로 다시 들어오는 경우가 있어 입력칸 값을 상태에서 되돌린다
+    const input = document.getElementById('rank-search');
+    if (input) input.value = rankingQuery;
+    const clear = document.getElementById('rank-search-clear');
+    if (clear) clear.style.visibility = rankingQuery ? 'visible' : 'hidden';
+}
+
+// ★ 검색어 해석은 **한 번만** 한다. 1.1만 명을 훑으므로 행마다 자판 변환을 돌리면
+//   타이핑이 눈에 띄게 밀린다. 후보 문자열을 미리 만들어 두고 비교만 시킨다.
+function buildRankQuery(raw) {
+    const q = String(raw || '').trim();
+    if (!q) return null;
+
+    const terms = new Set([q.toLowerCase()]);
+    // 영문만 친 경우엔 한글 자판 해석도 후보에 넣는다 ("rkfps" -> "가렌", "rf" -> "ㄱㄹ").
+    // 영문 닉네임도 많으므로 원문 후보는 위에서 이미 넣어 뒀다 — 둘 중 하나만 맞으면 된다.
+    if (/^[A-Za-z]+$/.test(q)) koCandidates(q).forEach(k => { if (k) terms.add(k); });
+
+    return [...terms];
+}
+
+function onRankingSearch(value) {
+    rankingQuery = value;
+    const input = document.getElementById('rank-search');
+    if (input && input.value !== value) input.value = value;
+    const clear = document.getElementById('rank-search-clear');
+    if (clear) clear.style.visibility = value ? 'visible' : 'hidden';
+    renderRankingPage(1, { keepScroll: true });
+}
+
+// 검색어가 없으면 원본 배열을 그대로 돌려준다 (1.1만 개를 복사할 이유가 없다)
+function filteredRankingData() {
+    const terms = buildRankQuery(rankingQuery);
+    if (!terms) return fullRankingData;
+    return fullRankingData.filter(p => terms.some(t => p._lc.includes(t) || p._cho.includes(t)));
+}
 
 async function showRanking(targetPage = 1) {
     const targetUrl = `/ranking?page=${targetPage}`;
@@ -2537,9 +2610,12 @@ async function showRanking(targetPage = 1) {
         return;
     }
 
+    // 랭킹 탭에 새로 들어온 것이므로 지난번 검색어는 푼다.
+    // (안 풀면 메뉴로 다시 들어왔을 때 걸러진 목록이 그대로 나와 고장처럼 보인다)
+    rankingQuery = '';
+
     hideAllContainers();
     document.getElementById('result-container').style.display = "block";
-    const profileDiv = document.getElementById('user-profile');
     const listDiv = document.getElementById('game-list');
 
     const filterArea = document.getElementById('filter-area');
@@ -2549,15 +2625,7 @@ async function showRanking(targetPage = 1) {
     if (filterArea) filterArea.style.display = "none";
     if (summaryArea) summaryArea.style.display = "none";
 
-    profileDiv.innerHTML = `
-        <div class="stats-header">
-            <h1 class="ranking-title">
-                <img src="https://opgg-static.akamaized.net/images/medals_new/challenger.png" style="position: absolute; right: 100%; margin-right: 12px; top: 50%; transform: translateY(-50%); width: 60px; height: 60px;">
-                한국서버 솔로랭크 랭킹
-            </h1>
-            <p style="color: #9aa4af; margin-top: 10px; font-size: 14px;">약 10분마다 갱신됩니다.</p>
-        </div>
-    `;
+    renderRankingHeader();
     listDiv.innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:#9aa4af;'>데이터를 불러오는 중입니다...</div>";
     const moreArea = document.getElementById('load-more-area');
     if (moreArea) moreArea.innerHTML = "";
@@ -2578,7 +2646,15 @@ async function showRanking(targetPage = 1) {
         if (data.error) throw new Error(data.error);
         if (!data.players) throw new Error("서버가 랭킹 데이터를 준비 중입니다. 잠시 후 새로고침 해주세요.");
 
-        fullRankingData = data.players;
+        // ★ 원래 순위(rank)를 여기서 못 박는다. 검색으로 걸러내면 배열 위치가 달라져서
+        //   화면에서 세면 "1위" 부터 다시 시작해 버린다.
+        //   검색용 소문자·초성도 같이 만들어 둔다 — 타이핑할 때마다 1.1만 번 만들 이유가 없다.
+        rankingUpdatedAt = data.updatedAt || 0;
+        fullRankingData = data.players.map((p, i) => {
+            const lc = String(p.displayName || '').toLowerCase();
+            return { ...p, rank: i + 1, _lc: lc, _cho: getChosung(lc) };
+        });
+        renderRankingHeader();     // 갱신 시각을 받은 뒤 다시 그린다
         renderRankingPage(targetPage);
 
     } catch (e) {
@@ -2587,21 +2663,108 @@ async function showRanking(targetPage = 1) {
     }
 }
 
-function renderRankingPage(page) {
-    currentRankingPage = page;
-    const listDiv = document.getElementById('game-list');
+// ★ 페이지 버튼 (2026-08-13). 예전엔 5개 묶음 단위로만 움직여서 220페이지 짜리
+//   목록에서 뒤로 가려면 '>' 를 수십 번 눌러야 했다. 지금은 현재 페이지를 가운데 둔
+//   5칸 + 처음/끝 + 직접 입력이다. 인라인 style 은 전부 style.css 16번 절로 갔다.
+function rankPagerHtml(page, totalPages) {
+    if (totalPages <= 1) return '';
 
-    const newUrl = `/ranking?page=${page}`;
-    if (window.location.pathname + window.location.search !== newUrl) {
-        window.history.pushState({ page: 'ranking', rankingPage: page }, '', newUrl);
+    // ★ 양 끝 버튼은 못 눌러도 **자리를 지킨다**. 없앴다 만들었다 하면 가운데 정렬이라
+    //   페이지를 넘길 때마다 번호들이 좌우로 튄다
+    const btn = (p, label, title, on) =>
+        `<button type="button" class="rank-pg"${on ? ` onclick="renderRankingPage(${p})"` : ' disabled'} title="${title}">${label}</button>`;
+
+    let startPage = Math.max(1, page - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    startPage = Math.max(1, endPage - 4);   // 끝쪽에서도 5칸을 유지한다
+
+    let html = `<div class="rank-pager">`;
+
+    html += btn(1, '&laquo;', '처음', page > 1) + btn(page - 1, '&lsaquo;', '이전', page > 1);
+
+    for (let p = startPage; p <= endPage; p++) {
+        html += `<button type="button" class="rank-pg${p === page ? ' active' : ''}" onclick="renderRankingPage(${p})">${p}</button>`;
+    }
+
+    html += btn(page + 1, '&rsaquo;', '다음', page < totalPages) + btn(totalPages, '&raquo;', '끝', page < totalPages);
+
+    html += `
+        <span class="rank-pg-jump">
+            <input type="number" min="1" max="${totalPages}" value="${page}" aria-label="페이지 번호"
+                   onkeydown="if (event.key === 'Enter') renderRankingPage(this.value)">
+            <span class="rank-pg-total">/ ${totalPages}</span>
+        </span>`;
+
+    return html + `</div>`;
+}
+
+function renderRankingPage(page, opts = {}) {
+    const listDiv = document.getElementById('game-list');
+    const data = filteredRankingData();
+    const totalPages = Math.max(1, Math.ceil(data.length / RANKING_ITEMS_PER_PAGE));
+
+    // 페이지 직접 입력과 검색을 같이 받으므로 여기서 한 번 가둔다
+    page = Math.min(Math.max(1, parseInt(page, 10) || 1), totalPages);
+    currentRankingPage = page;
+
+    // ★ 검색 중에는 주소를 안 건드린다. 걸러낸 목록의 3페이지는 /ranking?page=3 이 아니라서,
+    //   그 주소를 새로고침하면 엉뚱한 자리가 나온다
+    if (!rankingQuery) {
+        const newUrl = `/ranking?page=${page}`;
+        if (window.location.pathname + window.location.search !== newUrl) {
+            window.history.pushState({ page: 'ranking', rankingPage: page }, '', newUrl);
+        }
     }
 
     const startIndex = (page - 1) * RANKING_ITEMS_PER_PAGE;
-    const endIndex = startIndex + RANKING_ITEMS_PER_PAGE;
-    const pageData = fullRankingData.slice(startIndex, endIndex);
-    const totalPages = Math.ceil(fullRankingData.length / RANKING_ITEMS_PER_PAGE);
+    const pageData = data.slice(startIndex, startIndex + RANKING_ITEMS_PER_PAGE);
 
-    let tableHtml = `
+    let rowsHtml = '';
+
+    if (pageData.length === 0) {
+        rowsHtml = `<tr><td colspan="5" class="rank-empty">'${escapeHtml(rankingQuery.trim())}' 와(과) 맞는 닉네임이 없습니다.</td></tr>`;
+    }
+
+    pageData.forEach(player => {
+        const total = player.wins + player.losses;
+        const winRate = total > 0 ? ((player.wins / total) * 100).toFixed(1) : '0.0';
+        const t = rankTierInfo(player.tier);
+        const safeName = escapeHtml(player.displayName);
+
+        // ★ 닉네임을 아직 못 받아온 사람은 서버가 "User-a1b2c3d4" 로 채워 보낸다.
+        //   라이엇 ID 에는 항상 #태그가 붙으므로 # 이 없으면 미해결이다.
+        //   눌러도 검색이 헛돌기만 하니 링크로 안 만든다
+        const resolved = player.displayName.includes('#');
+
+        // ★ 닉네임을 onclick 문자열 안에 박지 않는다 (2026-08-13).
+        //   아포스트로피가 든 닉네임이면 리터럴이 그 자리에서 닫혀 JS 가 깨졌고,
+        //   그 사람만 클릭이 통째로 안 먹었다. data- 속성 + 이벤트 위임이면 안 생기는 문제다
+        const nameCell = resolved
+            ? `<span class="summoner-link" data-name="${safeName}" title="${safeName} 검색">${safeName}</span>`
+            : `<span class="rank-unresolved" title="닉네임을 아직 불러오지 못했습니다">${safeName}</span>`;
+
+        rowsHtml += `
+            <tr>
+                <td class="rank-num">${player.rank}</td>
+                <td class="rank-tier">
+                    <img class="rank-tier-medal" src="https://opgg-static.akamaized.net/images/medals_new/${t.icon}.png" alt="" loading="lazy">
+                    <span class="rank-tier-name" style="color: ${t.color};">${t.name}</span>
+                    <span class="rank-tier-short" style="color: ${t.color};">${t.short}</span>
+                </td>
+                <td class="rank-name">${nameCell}</td>
+                <td class="rank-lp" style="color: ${t.color};">${player.leaguePoints}</td>
+                <td class="rank-wr">
+                    <span class="rank-wr-num" style="color: ${winRate >= 55 ? '#f87171' : '#60a5fa'}">${winRate}%</span>
+                    <span class="rank-wl">(${player.wins}W ${player.losses}L)</span>
+                </td>
+            </tr>`;
+    });
+
+    const countHtml = rankingQuery.trim()
+        ? `<div class="rank-count">검색 결과 <b>${data.length.toLocaleString()}</b>명 · 전체 ${fullRankingData.length.toLocaleString()}명</div>`
+        : `<div class="rank-count">전체 <b>${fullRankingData.length.toLocaleString()}</b>명</div>`;
+
+    const tableHtml = `
         <!-- ★ 인라인 style 을 클래스로 뺐다 (2026-08-11). min-width:600px 이 인라인이라
              @media 로 못 풀었고, 폰에서 LP·승률 칸이 화면 밖으로 밀려 옆으로 스크롤해야
              보였다. 값은 그대로고 색만 계산값이라 인라인에 남는다. style.css 16번 절 참고. -->
@@ -2610,68 +2773,31 @@ function renderRankingPage(page) {
                 <thead>
                     <tr>
                         <th class="rank-num">순위</th>
+                        <th class="rank-tier">티어</th>
                         <th class="rank-name">닉네임</th>
                         <th class="rank-lp">LP</th>
                         <th class="rank-wr">승률</th>
                     </tr>
                 </thead>
-                <tbody class="ranking-body">
-    `;
+                <tbody class="ranking-body">${rowsHtml}</tbody>
+            </table>
+        </div>`;
 
-    pageData.forEach((player, index) => {
-        const actualIndex = startIndex + index + 1;
-        const total = player.wins + player.losses;
-        const winRate = total > 0 ? ((player.wins / total) * 100).toFixed(1) : 0;
+    listDiv.innerHTML = countHtml + tableHtml + rankPagerHtml(page, totalPages);
 
-        let lpColor = "#8b5cf6";
-        if (actualIndex <= 300) lpColor = "#ca8a04";
-        else if (actualIndex <= 1000) lpColor = "#d33148";
-
-        tableHtml += `
-            <tr>
-                <td class="rank-num">${actualIndex}</td>
-                <td class="rank-name">
-                    <span class="summoner-link" onclick="document.getElementById('summoner-input').value='${player.displayName}'; document.getElementById('search-btn').click();" title="${player.displayName} 검색">${player.displayName}</span>
-                </td>
-                <td class="rank-lp" style="color: ${lpColor};">${player.leaguePoints}</td>
-                <td class="rank-wr">
-                    <span class="rank-wr-num" style="color: ${winRate >= 55 ? '#f87171' : '#60a5fa'}">${winRate}%</span>
-                    <span class="rank-wl">(${player.wins}W ${player.losses}L)</span>
-                </td>
-            </tr>
-        `;
-    });
-
-    tableHtml += `</tbody></table></div>`;
-
-    let paginationHtml = `<div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding-bottom: 20px; flex-wrap: wrap;">`;
-    const groupSize = 5;
-    const currentGroup = Math.ceil(page / groupSize);
-    const startPageOfGroup = (currentGroup - 1) * groupSize + 1;
-    let endPageOfGroup = startPageOfGroup + groupSize - 1;
-    if (endPageOfGroup > totalPages) endPageOfGroup = totalPages;
-
-    if (currentGroup > 1) {
-        const prevGroupLastPage = startPageOfGroup - 1;
-        paginationHtml += `<button onclick="renderRankingPage(${prevGroupLastPage})" style="padding: 8px 14px; background: #1a1a2e; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; font-weight: bold;">&lt;</button>`;
+    // 표를 매번 새로 그리므로 위임 리스너도 매번 붙인다 (tbody 하나에만 붙는다)
+    const body = listDiv.querySelector('.ranking-body');
+    if (body) {
+        body.addEventListener('click', (e) => {
+            const link = e.target.closest('.summoner-link');
+            if (!link) return;
+            document.getElementById('summoner-input').value = link.dataset.name;
+            document.getElementById('search-btn').click();
+        });
     }
 
-    for (let p = startPageOfGroup; p <= endPageOfGroup; p++) {
-        const activeStyle = p === page
-            ? "background: #6b46c1; color: white; border-color: #a78bfa;"
-            : "background: #1a1a2e; color: #9aa4af; border-color: rgba(255,255,255,0.2);";
-        paginationHtml += `<button onclick="renderRankingPage(${p})" style="padding: 8px 14px; border: 1px solid; border-radius: 4px; cursor: pointer; ${activeStyle}">${p}</button>`;
-    }
-
-    if (endPageOfGroup < totalPages) {
-        const nextGroupFirstPage = endPageOfGroup + 1;
-        paginationHtml += `<button onclick="renderRankingPage(${nextGroupFirstPage})" style="padding: 8px 14px; background: #1a1a2e; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; font-weight: bold;">&gt;</button>`;
-    }
-
-    paginationHtml += `</div>`;
-
-    listDiv.innerHTML = tableHtml + paginationHtml;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 검색어를 칠 때마다 맨 위로 튀면 입력칸이 시야에서 사라진다
+    if (!opts.keepScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 let currentMasterData = [];

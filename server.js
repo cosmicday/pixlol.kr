@@ -69,6 +69,7 @@ const riotApi = axios.create({
 
 let currentVersion = "16.1.1";
 let challengerList = [];
+let rankUpdatedAt = 0;        // 랭킹 명단을 마지막으로 받아온 시각 (화면에 "N분 전 갱신")
 let resolvedNames = {};
 let failedPuuids = {};        // ★ 추가: 조회 실패한 puuid와 실패 시각
 let isFetchingNames = false;
@@ -227,6 +228,12 @@ async function updateChallengerList() {
         results.forEach((entries, i) => {
             const tier = RANK_TIERS[i];
             if (entries) {
+                // ★ 어느 티어에서 왔는지를 항목에 찍어 둔다 (2026-08-13).
+                //   합치고 나면 LP 로만 정렬해서 소속을 알 길이 없어진다. 화면이 순위 번호로
+                //   (300위 이하 = 챌린저 식으로) 짐작하고 있었는데 그게 틀린다 —
+                //   라이엇이 승격을 주기적으로만 처리해서 **마스터가 그마보다 LP 가 높은 일**이
+                //   실제로 생긴다. 여기서 실명을 붙여 두면 추측할 일이 없다.
+                entries.forEach(e => { e.tier = tier; });
                 rankListByTier[tier] = entries;
                 console.log(`[Task] ${tier}: ${entries.length}명`);
             } else {
@@ -239,6 +246,8 @@ async function updateChallengerList() {
 
         if (combinedEntries.length > 0) {
             challengerList = combinedEntries.sort((a, b) => b.leaguePoints - a.leaguePoints);
+            rankUpdatedAt = Date.now();
+            myCache.del('challenger_ranking_data');   // 새 명단이 왔으면 옛 응답을 버린다
             console.log(`[Task] 랭킹 명단 갱신 완료 (총 ${challengerList.length}명)`);
         } else {
             console.error("[Task Error] 랭킹 명단이 비어 있어 갱신하지 않음");
@@ -1293,14 +1302,18 @@ app.get('/api/ranking', async (req, res) => {
     if (cachedRanking) return res.json(cachedRanking);
     if (challengerList.length === 0) return res.status(503).json({ error: "랭킹 데이터를 수집 중입니다. 잠시 후 다시 시도해주세요." });
 
+    // 티어는 한 글자로 줄여 보낸다. 1만 명 x 매 항목이라 글자 수가 곧 응답 크기다.
+    const TIER_CODE = { challengerleagues: 'C', grandmasterleagues: 'G', masterleagues: 'M' };
+
     const processedPlayers = challengerList.map(p => ({
         displayName: resolvedNames[p.puuid]?.displayName || `User-${String(p.puuid).substring(0, 8)}`,
         leaguePoints: p.leaguePoints || 0,
         wins: p.wins || 0,
-        losses: p.losses || 0
+        losses: p.losses || 0,
+        tier: TIER_CODE[p.tier] || 'M'
     }));
 
-    const finalRankingData = { tier: "CHALLENGER", players: processedPlayers };
+    const finalRankingData = { tier: "CHALLENGER", updatedAt: rankUpdatedAt, players: processedPlayers };
     myCache.set('challenger_ranking_data', finalRankingData, 600);
     res.json(finalRankingData);
 });

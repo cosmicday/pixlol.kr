@@ -3641,6 +3641,184 @@ body::before {
     margin-left: 8px;
 }
 
+/* -----------------------------------------
+   16-2. 랭킹 헤더 · 티어 배지 · 페이저 (2026-08-13)
+   -----------------------------------------
+   ★ 티어 색은 app.js 의 RANK_TIER_INFO 에 있고 인라인으로 찍힌다.
+     서버가 내려주는 실제 소속을 쓰므로, 예전처럼 순위 번호로 짐작하지 않는다.
+   ----------------------------------------- */
+.rank-updated {
+    color: #9aa4af;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.rank-search-box {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+    margin: 16px auto 0 auto;
+}
+
+.rank-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 34px 10px 14px;
+    background: #12121f;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #ddd;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.rank-search::placeholder {
+    color: #6b7280;
+}
+
+.rank-search:focus {
+    border-color: #a78bfa;
+}
+
+.rank-search-clear {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: #9aa4af;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    visibility: hidden;
+}
+
+.rank-search-clear:hover {
+    color: #fff;
+}
+
+.rank-count {
+    color: #6b7280;
+    font-size: 12px;
+    margin: 0 0 8px 4px;
+}
+
+.rank-count b {
+    color: #9aa4af;
+}
+
+/* 티어 칸: 메달 + 이름. 폰에서는 짧은 이름으로 바뀐다 */
+.rank-table .rank-tier {
+    width: 110px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.rank-tier-medal {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.rank-tier-name {
+    font-size: 12px;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+/* 폰 전용이라 기본은 숨긴다 */
+.rank-tier-short {
+    display: none;
+    font-size: 12px;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+/* 아직 닉네임을 못 받아온 사람. 눌러도 검색이 안 되니 링크처럼 안 보이게 둔다 */
+.rank-unresolved {
+    color: #555;
+    font-weight: normal;
+    font-style: italic;
+    cursor: default;
+}
+
+.rank-empty {
+    text-align: center;
+    color: #6b7280;
+    padding: 50px 12px !important;
+}
+
+.rank-pager {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.rank-pg {
+    padding: 8px 14px;
+    background: #1a1a2e;
+    color: #9aa4af;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.rank-pg:hover:not(:disabled) {
+    background: #2b1a52;
+    color: #fff;
+}
+
+/* 처음·끝 버튼은 못 눌러도 자리를 지킨다 (안 그러면 페이저가 좌우로 튄다) */
+.rank-pg:disabled {
+    color: #3a3a4a;
+    border-color: rgba(255, 255, 255, 0.07);
+    cursor: default;
+}
+
+.rank-pg.active {
+    background: #6b46c1;
+    color: #fff;
+    border-color: #a78bfa;
+    font-weight: bold;
+}
+
+.rank-pg-jump {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.rank-pg-jump input {
+    width: 58px;
+    padding: 7px 8px;
+    background: #12121f;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    color: #ddd;
+    font-size: 13px;
+    text-align: center;
+    outline: none;
+}
+
+.rank-pg-jump input:focus {
+    border-color: #a78bfa;
+}
+
 @media (max-width: 768px) {
     /* 600px 제한을 풀고 칸을 좁혀 390px 안에 4열을 다 넣는다.
        순위 36 + LP 46 + 승률 52 = 134px, 남는 폭이 전부 닉네임으로 간다. */
@@ -3659,6 +3837,32 @@ body::before {
 
     .rank-table .rank-num {
         width: 36px;
+    }
+
+    /* 티어 칸은 전체 이름 대신 챌/그마/마 로 줄인다.
+       메달 16 + 글자 22 = 52px 라 순위 36 + LP 46 + 승률 52 와 합쳐도 186px,
+       390px 안에서 닉네임 몫이 200px 넘게 남는다 */
+    .rank-table .rank-tier {
+        width: 52px;
+    }
+
+    .rank-tier-medal {
+        width: 16px;
+        height: 16px;
+        margin-right: 3px;
+    }
+
+    .rank-tier-name {
+        display: none;
+    }
+
+    .rank-tier-short {
+        display: inline;
+        font-size: 11px;
+    }
+
+    .rank-pg {
+        padding: 7px 11px;
     }
 
     .rank-table .rank-name {
