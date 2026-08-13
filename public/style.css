@@ -3504,6 +3504,73 @@ body::before {
     display: block;
 }
 
+/* ★ 크로마는 270x303 **세로 인물 렌더**다. 가로 칸에 cover 로 넣으면 얼굴이 잘려서
+   contain 으로 바꿔 통째로 보여 준다. 배경이 투명이라 칸 색이 그대로 비친다. */
+.skin-view-img.is-chroma {
+    object-fit: contain;
+}
+
+/* ★ 크로마 줄은 **한 줄**이어야 한다 (2026-08-13).
+   처음엔 이름 줄 + 점 줄 2단으로 만들었는데 그게 59px 라, 설명이 긴 스킨에서
+   **23px 넘쳐 스크롤이 생겼다** (선지자 야스오 261자+크로마 8개, 겨울의 축복 헤카림,
+   하이 눈 이블린이 전부 정확히 23px 였다). 한 줄로 합치면 32px 라 딱 들어간다.
+   점 줄이 늘어날 자리는 flex 가 알아서 준다 — 이름은 남는 폭에서 말줄임된다. */
+.skin-chroma-row {
+    margin: 10px auto 0 auto;
+    /* ★ width:100% 를 같이 줘야 폭이 안 흔들린다. margin:auto 만 두면 flex 자식이
+       내용에 맞춰 줄었다 늘었다 하면서, 크로마를 고를 때마다(라벨 글자가 바뀐다)
+       점들이 좌우로 밀린다 — 다음 점을 누르려는데 자리가 옮겨진다 */
+    width: 100%;
+    max-width: 600px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+}
+
+/* 고른 크로마가 있으면 이 자리에 그 이름이 들어간다.
+   폭을 못 박아 두는 이유는 위 주석과 같다 — 이름 길이에 따라 점이 밀리면 안 된다 */
+.skin-chroma-label {
+    font-size: 12px;
+    color: #6b7280;
+    flex-shrink: 0;
+    width: 150px;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 25개짜리(2018 월드 챔피언십 카직스)가 하나 있어서 줄바꿈은 열어 둔다.
+   그 한 명만 두 줄이 되고 나머지 1036개는 한 줄이다. */
+.skin-chroma-dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    min-width: 0;
+}
+
+/* 색은 라이엇이 준 값(colors)이라 app.js 가 인라인으로 찍는다 */
+.chroma-dot {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.chroma-dot:hover {
+    transform: scale(1.15);
+}
+
+.chroma-dot.active {
+    box-shadow: 0 0 0 2px #a78bfa;
+    transform: scale(1.15);
+}
+
 /* 그림 폭에 맞춰 같은 600px 칸 안에 세운다 — 그림만 가운데면 글이 붕 떠 보인다.
    셋(그림·이름·설명)의 max-width 는 항상 같이 움직여야 한다 */
 .skin-view-name {
@@ -3538,7 +3605,10 @@ body::before {
     max-width: 600px;
     font-size: 13.5px;
     color: #9aa4af;
-    line-height: 1.7;
+    /* ★ 1.7 이 아니라 1.55 다 (2026-08-13). 크로마 줄이 들어오면서 12px 가 모자랐는데,
+       그림(600px)을 줄이는 대신 여기서 벌었다. 1.6 은 5px 부족하고 1.55 에서 맞는데 2px 밖에 안 남아, 여유를 두려고 1.5 로 뒀다.
+       **그림 폭과 이 값은 한 예산을 나눠 쓴다** — 하나를 키우면 다른 하나를 조여야 한다. */
+    line-height: 1.5;
     word-break: keep-all;
     flex-shrink: 0;
 }
@@ -3715,6 +3785,13 @@ body::before {
     .skin-view {
         overflow-y: visible;
         scrollbar-gutter: auto;
+    }
+
+    /* 폰에서는 150px 라벨이 점 자리를 너무 먹어 6개 만에 줄이 접힌다.
+       (폰은 페이지가 통째로 스크롤되므로 접히는 것 자체는 문제가 아니다) */
+    .skin-chroma-label {
+        width: 92px;
+        font-size: 11px;
     }
 
     .champ-skill-btns {

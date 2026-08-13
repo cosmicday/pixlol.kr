@@ -4496,6 +4496,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     </div>
                     <div id="skin-view-name" class="skin-view-name"></div>
                     <div id="skin-view-desc" class="skin-view-desc"></div>
+                    <div id="skin-chroma-row" class="skin-chroma-row" style="display:none;"></div>
                 </div>
             </div>
         `;
@@ -5233,6 +5234,16 @@ async function fetchCdSkins(champKey) {
             full: cdAssetUrl(s.uncenteredSplashPath) || cdAssetUrl(s.splashPath),
             desc: s.description || '',
             gem: skinGemUrl(s.rarity),
+            // ★ 크로마도 같은 파일에 들어 있다 — 추가 요청이 0 이다 (2026-08-13).
+            //   `colors` 는 6972개 **전부**에 있어서 색점은 이미지 없이 그릴 수 있고,
+            //   그림(`chromaPath`)은 270x303 투명 배경 **3D 모델 렌더**다.
+            //   장당 82KB 라 카직스(25개)면 2MB — **눌렀을 때만 받는다**
+            chromas: (s.chromas || []).map(c => ({
+                name: c.name || '',
+                img: cdAssetUrl(c.chromaPath),
+                colors: Array.isArray(c.colors) ? c.colors : [],
+                desc: c.description || ''
+            })),
             // ★ 기본 스킨엔 가격을 안 붙인다 (2026-08-13). 위키의 `cost` 가 기본 스킨 자리에선
             //   **스킨값이 아니라 챔피언 가격**이다 (이렐리아·트런들 등 880 짜리가 그 예다).
             //   "기본 스킨 - 880RP" 로 내보내면 없는 상품을 파는 말이 된다.
@@ -5244,18 +5255,72 @@ async function fetchCdSkins(champKey) {
     }
 }
 
+// 색점 하나의 배경. 라이엇이 색을 1~2개 준다 — 두 개면 대각선으로 반씩 나눈다.
+function chromaDotBg(colors) {
+    if (!colors.length) return '#555';
+    if (colors.length === 1 || colors[0] === colors[1]) return colors[0];
+    return `linear-gradient(135deg, ${colors[0]} 0 50%, ${colors[1]} 50% 100%)`;
+}
+
+// ★ 크로마 그림은 여기서 처음 받는다 (색점은 값이라 공짜지만 그림은 82KB 다).
+//   같은 점을 다시 누르면 원래 일러스트로 돌아간다.
+window.selectChroma = function (i) {
+    const skin = (window.currentSkinList || [])[window.currentSkinIndex];
+    if (!skin) return;
+
+    const same = window.currentChromaIndex === i;
+    window.currentChromaIndex = same ? -1 : i;
+
+    const img = document.getElementById('skin-view-img');
+    const label = document.getElementById('skin-chroma-label');
+    const c = skin.chromas[window.currentChromaIndex];
+
+    // ★ 크로마 렌더는 270x303 세로 인물이라 cover 로 채우면 얼굴이 잘린다.
+    //   일러스트(가로)와 렌더(세로)가 같은 칸을 쓰므로 맞춰서 바꿔 준다
+    img.classList.toggle('is-chroma', !!c);
+    img.src = c ? c.img : skin.full;
+    if (label) label.textContent = c ? c.name : '크로마';
+
+    document.querySelectorAll('.chroma-dot').forEach(el =>
+        el.classList.toggle('active', Number(el.dataset.i) === window.currentChromaIndex));
+};
+
 window.selectSkin = function (index) {
     const list = window.currentSkinList;
     if (!list || !list[index]) return;
 
     window.currentSkinIndex = index;
+    window.currentChromaIndex = -1;      // 스킨을 바꾸면 크로마 선택도 푼다
     document.querySelectorAll('.skin-item').forEach(el => {
         el.classList.toggle('active', Number(el.dataset.i) === index);
     });
 
     const skin = list[index];
     const img = document.getElementById('skin-view-img');
-    if (img) img.src = skin.full;
+    if (img) { img.classList.remove('is-chroma'); img.src = skin.full; }
+
+    // 크로마 줄. 없는 스킨이 절반이라(2111개 중 1037개만 있다) 통째로 접는다.
+    //   ★ 이름 줄과 점 줄을 **따로** 둔다 — 이름을 점 옆에 붙이면 긴 이름이 점을 밀어낸다
+    const row = document.getElementById('skin-chroma-row');
+    if (row) {
+        if (skin.chromas && skin.chromas.length) {
+            row.innerHTML =
+                `<div class="skin-chroma-label" id="skin-chroma-label">크로마</div>`
+                + `<div class="skin-chroma-dots">`
+                + skin.chromas.map((c, i) =>
+                    `<button type="button" class="chroma-dot" data-i="${i}" onclick="selectChroma(${i})"`
+                    + ` title="${escapeHtml(c.name)}${c.desc ? ' — ' + escapeHtml(c.desc) : ''}"`
+                    + ` style="background:${chromaDotBg(c.colors)}"></button>`).join('')
+                + `</div>`;
+            // ★ 'block' 이 아니라 'flex' 여야 한다. 인라인 style 이 CSS 의 display 를 이겨서,
+            //   block 을 넣으면 라벨과 점이 한 줄로 안 서고 위아래로 갈라진다.
+            //   (챔피언 목록에서 겪은 것과 같은 함정이다 — CLAUDE.md "style.display 를 건드리지 말 것")
+            row.style.display = 'flex';
+        } else {
+            row.innerHTML = '';
+            row.style.display = 'none';
+        }
+    }
 
     // (등급 아이콘) 이름 - 가격.  가격을 모르는 스킨은 " - " 까지 통째로 뺀다
     const nameEl = document.getElementById('skin-view-name');
