@@ -3493,16 +3493,18 @@ body::before {
      창 768px → 640px 고정이면 **82%** 가 스크롤 (500px 로 줄여도 36%)
      창 900px → 1% / 창 1000px 이상 → 0%
 
-   그래서 `75vh - 320px` 로 준다. 120px 은 칸 밖 여백이고 나머지 200px 이
-   이름(42) + 설명 + 크로마줄 몫이다. 640px(높이 378) 을 천장으로 두어
+   그래서 `75vh - 300px` 로 준다. 120px 은 칸 밖 여백이고 나머지 180px 이
+   이름(42) + 설명 몫이다. 640px(높이 378) 을 천장으로 두어
    **큰 화면에서는 고정 640px 일 때와 똑같고, 짧은 창에서만 알아서 줄어든다.**
 
-   여유값을 훑은 결과(창 768 / 800 / 900 순 스크롤 비율):
-     300px → 20% / 12% / 1%      340px → 3% / 0% / 0% (다만 900 에서 그림이 568 로 작아진다)
-     **320px → 8% / 2% / 0%**    ← 900px 이상에서 그림을 크게 두면서 짧은 창을 살린다
-   짧은 창을 더 챙기려면 340 으로 올리면 된다. 1000px 이상 창에는 아무 영향이 없다. */
+   ★ 크로마 점을 그림 **오른쪽 세로줄**로 옮기면서 세로 예산이 40px 늘어 320 → 300 이 됐다.
+   여유값 실측(창 768 / 800 / 900 순 스크롤 비율):
+     280px → 16% / 8% / 0% (900 에서 641 로 천장)
+     **300px → 4% / 1% / 0%**  ← 900 에서 635 라 사실상 천장이면서 짧은 창도 살린다
+     320px → 1% / 0% / 0% (다만 900 에서 그림이 602 로 작아진다)
+   1000px 이상 창에는 아무 영향이 없다 (전부 천장 641x378). */
 .skin-view-frame {
-    height: min(378px, calc(75vh - 320px));
+    height: var(--skin-frame-h);
     width: auto;
     max-width: 100%;
     margin: 0 auto;
@@ -3532,40 +3534,41 @@ body::before {
    **23px 넘쳐 스크롤이 생겼다** (선지자 야스오 261자+크로마 8개, 겨울의 축복 헤카림,
    하이 눈 이블린이 전부 정확히 23px 였다). 한 줄로 합치면 32px 라 딱 들어간다.
    점 줄이 늘어날 자리는 flex 가 알아서 준다 — 이름은 남는 폭에서 말줄임된다. */
-.skin-chroma-row {
-    margin: 10px auto 0 auto;
-    /* ★ width:100% 를 같이 줘야 폭이 안 흔들린다. margin:auto 만 두면 flex 자식이
-       내용에 맞춰 줄었다 늘었다 하면서, 크로마를 고를 때마다(라벨 글자가 바뀐다)
-       점들이 좌우로 밀린다 — 다음 점을 누르려는데 자리가 옮겨진다 */
-    width: 100%;
-    max-width: 640px;
-    flex-shrink: 0;
+/* 그림 + 오른쪽 크로마 세로줄. 가운데 정렬이라 점이 붙은 만큼 그림이 왼쪽으로 치우친다 */
+.skin-stage {
+    /* ★ 그림 높이를 변수로 둔다. 점 칸도 **같은 값**을 max-height 로 써야
+       "그림 높이를 넘으면 옆 칸으로" 가 성립한다. 둘이 어긋나면 카직스(25개)가
+       안 접히고 칸 밖으로 113px 뻗는다 — 실제로 그렇게 났다. */
+    --skin-frame-h: min(378px, calc(75vh - 300px));
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 9px;
-}
-
-/* 고른 크로마가 있으면 이 자리에 그 이름이 들어간다.
-   폭을 못 박아 두는 이유는 위 주석과 같다 — 이름 길이에 따라 점이 밀리면 안 된다 */
-.skin-chroma-label {
-    font-size: 12px;
-    color: #6b7280;
+    /* ★ stretch 여야 점 칸이 그림과 같은 높이를 갖는다. 그래야 아래 flex-wrap 이
+       "그림 높이를 넘으면 옆 칸으로" 를 판단할 기준을 얻는다 (flex-start 면 내용
+       높이대로 늘어나서 25개가 한 줄로 쭉 뻗는다) */
+    align-items: stretch;
+    gap: 10px;
     flex-shrink: 0;
-    width: 150px;
-    text-align: right;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-/* 25개짜리(2018 월드 챔피언십 카직스)가 하나 있어서 줄바꿈은 열어 둔다.
-   그 한 명만 두 줄이 되고 나머지 1036개는 한 줄이다. */
-.skin-chroma-dots {
+/* ★ 점을 세로로 쌓되 그림 높이를 넘으면 옆 칸으로 넘긴다.
+   크로마 25개(2018 월드 챔피언십 카직스)가 유일하게 두 칸이 되고, 그 다음이 11개라
+   나머지 1036개 스킨은 한 칸으로 끝난다. 두 칸이 되는 스킨에서는 그림이 그만큼 줄어든다
+   (`.skin-view-frame` 이 flex 항목이라 알아서 좁아진다). */
+.skin-chroma-col {
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
+    align-content: flex-start;
     gap: 7px;
-    min-width: 0;
+    flex: 0 0 auto;
+    max-height: var(--skin-frame-h);
+}
+
+/* 이름 줄 뒤에 붙는 크로마 색 이름 (" · 장미석") */
+.skin-chroma-name {
+    font-size: 14px;
+    font-weight: normal;
+    color: #6b7280;
 }
 
 /* 색은 라이엇이 준 값(colors)이라 app.js 가 인라인으로 찍는다 */
@@ -3814,11 +3817,18 @@ body::before {
         width: 100%;
     }
 
-    /* 폰에서는 150px 라벨이 점 자리를 너무 먹어 6개 만에 줄이 접힌다.
-       (폰은 페이지가 통째로 스크롤되므로 접히는 것 자체는 문제가 아니다) */
-    .skin-chroma-label {
-        width: 92px;
-        font-size: 11px;
+    /* 폰에서는 점을 그림 아래 가로줄로 되돌린다. 세로 화면에서 오른쪽에 세로줄을
+       세우면 그림 폭을 그만큼 뺏겨 안 그래도 좁은 그림이 더 작아진다. */
+    .skin-stage {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .skin-chroma-col {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-height: none;
     }
 
     .champ-skill-btns {

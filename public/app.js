@@ -4491,12 +4491,16 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     `).join('')}
                 </div>
                 <div class="skin-view">
-                    <div class="skin-view-frame">
-                        <img id="skin-view-img" class="skin-view-img" src="" alt="">
+                    <!-- 그림과 크로마 점을 한 줄에 둔다. 점이 세로줄로 오른쪽에 붙으므로
+                         그림은 자연히 왼쪽으로 치우친다. 세로 예산도 그만큼 아낀다. -->
+                    <div class="skin-stage">
+                        <div class="skin-view-frame">
+                            <img id="skin-view-img" class="skin-view-img" src="" alt="">
+                        </div>
+                        <div id="skin-chroma-col" class="skin-chroma-col" style="display:none;"></div>
                     </div>
                     <div id="skin-view-name" class="skin-view-name"></div>
                     <div id="skin-view-desc" class="skin-view-desc"></div>
-                    <div id="skin-chroma-row" class="skin-chroma-row" style="display:none;"></div>
                 </div>
             </div>
         `;
@@ -5272,14 +5276,21 @@ window.selectChroma = function (i) {
     window.currentChromaIndex = same ? -1 : i;
 
     const img = document.getElementById('skin-view-img');
-    const label = document.getElementById('skin-chroma-label');
+    const nameSpan = document.getElementById('skin-chroma-name');
     const c = skin.chromas[window.currentChromaIndex];
 
     // ★ 크로마 렌더는 270x303 세로 인물이라 cover 로 채우면 얼굴이 잘린다.
     //   일러스트(가로)와 렌더(세로)가 같은 칸을 쓰므로 맞춰서 바꿔 준다
     img.classList.toggle('is-chroma', !!c);
     img.src = c ? c.img : skin.full;
-    if (label) label.textContent = c ? c.name : '크로마';
+
+    // ★ 크로마 이름은 "도자기 럭스 (장미석)" 꼴이 6972개 중 6971개다.
+    //   괄호 안 색 이름만 뽑으면 스킨 이름이 반복되지 않는다.
+    //   (유일한 예외인 "2017 월드 챔피언십 애쉬 크로마" 는 통째로 쓴다)
+    if (nameSpan) {
+        const m = c && c.name.match(/\(([^)]+)\)\s*$/);
+        nameSpan.textContent = c ? ' · ' + (m ? m[1] : c.name) : '';
+    }
 
     document.querySelectorAll('.chroma-dot').forEach(el =>
         el.classList.toggle('active', Number(el.dataset.i) === window.currentChromaIndex));
@@ -5299,26 +5310,22 @@ window.selectSkin = function (index) {
     const img = document.getElementById('skin-view-img');
     if (img) { img.classList.remove('is-chroma'); img.src = skin.full; }
 
-    // 크로마 줄. 없는 스킨이 절반이라(2111개 중 1037개만 있다) 통째로 접는다.
-    //   ★ 이름 줄과 점 줄을 **따로** 둔다 — 이름을 점 옆에 붙이면 긴 이름이 점을 밀어낸다
-    const row = document.getElementById('skin-chroma-row');
-    if (row) {
+    // 크로마 점은 그림 **오른쪽에 세로줄**로 붙는다. 없는 스킨이 절반이라
+    //   (2111개 중 1037개만 있다) 통째로 접는다.
+    const col = document.getElementById('skin-chroma-col');
+    if (col) {
         if (skin.chromas && skin.chromas.length) {
-            row.innerHTML =
-                `<div class="skin-chroma-label" id="skin-chroma-label">크로마</div>`
-                + `<div class="skin-chroma-dots">`
-                + skin.chromas.map((c, i) =>
-                    `<button type="button" class="chroma-dot" data-i="${i}" onclick="selectChroma(${i})"`
-                    + ` title="${escapeHtml(c.name)}${c.desc ? ' — ' + escapeHtml(c.desc) : ''}"`
-                    + ` style="background:${chromaDotBg(c.colors)}"></button>`).join('')
-                + `</div>`;
-            // ★ 'block' 이 아니라 'flex' 여야 한다. 인라인 style 이 CSS 의 display 를 이겨서,
-            //   block 을 넣으면 라벨과 점이 한 줄로 안 서고 위아래로 갈라진다.
-            //   (챔피언 목록에서 겪은 것과 같은 함정이다 — CLAUDE.md "style.display 를 건드리지 말 것")
-            row.style.display = 'flex';
+            col.innerHTML = skin.chromas.map((c, i) =>
+                `<button type="button" class="chroma-dot" data-i="${i}" onclick="selectChroma(${i})"`
+                + ` title="${escapeHtml(c.name)}${c.desc ? ' — ' + escapeHtml(c.desc) : ''}"`
+                + ` style="background:${chromaDotBg(c.colors)}"></button>`).join('');
+            // ★ 'block' 이 아니라 'flex' 다. 인라인 style 이 CSS 의 display 를 이기므로
+            //   block 을 넣으면 세로줄 배치가 통째로 날아간다
+            //   (챔피언 목록에서 겪은 것과 같은 함정 — CLAUDE.md "style.display 를 건드리지 말 것")
+            col.style.display = 'flex';
         } else {
-            row.innerHTML = '';
-            row.style.display = 'none';
+            col.innerHTML = '';
+            col.style.display = 'none';
         }
     }
 
@@ -5329,7 +5336,9 @@ window.selectSkin = function (index) {
             (skin.gem ? `<img class="skin-gem skin-gem-lg" src="${skin.gem}" alt="">` : '')
             + escapeHtml(skin.name)
             // price 는 skinPriceHtml 이 만든 HTML 이라 이스케이프하면 안 된다 (아이콘 태그가 들어 있다)
-            + (skin.price ? ` <span class="skin-view-price">- ${skin.price}</span>` : '');
+            + (skin.price ? ` <span class="skin-view-price">- ${skin.price}</span>` : '')
+            // 고른 크로마의 색 이름이 여기 들어간다. 줄을 새로 만들지 않아 높이를 안 먹는다
+            + `<span class="skin-chroma-name" id="skin-chroma-name"></span>`;
     }
 
     // 설명이 없는 스킨이 많다(2146개 중 315개가 빈칸). 없으면 줄을 통째로 접는다
