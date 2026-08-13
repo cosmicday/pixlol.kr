@@ -1949,34 +1949,85 @@ function getChosung(str) {
 }
 
 // ★ 영문 자판을 두벌식 한글 자모로 (2026-08-13).
-//   한영 전환 없이 초성 검색을 하려는 것이다 — "d" -> "ㅇ", "rf" -> "ㄱㄹ".
-//   ★ 검색어는 이미 toLowerCase() 를 거쳐 들어오므로 Shift 조합(ㅃㅉㄸㄲㅆ)은 못 만든다.
-//     챔피언 이름 초성에 된소리가 없어서 지금은 문제가 안 된다.
+//   한영 전환 없이 챔피언을 찾으려는 것이다 — "d" -> "ㅇ", "rkfps" -> "가렌".
+//   ★★ **소문자로 바꾸기 전에** 이 함수를 태워야 한다. Shift 조합(ㅃㅉㄸㄲㅆ)이
+//     대문자로 들어오기 때문이다. 순서를 바꾸면 **쓰레쉬(Tmfptn)와 뽀삐(QhQl)를
+//     영영 못 찾는다** — 소문자화하면 "스레쉬", "보비" 가 되어 버린다.
+const QWERTY_KO_SHIFT = { Q: 'ㅃ', W: 'ㅉ', E: 'ㄸ', R: 'ㄲ', T: 'ㅆ', O: 'ㅒ', P: 'ㅖ' };
 const QWERTY_KO = {
     q: 'ㅂ', w: 'ㅈ', e: 'ㄷ', r: 'ㄱ', t: 'ㅅ', y: 'ㅛ', u: 'ㅕ', i: 'ㅑ', o: 'ㅐ', p: 'ㅔ',
     a: 'ㅁ', s: 'ㄴ', d: 'ㅇ', f: 'ㄹ', g: 'ㅎ', h: 'ㅗ', j: 'ㅓ', k: 'ㅏ', l: 'ㅣ',
     z: 'ㅋ', x: 'ㅌ', c: 'ㅊ', v: 'ㅍ', b: 'ㅠ', n: 'ㅜ', m: 'ㅡ',
 };
 
-const qwertyToKo = (s) => {
-    let out = '', hit = false;
-    for (const ch of s) {
-        const k = QWERTY_KO[ch];
-        if (k) { out += k; hit = true; } else out += ch;
-    }
-    return hit ? out : '';
+// 자모 -> 음절 조합에 쓰는 표. 초성은 위 HANGUL_CHO 를 그대로 쓴다.
+const HANGUL_JUNG = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ',
+    'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
+const HANGUL_JONG = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ',
+    'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+// 두 번 눌러 만드는 겹모음·겹받침
+const JUNG_COMBO = { 'ㅗㅏ': 'ㅘ', 'ㅗㅐ': 'ㅙ', 'ㅗㅣ': 'ㅚ', 'ㅜㅓ': 'ㅝ', 'ㅜㅔ': 'ㅞ', 'ㅜㅣ': 'ㅟ', 'ㅡㅣ': 'ㅢ' };
+const JONG_COMBO = {
+    'ㄱㅅ': 'ㄳ', 'ㄴㅈ': 'ㄵ', 'ㄴㅎ': 'ㄶ', 'ㄹㄱ': 'ㄺ', 'ㄹㅁ': 'ㄻ', 'ㄹㅂ': 'ㄼ',
+    'ㄹㅅ': 'ㄽ', 'ㄹㅌ': 'ㄾ', 'ㄹㅍ': 'ㄿ', 'ㄹㅎ': 'ㅀ', 'ㅂㅅ': 'ㅄ',
 };
 
-// ★ 검색어 고르기 — **자판 매핑이 하나라도 맞으면 그걸 쓴다.**
-//   항목마다 따로 판단하면 안 된다. "d" 를 쳤을 때 어떤 항목은 ㅇ(초성)으로,
-//   어떤 항목은 영문 id 의 d 로 걸려서 **드레이븐·다리우스가 같이 나온다** —
-//   그게 바로 없애려던 증상이다. 그래서 전체를 한 번 훑어 질의를 먼저 정한다.
-//   자판 매핑으로 아무것도 안 나오면 원문으로 되돌린다 (영문명 "garen" 검색이 살아난다).
-function pickSearchQuery(keys, q) {
-    if (!q) return q;
-    const ko = qwertyToKo(q);
-    if (ko && ko !== q && keys.some(k => k.includes(ko))) return ko;
-    return q;
+// ★ 영문 자판을 한글로 바꾼다 — **조합까지 한다** (2026-08-13).
+//   "rkfps" -> "가렌", "rf" -> "ㄱㄹ", "d" -> "ㅇ".
+//   자음만 이어지면 음절이 안 되므로 자모가 그대로 남는데, 그게 곧 초성 검색이다.
+//   즉 초성 검색과 풀타이핑이 **같은 함수 하나로** 처리된다.
+//   ★ 한글을 직접 친 경우("가렌", "ㄱㄹ")는 QWERTY_KO 에 없으니 그대로 통과한다.
+function qwertyToKo(s) {
+    // Shift 조합(대문자)을 먼저 본다. 나머지 대문자는 소문자와 같은 자리다.
+    const jamo = [...s].map(ch => QWERTY_KO_SHIFT[ch] || QWERTY_KO[ch.toLowerCase()] || ch);
+    let out = '';
+    let cho = -1, jung = -1, jong = 0;   // 조립 중인 음절
+
+    const flush = () => {
+        if (cho >= 0 && jung >= 0) out += String.fromCharCode(0xAC00 + (cho * 21 + jung) * 28 + jong);
+        else if (cho >= 0) out += HANGUL_CHO[cho];
+        else if (jung >= 0) out += HANGUL_JUNG[jung];
+        cho = -1; jung = -1; jong = 0;
+    };
+
+    for (const ch of jamo) {
+        const ci = HANGUL_CHO.indexOf(ch);
+        const vi = HANGUL_JUNG.indexOf(ch);
+
+        if (vi >= 0) {
+            // 모음: 받침이 있었다면 그 받침을 떼어 다음 글자의 초성으로 넘긴다 ("각"+ㅏ -> "가가")
+            if (cho >= 0 && jung >= 0 && jong > 0) {
+                const last = HANGUL_JONG[jong];
+                const split = Object.entries(JONG_COMBO).find(([, v]) => v === last);
+                const moved = split ? split[0][1] : last;
+                jong = split ? HANGUL_JONG.indexOf(split[0][0]) : 0;
+                flush();
+                cho = HANGUL_CHO.indexOf(moved); jung = vi;
+            } else if (jung >= 0 && JUNG_COMBO[HANGUL_JUNG[jung] + ch]) {
+                jung = HANGUL_JUNG.indexOf(JUNG_COMBO[HANGUL_JUNG[jung] + ch]);
+            } else if (jung >= 0) {
+                flush(); jung = vi;
+            } else {
+                jung = vi;
+            }
+        } else if (ci >= 0) {
+            // 자음: 중성이 있으면 받침으로, 없으면 새 음절의 초성으로
+            if (cho >= 0 && jung >= 0) {
+                const ji = HANGUL_JONG.indexOf(ch);
+                if (jong === 0 && ji > 0) jong = ji;
+                else if (jong > 0 && JONG_COMBO[HANGUL_JONG[jong] + ch]) jong = HANGUL_JONG.indexOf(JONG_COMBO[HANGUL_JONG[jong] + ch]);
+                else { flush(); cho = ci; }
+            } else if (cho >= 0) {
+                flush(); cho = ci;          // 자음만 이어짐 -> 초성 검색용으로 자모가 남는다
+            } else {
+                cho = ci;
+            }
+        } else {
+            flush(); out += ch;              // 완성형 한글·숫자·기호는 그대로
+        }
+    }
+    flush();
+    return out;
 }
 
 let champFilterCache = null;
@@ -2065,18 +2116,12 @@ function champFilterRow(id, sub = '') {
 }
 
 function filterChampFilterList() {
-    const raw = (document.getElementById('cf-search').value || '').trim().toLowerCase();
-    const rows = [...document.querySelectorAll('#cf-list .cf-item')];
+    const q = qwertyToKo((document.getElementById('cf-search').value || '').trim()).toLowerCase();
 
-    // 세 자리(이름·초성·영문 id)를 한 줄로 합쳐서 본다 — 질의를 하나로 정해야 하기 때문이다
-    const keys = rows.map(row => {
+    document.querySelectorAll('#cf-list .cf-item').forEach(row => {
         const name = (row.dataset.name || '').toLowerCase();
-        return `${name}|${getChosung(row.dataset.name || '').toLowerCase()}|${(row.dataset.id || '').toLowerCase()}`;
-    });
-    const q = pickSearchQuery(keys, raw);
-
-    rows.forEach((row, i) => {
-        const hit = !q || keys[i].includes(q);
+        const cho = getChosung(row.dataset.name || '').toLowerCase();
+        const hit = !q || name.includes(q) || cho.includes(q);
         row.style.display = hit ? 'flex' : 'none';
     });
 }
@@ -3662,14 +3707,11 @@ window.clearSearchBox = function (btn) {
 
 window.filterChampList = function () {
     const input = document.getElementById('champ-search-input');
-    const raw = (input ? input.value : '').replace(/\s+/g, '').toLowerCase();
+    // ★ 영문은 **무조건** 한글 자판으로 읽는다 (폴백 없음). "rkfps" -> "가렌", "d" -> "ㅇ"
+    const q = qwertyToKo((input ? input.value : '').replace(/\s+/g, '')).toLowerCase();
     let shown = 0;
 
-    // 영문 자판 -> 한글 자모. 맞는 게 있으면 그 질의를 쓴다 (pickSearchQuery 주석 참고)
-    const els = [...document.querySelectorAll('.champ-sidebar-item')];
-    const q = pickSearchQuery(els.map(el => (el.dataset.search || '').toLowerCase()), raw);
-
-    els.forEach(el => {
+    document.querySelectorAll('.champ-sidebar-item').forEach(el => {
         const key = (el.dataset.search || '').toLowerCase();
         const roles = (el.dataset.roles || '').split(' ');
         const okText = !q || key.includes(q);
@@ -4571,11 +4613,9 @@ window.pickVsChamp = function (id) {
 
 window.filterVsList = function () {
     const q = (document.getElementById('vs-search-input') || {}).value || '';
-    const raw = q.replace(/\s+/g, '').toLowerCase();
+    const k = qwertyToKo(q.replace(/\s+/g, '')).toLowerCase();
     let shown = 0;
-    const els = [...document.querySelectorAll('.vs-item')];
-    const k = pickSearchQuery(els.map(el => el.dataset.search || ''), raw);
-    els.forEach(el => {
+    document.querySelectorAll('.vs-item').forEach(el => {
         const ok = !k || (el.dataset.search || '').includes(k);
         el.classList.toggle('filtered-out', !ok);
         if (ok) shown++;
