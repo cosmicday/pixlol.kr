@@ -286,6 +286,39 @@ CD 스킨 객체 23개 필드에 가격이 없고, `v1/` 아래 60여 개 json �
   `width / scrollWidth / min-width / overflow-x` 를 찍으니 **`.champ-page-wrap` 370px 인데
   자식 `.champ-detail-pane` 2234px** 라는 게 한 줄로 드러났다
 
+## 배경 탭 · 대사 탭 (2026-08-13 신설·공개)
+
+`build_champion_lore.js` 가 **라이엇 Universe** 에서 받아 두 파일을 만든다.
+
+```
+universe-meeps.leagueoflegends.com/v1/ko_kr/champions/<슬러그>/index.json
+```
+
+- **★ Data Dragon 의 `lore` 는 배경 이야기가 **아니다**.** `blurb` 와 **글자까지 같은**
+  짧은 소개(212자)다. 전문은 Universe `biography.full` 에만 있다 (중앙값 2226자, 최대 6779)
+- **★ 슬러그는 DD id 소문자인데 레나타 글라스크만 예외**(`renata` 가 아니라 `renataglasc`).
+  173명 전수로 확인했고 그 하나뿐이다. **173/173 성공 / 빈 글 0명**
+- **★ CORS 가 열려 있다**(`Access-Control-Allow-Origin: *`) — 브라우저가 직접 받을 수도 있다.
+  그런데 **한 챔피언에 332KB 인데 쓰는 건 2KB** 라 빌드 때 뽑아 둔다. 런타임 의존도 없앤다
+- 결과물이 **두 개**다. 크기가 100배 차이라 갈랐다:
+  - `public/champion_lore.json` (960KB) — **배경 탭을 열 때 처음 받는다.** 한 번 받으면
+    173명 전부 들어 있어 챔피언을 바꿔도 재요청이 없다 (실측: 요청 1회)
+  - `public/champion_quotes.js` (18KB) — 대표 대사. 챔피언 데이터와 같이 받아 즉시 뜬다
+- **`custom_lore.js`(손으로 쓴 글)가 있으면 그게 우선이다.** 지금 가렌 하나뿐인데
+  본문에 럭스 링크가 들어 있어서다. **나머지 171개는 빈 문자열**이라 자동으로 Universe 를 탄다
+- 배경 본문은 **`textContent` 로 넣는다.** 생성할 때 태그를 벗겨 순수 텍스트로 만들어 두었고
+  CSS 가 `white-space: pre-wrap` 이라 빈 줄이 그대로 문단이 된다. 남의 마크업을
+  `innerHTML` 로 믿지 않기 위해서다 (손으로 쓴 `customLore` 만 HTML 로 넣는다)
+
+**★ 전체 인게임 대사는 공개 데이터에 없다 (2026-08-13 조사, 다시 찾지 말 것).**
+라이엇이 주는 음성은 **픽·밴 두 개**뿐이다 (`chooseVoPath`·`banVoPath`, 이미 쓰고 있다).
+CD 에 추출된 음성 폴더가 없는 것도 확인했다 (`game/assets/sounds/**` 전부 404).
+Universe 의 `quote` 도 챔피언당 한 줄이다 — JSON 을 전부 훑어 확인했다.
+대사 대본이 더 필요하면 위키(영문)나 나무위키(한국어)를 긁는 수밖에 없고 챔피언당 수백 줄이다.
+
+- `stingerSfxPath`(효과음)도 CD 에 있는데 아직 안 쓴다
+- 헤더 초상화를 누르면 픽 음성이 난다 (`.champ-header-portrait`)
+
 ### 프로필 아이콘 · 모스트 — 보류 (2026-08-13 조사)
 
 **프로덕션 키가 나올 때까지 안 붙인다.** 조사는 끝났으니 다시 하지 말 것.
@@ -343,6 +376,7 @@ puppeteer 없이도 된다 — **node 22+ 에 `WebSocket` 이 내장**이라
 | `add_level_graphs.js` | 곡선을 각주로 → `public/custom_graphs.js` |
 | `build_stats_page.js` | 챔피언 스탯 압축 → `public/champion_stats.js` (스탯 탭이 쓴다) |
 | `build_skin_prices.js` | 스킨 가격 → `public/skin_prices.js` (스킨 탭이 쓴다). **롤위키가 출처** — 위 "스킨 탭" 절 참고 |
+| `build_champion_lore.js` | 배경·대사 → `public/champion_lore.json` + `champion_quotes.js`. **라이엇 Universe 가 출처** |
 | `belowline.js` | 구분선 아래 회색 글씨 원문. **위 두 생성 스크립트가 같이 쓰는 모듈** |
 | `survey_belowline.js` | 확인 전용. 회색 글씨 전수조사 보고서를 찍는다 |
 

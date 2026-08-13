@@ -4022,7 +4022,9 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         if (header) {
             header.innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${champId}.png" style="width: 56px; height: 56px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                    <img class="champ-header-portrait" src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${champId}.png"
+                         onclick="playChampVoice('${champ.key}', 'pick')" title="${escapeHtml(champ.name)} 대표 대사 듣기"
+                         style="width: 56px; height: 56px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
                     <div style="text-align: left; display: flex; align-items: center; gap: 15px;">
                         <div>
                             <div style="color: #a78bfa; font-weight: bold; font-size: 13px; margin-bottom: 2px;">${champ.title}</div>
@@ -4281,13 +4283,17 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         }
         window.currentChampSkills = [passive, ...spells];
 
-        let displayLore = champ.lore.replace(/\r\n|\n/g, '<br><br>');
+        // ★ 배경 전문은 `champion_lore.json`(960KB)에 있고 **배경 탭을 열 때 처음 받는다**.
+        //   그 전까지는 DD 의 짧은 소개(212자)를 깔아 둔다 — DD 의 `lore` 는 이름과 달리
+        //   전문이 아니라 `blurb` 와 같은 글이다.
+        window.currentChampLoreId = champId;
+        window.currentChampShortLore = champ.lore;
+        const loreHtml = `<div id="champ-lore-body" class="champ-lore-text"></div>`;
 
-        if (typeof customLore !== 'undefined' && customLore[champId]) {
-            displayLore = customLore[champId];
-        }
-
-        const loreHtml = `<style>.champ-lore-text p { margin-bottom: 18px; color: #ddd; }</style><div class="champ-lore-text" style="font-size: 15px; line-height: 1.8; word-break: keep-all; padding: 10px; white-space: pre-wrap;">${displayLore}</div>`;
+        // 대사 탭 — 대표 대사(championQuotes) + 픽/밴 음성. 내용은 renderChampQuotes 가 채운다.
+        window.currentChampVoiceKey = champ.key;
+        window.currentChampName = champ.name;
+        const quotesHtml = `<div id="champ-quotes-body" class="champ-quotes"></div>`;
 
         // ★ 스탯 탭 (2026-08-12). 내용은 renderChampStats 가 채운다.
         window.currentChampStatsId = champ.id;
@@ -4515,17 +4521,15 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                     <button class="champ-tab-btn active" onclick="switchChampTab(event, 'skills')" style="padding: 15px 20px; background: transparent; border: none; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; border-bottom: 3px solid #a78bfa;">스킬</button>
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'stats')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스탯</button>
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'skins')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스킨</button>
-                    <!-- ▼▼ 비공개 처리 (배경 탭) ▼▼
-                         되살릴 때: 이 주석 한 줄만 풀면 된다. 탭 내용(loreHtml)과
-                         switchChampTab 은 그대로라 바로 살아난다.
                     <button class="champ-tab-btn" onclick="switchChampTab(event, 'lore')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">배경</button>
-                         ▲▲ 비공개 처리 끝 ▲▲ -->
+                    <button class="champ-tab-btn" onclick="switchChampTab(event, 'quotes')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">대사</button>
                 </div>
                 <div class="champ-tab-scroll">
                     <div id="champ-tab-skills" class="champ-tab-content" style="display: block; height: 100%;">${skillsHtml}</div>
                     <div id="champ-tab-stats" class="champ-tab-content" style="display: none;">${statsHtml}</div>
                     <div id="champ-tab-skins" class="champ-tab-content" style="display: none; height: 100%;">${skinsHtml}</div>
                     <div id="champ-tab-lore" class="champ-tab-content" style="display: none;">${loreHtml}</div>
+                    <div id="champ-tab-quotes" class="champ-tab-content" style="display: none;">${quotesHtml}</div>
                 </div>
             </div>
         `;
@@ -4995,6 +4999,89 @@ window.switchChampTab = function (event, tabName) {
     document.querySelectorAll('.champ-tab-content').forEach(content => content.style.display = 'none');
     const targetTab = document.getElementById(`champ-tab-${tabName}`);
     if (targetTab) targetTab.style.display = 'block';
+
+    // 배경·대사는 열 때 채운다 (배경은 960KB 라 미리 받지 않는다)
+    if (tabName === 'lore') renderChampLore();
+    if (tabName === 'quotes') renderChampQuotes();
+};
+
+// ============================================================
+//  배경 탭 · 대사 탭 (2026-08-13)
+//
+//  출처는 라이엇 Universe 이고 `build_champion_lore.js` 가 받아 둔다:
+//    public/champion_lore.json  — 배경 전문 173명 (960KB, 여기서만 쓴다)
+//    public/champion_quotes.js  — 대표 대사 173명 (18KB, 챔피언 데이터와 같이 받는다)
+//
+//  ★ Data Dragon 의 `lore` 는 전문이 아니라 짧은 소개(212자)다. 전문은 Universe 에만 있다.
+//  ★ 전체 인게임 대사는 공개 데이터에 없다 — 라이엇이 주는 건 픽/밴 음성 파일 두 개뿐이다.
+// ============================================================
+
+let championLoreCache = null;
+let championLorePromise = null;
+
+function loadChampionLore() {
+    if (championLoreCache) return Promise.resolve(championLoreCache);
+    if (championLorePromise) return championLorePromise;
+
+    championLorePromise = fetch('/champion_lore.json')
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(j => { championLoreCache = j; return j; })
+        .catch(e => { championLorePromise = null; throw e; });   // 실패하면 다시 시도할 수 있게
+    return championLorePromise;
+}
+
+window.renderChampLore = async function () {
+    const box = document.getElementById('champ-lore-body');
+    if (!box || box.dataset.champ === window.currentChampLoreId) return;   // 이미 그린 챔피언이면 그냥 둔다
+
+    const id = window.currentChampLoreId;
+    box.dataset.champ = id;
+
+    // ★ 손으로 쓴 글이 있으면 그게 우선이다 (링크 등이 들어 있다). HTML 이라 그대로 넣는다.
+    if (typeof customLore !== 'undefined' && customLore[id]) {
+        box.innerHTML = customLore[id];
+        return;
+    }
+
+    box.textContent = '배경 이야기를 불러오는 중...';
+    try {
+        const all = await loadChampionLore();
+        if (box.dataset.champ !== id) return;            // 그 사이 다른 챔피언으로 옮겼으면 버린다
+        // textContent 로 넣는다 — 생성 때 태그를 벗겨 둔 순수 텍스트고, CSS 가 pre-wrap 이라
+        // 빈 줄이 그대로 문단이 된다
+        box.textContent = all[id] || window.currentChampShortLore || '배경 이야기가 없습니다.';
+    } catch (e) {
+        if (box.dataset.champ !== id) return;
+        box.textContent = window.currentChampShortLore || '배경 이야기를 불러오지 못했습니다.';
+    }
+};
+
+window.renderChampQuotes = function () {
+    const box = document.getElementById('champ-quotes-body');
+    if (!box) return;
+
+    const id = window.currentChampLoreId;
+    const key = window.currentChampVoiceKey;
+    const q = (typeof championQuotes !== 'undefined' && championQuotes[id]) || null;
+
+    box.innerHTML = `
+        ${q ? `
+            <blockquote class="champ-quote">
+                <p class="champ-quote-text">${escapeHtml(q.q)}</p>
+                ${q.a ? `<footer class="champ-quote-author">— ${escapeHtml(q.a)}</footer>` : ''}
+            </blockquote>` : ''}
+        <div class="champ-voice-row">
+            <button type="button" class="champ-voice-btn" onclick="playChampVoice('${key}', 'pick')">
+                <span class="champ-voice-icon">▶</span> 챔피언 선택 음성
+            </button>
+            <button type="button" class="champ-voice-btn" onclick="playChampVoice('${key}', 'ban')">
+                <span class="champ-voice-icon">▶</span> 밴 음성
+            </button>
+        </div>
+        <p class="champ-voice-note">
+            라이엇이 공개하는 음성은 선택·밴 두 가지입니다. 인게임 대사 전체는 제공되지 않습니다.
+        </p>
+    `;
 };
 
 window.playSkill = function (index) {

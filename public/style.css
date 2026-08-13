@@ -3656,6 +3656,112 @@ body::before {
     flex-shrink: 0;
 }
 
+/* -----------------------------------------
+   배경 탭 · 대사 탭 (2026-08-13)
+   출처는 라이엇 Universe, build_champion_lore.js 가 받아 둔다.
+   ----------------------------------------- */
+.champ-lore-text {
+    font-size: 15px;
+    line-height: 1.9;
+    color: #ddd;
+    word-break: keep-all;
+    padding: 10px;
+    max-width: 780px;
+    /* 생성 때 태그를 벗겨 순수 텍스트로 넣으므로 빈 줄이 곧 문단이다 */
+    white-space: pre-wrap;
+}
+
+.champ-lore-text a {
+    color: #a78bfa;
+    text-decoration: none;
+}
+
+.champ-lore-text a:hover {
+    text-decoration: underline;
+}
+
+.champ-quotes {
+    padding: 10px;
+    max-width: 780px;
+}
+
+.champ-quote {
+    margin: 0 0 28px 0;
+    padding: 20px 24px;
+    background: rgba(167, 139, 250, 0.06);
+    border-left: 3px solid #a78bfa;
+    border-radius: 0 10px 10px 0;
+}
+
+.champ-quote-text {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.7;
+    color: #fff;
+    word-break: keep-all;
+}
+
+.champ-quote-text::before { content: '“'; color: #a78bfa; }
+.champ-quote-text::after { content: '”'; color: #a78bfa; }
+
+.champ-quote-author {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #9aa4af;
+    text-align: right;
+}
+
+.champ-voice-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.champ-voice-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: #2b1a52;
+    border: 1px solid #6b46c1;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.champ-voice-btn:hover {
+    background: #6b46c1;
+}
+
+.champ-voice-icon {
+    font-size: 11px;
+    color: #a78bfa;
+}
+
+.champ-voice-btn:hover .champ-voice-icon {
+    color: #fff;
+}
+
+.champ-voice-note {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+/* 헤더 초상화를 누르면 선택 음성이 나온다 */
+.champ-header-portrait {
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.champ-header-portrait:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 16px rgba(167, 139, 250, 0.6) !important;
+}
+
 .champ-skill-box {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 12px;
