@@ -3481,11 +3481,13 @@ body::before {
    얼굴 중심 판본으로 물러난 스킨은 1280x720 이라 미세하게 다르다) */
 /* ★ 폭에 상한을 두고 가운데 정렬한다 (2026-08-13).
    칸을 꽉 채우면(704px) 그림 높이만 415px 이라 **설명이 스크롤해야 보였다.**
-   500px 로 줄이면 높이가 295px 가 되어, 제일 긴 설명(멜 293자)까지 한 화면에 들어간다.
-   계산: 295(그림) + 28(이름) + 10(여백) + 207(293자 ≒ 9줄) = 540 < 555(칸 높이). */
+   ★ 600px 는 실측으로 찾은 **한계선**이다. 제일 긴 설명(멜 293자)을 놓고 폭을 훑으니
+     500~600px 는 스크롤이 없고 **620px 부터 넘친다**(660px 에서 24px 초과).
+     그림이 넓어지면 한 줄에 들어가는 글자도 늘어나서 어느 정도는 상쇄되는데,
+     그 상쇄가 620px 에서 끝난다. **더 키우려면 설명 글씨를 줄여야 한다.** */
 .skin-view-frame {
     width: 100%;
-    max-width: 500px;
+    max-width: 600px;
     margin: 0 auto;
     aspect-ratio: 1215 / 717;
     background: rgba(0, 0, 0, 0.3);
@@ -3502,10 +3504,11 @@ body::before {
     display: block;
 }
 
-/* 그림 폭에 맞춰 같은 500px 칸 안에 세운다 — 그림만 가운데면 글이 붕 떠 보인다 */
+/* 그림 폭에 맞춰 같은 600px 칸 안에 세운다 — 그림만 가운데면 글이 붕 떠 보인다.
+   셋(그림·이름·설명)의 max-width 는 항상 같이 움직여야 한다 */
 .skin-view-name {
     margin: 16px auto 0 auto;
-    max-width: 500px;
+    max-width: 600px;
     font-size: 19px;
     font-weight: bold;
     color: #fff;
@@ -3532,7 +3535,7 @@ body::before {
 
 .skin-view-desc {
     margin: 10px auto 0 auto;
-    max-width: 500px;
+    max-width: 600px;
     font-size: 13.5px;
     color: #9aa4af;
     line-height: 1.7;
