@@ -4495,6 +4495,10 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                          그림은 자연히 왼쪽으로 치우친다. 세로 예산도 그만큼 아낀다. -->
                     <div class="skin-stage">
                         <div class="skin-view-frame">
+                            <!-- 크로마를 고른 동안만 채워진다. 크로마 렌더가 투명 배경 세로
+                                 인물이라 칸의 절반이 비는데, 그 뒤에 원래 일러스트를 흐리게
+                                 깔아 메운다. 이미 받아 둔 그림이라 추가 요청이 없다. -->
+                            <div id="skin-view-bg" class="skin-view-bg"></div>
                             <img id="skin-view-img" class="skin-view-img" src="" alt="">
                         </div>
                         <div id="skin-chroma-col" class="skin-chroma-col" style="display:none;"></div>
@@ -5284,6 +5288,10 @@ window.selectChroma = function (i) {
     img.classList.toggle('is-chroma', !!c);
     img.src = c ? c.img : skin.full;
 
+    // 크로마일 때만 원래 일러스트를 흐리게 뒤에 깐다 (빈 좌우를 메운다)
+    const bg = document.getElementById('skin-view-bg');
+    if (bg) bg.style.backgroundImage = c ? `url("${skin.full}")` : '';
+
     // ★ 크로마 이름은 "도자기 럭스 (장미석)" 꼴이 6972개 중 6971개다.
     //   괄호 안 색 이름만 뽑으면 스킨 이름이 반복되지 않는다.
     //   (유일한 예외인 "2017 월드 챔피언십 애쉬 크로마" 는 통째로 쓴다)
@@ -5309,6 +5317,9 @@ window.selectSkin = function (index) {
     const skin = list[index];
     const img = document.getElementById('skin-view-img');
     if (img) { img.classList.remove('is-chroma'); img.src = skin.full; }
+    // 스킨을 바꾸면 크로마도 풀리므로 흐린 배경도 같이 지운다
+    const bgEl = document.getElementById('skin-view-bg');
+    if (bgEl) bgEl.style.backgroundImage = '';
 
     // 크로마 점은 그림 **오른쪽에 세로줄**로 붙는다. 없는 스킨이 절반이라
     //   (2111개 중 1037개만 있다) 통째로 접는다.
