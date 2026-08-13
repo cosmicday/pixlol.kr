@@ -59,7 +59,4 @@ async function getBin(url, alias) {
 // 이번 실행에서 캐시를 얼마나 썼는지. 스크립트 끝에서 한 줄 찍는 용도.
 const cacheStats = () => ({ hit, miss, stale, fromCache: hit + stale });
 
-// 캐시에서 나왔는지(= 네트워크를 안 탔는지). 챔피언 사이 대기시간을 건너뛸 때 쓴다.
-const lastWasCached = () => cacheStats().fromCache > 0;
-
 module.exports = { getBin, cacheStats, CACHE_DIR };

@@ -2259,17 +2259,6 @@ function addFavorite(name) {
     renderProfileFavBtn();
 }
 
-function toggleFavorite(name) {
-    let favs = getFavorites();
-    const index = favs.indexOf(name);
-    if (index > -1) favs.splice(index, 1);
-    else { favs.push(name); if (favs.length > 10) favs.shift(); }
-    saveFavorites(favs);
-
-    renderDropdownList();
-    renderProfileFavBtn();
-}
-
 function removeFavorite(name) {
     let favs = getFavorites();
     favs = favs.filter(f => f !== name);

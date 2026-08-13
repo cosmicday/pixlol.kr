@@ -454,22 +454,6 @@ body::before {
     font-size: 30px;
 }
 
-.fav-star {
-    color: #444;
-    cursor: pointer;
-    font-size: 27px;
-    margin-left: 10px;
-    transition: all 0.2s;
-    user-select: none;
-    -webkit-text-stroke: 1.5px #444;
-}
-
-.fav-star.active {
-    color: #facc15;
-    -webkit-text-stroke: 1.5px #facc15;
-    text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
-}
-
 .pix-box {
     background: #1a1a2e;
     border-radius: 8px;
@@ -577,13 +561,6 @@ body::before {
     font-size: 26px;
     margin: 0;
     line-height: 1.2;
-}
-
-.profile-rank {
-    color: #facc15;
-    font-size: 13px;
-    font-weight: bold;
-    letter-spacing: 0.5px;
 }
 
 .profile-fav-btn {
@@ -859,12 +836,6 @@ body::before {
     background: rgba(0, 0, 0, 0.35);
 }
 
-.ts-noban {
-    font-size: 11px;
-    color: #666;
-    line-height: 20px;
-}
-
 .ts-objs {
     display: flex;
     align-items: center;
@@ -1010,13 +981,6 @@ body::before {
 
 .tl-obj-marker:hover .tl-obj-marker-icon {
     transform: scale(1.3);
-}
-
-.tl-chart-hint {
-    text-align: center;
-    font-size: 11px;
-    color: #777;
-    margin-bottom: 10px;
 }
 
 .tl-toggle-row {
@@ -1375,11 +1339,6 @@ body::before {
     filter: none;
     opacity: 0.55;
     background: rgba(0, 0, 0, 0.35);
-}
-
-.live-no-ban {
-    font-size: 10px;
-    color: #666;
 }
 
 .live-timer {
@@ -2621,54 +2580,6 @@ body::before {
 }
 
 /* =========================================
-   12. 최근 게임 요약 통계 박스 (JS 생성 요소용)
-   ========================================= */
-.summary-stats-box {
-    display: flex;
-    background: #1a1a2e;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    margin-bottom: 10px;
-    padding: 15px;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.stat-wl {
-    flex: 1;
-    text-align: center;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-kda {
-    flex: 1;
-    text-align: center;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-champs {
-    flex: 1.5;
-    padding-left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.stat-champ-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    color: #9aa4af;
-}
-
-.stat-champ-row img {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-}
-
-/* =========================================
    13. 커스텀 툴팁 및 그래프 요소
    ========================================= */
 .custom-footnote {
@@ -3047,13 +2958,6 @@ body::before {
     font-size: 11px;
     color: #9aa4af;
     margin-top: 2px;
-}
-
-.ac-empty {
-    padding: 16px 20px;
-    text-align: center;
-    color: #777;
-    font-size: 13px;
 }
 
 /* ================================
