@@ -21,9 +21,12 @@ const path = require('path');
 
 const DD_VER = '16.16.1';
 const UNIVERSE = 'https://universe-meeps.leagueoflegends.com/v1/ko_kr/champions/';
-// ★ 둘로 나눈다. 배경 전문은 980KB 라 **배경 탭을 열 때만** 받고,
-//   대사는 20KB 밖에 안 되니 챔피언 데이터와 같이 미리 받아 즉시 뜨게 한다.
-const OUT_LORE = path.join(__dirname, 'public', 'champion_lore.json');
+// ★ 배경은 **챔피언별 파일**로 쪼갠다 (2026-08-13).
+//   통짜 하나(gzip 335KB)로 뒀더니 배경 탭을 처음 열 때 그걸 다 받아야 했다.
+//   챔피언당 gzip 2.4KB 라 실제로 보는 서너 명만 받으면 된다 —
+//   **통짜가 이득이 되려면 한 사람이 140명을 열어봐야 한다.**
+//   대사는 18KB 뿐이라 통짜로 두고 챔피언 데이터와 같이 받는다.
+const OUT_LORE_DIR = path.join(__dirname, 'public', 'lore');
 const OUT_QUOTE = path.join(__dirname, 'public', 'champion_quotes.js');
 const WRITE = process.argv.includes('--write');
 
@@ -90,32 +93,45 @@ async function main() {
 
     const lens = Object.values(out).map(v => v.lore.length).sort((a, b) => a - b);
 
-    const lore = {};
     const quotes = {};
     for (const [id, v] of Object.entries(out)) {
-        lore[id] = v.lore;
         if (v.quote) quotes[id] = v.author ? { q: v.quote, a: v.author } : { q: v.quote };
     }
 
-    const loreBody = JSON.stringify(lore);
+    // 파일 하나에 그 챔피언의 배경 글 하나. 통짜 JSON 객체가 아니라 **문자열 하나**라
+    // 화면 쪽에서 `await res.json()` 이 곧 본문이 된다.
+    const files = Object.entries(out).map(([id, v]) => ({ id, body: JSON.stringify(v.lore) }));
+
     const quoteBody = '// 자동 생성 — build_champion_lore.js. 직접 고치지 말 것.\n'
         + '// 출처: 라이엇 Universe (biography.quote). q = 대사, a = 말한 사람.\n'
         + 'const championQuotes = ' + JSON.stringify(quotes) + ';\n';
 
-    const kb = s => (Buffer.byteLength(s, 'utf8') / 1024).toFixed(0) + 'KB';
+    const kb = n => (n / 1024).toFixed(1) + 'KB';
+    const sizes = files.map(f => Buffer.byteLength(f.body, 'utf8')).sort((a, b) => a - b);
 
     console.log('[2/2] 결과');
     console.log(`      받은 챔피언  ${done}명 / 실패 ${fail.length}`);
     if (fail.length) console.log('      실패: ' + fail.join(', '));
     console.log(`      배경 길이   중앙값 ${lens[Math.floor(lens.length / 2)]}자 / 최소 ${lens[0]} / 최대 ${lens[lens.length - 1]}`);
     console.log(`      대사 있는 챔피언 ${Object.keys(quotes).length}명`);
-    console.log(`      champion_lore.json   ${kb(loreBody)}  (배경 탭 열 때만 받는다)`);
-    console.log(`      champion_quotes.js   ${kb(quoteBody)}  (챔피언 데이터와 같이 받는다)`);
+    console.log(`      lore/*.json  ${files.length}개 — 중앙값 ${kb(sizes[Math.floor(sizes.length / 2)])} / 최대 ${kb(sizes[sizes.length - 1])} / 합계 ${kb(sizes.reduce((a, b) => a + b, 0))}`);
+    console.log(`      champion_quotes.js  ${kb(Buffer.byteLength(quoteBody, 'utf8'))}  (챔피언 데이터와 같이 받는다)`);
 
     if (WRITE) {
-        fs.writeFileSync(OUT_LORE, loreBody);
+        fs.mkdirSync(OUT_LORE_DIR, { recursive: true });
+
+        // 챔피언이 사라지는 일은 없지만, 옛 파일이 남아 헷갈리지 않게 폴더를 비우고 다시 쓴다
+        for (const f of fs.readdirSync(OUT_LORE_DIR)) {
+            if (f.endsWith('.json')) fs.unlinkSync(path.join(OUT_LORE_DIR, f));
+        }
+        for (const f of files) fs.writeFileSync(path.join(OUT_LORE_DIR, f.id + '.json'), f.body);
         fs.writeFileSync(OUT_QUOTE, quoteBody);
-        console.log('      → ' + OUT_LORE);
+
+        // 통짜로 만들던 시절 파일이 남아 있으면 지운다
+        const old = path.join(__dirname, 'public', 'champion_lore.json');
+        if (fs.existsSync(old)) { fs.unlinkSync(old); console.log('      (옛 champion_lore.json 삭제)'); }
+
+        console.log('      → ' + OUT_LORE_DIR + '\\<챔피언>.json');
         console.log('      → ' + OUT_QUOTE);
     } else {
         console.log('      (미리보기 — 저장하려면 --write)');

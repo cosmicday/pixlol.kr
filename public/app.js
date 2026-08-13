@@ -5016,18 +5016,22 @@ window.switchChampTab = function (event, tabName) {
 //  ★ 전체 인게임 대사는 공개 데이터에 없다 — 라이엇이 주는 건 픽/밴 음성 파일 두 개뿐이다.
 // ============================================================
 
-let championLoreCache = null;
-let championLorePromise = null;
+// ★ 챔피언 하나당 파일 하나다 (`public/lore/<id>.json`, 중앙값 5.4KB / gzip 2.4KB).
+//   통짜 하나(gzip 335KB)로 뒀다가 쪼갰다 — 배경을 실제로 열어보는 건 서너 명인데
+//   **통짜가 이득이 되려면 한 사람이 140명을 열어봐야 한다.**
+//   같은 챔피언을 다시 열면 여기 캐시에서 바로 나간다.
+const championLoreCache = {};
+const championLorePromises = {};
 
-function loadChampionLore() {
-    if (championLoreCache) return Promise.resolve(championLoreCache);
-    if (championLorePromise) return championLorePromise;
+function loadChampionLore(id) {
+    if (championLoreCache[id] !== undefined) return Promise.resolve(championLoreCache[id]);
+    if (championLorePromises[id]) return championLorePromises[id];
 
-    championLorePromise = fetch('/champion_lore.json')
+    championLorePromises[id] = fetch('/lore/' + encodeURIComponent(id) + '.json')
         .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(j => { championLoreCache = j; return j; })
-        .catch(e => { championLorePromise = null; throw e; });   // 실패하면 다시 시도할 수 있게
-    return championLorePromise;
+        .then(text => { championLoreCache[id] = text; return text; })
+        .catch(e => { delete championLorePromises[id]; throw e; });   // 실패하면 다시 시도할 수 있게
+    return championLorePromises[id];
 }
 
 window.renderChampLore = async function () {
@@ -5045,11 +5049,11 @@ window.renderChampLore = async function () {
 
     box.textContent = '배경 이야기를 불러오는 중...';
     try {
-        const all = await loadChampionLore();
+        const text = await loadChampionLore(id);
         if (box.dataset.champ !== id) return;            // 그 사이 다른 챔피언으로 옮겼으면 버린다
         // textContent 로 넣는다 — 생성 때 태그를 벗겨 둔 순수 텍스트고, CSS 가 pre-wrap 이라
         // 빈 줄이 그대로 문단이 된다
-        box.textContent = all[id] || window.currentChampShortLore || '배경 이야기가 없습니다.';
+        box.textContent = text || window.currentChampShortLore || '배경 이야기가 없습니다.';
     } catch (e) {
         if (box.dataset.champ !== id) return;
         box.textContent = window.currentChampShortLore || '배경 이야기를 불러오지 못했습니다.';
