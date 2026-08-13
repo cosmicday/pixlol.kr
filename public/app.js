@@ -4501,7 +4501,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                             <div id="skin-view-bg" class="skin-view-bg"></div>
                             <img id="skin-view-img" class="skin-view-img" src="" alt="">
                         </div>
-                        <div id="skin-chroma-col" class="skin-chroma-col" style="display:none;"></div>
+                        <div id="skin-chroma-col" class="skin-chroma-col is-empty"></div>
                     </div>
                     <div id="skin-view-name" class="skin-view-name"></div>
                     <div id="skin-view-desc" class="skin-view-desc"></div>
@@ -5330,13 +5330,13 @@ window.selectSkin = function (index) {
                 `<button type="button" class="chroma-dot" data-i="${i}" onclick="selectChroma(${i})"`
                 + ` title="${escapeHtml(c.name)}${c.desc ? ' — ' + escapeHtml(c.desc) : ''}"`
                 + ` style="background:${chromaDotBg(c.colors)}"></button>`).join('');
-            // ★ 'block' 이 아니라 'flex' 다. 인라인 style 이 CSS 의 display 를 이기므로
-            //   block 을 넣으면 세로줄 배치가 통째로 날아간다
-            //   (챔피언 목록에서 겪은 것과 같은 함정 — CLAUDE.md "style.display 를 건드리지 말 것")
-            col.style.display = 'flex';
+            col.classList.remove('is-empty');
         } else {
+            // ★ 크로마가 없어도 **칸은 남긴다.** 없앴다 만들었다 하면 가운데 정렬이라
+            //   스킨을 넘길 때마다 그림이 좌우로 15px 씩 튄다.
+            //   비어 있다는 표시만 해 두고(폰에서는 이 클래스로 접는다) 자리는 지킨다
             col.innerHTML = '';
-            col.style.display = 'none';
+            col.classList.add('is-empty');
         }
     }
 

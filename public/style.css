@@ -3570,6 +3570,9 @@ body::before {
    크로마 25개(2018 월드 챔피언십 카직스)가 유일하게 두 칸이 되고, 그 다음이 11개라
    나머지 1036개 스킨은 한 칸으로 끝난다. 두 칸이 되는 스킨에서는 그림이 그만큼 줄어든다
    (`.skin-view-frame` 이 flex 항목이라 알아서 좁아진다). */
+/* ★ 보이고 숨기는 건 `.is-empty` 클래스로만 한다. app.js 가 인라인 style 로
+   display 를 넣으면 아래 폰 규칙(`display:none`)을 이겨 버려서 빈 칸이 안 접혔다 —
+   이 프로젝트에서 세 번째 겪은 같은 함정이다 */
 .skin-chroma-col {
     display: flex;
     flex-direction: column;
@@ -3578,6 +3581,9 @@ body::before {
     gap: 7px;
     flex: 0 0 auto;
     max-height: var(--skin-frame-h);
+    /* ★ 크로마가 없는 스킨에서도 한 칸 폭을 지킨다. 안 그러면 크로마 있는 스킨과
+       없는 스킨 사이를 오갈 때 그림이 좌우로 15px 씩 튄다 (가운데 정렬이라 그렇다) */
+    min-width: 20px;
 }
 
 /* 이름 줄 뒤에 붙는 크로마 색 이름 (" · 장미석") */
@@ -3845,6 +3851,13 @@ body::before {
         flex-wrap: wrap;
         justify-content: center;
         max-height: none;
+        min-width: 0;
+    }
+
+    /* 폰은 점이 그림 **아래**라 빈 칸을 남길 이유가 없다 (좌우로 튈 일이 없다).
+       남겨 두면 gap 만큼 빈 자리가 생기므로 접는다 */
+    .skin-chroma-col.is-empty {
+        display: none;
     }
 
     .champ-skill-btns {
