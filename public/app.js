@@ -2029,6 +2029,20 @@ function qwertyToKo(s) {
 //   그 자리가 4개를 넘으면 조합이 과해지므로 양 끝(전부 Shift / 전부 소문자)만 본다.
 //   덕분에 대소문자를 아예 신경 안 써도 되고, 된소리가 필요한 챔피언
 //   (쓰레쉬·뽀삐)만 자연히 Shift 해석 쪽으로 걸린다.
+// ★★ 초성만 이어 치면 IME 가 **겹받침으로 묶어 버린다** (2026-08-14).
+//   "르블랑" 을 찾으려고 ㄹ·ㅂ·ㄹ 을 누르면 화면엔 `ㄼㄹ` 이 뜬다 (ㄹ+ㅂ = ㄼ).
+//   "암베사" 는 ㅇ·ㅂ·ㅅ -> `ㅇㅄ` 이다. 우리가 비교하는 초성 문자열은 `ㄹㅂㄹ`·`ㅇㅂㅅ`
+//   이라 한 글자도 안 맞아서 **검색이 통째로 헛돈다.**
+//   ★ 초성 자리에는 겹받침이 올 수 없으므로 **풀어 주는 게 항상 옳다.**
+//     쌍자음(ㄲㄸㅃㅆㅉ)은 Shift 조합이라 자동으로 묶이지 않으니 건드리면 안 된다 —
+//     풀어 버리면 "쓰레쉬"(ㅆㄹㅅ)가 "ㅅㅅㄹㅅ" 이 되어 못 찾는다.
+const JONG_SPLIT = {
+    'ㄳ': 'ㄱㅅ', 'ㄵ': 'ㄴㅈ', 'ㄶ': 'ㄴㅎ',
+    'ㄺ': 'ㄹㄱ', 'ㄻ': 'ㄹㅁ', 'ㄼ': 'ㄹㅂ', 'ㄽ': 'ㄹㅅ', 'ㄾ': 'ㄹㅌ', 'ㄿ': 'ㄹㅍ', 'ㅀ': 'ㄹㅎ',
+    'ㅄ': 'ㅂㅅ',
+};
+const splitJong = (s) => [...String(s)].map(c => JONG_SPLIT[c] || c).join('');
+
 function koCandidates(raw) {
     const spots = [...raw].map((c, i) => (QWERTY_KO_SHIFT[c] ? i : -1)).filter(i => i >= 0);
     const out = new Set();
@@ -2042,6 +2056,8 @@ function koCandidates(raw) {
         out.add(qwertyToKo(raw).toLowerCase());
         out.add(qwertyToKo(raw.toLowerCase()).toLowerCase());
     }
+    // 겹받침을 푼 후보를 **덧붙인다** (원래 후보도 남긴다 — 진짜 겹받침이 든 이름도 있다)
+    for (const c of [...out]) { const s = splitJong(c); if (s !== c) out.add(s); }
     return [...out];
 }
 
@@ -2575,6 +2591,9 @@ function buildRankQuery(raw) {
     // 영문만 친 경우엔 한글 자판 해석도 후보에 넣는다 ("rkfps" -> "가렌", "rf" -> "ㄱㄹ").
     // 영문 닉네임도 많으므로 원문 후보는 위에서 이미 넣어 뒀다 — 둘 중 하나만 맞으면 된다.
     if (/^[A-Za-z]+$/.test(q)) koCandidates(q).forEach(k => { if (k) terms.add(k); });
+    // ★ 초성을 이어 치면 IME 가 겹받침으로 묶는다 (`ㄹㅂㄹ` -> `ㄼㄹ`). 푼 후보도 넣는다.
+    //   위 koCandidates 는 **영문일 때만** 타므로 한글 입력은 여기서 따로 챙겨야 한다.
+    for (const t of [...terms]) { const s = splitJong(t); if (s !== t) terms.add(s); }
 
     return [...terms];
 }
