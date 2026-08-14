@@ -1110,7 +1110,7 @@ const customValues = {
     },
     "Neeko": { // 니코
         "P": {
-            "cooldown": "6", // PassiveCooldown
+            "cooldown": "6<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>실제 재사용 대기시간</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>2초</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>6초는 인게임 툴팁 표시값입니다</div></span></span>", // PassiveCooldown
             "cost": "-"
         },
         "Q": {
@@ -1545,7 +1545,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/rakan/hud/icons2d/rakan_e2.png"],
             "stats": {
                 "사거리": "650",
-                "돌진 속도": "1250",
+                "돌진 속도": "1250 (+ 이동 속도의 80%)",
                 "스킬 폭": "50"
             }
         },
@@ -4121,7 +4121,8 @@ const customValues = {
             "stats": {
                 "사거리": "475",
                 "시전시간": "0.25",
-                "투사체 속도": "1500"
+                "투사체 속도": "1500",
+                "돌진 속도": "600 ~ 900 (거리에 따라)"
             }
         },
         "W": {
@@ -10516,6 +10517,7 @@ const customValues = {
             "stats": {
                 "사거리": "600",
                 "투사체 속도": "1500",
+                "돌진 속도": "1500",
                 "스킬 폭": "55"
             }
         },
@@ -10678,7 +10680,7 @@ const customValues = {
             "stats": {
                 "사거리": "1100",
                 "투사체 속도": "1000",
-                "돌진 속도": "440"
+                "돌진 속도": "440 (+ 이동 속도의 100%)"
             }
         },
         "E": {
@@ -10690,6 +10692,7 @@ const customValues = {
             "stats": {
                 "사거리": "650",
                 "시전시간": "0.25",
+                "돌진 속도": "600 (+ 이동 속도의 100%)",
                 "스킬 폭": "75"
             }
         },

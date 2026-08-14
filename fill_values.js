@@ -303,10 +303,23 @@ const STAT_MANUAL = {
     '미스 포츈 R': { '사거리': '1400', '투사체 속도': '2000' },
 
     // --- 돌진 속도: 후보가 둘이라 자동으로 건너뛴 자리 ---
+    //   ★ 크산테 W — bin `DashSpeedBase` 는 1400 인데 **롤위키·나무위키·bin `missileSpeed`
+    //     셋이 1500** 이다. 1400 만 예외라 1500 을 쓴다 (각성 상태는 `DashSpeedAO` 1800).
+    //     bin 의 `KnockbackSpeed`(800)·`VictimDashMod`(1.3)는 **끌려가는 적**의 속도라
+    //     우리가 쓰는 "돌진 속도"(크산테 본인)와 다른 값이다 — 롤위키의 "knockback speed" 가 이것이다
+    '크산테 W': { '돌진 속도': '1500' },
     '람머스 R': { '돌진 속도': '900 ~ 2000' },   // 롤위키 min 900 / max 2000
-    '라칸 E': { '돌진 속도': '1250' },           // 롤위키 `1250 + 80% 이동 속도` — 고정분만 적는다
-                                                 // (bin 은 1150 / 자야에게 1250. 나무위키의 1700 은 **W** 값이다)
+    // ★ "고정분 + 이동 속도 %" 꼴이 있다. 본문 계수 표기(`(+ 주문력의 60%)`)와 같은 모양으로 적는다.
+    //   bin 의 `DashSpeed` 는 **고정분만** 들고 있어서 그대로 쓰면 실제보다 느려 보인다.
+    '라칸 E': { '돌진 속도': '1250 (+ 이동 속도의 80%)' },   // 롤위키 `1250 + 80% movement speed`
+                                                            // (bin 은 1150 / 자야에게 1250. 나무위키의 1700 은 **W** 값이다)
+    '키아나 E': { '돌진 속도': '600 (+ 이동 속도의 100%)' }, // 롤위키 `600 + 100% movement speed`
+                                                            // (bin `DashSpeedMax` 1200 은 상한이다)
+    '키아나 W': { '돌진 속도': '440 (+ 이동 속도의 100%)' }, // 롤위키 `440 + 100% movement speed`
     '브라이어 R': { '돌진 속도': '2500 ~ 5000' }, // 나무위키 "돌진 속도: 2500 ~ 5000"
+    //   브라이어 Q — 롤위키 `600 - 900 (based on distance)`.
+    //   bin 의 `DashSpeedBase` 600 + `ExtraDashSpeedBasedOnDistance` 300 = 900 과 정확히 맞는다
+    '브라이어 Q': { '돌진 속도': '600 ~ 900 (거리에 따라)' },
     '벨베스 Q': { '돌진 속도': '850' },          // 나무위키 "돌진 속도: 850" (균열 상태 1500 은 안 적는다)
 };
 
@@ -327,6 +340,26 @@ const STAT_DROP = {
     '문도 박사 R': ['투사체 속도'], '알리스타 R': ['투사체 속도'], '잔나 R': ['투사체 속도'],
     '헤카림 W': ['투사체 속도'], '누누와 윌럼프 R': ['투사체 속도'],
 };
+
+// ★ 패시브 쿨타임 각주 — **인게임 툴팁 값과 실제 동작이 다른 자리** (2026-08-14).
+//   우리는 인게임 툴팁을 재현하는 사이트라 **툴팁 값을 그대로 쓰되**, 각주로 실제를 알려준다.
+//   지금은 니코 하나다. 나무위키가 `"클라이언트 설명에는 이유는 모르겠지만 6초로 나와 있다"`
+//   고 적어 뒀고, 인게임에서 6초로 표시되는 것도 확인했다 (실제 재사용 대기시간은 2초).
+//   ★ 각주 HTML 은 **홑따옴표만** 쓸 것 — 값이 큰따옴표 문자열이라 `"` 가 들어가면
+//     이스케이프되고 `add_level_graphs.js` 의 줄 파싱 정규식이 통째로 깨진다.
+const PASSIVE_CD_NOTE = {
+    '니코': { real: '2초', why: '인게임 툴팁 표시값' },
+};
+const passiveCdNoteMade = [];
+
+function passiveCdFootnote(no, shown, real, why) {
+    return `<span class='custom-footnote'>[${no}]` +
+        `<span class='custom-footnote-content'>` +
+        `<div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>실제 재사용 대기시간</div>` +
+        `<div style='font-size:12px; color:#ff9900; font-weight:bold;'>${real}</div>` +
+        `<div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>${shown}초는 ${why}입니다</div>` +
+        `</span></span>`;
+}
 
 const statManualUsed = new Set();  // 안 쓰인 키는 오타 경고로 잡는다
 const passiveCdMade = [];         // 패시브 쿨타임을 채운 곳 (bin 의 keyCooldown)
@@ -2271,6 +2304,12 @@ async function main() {
                     .trim();
                 if (ok && filled && !/[@?]/.test(filled)) {
                     passiveCd = filled;
+                    // 툴팁 값과 실제가 다른 자리에는 각주를 단다 (위 PASSIVE_CD_NOTE 주석 참고)
+                    const note = PASSIVE_CD_NOTE[c.name];
+                    if (note) {
+                        passiveCd += passiveCdFootnote(1, filled, note.real, note.why);
+                        passiveCdNoteMade.push(`${c.name}: 표시 ${filled} / 실제 ${note.real}`);
+                    }
                     passiveCdMade.push(`${c.name} = ${filled}`);
                 } else {
                     passiveCdFail.push(`${c.name} (${lk.keyCooldown}) = ${filled || raw}`);
@@ -2875,6 +2914,11 @@ async function main() {
             console.log(`\n[주의] STAT_MANUAL / STAT_DROP 에 안 쓰인 키 ${unusedStat.length}개 — 오타이거나 슬롯이 사라진 것:`);
             unusedStat.forEach(x => console.log(`  ${x}`));
         }
+    }
+
+    if (passiveCdNoteMade.length) {
+        console.log(`\n[패시브 쿨타임 각주] ${passiveCdNoteMade.length}자리 — 인게임 툴팁 값과 실제가 다른 곳:`);
+        passiveCdNoteMade.forEach(x => console.log(`  ${x}`));
     }
 
     if (dashMulti.length) {
