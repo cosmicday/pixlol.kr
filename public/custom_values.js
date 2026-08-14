@@ -341,7 +341,6 @@ const customValues = {
             "cooldown": "5",
             "cost": "30",
             "stats": {
-                "사거리": "20",
                 "시전시간": "0.001",
                 "투사체 속도": "828.5"
             }
@@ -909,10 +908,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "20 / 18 / 16 / 14 / 12",
-            "cost": "50",
-            "stats": {
-                "사거리": "20"
-            }
+            "cost": "50"
         },
         "E": {
             "p1": "90", // TooltipFearMS*100
@@ -1073,7 +1069,6 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/nidalee/hud/icons2d/nidalee_r2.png"],
             "stats": {
-                "사거리": "20",
                 "투사체 속도": "943.8"
             }
         },
@@ -1255,7 +1250,6 @@ const customValues = {
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "25 / 30 / 35 / 40 / 45",
             "stats": {
-                "사거리": "1",
                 "시전시간": "0.234"
             }
         },
@@ -1727,7 +1721,6 @@ const customValues = {
             "cooldown": "6",
             "cost": "20 열기",
             "stats": {
-                "사거리": "20",
                 "투사체 속도": "828.5"
             }
         },
@@ -1910,7 +1903,6 @@ const customValues = {
             "cooldown": "120 / 100 / 80",
             "cost": "-",
             "stats": {
-                "사거리": "20",
                 "투사체 속도": "779.9"
             }
         },
@@ -2776,7 +2768,6 @@ const customValues = {
             "cooldown": "10",
             "cost": "40",
             "stats": {
-                "사거리": "20",
                 "투사체 속도": "828.5"
             }
         },
@@ -2786,11 +2777,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "14",
-            "cost": "-",
-            "stats": {
-                "사거리": "20",
-                "투사체 속도": "347.8"
-            }
+            "cost": "-"
         },
         "R": {
             "p1": "70", // RCooldownRefund*100
@@ -2801,10 +2788,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "85",
-            "cost": "100",
-            "stats": {
-                "사거리": "1"
-            }
+            "cost": "100"
         },
     },
     "Maokai": { // 마오카이
@@ -3269,7 +3253,6 @@ const customValues = {
             "cooldown": "120",
             "cost": "-",
             "stats": {
-                "사거리": "20",
                 "투사체 속도": "828.5"
             }
         },
@@ -3735,10 +3718,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "100 / 85 / 70",
-            "cost": "80",
-            "stats": {
-                "사거리": "1"
-            }
+            "cost": "80"
         },
     },
     "Vex": { // 벡스
@@ -4348,10 +4328,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "15",
-            "cost": "75",
-            "stats": {
-                "사거리": "1"
-            }
+            "cost": "75"
         },
         "E": {
             "p1": "1", // CCDuration
@@ -4373,8 +4350,7 @@ const customValues = {
             "cooldown": "60 / 40 / 20",
             "cost": "100",
             "stats": {
-                "사거리": "600",
-                "투사체 속도": "347.8"
+                "사거리": "600"
             }
         },
     },
@@ -5519,8 +5495,7 @@ const customValues = {
             "cooldown": "7 / 6 / 5 / 4 / 3",
             "cost": "40 / 45 / 50 / 55 / 60",
             "stats": {
-                "사거리": "750",
-                "투사체 속도": "1000000000"
+                "사거리": "750"
             }
         },
         "W": {
@@ -5677,7 +5652,6 @@ const customValues = {
             "cooldown": "12",
             "cost": "60",
             "stats": {
-                "사거리": "20",
                 "투사체 속도": "1400"
             }
         },
@@ -5687,10 +5661,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "24 / 22.5 / 21 / 19.5 / 18",
-            "cost": "-",
-            "stats": {
-                "사거리": "20"
-            }
+            "cost": "-"
         },
         "R": {
             "p1": "8 / 10 / 12", // UltDuration
@@ -5766,8 +5737,7 @@ const customValues = {
             "cooldown": "120 / 110 / 100",
             "cost": "100",
             "stats": {
-                "사거리": "500",
-                "투사체 속도": "347.8"
+                "사거리": "500"
             }
         },
     },
@@ -5866,11 +5836,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "0",
-            "cost": "13",
-            "stats": {
-                "사거리": "20",
-                "투사체 속도": "347.8"
-            }
+            "cost": "13"
         },
         "W": {
             "p1": "3", // WDuration
@@ -5907,7 +5873,6 @@ const customValues = {
             "cooldown": "100",
             "cost": "100",
             "stats": {
-                "사거리": "20",
                 "투사체 속도": "1450"
             }
         },
@@ -6630,7 +6595,6 @@ const customValues = {
             "cooldown": "120 / 100 / 80",
             "cost": "100",
             "stats": {
-                "사거리": "1",
                 "투사체 속도": "828.5"
             }
         },
@@ -7080,7 +7044,6 @@ const customValues = {
             "cooldown": "3",
             "cost": "-",
             "stats": {
-                "사거리": "20",
                 "투사체 속도": "943.8"
             }
         },
@@ -9376,7 +9339,6 @@ const customValues = {
             "cost": "30",
             "stats": {
                 "사거리": "40",
-                "투사체 속도": "347.8",
                 "스킬 폭": "170"
             }
         },
@@ -9567,10 +9529,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7",
-            "cost": "1",
-            "stats": {
-                "사거리": "1"
-            }
+            "cost": "1"
         },
         "E": {
             "p1": "0.75", // ReductionPerSpellCast
@@ -9794,7 +9753,6 @@ const customValues = {
             "cost": "30",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kaisa/hud/icons2d/kaisa_e2.png"],
             "stats": {
-                "사거리": "1",
                 "시전시간": "1.5",
                 "투사체 속도": "1500"
             }
@@ -11122,7 +11080,6 @@ const customValues = {
             "cooldown": "20 / 19 / 18 / 17 / 16",
             "cost": "15 / 20 / 25 / 30 / 35",
             "stats": {
-                "사거리": "20",
                 "투사체 속도": "1450"
             }
         },
@@ -11299,10 +11256,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "16",
-            "cost": "40",
-            "stats": {
-                "사거리": "20"
-            }
+            "cost": "40"
         },
         "W": {
             "p1": "3", // Duration
@@ -11374,10 +11328,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "14",
-            "cost": "40",
-            "stats": {
-                "사거리": "20"
-            }
+            "cost": "40"
         },
         "E": {
             "p1": "9 / 23 / 37 / 51 / 65 (+ 주문력의 30% + 추가 공격력의 5%)", // ImpactCalculatedDamage
@@ -11808,11 +11759,7 @@ const customValues = {
             "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_w2.png", "https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_e2.png"],
-            "stats": {
-                "사거리": "1",
-                "투사체 속도": "347.8"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_w2.png", "https://raw.communitydragon.org/latest/game/assets/characters/heimerdinger/hud/icons2d/heimerdinger_e2.png"]
         },
     },
     "Hecarim": { // 헤카림

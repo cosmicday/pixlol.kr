@@ -144,6 +144,7 @@ const R = {
     rangeHuge: [],          // 사거리가 내부값으로 보임 (>= 3000)
     missileDirty: [],       // 투사체 속도가 본체가 아닌 데서 왔음
     missileDummy: [],       // 투사체 속도가 근접 판정 더미(20 이하)
+    missileEngine: [],      // 투사체 속도가 엔진 기본값(347.8)이거나 "즉시 도달"(>=100000)
     widthDirty: [],         // 스킬 폭이 본체에 없음
     castTimeOdd: [],        // 시전시간 이상치
     statEmpty: [],          // stats 값이 빈칸
@@ -237,6 +238,10 @@ for (const [ddId, champ] of Object.entries(cv)) {
             const bodySpeed = (bin && paths[slot] && bin[paths[slot]].mSpell.missileSpeed) || 0;
             if (our <= 20) {
                 R.missileDummy.push(`${tag} = ${ms}`);
+            } else if (Math.abs(our - 347.8) < 0.05 || our >= 100000) {
+                // 347.8 = 라이엇 엔진의 기본 공격 기본값 / 10억 = "즉시 도달".
+                //   둘 다 "값을 안 정했다" 는 뜻이라 투사체가 없는 스킬이다.
+                R.missileEngine.push(`${tag} = ${ms}`);
             } else if (Math.abs(bodySpeed - our) > 0.05) {
                 const fromBA = baSpeeds.has(Math.round(our * 10) / 10);
                 R.missileDirty.push(
@@ -296,6 +301,8 @@ show('⑩ 투사체 속도가 근접 판정 더미다 (<=20)', R.missileDummy,
     '투사체가 없는 스킬이다. 화면에서 빼야 한다');
 show('⑪ 투사체 속도가 본체에 없는 값이다', R.missileDirty,
     'pool 폴백이 옆 스펠 객체(기본 공격 등)에서 집어온 값이다');
+show('⑮ 투사체 속도가 엔진 기본값이다 (347.8 또는 >=100000)', R.missileEngine,
+    '347.8 = 라이엇 기본 공격 기본값 / 10억 = "즉시 도달". 값을 안 정한 스킬이다');
 show('⑫ 스킬 폭이 본체에 없는 값이다', R.widthDirty);
 show('⑬ 시전시간 이상치', R.castTimeOdd);
 show('⑭ stats 값이 빈칸', R.statEmpty);

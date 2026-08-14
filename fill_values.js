@@ -2391,17 +2391,40 @@ async function main() {
             //     `LuxRVfxMis=1175` 가 있고, 드레이븐 R(진짜 전역)은 계열이 `450` 이다
             //   ★ 3000~12000 은 건드리지 않는다. 갈리오 R `4000/4750/5500`,
             //     스웨인 W `5500~7500`, 케이틀린 R `3500` 처럼 진짜 값이 대부분이다
-            const RANGE_GLOBAL = 20000;
+            //
+            // ★★ 반대쪽 끝에도 더미가 있다 — `20` 이하는 "사거리 없음" 이다 (2026-08-14).
+            //   **24자리**가 여기 걸리고 전부 **자기 대상 스킬**이다:
+            //     `1` 8자리 — 다리우스 Q, 마스터 이 R, 베인 R, 알리스타 R, 카이사 E…
+            //     `20` 16자리 — 마스터 이 W(명상) · 럼블 W(고철 방패) · 시비르 E(주문 방어막) ·
+            //                   신지드 R(광기의 물약) · 트위치 Q(매복) · 티모 W(신속한 이동)…
+            //   **DD `rangeBurn` 도 똑같이 1/20 이라 기계 대조로는 절대 안 걸린다.**
+            //   (같은 라이엇 소스끼리는 "일관되게 쓸모없는 값" 을 서로 확인해 줄 뿐이다 —
+            //    위 audit 절의 ★★★ 항목 참고)
+            //   ★ 경계를 20 으로 둔 이유: 투사체 속도의 근접 더미와 같은 값이고,
+            //     40(초가스 E) 위로는 진짜 사거리가 시작된다 — 레오나 Q 100, 신지드 E 125,
+            //     닐라 W·라칸 R·말자하 W 150, 케넨 E 170, 렐 R·리븐 R·샤코 R 200.
+            //     **40 은 애매해서 일부러 남겼다** (초가스 E 는 강화 평타다)
+            const RANGE_GLOBAL = 20000;   // 이상이면 "맵 전체" (맵이 약 15000 유닛)
+            const RANGE_SELF = 20;        // 이하면 "자기 자신"
             const okRange = (s) => {
                 if (s === null || s === undefined) return false;
                 const str = String(s);
                 if (/^-/.test(str) || /^0( \/ 0)*$/.test(str)) return false;
                 const first = parseFloat(str.split('/')[0]);
-                return !(isFinite(first) && first >= RANGE_GLOBAL);
+                if (!isFinite(first)) return true;
+                return first > RANGE_SELF && first < RANGE_GLOBAL;
             };
+            //   ★ override 가 무효일 때 **폴백해도 되는 경우와 아닌 경우가 갈린다** (2026-08-14):
+            //     · 음수(`-1`) = "덮어쓸 값이 없다" → `castRange` 로 폴백하는 게 맞다 (잔나 W)
+            //     · `20` 이하 = **"자기 자신"** → 폴백하면 안 된다. 라이엇이 "사거리 없음" 이라고
+            //       **정해 준 것**이라 그 뜻을 살려야 한다. 다리우스 Q 가 `override 1 /
+            //       castRange 270` 인데 폴백하면 `사거리 270` 이 나간다 — 롤위키는 이 스킬을
+            //       `EFFECT RADIUS 460` 이라고 적지 사거리를 안 적는다. 270 은 아무 값도 아니다
             const ovRange = lv1(spell && spell.castRangeDisplayOverride, maxRank);
+            const ovFirst = ovRange === null ? NaN : parseFloat(String(ovRange).split('/')[0]);
+            const ovSaysNone = isFinite(ovFirst) && ovFirst >= 0 && ovFirst <= RANGE_SELF;
             const binRange = spell
-                ? (okRange(ovRange) ? ovRange : lv1(spell.castRange, maxRank))
+                ? (okRange(ovRange) ? ovRange : (ovSaysNone ? null : lv1(spell.castRange, maxRank)))
                 : null;
             const binMana = spell ? lv0(spell.mana, maxRank) : null;
             // mana 가 없고 manaUiOverride 에만 들어 있는 스펠이 있다 (킨드레드 E).
@@ -2425,8 +2448,27 @@ async function main() {
             //   ★ 20 이하는 근접 판정용 더미다. 본체에 20 이 박힌 자리가 70 개 있는데
             //     (아트록스 E·알리스타 Q·다리우스 R…) 전부 투사체가 없는 스킬이다.
             //   결과: 634 → 324자리. 남는 건 전부 진짜 투사체 스킬이다.
+            //   ★ 본체 값이어도 걸러야 하는 더미가 두 종류 더 있다 (2026-08-14):
+            //     · `1000000000` — "즉시 도달" 을 뜻한다. 스웨인 Q 가 유일한데
+            //       화면에 `투사체 속도 1000000000` 이 그대로 찍히고 있었다
+            //     · `347.8` — **라이엇 엔진의 기본 공격 기본값**이다. 값을 안 정한 스킬에
+            //       그대로 남는다. 마스터 이 bin 에는 `BasicAttack` 객체가 **아예 없는데도**
+            //       본체 `WujuStyle` 에 이 값이 박혀 있다 — 그래서 "기본 공격 속도와 같은가"
+            //       로는 못 걸러내고 값 자체를 봐야 한다.
+            //       6자리인데 **전부 투사체가 없는 스킬**이다 — 마스터 이 E(자기 버프) ·
+            //       블리츠크랭크 R(자기 주변) · 신 짜오 R · 신지드 Q · 초가스 E(강화 평타) ·
+            //       하이머딩거 R(자기 강화)
+            //   ★ "그 챔피언 기본 공격 속도와 같으면 제외" 라는 규칙은 **쓰면 안 된다.**
+            //     14자리가 걸리는데 드레이븐 E(도끼)·케넨 Q(표창)·샤코 E(단검)·엘리스 E(고치)
+            //     처럼 **진짜 투사체**가 대부분이다. 원거리 챔피언은 스킬 투사체가 기본 공격과
+            //     같은 속도인 게 자연스럽다
+            const MISSILE_DUMMY = 347.8;      // 라이엇 기본 공격 기본값
+            const MISSILE_MAX = 100000;       // 이보다 크면 "즉시 도달" 더미
             const bodyMs = (spell && typeof spell.missileSpeed === 'number') ? spell.missileSpeed : 0;
-            const missileSpeed = bodyMs > 20 ? tidy(bodyMs) : null;
+            const msTidy = bodyMs > 20 ? tidy(bodyMs) : null;
+            const missileSpeed = (msTidy !== null
+                && Math.abs(parseFloat(msTidy) - MISSILE_DUMMY) > 0.05
+                && parseFloat(msTidy) < MISSILE_MAX) ? msTidy : null;
             const lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
                 ? tidy(spell.mLineWidth) : null;
 
