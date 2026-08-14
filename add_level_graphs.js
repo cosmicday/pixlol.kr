@@ -94,15 +94,28 @@ function scaleByStat(champ, valueText, curve) {
 }
 
 const norm = (x) => String(x).toLowerCase().replace(/^spell\.[^:]*:/, '');
-function findCurve(alias, slot, calc) {
+
+// ★★ 한 계산식이 곡선을 **여러 개** 낼 수 있다 (2026-08-14).
+//   `level_curves.json` 이 `TotalDamage#0` · `TotalDamage#1` 처럼 `#번호` 로 구분해 둔다.
+//   카타리나 P 가 그 예다 — `#0` 은 기본 피해량(매 레벨), `#1` 은 **주문력 계수**
+//   (1/6/11/16레벨에 70/80/90/100%). 값 문자열에 `(레벨에 따라)` 가 두 번 나오는데
+//   예전엔 첫 번째 곡선만 찾아서 **주문력 계수 쪽엔 각주가 없었다.**
+//   `#번호` 순서가 값 문자열의 `(레벨에 따라)` 순서와 같으므로 그대로 짝지으면 된다.
+function findCurves(alias, slot, calc) {
     const ch = curves[alias] || {};
     for (const sl of [slot, ...Object.keys(ch).filter(x => x !== slot)]) {
-        for (const n of Object.keys(ch[sl] || {})) {
-            if (norm(n.split('#')[0]) === norm(calc)) return ch[sl][n];
-        }
+        const hit = Object.keys(ch[sl] || {})
+            .filter(n => norm(n.split('#')[0]) === norm(calc))
+            .sort((a, b) => {                       // `#0` `#1` 순서를 지킨다
+                const na = Number((a.split('#')[1] ?? '0'));
+                const nb = Number((b.split('#')[1] ?? '0'));
+                return na - nb;
+            });
+        if (hit.length) return hit.map(n => ch[sl][n]);
     }
-    return null;
+    return [];
 }
+const findCurve = (alias, slot, calc) => findCurves(alias, slot, calc)[0] || null;
 
 // {pN} 을 감싸고 있는 가장 안쪽 태그를 찾는다
 function colorFor(tpl, p) {
@@ -183,17 +196,48 @@ for (const l of src) {
     const tpl = String(t[slot] || '') + String(t[slot + '_rules'] || '');
     // 쿨타임은 문장이 아니라 **스킬 칸 우상단**에 늘 찍히므로 이 검사를 건너뛴다.
     if (m[1] !== 'cooldown' && tpl.indexOf('{' + m[1] + '}') === -1) continue;
-    let curve = findCurve(champ.toLowerCase(), slot, m[3]);
-    if (!curve) continue;
-    // "스탯의 A ~ B%" 자리는 곡선에 스탯을 곱해 실제 값으로 바꾼다 (위 주석 참고)
-    curve = scaleByStat(champ, m[2], curve) || curve;
+    // ★ 값 안의 `(레벨에 따라)` 개수만큼 곡선을 짝지어 각주를 **여러 개** 단다.
+    //   카타리나 P 는 `68 ~ 240 (레벨에 따라) (+ … 주문력의 70 ~ 100 (레벨에 따라)%)` 라
+    //   기본 피해량과 주문력 계수 둘 다 레벨에 따라 변한다.
+    const slots = (m[2].match(/\(레벨에 따라\)/g) || []).length;
+    const all = findCurves(champ.toLowerCase(), slot, m[3]);
+    if (!all.length) continue;
+    // 곡선이 자리보다 적으면 있는 만큼만 (대부분 1:1 이다)
+    const use = all.slice(0, slots);
+
+    // ★ 곡선 단위가 화면 값과 다를 수 있다 (2026-08-14).
+    //   카타리나 P 의 주문력 계수는 곡선이 `0.7 ~ 1` 인데 화면엔 `70 ~ 100%` 로 나간다.
+    //   각주에 `Lv.1 0.7` 이라고 찍히면 **본문 수치와 단위가 어긋나 헷갈린다.**
+    //   화면 값에서 그 자리의 `A ~ B` 를 뽑아 곡선 양 끝과 비교해 배율을 정한다.
+    const scaleFor = (val, idx, curve) => {
+        const before = String(val).split('(레벨에 따라)')[idx] || '';
+        const mm = before.match(/([\d.]+)\s*~\s*([\d.]+)\s*$/);
+        if (!mm) return 1;
+        const shown = Math.abs(parseFloat(mm[2]));
+        const cv = Math.abs(curve.values[curve.values.length - 1]);
+        if (!shown || !cv) return 1;
+        const ratio = shown / cv;
+        // 100배(분수 -> 퍼센트)일 때만 손댄다. 그 외는 건드리지 않는다
+        return (ratio > 50 && ratio < 200) ? 100 : 1;
+    };
 
     found[champ] = found[champ] || {};
     const list = (found[champ][slot] = found[champ][slot] || []);
     const base = (preNotes[champ] && preNotes[champ][slot]) || 0;
-    const e = exprFor(String(base + list.length + 1), curve, colorFor(tpl, m[1]));
-    if (e.isStep) nStep++; else nGraph++;
-    list.push({ p: m[1], text: e.text });
+    const texts = [];
+    use.forEach((cv, i) => {
+        // "스탯의 A ~ B%" 자리는 곡선에 스탯을 곱해 실제 값으로 바꾼다 (위 주석 참고)
+        //   ★ 첫 번째 자리에만 적용한다 — 뒤쪽은 계수라 스탯을 곱할 대상이 아니다
+        let curve = i === 0 ? (scaleByStat(champ, m[2], cv) || cv) : cv;
+        const k = scaleFor(m[2], i, curve);
+        if (k !== 1) curve = { ...curve, values: curve.values.map(x => Math.round(x * k * 1000) / 1000) };
+        const e = exprFor(String(base + list.length + texts.length + 1), curve, colorFor(tpl, m[1]));
+        if (e.isStep) nStep++; else nGraph++;
+        texts.push(e.text);
+    });
+    if (!texts.length) continue;
+    // 자리가 하나면 예전처럼 문자열, 여럿이면 배열로 내보낸다 (app.js 가 순서대로 끼워 넣는다)
+    list.push({ p: m[1], text: texts.length === 1 ? texts[0] : texts, multi: texts.length > 1 });
 }
 for (const c in found) nSkill += Object.keys(found[c]).length;
 
@@ -221,7 +265,14 @@ for (const c of Object.keys(found)) {
         out.push(`        "${sl}": {`);
         for (const it of found[c][sl]) {
             out.push(`            "${it.p}":`);
-            out.push(`                ${it.text},`);
+            if (it.multi) {
+                // 값 안의 `(레벨에 따라)` 자리마다 하나씩. app.js 가 순서대로 끼워 넣는다.
+                out.push(`                [`);
+                it.text.forEach(t => out.push(`                ${t},`));
+                out.push(`                ],`);
+            } else {
+                out.push(`                ${it.text},`);
+            }
         }
         out.push('        },');
     }

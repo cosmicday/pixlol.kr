@@ -377,8 +377,8 @@ const customValues = {
     },
     "Graves": { // 그레이브즈
         "P": {
-            "p1": "총 공격력의 70 ~ 100.005 (레벨에 따라)%", // SingleBulletDamage
-            "p2": "총 공격력의 70 ~ 100.005 (레벨에 따라)%", // MultiBulletDamage
+            "p1": "총 공격력의 70 ~ 100 (레벨에 따라)%", // SingleBulletDamage
+            "p2": "총 공격력의 70 ~ 100 (레벨에 따라)%", // MultiBulletDamage
             "p3": "50%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>65%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageMult
             "p4": "25", // StructureDamageReduction*100
             "cooldown": "-",
@@ -4184,7 +4184,7 @@ const customValues = {
     "Brand": { // 브랜드
         "P": {
             "p1": "2", // PercentHealthDamage
-            "p2": "20 ~ 39.983 (레벨에 따라)", // ManaRestore
+            "p2": "20 ~ 40 (레벨에 따라)", // ManaRestore
             "p3": "6 ~ 12% (레벨에 따라) (+ 주문력의 2%)", // ExplosionDamage
             "cooldown": "-",
             "cost": "-"
@@ -5272,7 +5272,7 @@ const customValues = {
             "p1": "2.5", // ShieldDuration
             "p2": "47 ~ 120 (레벨에 따라) (+ 추가 최대 체력의 13%)", // ShieldValue
             "p3": "11", // ShieldCooldown
-            "p4": "4 ~ 7.995 (레벨에 따라)", // ShieldCooldownReduction
+            "p4": "4 ~ 8 (레벨에 따라)", // ShieldCooldownReduction
             "cooldown": "11", // ShieldCooldown
             "cost": "-"
         },
@@ -5723,7 +5723,7 @@ const customValues = {
             "p4": "50", // Effect6Amount*-100
             "p5": "3", // MarkDuration
             "p6": "33.3", // CritChanceAmp*100
-            "p7": "50 ~ 100.002 (레벨에 따라)", // MinionMod
+            "p7": "50 ~ 100 (레벨에 따라)", // MinionMod
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
@@ -5853,7 +5853,7 @@ const customValues = {
             "p1": "20 / 30 / 40 / 50 / 60 (+ 주문력의 42.5%)", // DamagePerSecond
             "p2": "3.25", // CloudDuration
             "p3": "2", // PoisonDuration
-            "p4": "95 / 142.5 / 190 / 237.5 / 285 (+ 주문력의 201.875%)", // ApproximateTotalDamageTooltip
+            "p4": "95 / 142.5 / 190 / 237.5 / 285 (+ 주문력의 202%)", // ApproximateTotalDamageTooltip
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "0",
@@ -6458,7 +6458,7 @@ const customValues = {
         },
         "Q": {
             "p1": "10 / 25 / 40 / 55 / 70 (+ 총 공격력의 60 / 67.5 / 75 / 82.5 / 90%)", // QDamage
-            "p2": "17.5 / 43.75 / 70 / 96.25 / 122.5 (+ 총 공격력의 105 / 118.125 / 131.25 / 144.375 / 157.5%)", // QEdgeDamage
+            "p2": "17.5 / 43.75 / 70 / 96.25 / 122.5 (+ 총 공격력의 105 / 118 / 131.25 / 144 / 157.5%)", // QEdgeDamage
             "p3": "55 ~ 70% (레벨에 따라)", // QMinionDamage
             "p4": "25", // QMonsterBonus
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -8098,9 +8098,7 @@ const customValues = {
             "cooldown": "120 / 100 / 80",
             "cost": "100",
             "stats": {
-                "시전시간": "0.35",
-                "투사체 속도": "1300",
-                "스킬 폭": "80"
+                "시전시간": "0.35"
             }
         },
     },
@@ -8785,7 +8783,7 @@ const customValues = {
             "p1": "50 / 85 / 120 / 155 / 190 (+ 주문력의 65%)", // TotalDamage
             "p2": "2.5", // SlowDuration
             "p3": "25", // SlowAmount*100
-            "p4": "83.35 / 141.695 / 200.04 / 258.385 / 316.73 (+ 주문력의 108.355%)", // SweetSpotTotalDamage
+            "p4": "83.35 / 142 / 200.04 / 258 / 316.73 (+ 주문력의 108%)", // SweetSpotTotalDamage
             "p5": "60 / 65 / 70 / 75 / 80", // SweetSpotSlowAmount*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -9881,7 +9879,7 @@ const customValues = {
         "P": {
             "p1": "3", // ResetWindow
             "p2": "15", // ResetCDR
-            "p3": "68.185 ~ 240.015 (레벨에 따라) (+ 추가 공격력의 60% + 주문력의 70 ~ 100 (레벨에 따라)%)", // TotalDamage
+            "p3": "68 ~ 240 (레벨에 따라) (+ 추가 공격력의 60% + 주문력의 70 ~ 100 (레벨에 따라)%)", // TotalDamage
             "cooldown": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/katarina/hud/icons2d/katarina_daggerspin.png"],
             "cost": "-"
@@ -11892,7 +11890,7 @@ const customValues = {
             "p1": "50 / 80 / 110 / 140 / 170 (+ 주문력의 80%)", // Tooltip_QQDamage
             "p2": "3 / 4 / 5 / 6 / 7", // Tooltip_QQBonusDamage
             "p3": "60 / 85 / 110 / 135 / 160 (+ 주문력의 30%)", // Tooltip_QWDamage
-            "p4": "120 / 201.875 / 302.5 / 421.875 / 560 (+ 주문력의 60 / 71.25 / 82.5 / 93.75 / 105%)", // Tooltip_QWBonusDamage
+            "p4": "120 / 202 / 302.5 / 422 / 560 (+ 주문력의 60 / 71.25 / 82.5 / 93.75 / 105%)", // Tooltip_QWBonusDamage
             "p5": "20 / 35 / 50 / 65 / 80 (+ 주문력의 30%)", // Tooltip_QEDamage
             "p6": "2.5", // spell.HweiQE:Duration
             "p7": "20 / 35 / 50 / 65 / 80 (+ 주문력의 24%)", // Tooltip_QEDamagePerSecond

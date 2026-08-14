@@ -4102,11 +4102,23 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             const graphs = (typeof customGraphs !== 'undefined' && customGraphs[champ.id]
                 && customGraphs[champ.id][spellKey]) || {};
 
+            // ★ 각주가 **배열**이면 값 안의 `(레벨에 따라)` 자리마다 하나씩 끼워 넣는다
+            //   (2026-08-14). 한 값에 레벨 비례가 두 군데인 자리가 6개 있다 —
+            //   카타리나 P 는 기본 피해량과 **주문력 계수**가 각각 레벨에 따라 변한다.
+            //   문자열이면 예전처럼 값 **뒤에** 붙인다 (색칠된 수치의 마지막 글자에 달린다).
+            const withNotes = (val, note) => {
+                if (!note) return val;
+                if (!Array.isArray(note)) return val + note;
+                let i = 0;
+                return String(val).replace(/\(레벨에 따라\)/g,
+                    (hit) => hit + (note[i++] || ''));
+            };
+
             if (tpl && !unfilled) {
                 const fill = (t) => {
                     let x = t;
                     for (let key in values) {
-                        x = x.split(`{${key}}`).join(values[key] + (graphs[key] || ''));
+                        x = x.split(`{${key}}`).join(withNotes(values[key], graphs[key]));
                     }
                     return x;
                 };
