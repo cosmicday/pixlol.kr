@@ -4154,7 +4154,12 @@ body::before {
     color: #777;
 }
 
+/* ★ 닉네임·승률 칸은 폭을 못 박는다 (2026-08-14).
+   원래 둘 다 auto 라 남는 폭을 통째로 가져갔다 (1400px 에서 528px / 289px).
+   숙련도 칸을 넣으면서 닉네임 -35%(528 → 343), 승률 -40%(289 → 173) 로 줄였고,
+   비운 자리는 숙련도 칸(폭 지정 없음)이 받는다. */
 .rank-table .rank-name {
+    width: 343px;
     text-align: left;
     padding-left: 30px;
 }
@@ -4165,6 +4170,7 @@ body::before {
 }
 
 .rank-table .rank-lp {
+    width: 100px;
     text-align: center;
     font-weight: bold;
 }
@@ -4173,9 +4179,36 @@ body::before {
     text-align: center;
 }
 
+.rank-table .rank-wr {
+    width: 173px;
+}
+
 .rank-table td.rank-wr {
     text-align: left;
     padding-left: 20px;
+}
+
+/* 숙련도 TOP5 — 폭을 안 정한다. 닉네임·승률에서 비운 자리를 여기가 받는다 */
+.rank-table .rank-mastery {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.rank-mastery-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 3px;
+}
+
+.rank-mastery-icon:last-child {
+    margin-right: 0;
+}
+
+/* 아직 못 받아온 사람. 칸을 비워 두면 표가 고장난 것처럼 보인다 */
+.rank-mastery-empty {
+    color: #4b4b57;
 }
 
 .rank-wr-num {
@@ -4418,6 +4451,19 @@ body::before {
         padding-left: 8px;
         /* 긴 닉네임은 줄바꿈으로 넘긴다. 말줄임으로 자르면 누구인지 알 수 없다 */
         word-break: break-all;
+    }
+
+    /* ★ 폰에서는 숙련도 칸을 숨긴다. 아이콘 5개가 120px 을 먹는데 390px 안에서는
+       그만큼 닉네임을 깎아야 해서 누구인지 못 읽게 된다 */
+    .rank-table .rank-mastery {
+        display: none;
+    }
+
+    /* 데스크톱에서 못 박은 폭(343/173/100)을 푼다. 그대로 두면 390px 를 넘긴다 */
+    .rank-table .rank-name,
+    .rank-table .rank-wr,
+    .rank-table .rank-lp {
+        width: auto;
     }
 
     .rank-table td.rank-wr {

@@ -1511,7 +1511,9 @@ function renderAramSummaryHtml(matches) {
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="width: 244px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
+            <!-- ★ 폭 258px = 244 + 좌우 숫자 한 자리씩. 세 패널이 같이 움직여야 한다 —
+                 하나만 바꾸면 space-between 이 남는 폭을 다시 나눠 구분선이 어긋난다 -->
+            <div style="width: 258px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 역할군 (최근 ${total}게임)</div>
                 ${renderRoleRowsHtml(matches, 'aram')}
             </div>
@@ -1665,7 +1667,9 @@ function renderArenaSummaryHtml(matches) {
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="width: 244px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
+            <!-- ★ 폭 258px = 244 + 좌우 숫자 한 자리씩. 세 패널이 같이 움직여야 한다 —
+                 하나만 바꾸면 space-between 이 남는 폭을 다시 나눠 구분선이 어긋난다 -->
+            <div style="width: 258px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 역할군 (최근 ${total}게임)</div>
                 ${renderRoleRowsHtml(matches, 'arena')}
             </div>
@@ -1805,7 +1809,8 @@ function renderSummaryStats(matchesToCalc) {
                 <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${cName}.png" style="width: 28px; height: 28px; border-radius: 50%;" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
                 <div style="flex: 1; display: flex; align-items: center; gap: 6px; font-size: 12px;">
                     <span style="color: ${wrColor}; font-weight: bold; width: 34px;">${cWinRate}%</span>
-                    <span style="color: #ffffff; width: 62px;">(${data.wins}승 / ${data.games - data.wins}패)</span>
+                    <!-- ★ 62px 이면 두 자리 승패("10승 / 15패")에서 줄이 넘어간다. 76px = 숫자 두 자리분 -->
+                    <span style="color: #ffffff; width: 76px; white-space: nowrap;">(${data.wins}승 / ${data.games - data.wins}패)</span>
                     <span style="color: ${kdaColor}; font-weight: bold;">${cKda}:1 평점</span>
                 </div>
             </div>
@@ -1879,7 +1884,9 @@ function renderSummaryStats(matchesToCalc) {
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="width: 244px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
+            <!-- ★ 폭 258px = 244 + 좌우 숫자 한 자리씩. 세 패널이 같이 움직여야 한다 —
+                 하나만 바꾸면 space-between 이 남는 폭을 다시 나눠 구분선이 어긋난다 -->
+            <div style="width: 258px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${totalGames}게임)</div>
                 ${champsHtml}
             </div>
@@ -2745,6 +2752,25 @@ function rankPagerHtml(page, totalPages) {
     return html + `</div>`;
 }
 
+// 숙련도 TOP5 칸.
+//   ★ 서버가 분당 20명씩 채우므로 한 바퀴에 9시간쯤 걸린다. 아직 못 받은 사람은
+//     빈 배열로 오는데, 그때 칸을 비워 두면 표가 고장난 것처럼 보여서 - 로 자리를 지킨다.
+//   ★ championIdMap 은 fetchChampionMap() 이 채운다. 랭킹만 보고 있어도 페이지 로드 때
+//     같이 받으므로 추가 요청은 없다. 아직 안 왔으면 아이콘 주소를 못 만드니 그때도 - 다.
+function rankMasteryHtml(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return `<span class="rank-mastery-empty">-</span>`;
+    }
+    const icons = ids.map(id => {
+        const eng = championIdMap[id];
+        if (!eng) return '';
+        return `<img class="rank-mastery-icon"
+                     src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${eng}.png"
+                     alt="" title="${window.korChampMap[eng] || eng}" loading="lazy">`;
+    }).join('');
+    return icons || `<span class="rank-mastery-empty">-</span>`;
+}
+
 function renderRankingPage(page, opts = {}) {
     const listDiv = document.getElementById('game-list');
     const data = filteredRankingData();
@@ -2769,7 +2795,7 @@ function renderRankingPage(page, opts = {}) {
     let rowsHtml = '';
 
     if (pageData.length === 0) {
-        rowsHtml = `<tr><td colspan="5" class="rank-empty">'${escapeHtml(rankingQuery.trim())}' 와(과) 맞는 닉네임이 없습니다.</td></tr>`;
+        rowsHtml = `<tr><td colspan="6" class="rank-empty">'${escapeHtml(rankingQuery.trim())}' 와(과) 맞는 닉네임이 없습니다.</td></tr>`;
     }
 
     pageData.forEach(player => {
@@ -2804,6 +2830,7 @@ function renderRankingPage(page, opts = {}) {
                     <span class="rank-wr-num" style="color: ${winRate >= 55 ? '#f87171' : '#60a5fa'}">${winRate}%</span>
                     <span class="rank-wl">(${player.wins}W ${player.losses}L)</span>
                 </td>
+                <td class="rank-mastery">${rankMasteryHtml(player.mastery)}</td>
             </tr>`;
     });
 
@@ -2824,6 +2851,7 @@ function renderRankingPage(page, opts = {}) {
                         <th class="rank-tier">티어</th>
                         <th class="rank-lp">LP</th>
                         <th class="rank-wr">승률</th>
+                        <th class="rank-mastery">숙련도 TOP5</th>
                     </tr>
                 </thead>
                 <tbody class="ranking-body">${rowsHtml}</tbody>

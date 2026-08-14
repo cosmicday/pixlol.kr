@@ -45,7 +45,13 @@ const summonerCacheSchema = new mongoose.Schema({
     lp: { type: Number },
     tierScore: { type: Number },      // 티어 정렬용 점수
     iconId: { type: Number },
-    level: { type: Number }
+    level: { type: Number },
+
+    // ★ 숙련도 상위 5개 championId (랭킹 표의 "숙련도 TOP5" 칸).
+    //   전 큐 통합 누적값이라 "솔랭 모스트" 가 아니다 — 라이엇이 그것만 준다.
+    //   fillMasteryInBackground 가 분당 20명씩 채운다.
+    mastery: { type: [Number] },
+    masteryAt: { type: Number }
 });
 
 summonerCacheSchema.index({ displayName: 1 });
@@ -73,6 +79,9 @@ let rankUpdatedAt = 0;        // 랭킹 명단을 마지막으로 받아온 시�
 let resolvedNames = {};
 let failedPuuids = {};        // ★ 추가: 조회 실패한 puuid와 실패 시각
 let isFetchingNames = false;
+let resolvedMastery = {};     // puuid -> { top: [championId x5], updatedAt }
+let failedMasteryPuuids = {};
+let isFetchingMastery = false;
 let resolvedCountIn10Mins = 0;
 let arenaAugments = {};
 
@@ -155,8 +164,15 @@ app.use('/api/suggest', suggestLimiter);
 async function loadResolvedNames() {
     try {
         const summoners = await SummonerCache.find({});
-        summoners.forEach(s => resolvedNames[s.puuid] = { displayName: s.displayName, updatedAt: s.updatedAt });
-        console.log(`[System] DB 로드: 닉네임 ${summoners.length}명, 전적 ${await MatchCache.countDocuments()}게임`);
+        summoners.forEach(s => {
+            resolvedNames[s.puuid] = { displayName: s.displayName, updatedAt: s.updatedAt };
+            // ★ 숙련도도 같이 메모리에 올려야 랭킹 응답에서 쓸 수 있다.
+            //   DB 에만 있고 여기서 안 올리면 재시작할 때마다 전부 다시 받게 된다 (9시간짜리다).
+            if (s.mastery && s.mastery.length) {
+                resolvedMastery[s.puuid] = { top: s.mastery, updatedAt: s.masteryAt || 0 };
+            }
+        });
+        console.log(`[System] DB 로드: 닉네임 ${summoners.length}명, 숙련도 ${Object.keys(resolvedMastery).length}명, 전적 ${await MatchCache.countDocuments()}게임`);
     } catch (err) {
         console.error("[System] DB 로드 실패:", err.message);
     }
@@ -320,6 +336,74 @@ async function resolveNamesInBackground() {
     isFetchingNames = false;
 }
 
+// ==========================================
+// 숙련도 TOP5 채우기 (랭킹 표의 마지막 칸)
+//   ★ 이 값은 champion-mastery v4 의 "전 큐 통합 누적 숙련도" 다.
+//     솔랭 모스트가 아니다 — 큐별 모스트는 라이엇이 안 주고, 직접 세려면
+//     1인당 경기 상세를 수십 번 받아야 해서 1.1만 명한테는 불가능하다.
+//   ★ 닉네임 잡과 같은 구조·같은 속도(분당 20명)다. 두 잡이 동시에 몰리지 않도록
+//     startJobs 에서 30초 어긋나게 띄운다.
+//   ★ 한 바퀴에 약 9시간이 걸린다 (11,000명 / 분당 20명). 그래서 DB 에 저장하고
+//     loadResolvedNames 가 다시 메모리에 올린다 — 재시작마다 처음부터면 영영 못 채운다.
+// ==========================================
+const MASTERY_TTL = 7 * 24 * 60 * 60 * 1000;   // 7일마다 갱신 (사람들이 계속 플레이하므로)
+
+async function fillMasteryInBackground() {
+    if (challengerList.length === 0 || isFetchingMastery) return;
+    isFetchingMastery = true;
+
+    const now = Date.now();
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+    const TOP_PRIORITY = 1000;
+
+    const pending = challengerList
+        .map((p, rank) => ({ ...p, rank }))
+        .filter(p => {
+            if (failedMasteryPuuids[p.puuid] && now - failedMasteryPuuids[p.puuid] < ONE_DAY) return false;
+            // ★ 닉네임이 아직 없는 사람은 건너뛴다. 두 가지 이유가 있다 —
+            //   ① SummonerCache 에 줄이 없어서 저장할 곳이 없다(스키마상 displayName 이 필수라
+            //      upsert 도 못 한다). 메모리에만 남으면 재시작 때 날아가 호출이 헛돈다
+            //   ② 닉네임도 못 받은 줄은 화면에서 클릭도 안 되는 자리다. 숙련도가 더 급할 리 없다
+            if (!resolvedNames[p.puuid]) return false;
+            return !resolvedMastery[p.puuid] || (now - resolvedMastery[p.puuid].updatedAt > MASTERY_TTL);
+        });
+
+    const topPending = pending.filter(p => p.rank < TOP_PRIORITY);
+    const restPending = pending.filter(p => p.rank >= TOP_PRIORITY);
+    const targets = [...topPending, ...restPending].slice(0, 20);
+
+    if (pending.length > 0) {
+        console.log(`[Task] 숙련도: 대기 ${pending.length}명 (상위권 ${topPending.length}명 / 채움 ${Object.keys(resolvedMastery).length}명)`);
+    }
+
+    for (const p of targets) {
+        try {
+            const res = await riotApi.get(
+                `https://kr.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${p.puuid}/top?count=5`
+            );
+            const top = (res.data || []).map(m => m.championId).filter(Boolean);
+            resolvedMastery[p.puuid] = { top, updatedAt: now };
+            delete failedMasteryPuuids[p.puuid];
+            await SummonerCache.findOneAndUpdate(
+                { puuid: p.puuid },
+                { mastery: top, masteryAt: now },
+                { upsert: false }   // 닉네임도 없는 사람에게 숙련도만 있는 줄을 만들지 않는다
+            );
+            myCache.del('challenger_ranking_data');
+        } catch (err) {
+            const status = err.response?.status;
+            if (status === 404) {
+                failedMasteryPuuids[p.puuid] = now;
+            } else {
+                console.error(`[Mastery] 오류 ${p.puuid.substring(0, 8)}: ${status || err.message}`);
+            }
+        }
+        await new Promise(resolve => setTimeout(resolve, 1200));
+    }
+
+    isFetchingMastery = false;
+}
+
 async function startJobs() {
     await loadResolvedNames();
     await backfillSearchFields();
@@ -332,6 +416,13 @@ async function startJobs() {
 
     setInterval(updateChallengerList, 600 * 1000);
     setInterval(resolveNamesInBackground, 60 * 1000);
+
+    // ★ 숙련도 잡은 30초 어긋나게 띄운다. 두 잡 다 20회를 24초에 몰아 쓰기 때문에
+    //   같이 출발하면 순간 호출량이 겹쳐 개발 키 한도(2분 100회)에 훨씬 빨리 닿는다.
+    setTimeout(() => {
+        fillMasteryInBackground();
+        setInterval(fillMasteryInBackground, 60 * 1000);
+    }, 30 * 1000);
     setInterval(updateArenaAugments, 24 * 60 * 60 * 1000);
 
     setInterval(() => {
@@ -1313,7 +1404,9 @@ app.get('/api/ranking', async (req, res) => {
         leaguePoints: p.leaguePoints || 0,
         wins: p.wins || 0,
         losses: p.losses || 0,
-        tier: TIER_CODE[p.tier] || 'M'
+        tier: TIER_CODE[p.tier] || 'M',
+        // 숙련도 상위 5개 championId. 아직 못 받은 사람은 빈 배열이라 글자를 거의 안 먹는다
+        mastery: resolvedMastery[p.puuid]?.top || []
     }));
 
     const finalRankingData = { tier: "CHALLENGER", updatedAt: rankUpdatedAt, players: processedPlayers };
