@@ -1228,6 +1228,22 @@ function renderMatches(matches, append = false) {
                 return header + `<tbody>${body}</tbody>`;
             }).join('');
 
+            // 아레나 밴: 참가자 1명당 1개라 18인 경기는 18개가 한 줄로 온다.
+            //   라이엇이 전부 teams[0] 한 곳에 몰아 보내고 누가 밴했는지는 안 알려준다.
+            //   그래서 지금은 조 구분 없이 한 줄로만 보여준다. (CLAUDE.md "아레나 밴" 절)
+            const arenaBans = (game.teamStats || []).flatMap(t => t.bans || []);
+            const banRow = arenaBans.length === 0 ? '' : `
+                    <tbody class="arena-ban-summary">
+                        <tr>
+                            <td colspan="10">
+                                <div class="arena-ban-box">
+                                    <span class="arena-ban-label">밴 ${arenaBans.length}</span>
+                                    <div class="arena-ban-list">${champBanIconsHtml(arenaBans)}</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>`;
+
             return `
                 <table class="detail-table arena-detail-table">
                     <colgroup>
@@ -1239,6 +1255,7 @@ function renderMatches(matches, append = false) {
                         </tr>
                     </thead>
                     ${rows}
+                    ${banRow}
                 </table>`;
         };
 
@@ -3125,6 +3142,21 @@ window.switchDetailTab = async function (event, matchId, tabName) {
 // 밴을 안 한 자리에 쓰는 빈 초상화 (인게임 밴 슬롯과 같은 이미지)
 const EMPTY_CHAMP_ICON = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/-1.png';
 
+// 밴 초상화 줄. 협곡 팀 요약과 아레나 상세가 같이 쓴다 — 두 벌을 두면 -1 처리가 어긋난다.
+// 밴이 아예 없는 모드(칼바람·신속대전 등)는 빈 문자열이라 부르는 쪽이 줄을 통째로 생략하면 된다.
+function champBanIconsHtml(ids) {
+    if (!ids || ids.length === 0) return '';
+    return ids.map(id => {
+        // championId가 -1이면 시간 초과로 밴을 못 한 것. 인게임처럼 빈 초상화를 띄운다.
+        if (!id || id <= 0) {
+            return `<img class="ts-ban ts-ban-empty" src="${EMPTY_CHAMP_ICON}">`;
+        }
+        const eng = championIdMap[id];
+        return `<img class="ts-ban" src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${eng}.png"
+                     title="${(eng && window.korChampMap[eng]) || ''}" onerror="this.src='${EMPTY_CHAMP_ICON}'">`;
+    }).join('');
+}
+
 // 아이콘은 미니맵 실루엣이라 원본 색이 흰색이다.
 // CSS mask로 팀 색을 입히므로 여기서는 파일 이름만 갖는다.
 // 나중에 public/ 로 옮기려면 이 상수만 '/objectives/' 로 바꾸면 된다.
@@ -3155,17 +3187,7 @@ function renderTeamSummaryRow(game) {
     if (totalBans === 0 && totalObj === 0) return '';
 
     // 밴이 아예 없는 모드(칼바람·신속대전 등)는 자리만 비운다. 안내 문구도 넣지 않는다.
-    const banHtml = (ids) => ids.length === 0
-        ? ''
-        : ids.map(id => {
-            // championId가 -1이면 시간 초과로 밴을 못 한 것. 인게임처럼 빈 초상화를 띄운다.
-            if (!id || id <= 0) {
-                return `<img class="ts-ban ts-ban-empty" src="${EMPTY_CHAMP_ICON}">`;
-            }
-            const eng = championIdMap[id];
-            return `<img class="ts-ban" src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${eng}.png"
-                         title="${(eng && window.korChampMap[eng]) || ''}" onerror="this.src='${EMPTY_CHAMP_ICON}'">`;
-        }).join('');
+    const banHtml = champBanIconsHtml;
 
     const objHtml = (t) => OBJECTIVE_LABELS.map(([key, label, icon]) => {
         const n = t.objectives[key] || 0;

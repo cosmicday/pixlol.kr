@@ -3216,6 +3216,35 @@ body::before {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* 아레나 밴 줄 (표 맨 아래).
+   1인 1밴이라 18개가 오는데 조 구분이 없어 한 줄로만 깐다.
+   초상화는 협곡 팀 요약과 같은 .ts-ban 을 쓴다 — 두 벌을 두면 크기가 어긋난다. */
+.arena-ban-summary td {
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.arena-ban-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 15px;
+}
+
+.arena-ban-label {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: bold;
+    color: #9aa4af;
+}
+
+/* 폰에서 표 폭이 모자라면 아이콘이 다음 줄로 넘어가게 둔다 */
+.arena-ban-list {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+}
+
 .arena-rank-badge {
     display: inline-block;
     font-size: 12px;

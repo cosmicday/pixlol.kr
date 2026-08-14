@@ -542,14 +542,17 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         // 실제로 플레이한 게임이 아니라 승률·포지션·챔피언 통계에서 전부 제외한다.
         isRemake: !isArena && (p.gameEndedInEarlySurrender === true || durationMin < 4),
         // (헬퍼는 아래 elderKillsOf 참고)
-        // 팀 단위 정보 (밴 / 오브젝트). 칼바람·아레나는 밴이 없어 빈 배열로 온다.
+        // 팀 단위 정보 (밴 / 오브젝트). 칼바람은 밴이 없어 빈 배열로 온다.
+        //   ★ 아레나는 밴이 있다. 참가자 1명당 1개(18인 = 18개)가 전부 teams[0] 한 곳에 몰려 오고
+        //     teams[1]은 teamId 0 에 빈 배열이다. 어느 조가 밴했는지는 라이엇이 안 알려준다.
         //   objectives.dragon.kills는 장로까지 합산된 값이라 그것만으론 구분이 안 된다.
         //   challenges.teamElderDragonKills(팀 전체 값이 참가자마다 실려 온다)를 빼서 나눈다.
         teamStats: (detail.info.teams || []).map(t => ({
             teamId: t.teamId,
             win: t.win === true,
             // championId -1 은 "시간 초과로 밴 못 함". 자리를 유지해야 빈 밴 표시가 되므로 그대로 보낸다.
-            bans: (t.bans || []).map(b => b.championId),
+            // ★ pickTurn 순서를 못 박아 보낸다. 아레나에서 이 순서가 조 순서일 가능성이 크다(조당 3개씩).
+            bans: [...(t.bans || [])].sort((a, b) => a.pickTurn - b.pickTurn).map(b => b.championId),
             objectives: {
                 baron: t.objectives?.baron?.kills || 0,
                 elderDragon: elderKillsOf(t.teamId),
