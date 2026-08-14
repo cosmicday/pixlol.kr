@@ -358,6 +358,7 @@ const customValues = {
             "cost": "50",
             "stats": {
                 "사거리": "600",
+                "돌진 속도": "900",
                 "스킬 폭": "50"
             }
         },
@@ -420,6 +421,7 @@ const customValues = {
             "cost": "40",
             "stats": {
                 "사거리": "425",
+                "돌진 속도": "750",
                 "스킬 폭": "50"
             }
         },
@@ -486,6 +488,7 @@ const customValues = {
             "stats": {
                 "사거리": "400",
                 "투사체 속도": "700",
+                "돌진 속도": "800",
                 "스킬 폭": "160"
             }
         },
@@ -797,7 +800,8 @@ const customValues = {
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "40",
             "stats": {
-                "사거리": "450"
+                "사거리": "450",
+                "돌진 속도": "900"
             }
         },
         "R": {
@@ -811,7 +815,8 @@ const customValues = {
             "cooldown": "110 / 95 / 80",
             "cost": "100",
             "stats": {
-                "사거리": "900"
+                "사거리": "900",
+                "돌진 속도": "1800"
             }
         },
     },
@@ -935,7 +940,8 @@ const customValues = {
             "cooldown": "140 / 115 / 90",
             "cost": "100",
             "stats": {
-                "사거리": "2500 / 3250 / 4000"
+                "사거리": "2500 / 3250 / 4000",
+                "돌진 속도": "1800"
             }
         },
     },
@@ -1215,6 +1221,7 @@ const customValues = {
             "cost": "40",
             "stats": {
                 "사거리": "550",
+                "돌진 속도": "2200",
                 "스킬 폭": "50"
             }
         },
@@ -1526,7 +1533,8 @@ const customValues = {
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "50 / 60 / 70 / 80 / 90",
             "stats": {
-                "사거리": "600"
+                "사거리": "600",
+                "돌진 속도": "1700"
             }
         },
         "E": {
@@ -1892,6 +1900,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/renekton/hud/icons2d/renekton_e2.png"],
             "stats": {
                 "사거리": "450",
+                "돌진 속도": "750",
                 "스킬 폭": "50"
             }
         },
@@ -2020,6 +2029,7 @@ const customValues = {
                 "사거리": "250",
                 "시전시간": "0.25",
                 "투사체 속도": "4000",
+                "돌진 속도": "500",
                 "스킬 폭": "60"
             }
         },
@@ -2033,7 +2043,8 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "사거리": "1500",
-                "시전시간": "0.35"
+                "시전시간": "0.35",
+                "돌진 속도": "1400"
             }
         },
         "Q2": {
@@ -2334,6 +2345,7 @@ const customValues = {
             "cost": "32 / 24 / 16 / 8 / 0",
             "stats": {
                 "사거리": "445",
+                "돌진 속도": "1350",
                 "스킬 폭": "50"
             }
         },
@@ -2501,6 +2513,7 @@ const customValues = {
             "stats": {
                 "사거리": "1100",
                 "투사체 속도": "1800",
+                "돌진 속도": "1350",
                 "스킬 폭": "60"
             }
         },
@@ -2517,7 +2530,8 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/leesin/hud/icons2d/leesinw2.png"],
             "stats": {
                 "사거리": "700",
-                "투사체 속도": "1500"
+                "투사체 속도": "1500",
+                "돌진 속도": "1350"
             }
         },
         "E": {
@@ -2829,6 +2843,7 @@ const customValues = {
             "stats": {
                 "사거리": "525",
                 "투사체 속도": "1500",
+                "돌진 속도": "1300",
                 "스킬 폭": "120"
             }
         },
@@ -4016,7 +4031,8 @@ const customValues = {
             "cooldown": "160 / 135 / 110",
             "cost": "100",
             "stats": {
-                "사거리": "550"
+                "사거리": "550",
+                "돌진 속도": "750"
             }
         },
     },
@@ -4058,7 +4074,8 @@ const customValues = {
             "cost": "40",
             "stats": {
                 "사거리": "650",
-                "투사체 속도": "1500"
+                "투사체 속도": "1500",
+                "돌진 속도": "750"
             }
         },
         "E": {
@@ -4135,7 +4152,8 @@ const customValues = {
             "cost": "현재 체력의 5% 소모",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/briar/hud/icons2d/briarw2.png"],
             "stats": {
-                "사거리": "350"
+                "사거리": "350",
+                "돌진 속도": "1200"
             }
         },
         "E": {
@@ -4401,7 +4419,8 @@ const customValues = {
             "cooldown": "8",
             "cost": "-",
             "stats": {
-                "사거리": "400"
+                "사거리": "400",
+                "돌진 속도": "1000"
             }
         },
         "E": {
@@ -4556,7 +4575,8 @@ const customValues = {
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "70",
             "stats": {
-                "사거리": "475"
+                "사거리": "475",
+                "돌진 속도": "1800"
             }
         },
         "R": {
@@ -4619,6 +4639,7 @@ const customValues = {
             "cost": "40",
             "stats": {
                 "사거리": "600",
+                "돌진 속도": "1600",
                 "스킬 폭": "50"
             }
         },
@@ -4998,6 +5019,7 @@ const customValues = {
             "cost": "60 / 65 / 70 / 75 / 80",
             "stats": {
                 "사거리": "650",
+                "돌진 속도": "1000",
                 "스킬 폭": "75"
             }
         },
@@ -5302,6 +5324,7 @@ const customValues = {
             "cost": "150",
             "stats": {
                 "사거리": "600",
+                "돌진 속도": "800",
                 "스킬 폭": "60"
             }
         },
@@ -6011,7 +6034,8 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "450",
-                "투사체 속도": "2200"
+                "투사체 속도": "2200",
+                "돌진 속도": "1200"
             }
         },
     },
@@ -6032,6 +6056,7 @@ const customValues = {
             "stats": {
                 "사거리": "1100",
                 "투사체 속도": "2000",
+                "돌진 속도": "1800",
                 "스킬 폭": "80"
             }
         },
@@ -6175,6 +6200,7 @@ const customValues = {
                 "사거리": "1125",
                 "시전시간": "0.25",
                 "투사체 속도": "1300",
+                "돌진 속도": "1500",
                 "스킬 폭": "80"
             }
         },
@@ -6245,7 +6271,8 @@ const customValues = {
             "cost": "70 / 80 / 90 / 100 / 110",
             "stats": {
                 "사거리": "740",
-                "시전시간": "0.25"
+                "시전시간": "0.25",
+                "돌진 속도": "1600"
             }
         },
         "W": {
@@ -6273,7 +6300,8 @@ const customValues = {
             "cooldown": "22 / 20.5 / 19 / 17.5 / 16",
             "cost": "60",
             "stats": {
-                "사거리": "1100"
+                "사거리": "1100",
+                "돌진 속도": "1700"
             }
         },
         "R": {
@@ -6469,7 +6497,8 @@ const customValues = {
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "-",
             "stats": {
-                "시전시간": "0.25"
+                "시전시간": "0.25",
+                "돌진 속도": "800"
             }
         },
         "R": {
@@ -6911,7 +6940,8 @@ const customValues = {
             "cooldown": "0.5 / 0.4 / 0.3 / 0.2 / 0.1",
             "cost": "-",
             "stats": {
-                "사거리": "475"
+                "사거리": "475",
+                "돌진 속도": "750"
             }
         },
         "R": {
@@ -7119,7 +7149,8 @@ const customValues = {
             "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "60 / 55 / 50 / 45 / 40",
             "stats": {
-                "사거리": "275"
+                "사거리": "275",
+                "돌진 속도": "900"
             }
         },
         "E": {
@@ -7133,7 +7164,8 @@ const customValues = {
             "cost": "30 / 35 / 40 / 45 / 50",
             "stats": {
                 "사거리": "650",
-                "투사체 속도": "2200"
+                "투사체 속도": "2200",
+                "돌진 속도": "1050"
             }
         },
         "R": {
@@ -7190,7 +7222,8 @@ const customValues = {
             "stats": {
                 "사거리": "700",
                 "시전시간": "0.25",
-                "투사체 속도": "1800"
+                "투사체 속도": "1800",
+                "돌진 속도": "350"
             }
         },
         "E": {
@@ -7270,7 +7303,8 @@ const customValues = {
             "stats": {
                 "사거리": "450",
                 "시전시간": "0.35",
-                "투사체 속도": "1600"
+                "투사체 속도": "1600",
+                "돌진 속도": "1600"
             }
         },
         "R": {
@@ -7449,6 +7483,7 @@ const customValues = {
                 "사거리": "450",
                 "시전시간": "0.35",
                 "투사체 속도": "8700",
+                "돌진 속도": "1500",
                 "스킬 폭": "15"
             }
         },
@@ -7478,7 +7513,10 @@ const customValues = {
             "v2": "",
             "cooldown": "22 / 19 / 16 / 13 / 10",
             "cost": "-",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yone/hud/icons2d/yonee2.png"]
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yone/hud/icons2d/yonee2.png"],
+            "stats": {
+                "돌진 속도": "1200"
+            }
         },
         "R": {
             "p1": "100 / 200 / 300 (+ 추가 공격력의 40%)", // TooltipDamage
@@ -7689,6 +7727,7 @@ const customValues = {
                 "사거리": "475",
                 "시전시간": "0.45",
                 "투사체 속도": "1500",
+                "돌진 속도": "1200",
                 "스킬 폭": "100"
             }
         },
@@ -7847,6 +7886,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "투사체 속도": "2000",
+                "돌진 속도": "1350 / 1500 / 1650",
                 "스킬 폭": "100"
             }
         },
@@ -7887,7 +7927,10 @@ const customValues = {
             "v2": "",
             "cooldown": "0",
             "cost": "-",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yuumi/hud/icons2d/yuumiw2.png"]
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yuumi/hud/icons2d/yuumiw2.png"],
+            "stats": {
+                "돌진 속도": "1300 / 1350 / 1400 / 1450 / 1500"
+            }
         },
         "E": {
             "p1": "65 / 90 / 115 / 140 / 165 (+ 주문력의 40%)", // TotalShielding
@@ -7940,7 +7983,8 @@ const customValues = {
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "15",
             "stats": {
-                "사거리": "600"
+                "사거리": "600",
+                "돌진 속도": "1400"
             }
         },
         "W": {
@@ -8154,7 +8198,8 @@ const customValues = {
             "cooldown": "4",
             "cost": "30",
             "stats": {
-                "사거리": "400"
+                "사거리": "400",
+                "돌진 속도": "600"
             }
         },
         "E": {
@@ -8233,7 +8278,8 @@ const customValues = {
             "cost": "55",
             "stats": {
                 "사거리": "860",
-                "투사체 속도": "1450"
+                "투사체 속도": "1450",
+                "돌진 속도": "1400"
             }
         },
         "R": {
@@ -8500,6 +8546,7 @@ const customValues = {
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "40",
             "stats": {
+                "돌진 속도": "900",
                 "스킬 폭": "15"
             }
         },
@@ -8515,7 +8562,8 @@ const customValues = {
             "stats": {
                 "사거리": "600",
                 "시전시간": "0.5",
-                "투사체 속도": "8700"
+                "투사체 속도": "8700",
+                "돌진 속도": "2800"
             }
         },
     },
@@ -9488,7 +9536,8 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/camille/hud/icons2d/camille_e2.png"],
             "stats": {
                 "사거리": "800",
-                "시전시간": "0.25"
+                "시전시간": "0.25",
+                "돌진 속도": "1050"
             }
         },
         "R": {
@@ -10330,6 +10379,7 @@ const customValues = {
             "stats": {
                 "사거리": "600",
                 "투사체 속도": "700",
+                "돌진 속도": "650",
                 "스킬 폭": "160"
             }
         },
@@ -10573,7 +10623,8 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kled/hud/icons2d/kled_e2.png"],
             "stats": {
-                "사거리": "550"
+                "사거리": "550",
+                "돌진 속도": "600"
             }
         },
         "R": {
@@ -10639,7 +10690,8 @@ const customValues = {
             "cost": "25 / 30 / 35 / 40 / 45",
             "stats": {
                 "사거리": "1100",
-                "투사체 속도": "1000"
+                "투사체 속도": "1000",
+                "돌진 속도": "440"
             }
         },
         "E": {
@@ -10692,7 +10744,8 @@ const customValues = {
             "cost": "35",
             "stats": {
                 "사거리": "340",
-                "시전시간": "0.01"
+                "시전시간": "0.01",
+                "돌진 속도": "500"
             }
         },
         "W": {
@@ -11828,6 +11881,7 @@ const customValues = {
             "stats": {
                 "시전시간": "0.01",
                 "투사체 속도": "1200",
+                "돌진 속도": "1100",
                 "스킬 폭": "200"
             }
         },

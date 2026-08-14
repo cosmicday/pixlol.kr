@@ -274,6 +274,7 @@ const costTextFail = [];          // 소모값 문구를 못 푼 곳
 const ieNotes = [];               // "무한의 대검 보유 시" 각주를 단 자리
 const passiveCdMade = [];         // 패시브 쿨타임을 채운 곳 (bin 의 keyCooldown)
 const passiveCdFail = [];         // keyCooldown 은 있는데 값을 못 푼 곳
+const dashMulti = [];             // 돌진 속도 후보가 둘 이상이라 건너뛴 곳
 let spellIndex = {};              // 지금 처리 중인 챔피언의 스펠 객체 색인 (buildSpellIndex)
 
 // 툴팁 철자와 bin 철자가 어긋난 자리를 기록한다.
@@ -2482,6 +2483,33 @@ async function main() {
             const lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
                 ? tidy(spell.mLineWidth) : null;
 
+            // ★★ 돌진 속도 (2026-08-14). bin `DataValues` 에 들어 있다 — 58슬롯.
+            //   `missileSpeed` 처럼 최상위 필드가 아니라 **이름으로 찾는 값**이라
+            //   본체(`spell`)만 본다 (계열까지 훑으면 투사체 속도 때 겪은 오염이 재현된다).
+            //   ★ `DataValues` 는 **0번이 쓰레기라 1번부터** 읽는다 — 0번을 보면
+            //     이렐리아 Q 가 `0` 이라 통째로 빠진다 (실제 1400).
+            //   ★ 이름에 `Ratio|Divisor|Scaling|Growth|Mod` 가 들어가면 **속도가 아니라 배율**이다.
+            //     5자리가 그렇다 (코르키 W · 칼리스타 P · 킨드레드 Q · 람머스 R · 렉사이 E)
+            //   ★ 값이 둘 이상인 7자리는 **일부러 건너뛴다.** 범위형(브라이어 R 2500/5000,
+            //     람머스 R 900/2000, 키아나 E 600/1200)과 조건부(벨베스 Q 기본/균열,
+            //     크산테 W 기본/각성, 라칸 E 자야 여부)가 섞여 있어 하나로 못 고른다
+            const DASH_NOT_SPEED = /ratio|divisor|scaling|growth|mod$|modifier/i;
+            let dashSpeed = null;
+            if (spell) {
+                const hits = [];
+                for (const d of (spell.DataValues || [])) {
+                    const nm = String(d.name || '');
+                    if (!/dash|leap/i.test(nm) || !/speed/i.test(nm)) continue;
+                    if (DASH_NOT_SPEED.test(nm)) continue;
+                    const vals = (d.values || []).slice(1, maxRank + 1);
+                    if (!vals.length || typeof vals[0] !== 'number' || vals[0] < 100) continue;
+                    hits.push(vals.every(x => x === vals[0])
+                        ? tidy(vals[0]) : vals.map(tidy).join(' / '));
+                }
+                if (hits.length === 1) dashSpeed = hits[0];
+                else if (hits.length > 1) dashMulti.push(`${c.name} ${key} = ${hits.join('  |  ')}`);
+            }
+
             const lv = lvTop;
             const cd = currentCooldown;
             const costJ = lv(s.costCoefficients, maxRank);
@@ -2586,6 +2614,7 @@ async function main() {
             if (hasRange) statRows.push(`                "사거리": ${q(rng)}`);
             if (castTime) statRows.push(`                "시전시간": ${q(castTime)}`);
             if (missileSpeed) statRows.push(`                "투사체 속도": ${q(missileSpeed)}`);
+            if (dashSpeed) statRows.push(`                "돌진 속도": ${q(dashSpeed)}`);
             if (lineWidth) statRows.push(`                "스킬 폭": ${q(lineWidth)}`);
             if (statRows.length) lines.push(`            "stats": {\n${statRows.join(',\n')}\n            }`);
             // 마지막 항목 뒤 쉼표 제거
@@ -2769,6 +2798,11 @@ async function main() {
     if (ieNotes.length) {
         console.log(`\n[무한의 대검 각주] ${ieNotes.length}자리 — 치명타 피해량 200% -> 230% 로 값이 달라지는 곳:`);
         ieNotes.forEach(x => console.log(`  ${x}`));
+    }
+
+    if (dashMulti.length) {
+        console.log(`\n[돌진 속도 후보가 둘 이상] ${dashMulti.length}자리 — 건너뛰었다. 어느 값을 쓸지 정해야 한다:`);
+        dashMulti.forEach(x => console.log(`  ${x}`));
     }
 
     if (passiveCdMade.length || passiveCdFail.length) {
