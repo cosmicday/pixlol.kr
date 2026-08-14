@@ -5092,6 +5092,7 @@ const customValues = {
             "cooldown": "18 / 16.5 / 15 / 13.5 / 12",
             "cost": "-",
             "stats": {
+                "사거리": "720",
                 "시전시간": "0.75"
             }
         },
@@ -8509,6 +8510,7 @@ const customValues = {
             "cost": "25",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zaahen/hud/icons2d/zaahenq2.png"],
             "stats": {
+                "사거리": "200",
                 "투사체 속도": "8700"
             }
         },
@@ -8537,6 +8539,7 @@ const customValues = {
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "40",
             "stats": {
+                "사거리": "350",
                 "돌진 속도": "900",
                 "스킬 폭": "15"
             }
@@ -8874,6 +8877,7 @@ const customValues = {
             "cooldown": "24 / 22.5 / 21 / 19.5 / 18",
             "cost": "90 / 85 / 80 / 75 / 70",
             "stats": {
+                "사거리": "300",
                 "스킬 폭": "50"
             }
         },
@@ -9204,6 +9208,7 @@ const customValues = {
             "cooldown": "120 / 105 / 90",
             "cost": "100",
             "stats": {
+                "사거리": "3500",
                 "시전시간": "1",
                 "투사체 속도": "3000"
             }
