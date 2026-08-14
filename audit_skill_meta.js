@@ -131,14 +131,35 @@ if (!dd) { console.error('DD championFull 캐시가 없다. build_level_curves.j
 
 const SLOTS = ['P', 'Q', 'W', 'E', 'R'];
 
-// ★ `fill_values.js` 의 STAT_MANUAL 로 **일부러** 넣은 자리 (2026-08-14).
-//   전부 DD·bin 이 쓸모없는 값(25000 / 기본 공격 속도)을 주는 자리라 위키에서 가져왔다.
-//   여기 적어 두지 않으면 "DD 와 다르다" 로 계속 걸려서 진짜 문제가 묻힌다.
-const WIKI_SOURCED = new Set([
-    // 사거리 — `castRange` 가 25000(표시할 값 없음)이라 뺐다가 위키 값으로 채운 자리
-    '유미 Q', '유미 W', '요네 E', '세라핀 R', '미스 포츈 R', '아트록스 E', '오른 W', '바드 Q', '헤카림 R',
-    '세트 W', '자헨 Q', '자헨 E', '제리 E',
-    '진 R', '코르키 R', '카직스 W',                             // 투사체 속도 (진 R 은 사거리도 겸한다)
+// ★★ **확인이 끝난 자리** (2026-08-14). 걸리는 게 정상이라 합계에서 빼고 따로 보여준다.
+//
+//   ★ 검사를 **건너뛰지 않는다.** 걸린 사실은 그대로 잡되 "확인 끝난 자리" 칸으로 옮기고
+//     **현재 값을 같이 찍는다.** 그래야 나중에 라이엇이 값을 바꿨을 때 눈에 띈다 —
+//     예외로 빼 버리면 그 자리가 진짜 문제가 돼도 영영 안 보인다.
+//   ★ 여기 없는 게 하나라도 걸리면 **그건 새 문제다.** 합계가 0 이 아니면 곧 신호다.
+const KNOWN_OK = new Map([
+    // --- 우리가 일부러 DD 와 다르게 넣은 값 (fill_values.js 의 STAT_MANUAL) ---
+    //   전부 DD·bin 이 쓸모없는 값(사거리 25000 / 투사체 속도가 기본 공격 속도)을 주는 자리다
+    ['유미 Q', '롤위키·나무위키 850 (bin 은 25000)'],
+    ['유미 W', '롤위키·나무위키·bin 계열 700 셋 일치'],
+    ['요네 E', '나무위키 300 = bin EDashRange'],
+    ['세라핀 R', '나무위키 1200 = bin RRange'],
+    ['미스 포츈 R', '사거리 나무위키 1400 · 투사체 롤위키 SPEED 2000'],
+    ['아트록스 E', '롤위키 75-300 = bin EMaxRange'],
+    ['오른 W', '롤위키 500 (bin 계열 2500 은 취약 효과 범위)'],
+    ['바드 Q', '롤위키 850 (bin 계열은 950·525)'],
+    ['헤카림 R', '롤위키 300-1000 = bin MaxDashRange'],
+    ['세트 W', '롤위키 Range -25 - 720'],
+    ['자헨 Q', '나무위키 200 = 기본 공격 175 + QBonusRange 25'],
+    ['자헨 E', '나무위키 350 = bin DashDistance'],
+    ['제리 E', '롤위키 300 = bin MaxDistance'],
+    ['진 R', '사거리 롤위키 3500 · 투사체 나무위키 3000'],
+    ['코르키 R', '투사체 나무위키 2000 (본체 828.5 는 기본 공격 속도)'],
+    ['카직스 W', '투사체 롤위키 SPEED 1700 (본체 828.5)'],
+
+    // --- 라이엇 데이터가 원래 그런 자리 ---
+    ['암베사 P', '패시브에 쿨타임이 **없는** 스킬이다 (롤위키·나무위키 둘 다 명시). bin 에 keyCooldown 키만 남아 있고 문장은 빈 문자열'],
+    ['잔나 W', '우리 550 이 맞다 — DD 의 4294967295 는 override -1 을 부호 없이 읽은 쓰레기다 (나무위키 550 확인)'],
 ]);
 
 // 결과 버킷
@@ -158,6 +179,14 @@ const R = {
     widthDirty: [],         // 스킬 폭이 본체에 없음
     castTimeOdd: [],        // 시전시간 이상치
     statEmpty: [],          // stats 값이 빈칸
+};
+
+// 확인이 끝난 자리는 합계에서 빼고 여기 모은다 (위 KNOWN_OK 주석 참고).
+//   ★ 현재 값을 같이 담는다 — 라이엇이 값을 바꾸면 이 줄이 달라져서 눈에 띈다.
+const knownOk = [];
+const pushHit = (bucket, tag, line) => {
+    if (KNOWN_OK.has(tag)) knownOk.push(`${line}\n      -> ${KNOWN_OK.get(tag)}`);
+    else bucket.push(line);
 };
 
 let slotCount = 0, champCount = 0;
@@ -186,7 +215,7 @@ for (const [ddId, champ] of Object.entries(cv)) {
         if (slot === 'P') {
             const lk = paths.P && bin ? locKeys(bin[paths.P]) : {};
             if (lk.keyCooldown && String(v.cooldown) === '-') {
-                R.passiveCdMissing.push(`${tag}  (bin: ${lk.keyCooldown})`);
+                pushHit(R.passiveCdMissing, tag, `${tag}  (bin: ${lk.keyCooldown})`);
             }
             continue;   // 패시브는 DD 대조 대상이 없다
         }
@@ -237,8 +266,8 @@ for (const [ddId, champ] of Object.entries(cv)) {
             const rN = toNums(rng);
             if (rN.length && rN.every(x => x >= 20000)) R.rangeHuge.push(`${tag} = ${rng}`);
             if (d && isNumList(rng) && toNums(d.rangeBurn).length && !sameNumList(rng, d.rangeBurn)
-                && !WIKI_SOURCED.has(tag)) {
-                R.rangeMismatch.push(`${tag}  우리 ${rng}  /  DD ${d.rangeBurn}`);
+                ) {
+                pushHit(R.rangeMismatch, tag, `${tag}  우리 ${rng}  /  DD ${d.rangeBurn}`);
             }
         }
 
@@ -253,9 +282,9 @@ for (const [ddId, champ] of Object.entries(cv)) {
                 // 347.8 = 라이엇 엔진의 기본 공격 기본값 / 10억 = "즉시 도달".
                 //   둘 다 "값을 안 정했다" 는 뜻이라 투사체가 없는 스킬이다.
                 R.missileEngine.push(`${tag} = ${ms}`);
-            } else if (Math.abs(bodySpeed - our) > 0.05 && !WIKI_SOURCED.has(tag)) {
+            } else if (Math.abs(bodySpeed - our) > 0.05) {
                 const fromBA = baSpeeds.has(Math.round(our * 10) / 10);
-                R.missileDirty.push(
+                pushHit(R.missileDirty, tag,
                     `${tag} = ${ms}   (본체 ${bodySpeed || 0}${fromBA ? ' · 기본공격 속도와 일치' : ''})`);
             }
         }
@@ -320,5 +349,17 @@ show('⑭ stats 값이 빈칸', R.statEmpty);
 
 const total = Object.values(R).reduce((a, b) => a + b.length, 0);
 console.log(`\n${'='.repeat(70)}`);
-console.log(`합계 ${total}자리`);
+console.log(`합계 ${total}자리   ${total === 0 ? '— 새로 확인할 것 없음' : '★ 확인 필요'}`);
 console.log('='.repeat(70));
+
+// ★ 확인이 끝난 자리. 걸리는 게 정상이라 합계에서 뺐지만 **현재 값을 같이 찍어**
+//   라이엇이 값을 바꿨을 때 눈에 띄게 한다 (위 KNOWN_OK 주석 참고).
+console.log(`\n[확인 끝난 자리] ${knownOk.length}개 — 걸리는 게 정상이다. 값이 달라졌으면 다시 볼 것`);
+if (!knownOk.length) console.log('  (없음)');
+else knownOk.forEach(x => console.log('  ' + x));
+const unusedOk = [...KNOWN_OK.keys()].filter(k => !knownOk.some(x => x.startsWith(k + ' ')));
+if (unusedOk.length) {
+    console.log(`\n  ※ KNOWN_OK 에 적혔는데 이번엔 안 걸린 자리 ${unusedOk.length}개:`);
+    console.log('    ' + unusedOk.join(', '));
+    console.log('    (라이엇이 데이터를 고쳐 정상이 됐거나, 우리가 값을 바꿨거나, 오타다)');
+}

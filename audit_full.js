@@ -68,6 +68,19 @@ const R = {
 // 자기 자신에게만 작용하는 타겟팅 타입 — 투사체가 있을 수 없다
 const SELF_TYPES = new Set(['Self', 'SelfAoe']);
 
+// ★★ **확인이 끝난 자리** — 걸리는 게 정상이라 합계에서 빼고 따로 보여준다 (2026-08-14).
+//   `audit_skill_meta.js` 의 KNOWN_OK 와 같은 방식이다.
+//   ★ 검사를 건너뛰지 않고 "확인 끝난 자리" 칸으로 옮기기만 한다 —
+//     예외로 빼 버리면 그 자리가 나중에 진짜 문제가 돼도 영영 안 보인다.
+const KNOWN_OK = new Map([
+    ['파이크 R', '회색 글씨 두 줄이 다 **인게임에서 실시간으로 세는 누적 골드**라 고정값이 없다. KEEP_TEXT 로 일부러 비웠다 (드레이븐 P·초가스 R 과 같은 처리)'],
+]);
+const knownOk = [];
+const pushHit = (bucket, tag, line) => {
+    if (KNOWN_OK.has(tag)) knownOk.push(`${line}\n      -> ${KNOWN_OK.get(tag)}`);
+    else bucket.push(line);
+};
+
 let champN = 0, slotN = 0;
 
 for (const [ddId, champ] of Object.entries(values)) {
@@ -114,7 +127,7 @@ for (const [ddId, champ] of Object.entries(values)) {
         if (lk && lk.keyTooltipExtendedBelowLine && !tpl[slot + '_rules']) {
             const s = strings[String(lk.keyTooltipExtendedBelowLine).toLowerCase()];
             if (typeof s === 'string' && s.trim()) {
-                R.rulesMissing.push(`${tag}  (bin: ${lk.keyTooltipExtendedBelowLine})`);
+                pushHit(R.rulesMissing, tag, `${tag}  (bin: ${lk.keyTooltipExtendedBelowLine})`);
             }
         }
 
@@ -195,4 +208,15 @@ show('④ 자기 대상 스킬인데 스킬 폭이 있다', R.widthOnSelf);
 show('④ 돌진 속도가 있는데 bin 에 dash 이름이 없다', R.dashNoDash, '손 표로 넣은 자리라면 정상');
 
 const total = Object.values(R).reduce((a, b) => a + b.length, 0);
-console.log(`\n${'='.repeat(72)}\n합계 ${total}자리\n${'='.repeat(72)}`);
+console.log(`\n${'='.repeat(72)}`);
+console.log(`합계 ${total}자리   ${total === 0 ? '— 새로 확인할 것 없음' : '★ 확인 필요'}`);
+console.log('='.repeat(72));
+
+console.log(`\n[확인 끝난 자리] ${knownOk.length}개 — 걸리는 게 정상이다. 값이 달라졌으면 다시 볼 것`);
+if (!knownOk.length) console.log('  (없음)');
+else knownOk.forEach(x => console.log('  ' + x));
+const unusedOk = [...KNOWN_OK.keys()].filter(k => !knownOk.some(x => x.startsWith(k + ' ')));
+if (unusedOk.length) {
+    console.log(`\n  ※ KNOWN_OK 에 적혔는데 이번엔 안 걸린 자리: ${unusedOk.join(', ')}`);
+    console.log('    (라이엇이 데이터를 고쳤거나, 우리가 값을 바꿨거나, 오타다)');
+}
