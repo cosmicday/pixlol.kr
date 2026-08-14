@@ -207,6 +207,12 @@ async function fetchChampionMap() {
             const champInfo = data.data[champName];
             championIdMap[champInfo.key] = champInfo.id;
             window.korChampMap[champInfo.id] = champInfo.name;
+            // 역할군도 같이 담는다. 전적 페이지의 "플레이한 역할군" 이 이 표를 본다.
+            //   ★ showChampions() 와 같은 표(champRoleMap)를 채우고 조건도 같아야 한다 —
+            //     클래식 챔피언이 섞이면 스탯 탭의 역할군 평균 모집단이 흔들린다.
+            if (!isClassicChamp(champInfo.id)) {
+                champRoleMap[champInfo.id] = (champInfo.tags || []).map(t => t.toLowerCase());
+            }
         }
     } catch (e) { }
 }
@@ -1442,7 +1448,6 @@ function renderAramSummaryHtml(matches) {
     let wins = 0, losses = 0;
     let totalKills = 0, totalDeaths = 0, totalAssists = 0, totalKp = 0;
     let totalDmg = 0, totalTaken = 0, totalGold = 0, totalMins = 0, multiKills = 0;
-    const champData = {};
 
     matches.forEach(game => {
         if (game.win) wins++; else losses++;
@@ -1455,14 +1460,6 @@ function renderAramSummaryHtml(matches) {
         totalMins += mins;
         const me = (game.participants || []).find(x => x.isSearchedUser);
         if (me) { totalDmg += me.damage || 0; totalTaken += me.damageTaken || 0; }
-
-        const cName = game.championName;
-        if (!champData[cName]) champData[cName] = { games: 0, wins: 0, kills: 0, deaths: 0, assists: 0 };
-        champData[cName].games++;
-        if (game.win) champData[cName].wins++;
-        champData[cName].kills += game.kills;
-        champData[cName].deaths += game.deaths;
-        champData[cName].assists += game.assists;
     });
 
     const winRate = Math.round((wins / total) * 100);
@@ -1479,33 +1476,6 @@ function renderAramSummaryHtml(matches) {
     const avgGpm = totalMins > 0 ? Math.round(totalGold / totalMins) : 0;
     const avgLenMin = Math.floor(totalMins / total);
     const avgLenSec = Math.round(((totalMins / total) - avgLenMin) * 60);
-
-    const sortedChamps = Object.entries(champData)
-        .sort((a, b) => b[1].games - a[1].games || b[1].wins - a[1].wins).slice(0, 3);
-
-    let champsHtml = sortedChamps.map(([cName, d]) => {
-        const cWinRate = Math.round((d.wins / d.games) * 100);
-        const cKda = d.deaths === 0 ? 'Perfect' : ((d.kills + d.assists) / d.deaths).toFixed(2);
-        let kdaColor = "#ffffff";
-        if (cKda >= 5 || cKda === 'Perfect') kdaColor = "#e84057";
-        else if (cKda >= 4) kdaColor = "#5383e8";
-        else if (cKda >= 3) kdaColor = "#10b981";
-        return `
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${cName}.png" style="width: 28px; height: 28px; border-radius: 50%;" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
-                <div style="flex: 1; display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                    <span style="color: ${cWinRate >= 50 ? '#e84057' : '#ffffff'}; font-weight: bold; width: 34px;">${cWinRate}%</span>
-                    <span style="color: #ffffff; width: 62px;">(${d.wins}승 / ${d.games - d.wins}패)</span>
-                    <span style="color: ${kdaColor}; font-weight: bold;">${cKda}:1 평점</span>
-                </div>
-            </div>`;
-    }).join('');
-
-    if (sortedChamps.length < 3) {
-        for (let i = 0; i < 3 - sortedChamps.length; i++) {
-            champsHtml += `<div style="height: 28px; margin-bottom: 6px;"></div>`;
-        }
-    }
 
     const metric = (label, value) => `
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; padding:3px 0;">
@@ -1542,13 +1512,16 @@ function renderAramSummaryHtml(matches) {
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
             <div style="width: 244px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
-                <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${total}게임)</div>
-                ${champsHtml}
+                <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 역할군 (최근 ${total}게임)</div>
+                ${renderRoleRowsHtml(matches, 'aram')}
             </div>
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
-            <div style="display: flex; flex-direction: column; justify-content: center; width: 181px;">
+            <!-- ★ 폭을 176px 로 맞춘다. 여기만 181px 이던 시절엔 space-between 이 남는 폭을
+                 다시 나눠서 구분선이 협곡·아레나보다 1px·4px 왼쪽에 찍혔다 (실측).
+                 필터를 누를 때마다 구분선이 옮겨 다니는 게 그 때문이었다. -->
+            <div style="display: flex; flex-direction: column; justify-content: center; width: 176px;">
                 <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">칼바람 지표 (평균)</div>
                 ${metric('분당 피해량', avgDpm.toLocaleString())}
                 ${metric('분당 받은 피해', avgTpm.toLocaleString())}
@@ -1561,6 +1534,61 @@ function renderAramSummaryHtml(matches) {
 }
 
 // ============================================================
+// 칼바람·아레나의 "플레이한 역할군"
+//   두 모드는 라인이 없어서 챔피언을 나열해도 성향이 안 보인다. 역할군으로 묶는다.
+//
+//   ★ 챔피언 하나가 역할군 2개에 들어갈 수 있다(DD tags 는 1~2개). 그래서 역할군별
+//     게임 수의 합이 총 게임 수보다 많을 수 있다 — 틀린 게 아니다.
+//   ★ 줄 높이(28 + margin 6)를 챔피언 줄과 똑같이 맞춰야 한다. 다르면 모드마다
+//     통계 박스 높이가 달라져 필터를 누를 때 박스가 위아래로 튄다.
+//   ★ 아레나는 승패가 아니라 등수다 (경기 칸도 placementText 로 등수를 찍는다).
+//     같은 패널 안에 "평균 등수" 가 있는데 옆에서 승률을 말하면 서로 어긋난다.
+// ============================================================
+function renderRoleRowsHtml(matches, mode) {
+    const roleData = {};
+
+    matches.forEach(game => {
+        (champRoleMap[game.championName] || []).forEach(r => {
+            if (!roleData[r]) roleData[r] = { games: 0, wins: 0, firsts: 0 };
+            roleData[r].games++;
+            if (game.win) roleData[r].wins++;
+            if (Number(game.placement) === 1) roleData[r].firsts++;
+        });
+    });
+
+    const sorted = Object.entries(roleData)
+        .sort((a, b) => b[1].games - a[1].games || b[1].wins - a[1].wins)
+        .slice(0, 3);
+
+    // champion.json 이 아직 안 왔으면 역할군을 하나도 못 찾는다
+    if (sorted.length === 0) {
+        return `<div style="height: 102px; display: flex; align-items: center; color: #777; font-size: 12px;">역할군 정보를 불러오지 못했습니다.</div>`;
+    }
+
+    let html = sorted.map(([r, d]) => {
+        const wr = Math.round((d.wins / d.games) * 100);
+        const tail = mode === 'arena'
+            ? `<span style="color: #ffffff; width: 56px;">${d.games}게임</span>
+               <span style="color: #facc15; font-weight: bold;">우승 ${d.firsts}회</span>`
+            : `<span style="color: #ffffff;">(${d.wins}승 ${d.games - d.wins}패
+                   <span style="color: ${wr >= 50 ? '#e84057' : '#ffffff'}; font-weight: bold;">${wr}%</span>)</span>`;
+        return `
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <img src="${ROLE_ICON}${r}.png" alt="${ROLE_KO[r]}" style="width: 28px; height: 28px;">
+                <div style="flex: 1; display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                    <span style="color: #ffffff; width: 72px;">${ROLE_KO[r]}</span>
+                    ${tail}
+                </div>
+            </div>`;
+    }).join('');
+
+    for (let i = sorted.length; i < 3; i++) {
+        html += `<div style="height: 28px; margin-bottom: 6px;"></div>`;
+    }
+    return html;
+}
+
+// ============================================================
 // 아레나 전용 요약 패널
 //   아레나엔 승패도 포지션도 없다. 등수로 이야기해야 맞다.
 // ============================================================
@@ -1570,7 +1598,6 @@ function renderArenaSummaryHtml(matches) {
     let firsts = 0, top3 = 0, placeSum = 0, placeCount = 0;
     let totalKills = 0, totalDeaths = 0, totalAssists = 0, totalKp = 0;
     const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
-    const champData = {};
 
     matches.forEach(game => {
         const pl = Number(game.placement) || 0;
@@ -1583,12 +1610,6 @@ function renderArenaSummaryHtml(matches) {
 
         totalKills += game.kills; totalDeaths += game.deaths; totalAssists += game.assists;
         totalKp += game.kp || 0;
-
-        const cName = game.championName;
-        if (!champData[cName]) champData[cName] = { games: 0, firsts: 0, placeSum: 0, placeCount: 0 };
-        champData[cName].games++;
-        if (pl === 1) champData[cName].firsts++;
-        if (pl) { champData[cName].placeSum += pl; champData[cName].placeCount++; }
     });
 
     const avgPlace = placeCount ? (placeSum / placeCount).toFixed(2) : '-';
@@ -1602,29 +1623,6 @@ function renderArenaSummaryHtml(matches) {
     const placeColor = (n) => n === 1 ? '#facc15' : (n <= 3 ? '#5383e8' : '#e84057');
     const top3Deg = Math.round((top3Rate / 100) * 360);
     const avgColor = placeColor(Math.round(Number(avgPlace)) || 6);
-
-    const sortedChamps = Object.entries(champData)
-        .sort((a, b) => b[1].games - a[1].games || a[1].placeSum / (a[1].placeCount || 1) - b[1].placeSum / (b[1].placeCount || 1))
-        .slice(0, 3);
-
-    let champsHtml = sortedChamps.map(([cName, d]) => {
-        const cAvg = d.placeCount ? (d.placeSum / d.placeCount).toFixed(1) : '-';
-        const c = placeColor(Math.round(Number(cAvg)) || 6);
-        return `
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${cName}.png" style="width: 28px; height: 28px; border-radius: 50%;" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
-                <div style="flex: 1; display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                    <span style="color: #ffffff; width: 62px;">${d.games}게임</span>
-                    <span style="color: #facc15; font-weight: bold;">우승 ${d.firsts}회</span>
-                </div>
-            </div>`;
-    }).join('');
-
-    if (sortedChamps.length < 3) {
-        for (let i = 0; i < 3 - sortedChamps.length; i++) {
-            champsHtml += `<div style="height: 28px; margin-bottom: 6px;"></div>`;
-        }
-    }
 
     const maxDist = Math.max(...Object.values(dist)) || 1;
     const bars = [1, 2, 3, 4, 5, 6].map(n => {
@@ -1668,8 +1666,8 @@ function renderArenaSummaryHtml(matches) {
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
             <div style="width: 244px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
-                <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${total}게임)</div>
-                ${champsHtml}
+                <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 역할군 (최근 ${total}게임)</div>
+                ${renderRoleRowsHtml(matches, 'arena')}
             </div>
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
