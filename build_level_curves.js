@@ -224,11 +224,49 @@ function collectSkillCurves() {
             for (const calcName of Object.keys(spell.mSpellCalculations)) {
                 if (mine[calcName]) continue;
                 const calc = spell.mSpellCalculations[calcName];
-                const refName = calc.mModifiedGameCalculation || calc.mSpellCalculationKey;
+                // ★ `GameCalculationConditional` 도 파생이다 (2026-08-14).
+                //   조건에 따라 두 계산식 중 하나를 쓰는 꼴이라 **기본 쪽**을 따라간다.
+                //   쉔 P `ShieldValue` -> `{58a09e24}`, 제드 P `MaxHPDamage` -> `{6a1a62e9}`.
+                //   이걸 안 봐서 두 자리가 각주 없이 나갔다 (이름이 해시라 조회도 안 됐다).
+                let refName = calc.mModifiedGameCalculation || calc.mSpellCalculationKey
+                    || calc.mDefaultGameCalculation;
+                // ★ 참조가 `mFormulaParts` **안쪽**에 있는 꼴도 있다 (2026-08-14).
+                //   신 짜오 P `TotalHealing` 은 조각 두 개가 각각
+                //   `StatBySubPart(HealHPRatio)` · `StatBySubPart(HealAPRatio)` 를 부른다.
+                //   최상위만 보면 못 찾는다. 조각들이 부르는 계산식을 모아 곡선을 만든다.
+                if (typeof refName !== 'string' && Array.isArray(calc.mFormulaParts)) {
+                    const keys = [];
+                    const walk = (o) => {
+                        if (!o || typeof o !== 'object') return;
+                        if (typeof o.mSpellCalculationKey === 'string') keys.push(o.mSpellCalculationKey);
+                        for (const v of Object.values(o)) if (v && typeof v === 'object') walk(v);
+                    };
+                    calc.mFormulaParts.forEach(walk);
+                    const hit = [...new Set(keys)].filter(n => mine[n]);
+                    if (hit.length) {
+                        hit.forEach((n, i) => {
+                            nParts++;
+                            const src = mine[n];
+                            result[alias][slot][hit.length > 1 ? `${calcName}#${i}` : calcName] = {
+                                spell: spellName, kind: src.kind + `(조각 참조 ${n})`,
+                                위치: 'part:' + n, min: src.min, max: src.max, values: src.values
+                            };
+                        });
+                        continue;
+                    }
+                }
                 if (typeof refName !== 'string') continue;
-                const base = mine[refName] || Object.keys(mine).map(k => mine[k])
-                    .find(v => v && v._calc === refName);
+                // ★ 참조 대상이 여러 곡선으로 갈렸으면 `#0` 이 붙어 있다 —
+                //   사미라 P `EmpoweredMeleeDamageTooltip` 이 `BonusMeleeDamage` 를 부르는데
+                //   실제 저장 이름은 `BonusMeleeDamage#0` 이라 못 찾고 있었다.
+                const base = mine[refName] || mine[refName + '#0']
+                    || Object.keys(mine).map(k => mine[k]).find(v => v && v._calc === refName);
                 if (!base) continue;
+                // ★ 참조 대상이 여러 곡선이면 **전부** 만든다 (2026-08-14).
+                //   사미라 P `EmpoweredMeleeDamageTooltip` 은 `BonusMeleeDamage#0`(기본)과
+                //   `#1`(계수)을 둘 다 쓰는데 `#0` 만 만들어서 각주가 한쪽에만 붙었다.
+                const extras = [];
+                for (let i = 1; i < 4; i++) if (mine[refName + '#' + i]) extras.push([i, mine[refName + '#' + i]]);
                 let k = 1;
                 const mm = calc.mMultiplier;
                 if (mm && typeof mm === 'object') {
@@ -238,13 +276,21 @@ function collectSkillCurves() {
                         if (v !== null) k = v;
                     }
                 }
-                nParts++;
-                result[alias][slot][calcName] = {
-                    spell: spellName, kind: base.kind + `(참조 ${refName}${k !== 1 ? ' x' + k : ''})`,
-                    위치: 'ref:' + refName,
-                    min: round(base.min * k), max: round(base.max * k),
-                    values: base.values.map(v => round(v * k))
+                const put = (label, src) => {
+                    nParts++;
+                    result[alias][slot][label] = {
+                        spell: spellName, kind: src.kind + `(참조 ${refName}${k !== 1 ? ' x' + k : ''})`,
+                        위치: 'ref:' + refName,
+                        min: round(src.min * k), max: round(src.max * k),
+                        values: src.values.map(v => round(v * k))
+                    };
                 };
+                if (extras.length) {
+                    put(calcName + '#0', base);
+                    extras.forEach(([i, src]) => put(calcName + '#' + i, src));
+                } else {
+                    put(calcName, base);
+                }
             }
         }
     }

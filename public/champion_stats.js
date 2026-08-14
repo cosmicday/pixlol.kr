@@ -1,5 +1,5 @@
 // 이 파일은 build_stats_page.js 가 생성했습니다. 직접 고치지 마세요.
-//   생성 시각: 2026-08-12T22:59:58.032Z
+//   생성 시각: 2026-08-14T07:07:46.756Z
 //   원본: champion_stats_by_level.json (build_level_curves.js 가 만든다)
 //
 // 값은 [기본값, 레벨당증가, 방식] 이다.

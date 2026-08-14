@@ -152,8 +152,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/garen/hud/icons2d/garen_e2.png"],
             "stats": {
-                "사거리": "325",
-                "스킬 폭": "160"
+                "사거리": "325"
             }
         },
         "R": {
@@ -1382,8 +1381,7 @@ const customValues = {
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "45",
             "stats": {
-                "사거리": "300",
-                "스킬 폭": "50"
+                "사거리": "300"
             }
         },
         "W": {
@@ -2155,8 +2153,7 @@ const customValues = {
             "cost": "야성 1회 중첩",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/rengar/hud/icons2d/rengarqemp.png"],
             "stats": {
-                "사거리": "450",
-                "스킬 폭": "55"
+                "사거리": "450"
             }
         },
         "W": {
@@ -3506,8 +3503,7 @@ const customValues = {
             "cooldown": "40",
             "cost": "-",
             "stats": {
-                "사거리": "750",
-                "스킬 폭": "50"
+                "사거리": "750"
             }
         },
         "E": {
@@ -3574,8 +3570,7 @@ const customValues = {
             "cooldown": "0",
             "cost": "-",
             "stats": {
-                "사거리": "750",
-                "스킬 폭": "50"
+                "사거리": "750"
             }
         },
         "E": {
@@ -3686,8 +3681,7 @@ const customValues = {
             "cooldown": "0",
             "cost": "-",
             "stats": {
-                "사거리": "750",
-                "스킬 폭": "50"
+                "사거리": "750"
             }
         },
         "E": {
@@ -4264,8 +4258,7 @@ const customValues = {
             "cooldown": "28 / 25 / 22 / 19 / 16",
             "cost": "현재 체력의 15% 소모",
             "stats": {
-                "사거리": "350",
-                "스킬 폭": "120"
+                "사거리": "350"
             }
         },
         "E": {
@@ -4602,8 +4595,7 @@ const customValues = {
             "cost": "60",
             "stats": {
                 "사거리": "325",
-                "시전시간": "0.01",
-                "스킬 폭": "65"
+                "시전시간": "0.01"
             }
         },
         "E": {
@@ -5461,8 +5453,7 @@ const customValues = {
             "cooldown": "24 / 22 / 20 / 18 / 16",
             "cost": "65",
             "stats": {
-                "사거리": "700",
-                "스킬 폭": "120"
+                "사거리": "700"
             }
         },
         "R": {
@@ -6641,8 +6632,7 @@ const customValues = {
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "70",
             "stats": {
-                "사거리": "325",
-                "스킬 폭": "15"
+                "사거리": "325"
             }
         },
         "E": {
@@ -7147,8 +7137,7 @@ const customValues = {
             "cost": "100",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/monkeyking/hud/icons2d/monkeykingcyclone2.png"],
             "stats": {
-                "사거리": "315",
-                "스킬 폭": "160"
+                "사거리": "315"
             }
         },
     },
@@ -7323,8 +7312,7 @@ const customValues = {
             "cooldown": "7",
             "cost": "60 / 65 / 70 / 75 / 80",
             "stats": {
-                "사거리": "225",
-                "스킬 폭": "80"
+                "사거리": "225"
             }
         },
         "E": {
@@ -7350,8 +7338,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "410",
-                "시전시간": "0.5",
-                "스킬 폭": "80"
+                "시전시간": "0.5"
             }
         },
     },
@@ -7834,10 +7821,7 @@ const customValues = {
             "v2": "",
             "cooldown": "9",
             "cost": "40",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yunara/hud/icons2d/yunara_re.png"],
-            "stats": {
-                "스킬 폭": "200"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yunara/hud/icons2d/yunara_re.png"]
         },
         "R": {
             "p1": "15", // Buff_Duration
@@ -7846,8 +7830,7 @@ const customValues = {
             "cooldown": "100 / 90 / 80",
             "cost": "100",
             "stats": {
-                "돌진 속도": "1350 / 1500 / 1650",
-                "스킬 폭": "100"
+                "돌진 속도": "1350 / 1500 / 1650"
             }
         },
     },
@@ -8894,8 +8877,7 @@ const customValues = {
             "cost": "40",
             "form1": "망치 형태",
             "stats": {
-                "사거리": "285",
-                "스킬 폭": "200"
+                "사거리": "285"
             }
         },
         "E": {
@@ -9343,8 +9325,7 @@ const customValues = {
             "cooldown": "8 / 7 / 6 / 5 / 4",
             "cost": "30",
             "stats": {
-                "사거리": "40",
-                "스킬 폭": "170"
+                "사거리": "40"
             }
         },
         "R": {
@@ -9607,8 +9588,7 @@ const customValues = {
             "cost": "30 / 42 / 54 / 66 / 78",
             "stats": {
                 "사거리": "550",
-                "시전시간": "0.25",
-                "스킬 폭": "150"
+                "시전시간": "0.25"
             }
         },
         "R": {
@@ -9860,10 +9840,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "15 / 14 / 13 / 12 / 11",
-            "cost": "-",
-            "stats": {
-                "스킬 폭": "60"
-            }
+            "cost": "-"
         },
         "E": {
             "p1": "20 / 30 / 40 / 50 / 60 (+ 주문력의 25% + 총 공격력의 40%)", // TotalDamage
@@ -10420,8 +10397,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/quinn/hud/icons2d/quinn_r2.png"],
             "stats": {
                 "사거리": "700",
-                "시전시간": "0.25",
-                "스킬 폭": "200"
+                "시전시간": "0.25"
             }
         },
     },
@@ -11605,8 +11581,7 @@ const customValues = {
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "40",
             "stats": {
-                "사거리": "425",
-                "스킬 폭": "40"
+                "사거리": "425"
             }
         },
         "R": {

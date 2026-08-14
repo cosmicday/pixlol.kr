@@ -401,6 +401,7 @@ const passiveCdMade = [];         // 패시브 쿨타임을 채운 곳 (bin 의 
 const passiveCdFail = [];         // keyCooldown 은 있는데 값을 못 푼 곳
 const dashMulti = [];             // 돌진 속도 후보가 둘 이상이라 건너뛴 곳
 const missileSelfDropped = [];    // 자기 대상 스킬이라 투사체 속도를 뺀 곳
+const widthSelfDropped = [];      // 자기 대상 스킬이라 스킬 폭을 뺀 곳
 let spellIndex = {};              // 지금 처리 중인 챔피언의 스펠 객체 색인 (buildSpellIndex)
 
 // 툴팁 철자와 bin 철자가 어긋난 자리를 기록한다.
@@ -2638,16 +2639,32 @@ async function main() {
             //     Q 에 `SPEED: 1900 • 2100` 이 있고 W 에는 없다. 카타리나도 Q 1600 / W 없음.
             //     우리 판별 결과와 정확히 갈린다
             const ttype = spell && spell.mTargetingTypeData && spell.mTargetingTypeData.__type;
-            if (missileSpeed && (ttype === 'Self' || ttype === 'SelfAoe')) {
+            const selfOnly = (ttype === 'Self' || ttype === 'SelfAoe');
+            let hasMissile = false;
+            if (spell && selfOnly) {
                 const needle = (alias + key).toLowerCase();
-                const hasMissile = !!(spell.mMissileEffectName) || Object.keys(bin).some(k => {
+                hasMissile = !!(spell.mMissileEffectName) || Object.keys(bin).some(k => {
                     const low = k.toLowerCase();
                     return low.includes(needle) && /missile/.test(low.split('/').pop());
                 });
-                if (!hasMissile) { missileSpeed = null; missileSelfDropped.push(`${c.name} ${key} (${ttype})`); }
             }
-            const lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
+            if (missileSpeed && selfOnly && !hasMissile) {
+                missileSpeed = null;
+                missileSelfDropped.push(`${c.name} ${key} (${ttype})`);
+            }
+            // ★ 스킬 폭도 같다 (2026-08-14, 21자리). `mLineWidth` 는 **직선 스킬의 폭**이라
+            //   자기 대상 스킬에는 뜻이 없다. 롤위키로 대조해 확인했다 —
+            //     가렌 E: `EFFECT RADIUS 325` 만 있고 WIDTH 없음 (우리 폭 160 은 근거가 없다)
+            //     오리아나 W·R: `EFFECT RADIUS 225 / 415`, WIDTH 없음 (우리 80)
+            //     퀸 R: 폭도 반경도 없다 (채널링 스킬인데 우리는 200 이었다)
+            //   초가스 E 만 위키에 `WIDTH 340 - 500 (크기 비례)` 이 있는데 우리 170 과 다르고
+            //   크기 비례라 고정값으로 못 적는다. 그래서 이 자리도 같이 뺀다
+            let lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
                 ? tidy(spell.mLineWidth) : null;
+            if (lineWidth && selfOnly && !hasMissile) {
+                lineWidth = null;
+                widthSelfDropped.push(`${c.name} ${key} (${ttype})`);
+            }
 
             // ★★ 돌진 속도 (2026-08-14). bin `DataValues` 에 들어 있다 — 58슬롯.
             //   `missileSpeed` 처럼 최상위 필드가 아니라 **이름으로 찾는 값**이라
@@ -2995,6 +3012,11 @@ async function main() {
         console.log(`
 [자기 대상 스킬의 투사체 속도 제거] ${missileSelfDropped.length}자리 — 타겟팅이 Self/SelfAoe 이고 미사일 객체가 없다:`);
         console.log('  ' + missileSelfDropped.join(', '));
+    }
+
+    if (widthSelfDropped.length) {
+        console.log(`\n[자기 대상 스킬의 스킬 폭 제거] ${widthSelfDropped.length}자리:`);
+        console.log('  ' + widthSelfDropped.join(', '));
     }
 
     if (dashMulti.length) {
