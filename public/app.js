@@ -2793,12 +2793,12 @@ function renderRankingPage(page, opts = {}) {
         rowsHtml += `
             <tr>
                 <td class="rank-num">${player.rank}</td>
+                <td class="rank-name">${nameCell}</td>
                 <td class="rank-tier">
                     <img class="rank-tier-medal" src="https://opgg-static.akamaized.net/images/medals_new/${t.icon}.png" alt="" loading="lazy">
                     <span class="rank-tier-name" style="color: ${t.color};">${t.name}</span>
                     <span class="rank-tier-short" style="color: ${t.color};">${t.short}</span>
                 </td>
-                <td class="rank-name">${nameCell}</td>
                 <td class="rank-lp" style="color: ${t.color};">${player.leaguePoints}</td>
                 <td class="rank-wr">
                     <span class="rank-wr-num" style="color: ${winRate >= 55 ? '#f87171' : '#60a5fa'}">${winRate}%</span>
@@ -2820,8 +2820,8 @@ function renderRankingPage(page, opts = {}) {
                 <thead>
                     <tr>
                         <th class="rank-num">순위</th>
-                        <th class="rank-tier">티어</th>
                         <th class="rank-name">닉네임</th>
+                        <th class="rank-tier">티어</th>
                         <th class="rank-lp">LP</th>
                         <th class="rank-wr">승률</th>
                     </tr>
