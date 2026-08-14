@@ -1694,6 +1694,67 @@ body::before {
     color: #fff;
 }
 
+/* 경기 주소 복사 버튼.
+   .toggle-btn 이 오른쪽 35px 을 세로로 다 쓰는데 화살표는 맨 아래(align-items:flex-end)라
+   위쪽이 비어 있다. 그 자리를 쓴다 — 칸을 새로 만들면 카드 폭이 바뀐다.
+   ★ z-index 가 있어야 토글 버튼 위로 올라와 클릭을 받는다. */
+.share-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 2;
+    width: 35px;
+    height: 34px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #6b7684;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
+}
+
+.share-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+.share-btn:hover {
+    color: #fff;
+}
+
+/* 복사 결과는 버튼 옆 말풍선으로 알린다.
+   #error-toast 는 에러용이라 색과 문구 길이가 안 맞는다. */
+.share-btn.copied::after,
+.share-btn.copy-failed::after {
+    position: absolute;
+    right: 34px;
+    top: 8px;
+    white-space: nowrap;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.75);
+    pointer-events: none;
+}
+
+.share-btn.copied {
+    color: #7ee787;
+}
+
+.share-btn.copied::after {
+    content: '주소 복사됨';
+    color: #7ee787;
+}
+
+.share-btn.copy-failed::after {
+    content: '복사 실패';
+    color: #e84057;
+}
+
 .toggle-btn svg {
     width: 16px;
     height: 16px;

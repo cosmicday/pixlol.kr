@@ -297,6 +297,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('result-container').style.display = "block";
         document.getElementById('game-list').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:#9aa4af;'>전적 데이터를 불러오는 중입니다...</div>";
         document.getElementById('summoner-input').value = decodeURIComponent(pathParts[2]);
+        // /summoner/<라이엇 ID>/<경기 번호> — 친구가 받은 경기 링크. 검색이 끝나면 그 경기를 펼친다
+        window.pendingMatchId = pathParts[3] ? decodeURIComponent(pathParts[3]) : null;
         executeSearch();
     } else if (pathParts[1] === 'ranking') {
         document.getElementById('result-container').style.display = "block";
@@ -334,7 +336,9 @@ window.addEventListener('popstate', (event) => {
     const currentPath = window.location.pathname;
 
     if (currentPath.startsWith('/summoner/')) {
-        document.getElementById('summoner-input').value = decodeURIComponent(currentPath.split('/')[2]);
+        const seg = currentPath.split('/');
+        document.getElementById('summoner-input').value = decodeURIComponent(seg[2]);
+        window.pendingMatchId = seg[3] ? decodeURIComponent(seg[3]) : null;
         executeSearch();
         setActiveNav('nav-search');
     } else if (currentPath === '/ranking') {
@@ -722,10 +726,15 @@ async function executeSearch() {
 
         checkLiveGame(data.puuid || (data.profile && data.profile.puuid));
 
-        const newUrl = `/summoner/${encodeURIComponent(inputName)}`;
+        // 경기 링크로 들어왔으면 주소에서 경기 번호를 떨어뜨리지 않는다.
+        // 안 그러면 펼치기도 전에 /summoner/<이름> 으로 바뀌어 새로고침 때 링크가 죽는다.
+        const newUrl = `/summoner/${encodeURIComponent(inputName)}`
+            + (window.pendingMatchId ? `/${encodeURIComponent(window.pendingMatchId)}` : '');
         if (window.location.pathname !== newUrl) {
             window.history.pushState({ summoner: inputName }, '', newUrl);
         }
+
+        openPendingMatch();
 
     } catch (e) {
         console.error("전적 화면 렌더링 에러:", e);
@@ -987,6 +996,7 @@ function renderMatches(matches, append = false) {
 
         const wrapper = document.createElement('div');
         wrapper.className = 'match-wrapper';
+        wrapper.dataset.matchId = game.matchId;                     // 경기 링크로 찾아올 때 쓴다
         wrapper.dataset.queue = game.queueType;                    // 표시용 라벨
         wrapper.dataset.group = game.queueGroup || '기타';          // 필터용 그룹
         wrapper.dataset.champ = game.championName || '';            // 챔피언 필터용
@@ -1035,6 +1045,9 @@ function renderMatches(matches, append = false) {
                 <div class="pix-team">${renderTeamList(game.participants, 100)}</div>
                 <div class="pix-team">${renderTeamList(game.participants, 200)}</div>
             </div>`}
+            <button class="share-btn" type="button" title="이 경기 주소 복사" onclick="copyMatchLink(event, this, '${game.matchId}')">
+                <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+            </button>
             <button class="toggle-btn" onclick="
                 const wrapper = this.closest('.match-wrapper');
                 if (!wrapper.classList.contains('open')) {
@@ -5806,4 +5819,74 @@ window.loadMoreMatches = async function () {
     } finally {
         isLoadingMore = false;
     }
+};
+
+// ==========================================
+// [11] 경기 링크 (/summoner/<라이엇 ID>/<경기 번호>)
+// ==========================================
+
+// 주소로 받은 경기 하나를 펼쳐서 보여준다.
+//   ★ 검색은 최근 20판만 받아오므로 그보다 오래된 경기는 "더 보기"를 눌러 가며 찾는다.
+//     3번(=30판 추가, 총 50판)까지만 시도한다 — 그 이상은 라이엇 호출만 늘어난다.
+//   ★ pendingMatchId 를 맨 앞에서 비운다. 안 비우면 전적 갱신 때마다 다시 펼쳐진다.
+async function openPendingMatch() {
+    const matchId = window.pendingMatchId;
+    if (!matchId) return;
+    window.pendingMatchId = null;
+
+    const findWrapper = () => [...document.querySelectorAll('.match-wrapper')]
+        .find(w => w.dataset.matchId === matchId);
+
+    for (let tries = 0; ; tries++) {
+        const wrapper = findWrapper();
+        if (wrapper) {
+            // 토글 버튼과 같은 순서로 연다 — 첫 탭을 눌러야 상세가 만들어진다
+            if (!wrapper.classList.contains('open')) {
+                const firstTab = wrapper.querySelector('.detail-tab-btn');
+                if (firstTab) firstTab.click();
+                wrapper.classList.add('open');
+            }
+            wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        // 더 받을 게 없으면(버튼이 사라졌으면) 그만둔다
+        if (tries >= 3 || !document.getElementById('load-more-btn')) break;
+        await loadMoreMatches();
+    }
+
+    showErrorToast("링크에 담긴 경기를 찾지 못했습니다.\n너무 오래된 전적일 수 있습니다.");
+}
+
+// 경기 주소를 클립보드에 넣는다.
+//   ★ navigator.clipboard 는 HTTPS(또는 localhost)에서만 된다. 안 되는 환경을 위해
+//     textarea + execCommand 폴백을 둔다.
+//   ★ 이름은 라이엇이 준 정본(currentProfileName, "이름#태그")을 쓴다. 검색창에 친
+//     글자를 쓰면 대소문자가 제각각인 주소가 돌아다니게 된다.
+window.copyMatchLink = async function (e, btn, matchId) {
+    e.stopPropagation();   // 이 버튼은 토글 버튼 위에 겹쳐 있다. 안 막으면 상세까지 열린다
+
+    const name = currentProfileName || decodeURIComponent(window.location.pathname.split('/')[2] || '');
+    if (!name) return;
+    const url = `${window.location.origin}/summoner/${encodeURIComponent(name)}/${matchId}`;
+
+    let ok = true;
+    try {
+        await navigator.clipboard.writeText(url);
+    } catch (err) {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            ok = document.execCommand('copy');
+            ta.remove();
+        } catch (e2) {
+            ok = false;
+        }
+    }
+
+    btn.classList.add(ok ? 'copied' : 'copy-failed');
+    setTimeout(() => btn.classList.remove('copied', 'copy-failed'), 1600);
 };
