@@ -170,14 +170,19 @@ let nGraph = 0, nStep = 0, nSkill = 0;
 for (const l of src) {
     const mc = l.match(/^ {4}"([A-Za-z0-9'. ]+)": \{/); if (mc) { champ = mc[1]; continue; }
     const ms = l.match(/^ {8}"([PQWER]2?)": \{/); if (ms) { slot = ms[1]; continue; }
-    const m = l.match(/"(p\d+)":\s*"(.*?)",\s*\/\/\s*(.+?)\s*$/);
+    // ★ `cooldown` 도 대상이다 (2026-08-14). 패시브 쿨타임이 레벨에 따라 **계단식**으로
+    //   줄어드는 자리가 있는데(그라가스 1/6/11/16레벨 -> 12/10/8/6),
+    //   값은 `12 ~ 6 (레벨에 따라)` 한 줄이라 **매 레벨 줄어드는 것처럼 읽힌다.**
+    //   `fill_values.js` 가 줄 뒤에 계산식 이름을 주석으로 남겨 둔다.
+    const m = l.match(/"(p\d+|cooldown)":\s*"(.*?)",\s*\/\/\s*(.+?)\s*$/);
     if (!m || m[2].indexOf('(레벨에 따라)') === -1) continue;
 
     // ★ 구분선 아래 회색 글씨("<슬롯>_rules") 도 화면에 나가는 문장이라 같이 본다 (2026-08-12).
     //   여기에도 레벨에 따라 크는 값이 들어 있다 (가렌 Q 의 강화 공격 지속시간 등).
     const t = templates[champ] || {};
     const tpl = String(t[slot] || '') + String(t[slot + '_rules'] || '');
-    if (tpl.indexOf('{' + m[1] + '}') === -1) continue;      // 문장에 안 쓰이는 자리는 건너뛴다
+    // 쿨타임은 문장이 아니라 **스킬 칸 우상단**에 늘 찍히므로 이 검사를 건너뛴다.
+    if (m[1] !== 'cooldown' && tpl.indexOf('{' + m[1] + '}') === -1) continue;
     let curve = findCurve(champ.toLowerCase(), slot, m[3]);
     if (!curve) continue;
     // "스탯의 A ~ B%" 자리는 곡선에 스탯을 곱해 실제 값으로 바꾼다 (위 주석 참고)

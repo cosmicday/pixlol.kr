@@ -2182,6 +2182,7 @@ async function main() {
         //   ★ 화면은 `쿨타임 ${cooldown}` 으로 찍으므로 QWER 과 맞춰 **숫자만** 남긴다
         //     (아이콘 토큰과 "초" 를 벗긴다).
         let passiveCd = '-';
+        let passiveCdCalc = '';   // 계산식 이름. 줄 뒤 주석으로 나가 각주와 조인된다
         {
             const pObj = (binSpells.P || [])[0];
             const lk = pObj && pObj.spell && pObj.spell.mClientData
@@ -2199,6 +2200,10 @@ async function main() {
                     .replace(/%i:[a-zA-Z0-9_]+%/g, '')
                     .replace(/<[^>]+>/g, '')
                     .replace(/@([A-Za-z0-9_.*+\-/():]+?)@/g, (m0, nm) => {
+                        // ★ 계산식 이름을 기억해 둔다. 줄 뒤 주석으로 내보내면
+                        //   `add_level_graphs.js` 가 `level_curves.json` 과 조인해
+                        //   레벨별 각주를 달 수 있다 (QWER 의 pN 자리와 같은 방식).
+                        if (!passiveCdCalc) passiveCdCalc = nm.trim();
                         const r = resolveFromPool(nm.trim(), binSpells.P || [], 1);
                         if (!r || r.val === null) { ok = false; return m0; }
                         return r.val;
@@ -2224,11 +2229,14 @@ async function main() {
             : null;
         if (!passiveNames.length) {
             // 빈칸이 없어도 손으로 쓴 피해량 줄이나 아이콘이 있으면 한 줄짜리로 못 줄인다.
-            if (pIconLine || (carried.P && (carried.P.v1 !== undefined || carried.P.v2 !== undefined))) {
+            //   ★ 쿨타임 계산식 이름을 주석으로 내보내야 하는 경우도 마찬가지다 —
+            //     한 줄 형식에 `// 이름` 을 붙이면 **뒤의 "cost" 까지 주석이 먹어** 깨진다.
+            if (pIconLine || passiveCdCalc
+                || (carried.P && (carried.P.v1 !== undefined || carried.P.v2 !== undefined))) {
                 lines.push(`        "P": {`);
                 if (carried.P && carried.P.v1 !== undefined) lines.push(carried.P.v1);
                 if (carried.P && carried.P.v2 !== undefined) lines.push(carried.P.v2);
-                lines.push(`            "cooldown": ${q(passiveCd)},`);
+                lines.push(`            "cooldown": ${q(passiveCd)},${passiveCdCalc ? ` // ${passiveCdCalc}` : ''}`);
                 if (pIconLine) lines.push(pIconLine);
                 lines.push(`            "cost": "-"`);
                 lines.push(`        },`);
@@ -2279,7 +2287,7 @@ async function main() {
             // 패시브는 원래 v1/v2 를 안 찍는다. 손으로 쓴 게 있을 때만 살려서 넣는다.
             if (carried.P && carried.P.v1 !== undefined) lines.push(carried.P.v1);
             if (carried.P && carried.P.v2 !== undefined) lines.push(carried.P.v2);
-            lines.push(`            "cooldown": ${q(passiveCd)},`);
+            lines.push(`            "cooldown": ${q(passiveCd)},${passiveCdCalc ? ` // ${passiveCdCalc}` : ''}`);
             if (pIconLine) lines.push(pIconLine);
             lines.push(`            "cost": "-"`);
             lines.push(`        },`);

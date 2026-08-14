@@ -4186,6 +4186,11 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
             //   아직 안 쪼갠 스킬만 이름 옆에 아이콘을 보여 준다 — 안 그러면 화면에서 아예 사라진다.
             partTpl: Array.isArray((typeof customTemplates !== 'undefined' && customTemplates[champ.id]) ? customTemplates[champ.id]['P'] : null),
             cooldown: (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id]['P'] && customValues[champ.id]['P'].cooldown) || '-',
+            // ★ 패시브 쿨타임이 레벨에 따라 **계단식**으로 줄어드는 자리가 있다 (2026-08-14).
+            //   그라가스는 1/6/11/16레벨에 12/10/8/6 인데 값은 `12 ~ 6` 한 줄이라
+            //   매 레벨 줄어드는 것처럼 읽힌다. custom_graphs.js 의 각주를 옆에 붙인다.
+            cooldownNote: (typeof customGraphs !== 'undefined' && customGraphs[champ.id]
+                && customGraphs[champ.id]['P'] && customGraphs[champ.id]['P'].cooldown) || '',
             cost: (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id]['P'] && customValues[champ.id]['P'].cost) || '-',
             img: `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/passive/${champ.passive.image.full}`,
             img2: (typeof customValues !== 'undefined' && customValues[champ.id] && customValues[champ.id]['P'] && customValues[champ.id]['P'].img2) || null,
@@ -4221,6 +4226,10 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
                 //   아직 안 쪼갠 스킬만 이름 옆에 아이콘을 보여 준다 — 안 그러면 화면에서 아예 사라진다.
                 partTpl: Array.isArray((typeof customTemplates !== 'undefined' && customTemplates[champ.id]) ? customTemplates[champ.id][spellSlotsKey[i]] : null),
                 cooldown: customCd,
+                // 패시브 쪽 주석 참고. QWER 쿨타임은 랭크별이라 지금은 대상이 없지만 틀을 맞춰 둔다.
+                cooldownNote: (typeof customGraphs !== 'undefined' && customGraphs[champ.id]
+                    && customGraphs[champ.id][spellSlotsKey[i]]
+                    && customGraphs[champ.id][spellSlotsKey[i]].cooldown) || '',
                 cost: customCost,
                 // ★ customValues 에 img 가 있으면 DD 기본 아이콘 대신 그걸 쓴다.
                 //   DD 아이콘이 인게임과 다른 경우가 있다 — 벨베스 Q 가 유일한 사례로,
@@ -5154,7 +5163,7 @@ window.playSkill = function (index) {
 
     const cooldownEl = document.getElementById('champ-skill-cooldown-header');
     const costEl = document.getElementById('champ-skill-cost-header');
-    if (cooldownEl) cooldownEl.innerHTML = `쿨타임 ${skill.cooldown}`;
+    if (cooldownEl) cooldownEl.innerHTML = `쿨타임 ${skill.cooldown}${skill.cooldownNote || ''}`;
     if (costEl) costEl.innerHTML = `소모값 ${skill.cost}`;
 
     const descTextEl = document.getElementById('champ-skill-desc-text-body');

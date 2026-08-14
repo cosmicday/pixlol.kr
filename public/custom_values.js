@@ -67,6 +67,9 @@ const drawGraph = (id, color, dataArr, title) => {
 //   레벨마다 조금씩 크는 게 아니라 **특정 레벨에서만 값이 바뀌는** 스킬용이다.
 //   (나서스 P 생명력 흡수 12/18/24 는 1·7·13레벨에서만 바뀐다)
 //   이런 자리는 꺾은선으로 그리면 계단이 완만한 상승처럼 보여서 오해를 준다.
+//   ★ 제목의 "상승 / 감소" 는 양 끝값을 비교해 정한다 (2026-08-14).
+//     패시브 쿨타임이 대상에 들어오면서 **줄어드는 계단**이 처음 생겼다 —
+//     그라가스 12 -> 6 을 "상승" 이라고 적으면 정반대 뜻이 된다.
 // ==========================================
 const drawSteps = (id, color, pairs) => {
     const rows = pairs.map(([lv, val]) => `
@@ -77,7 +80,7 @@ const drawSteps = (id, color, pairs) => {
 
     return `<span class="custom-footnote">[${id}]
         <span class="custom-footnote-content">
-            <div style="font-size: 11px; margin-bottom: 6px; color: #fff;">${pairs.map(p => p[0]).join(' / ')}레벨에 상승</div>
+            <div style="font-size: 11px; margin-bottom: 6px; color: #fff;">${pairs.map(p => p[0]).join(' / ')}레벨에 ${pairs.length > 1 && Number(pairs[pairs.length - 1][1]) < Number(pairs[0][1]) ? '감소' : '상승'}</div>
             <div style="font-size: 12px; min-width: 96px;">${rows}</div>
         </span>
     </span>`;
@@ -171,7 +174,7 @@ const customValues = {
         "P": {
             "p1": "15 ~ 115 (레벨에 따라) (+ 총 공격력의 100% + 주문력의 40% + 추가 마법 저항력의 60%)", // TotalDamage
             "p2": "3", // ChargeRatePerHit
-            "cooldown": "5",
+            "cooldown": "5", // PassiveCooldownModified
             "cost": "-"
         },
         "Q": {
@@ -240,7 +243,7 @@ const customValues = {
             "p2": "50 ~ 250 (레벨에 따라) (+ 추가 공격력의 100%)", // TotalDamage
             "p3": "2", // MoveSpeedDuration
             "p4": "15 ~ 30% (레벨에 따라)", // MoveSpeed
-            "cooldown": "15",
+            "cooldown": "15", // Cooldown
             "cost": "-"
         },
         "Q": {
@@ -306,7 +309,7 @@ const customValues = {
     "Gragas": { // 그라가스
         "P": {
             "p1": "최대 체력의 5.5%", // HealAmount
-            "cooldown": "12 ~ 6 (레벨에 따라)",
+            "cooldown": "12 ~ 6 (레벨에 따라)", // HealCooldown
             "cost": "-"
         },
         "Q": {
@@ -750,7 +753,7 @@ const customValues = {
             "p4": "4", // CooldownReduceOnAbilityHit
             "p5": "1", // CooldownReduceOnKill
             "p6": "2 ~ 5 (레벨에 따라)", // PackmateCap
-            "cooldown": "30 ~ 10 (레벨에 따라)",
+            "cooldown": "30 ~ 10 (레벨에 따라)", // PackmateSpawnCooldown
             "cost": "-"
         },
         "Q": {
@@ -883,7 +886,7 @@ const customValues = {
             "p3": "13 ~ 32 (레벨에 따라) (+ 주문력의 30%)", // TotalHealing
             "p4": "1", // AACDR
             "p5": "3", // AAChampMonsterCDR
-            "cooldown": "12",
+            "cooldown": "12", // Cooldown
             "cost": "-"
         },
         "Q": {
@@ -1106,7 +1109,10 @@ const customValues = {
         },
     },
     "Neeko": { // 니코
-        "P": { "cooldown": "6", "cost": "-" },
+        "P": {
+            "cooldown": "6", // PassiveCooldown
+            "cost": "-"
+        },
         "Q": {
             "p1": "60 / 110 / 160 / 210 / 260 (+ 주문력의 60%)", // ExplosionDamage
             "p2": "35 / 60 / 85 / 110 / 135 (+ 주문력의 25%)", // SecondDamage
@@ -1497,7 +1503,7 @@ const customValues = {
             "p1": "40 ~ 14.5 (레벨에 따라)", // ShieldCooldown
             "p2": "30 ~ 225 (레벨에 따라) (+ 주문력의 95%)", // TotalShield
             "p3": "1", // HitCooldown
-            "cooldown": "40 ~ 14.5 (레벨에 따라)",
+            "cooldown": "40 ~ 14.5 (레벨에 따라)", // ShieldCooldown
             "cost": "-"
         },
         "Q": {
@@ -2418,7 +2424,10 @@ const customValues = {
         },
     },
     "Leblanc": { // 르블랑
-        "P": { "cooldown": "60", "cost": "-" },
+        "P": {
+            "cooldown": "60", // Cooldown
+            "cost": "-"
+        },
         "Q": {
             "p1": "65 / 90 / 115 / 140 / 165 (+ 주문력의 40%)", // Damage
             "p2": "3.5", // MarkDuration
@@ -2796,7 +2805,7 @@ const customValues = {
             "p1": "최대 체력의 4 ~ 12.8 (레벨에 따라)%", // PassiveHealingTotal
             "p2": "4", // PassiveCooldownReduction
             "p3": "1.5", // JungPassCooldownReduction
-            "cooldown": "30 ~ 20 (레벨에 따라)",
+            "cooldown": "30 ~ 20 (레벨에 따라)", // PassiveCooldown
             "cost": "-"
         },
         "Q": {
@@ -3188,7 +3197,7 @@ const customValues = {
             "p3": "15", // PassiveCooldownRefund
             "p4": "4", // MaxHealthGain*100
             "p5": "0.4 ~ 2.3% (레벨에 따라)", // MaxHealthRegen
-            "cooldown": "60 ~ 15 (레벨에 따라)",
+            "cooldown": "60 ~ 15 (레벨에 따라)", // PassiveCooldown
             "cost": "-"
         },
         "Q": {
@@ -4302,7 +4311,7 @@ const customValues = {
             "p1": "30", // HealthThreshold*100
             "p2": "10", // ShieldDuration
             "p3": "최대 마나의 35%", // ShieldAmount
-            "cooldown": "90",
+            "cooldown": "90", // Cooldown
             "cost": "-"
         },
         "Q": {
@@ -4507,7 +4516,7 @@ const customValues = {
             "p2": "350", // BonusRange
             "p3": "20 ~ 180 (레벨에 따라)", // TotalDamage
             "p4": "최대 체력의 11 ~ 20 (레벨에 따라)%", // ShieldValue
-            "cooldown": "16 ~ 8 (레벨에 따라)",
+            "cooldown": "16 ~ 8 (레벨에 따라)", // ActualCooldown
             "cost": "-"
         },
         "Q": {
@@ -5253,7 +5262,7 @@ const customValues = {
             "p2": "47 ~ 120 (레벨에 따라) (+ 추가 최대 체력의 13%)", // ShieldValue
             "p3": "11", // ShieldCooldown
             "p4": "4 ~ 7.995 (레벨에 따라)", // ShieldCooldownReduction
-            "cooldown": "11",
+            "cooldown": "11", // ShieldCooldown
             "cost": "-"
         },
         "Q": {
@@ -6227,7 +6236,7 @@ const customValues = {
             "p1": "230 ~ 410 (레벨에 따라) (+ 주문력의 40%)", // TowerDamage
             "p2": "30 ~ 90 (레벨에 따라)", // BonusResists
             "p3": "45", // TowerDisintegrationTime
-            "cooldown": "90",
+            "cooldown": "90", // Cooldown
             "cost": "-"
         },
         "Q": {
@@ -6428,7 +6437,7 @@ const customValues = {
             "p2": "100", // PHealingRatio*100
             "p3": "25", // PHealingMinionMod*100
             "p4": "22 ~ 10 (레벨에 따라)", // PCooldown
-            "cooldown": "22 ~ 10 (레벨에 따라)",
+            "cooldown": "22 ~ 10 (레벨에 따라)", // PCooldown
             "cost": "-"
         },
         "Q": {
@@ -6740,7 +6749,7 @@ const customValues = {
     "Anivia": { // 애니비아
         "P": {
             "p1": "-40 ~ 20 (레벨에 따라)", // BonusResists
-            "cooldown": "240",
+            "cooldown": "240", // Cooldown
             "cost": "-"
         },
         "Q": {
@@ -8127,7 +8136,7 @@ const customValues = {
             "p1": "18 ~ 7 (레벨에 따라)", // SpawnCD
             "p2": "9 ~ 180 (레벨에 따라) (+ 총 공격력의 110% + 주문력의 40%)", // spell.IllaoiQ:TentacleDamageTotal
             "p3": "5", // MissingHPPercentHeal*100
-            "cooldown": "18 ~ 7 (레벨에 따라)",
+            "cooldown": "18 ~ 7 (레벨에 따라)", // SpawnCD
             "cost": "-"
         },
         "Q": {
@@ -8313,7 +8322,7 @@ const customValues = {
         "P": {
             "p1": "13.6 ~ 9.05 (레벨에 따라)", // SeedCooldown
             "p2": "15 ~ 75 (레벨에 따라) (+ 주문력의 20%)", // PlantDamage
-            "cooldown": "13.6 ~ 9.05 (레벨에 따라)",
+            "cooldown": "13.6 ~ 9.05 (레벨에 따라)", // SeedCooldown
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zyra/hud/icons2d/zyrapq.png"],
             "cost": "-"
         },
@@ -8385,7 +8394,7 @@ const customValues = {
             "p1": "4 ~ 8% (레벨에 따라)", // HealPercent
             "p2": "8 ~ 4 (레벨에 따라)", // ReviveBlobletDuration
             "p3": "300", // ReviveCooldown
-            "cooldown": "300",
+            "cooldown": "300", // Cooldown
             "cost": "-"
         },
         "Q": {
@@ -9434,7 +9443,7 @@ const customValues = {
             "p1": "2", // ShieldDuration
             "p2": "최대 체력의 10 ~ 20 (레벨에 따라)%", // ShieldAmount
             "p3": "14 ~ 8 (레벨에 따라)", // PassiveCooldown
-            "cooldown": "14 ~ 8 (레벨에 따라)",
+            "cooldown": "14 ~ 8 (레벨에 따라)", // PassiveCooldown
             "cost": "-"
         },
         "Q": {
