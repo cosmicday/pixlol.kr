@@ -49,7 +49,7 @@ const summonerCacheSchema = new mongoose.Schema({
 
     // ★ 숙련도 상위 5개 championId (랭킹 표의 "숙련도 TOP5" 칸).
     //   전 큐 통합 누적값이라 "솔랭 모스트" 가 아니다 — 라이엇이 그것만 준다.
-    //   fillMasteryInBackground 가 분당 20명씩 채운다.
+    //   fillMasteryInBackground 가 분당 10명씩 채운다.
     mastery: { type: [Number] },
     masteryAt: { type: Number }
 });
@@ -167,7 +167,7 @@ async function loadResolvedNames() {
         summoners.forEach(s => {
             resolvedNames[s.puuid] = { displayName: s.displayName, updatedAt: s.updatedAt };
             // ★ 숙련도도 같이 메모리에 올려야 랭킹 응답에서 쓸 수 있다.
-            //   DB 에만 있고 여기서 안 올리면 재시작할 때마다 전부 다시 받게 된다 (9시간짜리다).
+            //   DB 에만 있고 여기서 안 올리면 재시작할 때마다 전부 다시 받게 된다 (18시간짜리다).
             if (s.mastery && s.mastery.length) {
                 resolvedMastery[s.puuid] = { top: s.mastery, updatedAt: s.masteryAt || 0 };
             }
@@ -341,12 +341,14 @@ async function resolveNamesInBackground() {
 //   ★ 이 값은 champion-mastery v4 의 "전 큐 통합 누적 숙련도" 다.
 //     솔랭 모스트가 아니다 — 큐별 모스트는 라이엇이 안 주고, 직접 세려면
 //     1인당 경기 상세를 수십 번 받아야 해서 1.1만 명한테는 불가능하다.
-//   ★ 닉네임 잡과 같은 구조·같은 속도(분당 20명)다. 두 잡이 동시에 몰리지 않도록
+//   ★ 닉네임 잡과 같은 구조인데 속도는 절반(분당 10명)이다. 두 잡이 동시에 몰리지 않도록
 //     startJobs 에서 30초 어긋나게 띄운다.
-//   ★ 한 바퀴에 약 9시간이 걸린다 (11,000명 / 분당 20명). 그래서 DB 에 저장하고
+//   ★ 한 바퀴에 약 18시간이 걸린다 (11,000명 / 분당 10명). 그래서 DB 에 저장하고
 //     loadResolvedNames 가 다시 메모리에 올린다 — 재시작마다 처음부터면 영영 못 채운다.
 // ==========================================
-const MASTERY_TTL = 7 * 24 * 60 * 60 * 1000;   // 7일마다 갱신 (사람들이 계속 플레이하므로)
+// 4주마다 갱신. 누적 숙련도는 랭크 모스트와 달리 순위가 잘 안 바뀌는 값이라
+// 자주 받을 이유가 없다 (닉네임 14일보다도 길게 잡았다).
+const MASTERY_TTL = 28 * 24 * 60 * 60 * 1000;
 
 async function fillMasteryInBackground() {
     if (challengerList.length === 0 || isFetchingMastery) return;
@@ -370,7 +372,7 @@ async function fillMasteryInBackground() {
 
     const topPending = pending.filter(p => p.rank < TOP_PRIORITY);
     const restPending = pending.filter(p => p.rank >= TOP_PRIORITY);
-    const targets = [...topPending, ...restPending].slice(0, 20);
+    const targets = [...topPending, ...restPending].slice(0, 10);
 
     if (pending.length > 0) {
         console.log(`[Task] 숙련도: 대기 ${pending.length}명 (상위권 ${topPending.length}명 / 채움 ${Object.keys(resolvedMastery).length}명)`);
@@ -417,8 +419,8 @@ async function startJobs() {
     setInterval(updateChallengerList, 600 * 1000);
     setInterval(resolveNamesInBackground, 60 * 1000);
 
-    // ★ 숙련도 잡은 30초 어긋나게 띄운다. 두 잡 다 20회를 24초에 몰아 쓰기 때문에
-    //   같이 출발하면 순간 호출량이 겹쳐 개발 키 한도(2분 100회)에 훨씬 빨리 닿는다.
+    // ★ 숙련도 잡은 30초 어긋나게 띄운다. 닉네임 20회(24초) + 숙련도 10회(12초)를
+    //   같이 출발시키면 순간 호출량이 겹쳐 개발 키 한도(2분 100회)에 훨씬 빨리 닿는다.
     setTimeout(() => {
         fillMasteryInBackground();
         setInterval(fillMasteryInBackground, 60 * 1000);
