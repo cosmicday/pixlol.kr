@@ -1070,10 +1070,7 @@ const customValues = {
             "v2": "",
             "cooldown": "3",
             "cost": "-",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/nidalee/hud/icons2d/nidalee_r2.png"],
-            "stats": {
-                "투사체 속도": "943.8"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/nidalee/hud/icons2d/nidalee_r2.png"]
         },
         "Q2": {
             "p1": "5 / 30 / 55 / 80 (+ 총 공격력의 75% + 주문력의 40%)", // spell.AspectOfTheCougar:TotalTakedownDamage
@@ -7051,10 +7048,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "3",
-            "cost": "-",
-            "stats": {
-                "투사체 속도": "943.8"
-            }
+            "cost": "-"
         },
         "Q2": {
             "p1": "50 / 80 / 110 / 140 / 170", // Spell.EliseSpiderQCast:BaseDamage

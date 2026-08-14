@@ -2470,12 +2470,14 @@ async function main() {
             //     14자리가 걸리는데 드레이븐 E(도끼)·케넨 Q(표창)·샤코 E(단검)·엘리스 E(고치)
             //     처럼 **진짜 투사체**가 대부분이다. 원거리 챔피언은 스킬 투사체가 기본 공격과
             //     같은 속도인 게 자연스럽다
-            const MISSILE_DUMMY = 347.8;      // 라이엇 기본 공격 기본값
-            const MISSILE_MAX = 100000;       // 이보다 크면 "즉시 도달" 더미
+            //   ★ `943.8` 2자리도 뺐다 (2026-08-14) — **니달리 R · 엘리스 R 폼 변신**이다.
+            //     투사체가 없는 게 확실하고, 소수점이 붙은 걸 보면 347.8 과 같은 계열 값이다
+            const MISSILE_DUMMY = [347.8, 943.8];   // 라이엇 엔진 기본값 계열
+            const MISSILE_MAX = 100000;             // 이보다 크면 "즉시 도달" 더미
             const bodyMs = (spell && typeof spell.missileSpeed === 'number') ? spell.missileSpeed : 0;
             const msTidy = bodyMs > 20 ? tidy(bodyMs) : null;
             const missileSpeed = (msTidy !== null
-                && Math.abs(parseFloat(msTidy) - MISSILE_DUMMY) > 0.05
+                && !MISSILE_DUMMY.some(d => Math.abs(parseFloat(msTidy) - d) < 0.05)
                 && parseFloat(msTidy) < MISSILE_MAX) ? msTidy : null;
             const lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
                 ? tidy(spell.mLineWidth) : null;
