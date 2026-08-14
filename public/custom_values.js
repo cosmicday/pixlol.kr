@@ -153,7 +153,6 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/garen/hud/icons2d/garen_e2.png"],
             "stats": {
                 "사거리": "325",
-                "투사체 속도": "700",
                 "스킬 폭": "160"
             }
         },
@@ -377,8 +376,8 @@ const customValues = {
     },
     "Graves": { // 그레이브즈
         "P": {
-            "p1": "총 공격력의 70 ~ 100 (레벨에 따라)%", // SingleBulletDamage
-            "p2": "총 공격력의 70 ~ 100 (레벨에 따라)%", // MultiBulletDamage
+            "p1": "총 공격력의 70 ~ 100.005 (레벨에 따라)%", // SingleBulletDamage
+            "p2": "총 공격력의 70 ~ 100.005 (레벨에 따라)%", // MultiBulletDamage
             "p3": "50%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>65%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageMult
             "p4": "25", // StructureDamageReduction*100
             "cooldown": "-",
@@ -848,8 +847,7 @@ const customValues = {
             "cooldown": "12",
             "cost": "60",
             "stats": {
-                "사거리": "350",
-                "투사체 속도": "1500"
+                "사거리": "350"
             }
         },
         "E": {
@@ -1336,8 +1334,7 @@ const customValues = {
             "cost": "40 / 45 / 50 / 55 / 60",
             "stats": {
                 "사거리": "800",
-                "시전시간": "0.25",
-                "투사체 속도": "1800"
+                "시전시간": "0.25"
             }
         },
         "E": {
@@ -1992,8 +1989,7 @@ const customValues = {
             "cost": "-",
             "form1": "돌출 상태",
             "stats": {
-                "사거리": "325",
-                "투사체 속도": "1600"
+                "사거리": "325"
             }
         },
         "W": {
@@ -2005,8 +2001,7 @@ const customValues = {
             "cost": "-",
             "form1": "돌출 상태",
             "stats": {
-                "사거리": "1650",
-                "투사체 속도": "1600"
+                "사거리": "1650"
             }
         },
         "E": {
@@ -2161,7 +2156,6 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/rengar/hud/icons2d/rengarqemp.png"],
             "stats": {
                 "사거리": "450",
-                "투사체 속도": "3000",
                 "스킬 폭": "55"
             }
         },
@@ -2606,8 +2600,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/riven/hud/icons2d/rivenwindscar.png"],
             "stats": {
-                "사거리": "200",
-                "투사체 속도": "1200"
+                "사거리": "200"
             }
         },
     },
@@ -2641,8 +2634,7 @@ const customValues = {
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "40",
             "stats": {
-                "사거리": "450",
-                "투사체 속도": "902"
+                "사거리": "450"
             }
         },
         "E": {
@@ -3297,8 +3289,7 @@ const customValues = {
             "cooldown": "12",
             "cost": "45",
             "stats": {
-                "사거리": "600",
-                "투사체 속도": "1400"
+                "사거리": "600"
             }
         },
         "E": {
@@ -3516,7 +3507,6 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "사거리": "750",
-                "투사체 속도": "1200",
                 "스킬 폭": "50"
             }
         },
@@ -3585,7 +3575,6 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "사거리": "750",
-                "투사체 속도": "1200",
                 "스킬 폭": "50"
             }
         },
@@ -3698,7 +3687,6 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "사거리": "750",
-                "투사체 속도": "1200",
                 "스킬 폭": "50"
             }
         },
@@ -3763,8 +3751,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/vex/hud/icons2d/icons_vex_w02.png"],
             "stats": {
                 "사거리": "475",
-                "시전시간": "0.25",
-                "투사체 속도": "1500"
+                "시전시간": "0.25"
             }
         },
         "E": {
@@ -4184,7 +4171,7 @@ const customValues = {
     "Brand": { // 브랜드
         "P": {
             "p1": "2", // PercentHealthDamage
-            "p2": "20 ~ 40 (레벨에 따라)", // ManaRestore
+            "p2": "20 ~ 39.983 (레벨에 따라)", // ManaRestore
             "p3": "6 ~ 12% (레벨에 따라) (+ 주문력의 2%)", // ExplosionDamage
             "cooldown": "-",
             "cost": "-"
@@ -4278,7 +4265,6 @@ const customValues = {
             "cost": "현재 체력의 15% 소모",
             "stats": {
                 "사거리": "350",
-                "투사체 속도": "1600",
                 "스킬 폭": "120"
             }
         },
@@ -5187,8 +5173,7 @@ const customValues = {
             "cooldown": "14",
             "cost": "65",
             "stats": {
-                "사거리": "430",
-                "투사체 속도": "1500"
+                "사거리": "430"
             }
         },
         "R": {
@@ -5272,7 +5257,7 @@ const customValues = {
             "p1": "2.5", // ShieldDuration
             "p2": "47 ~ 120 (레벨에 따라) (+ 추가 최대 체력의 13%)", // ShieldValue
             "p3": "11", // ShieldCooldown
-            "p4": "4 ~ 8 (레벨에 따라)", // ShieldCooldownReduction
+            "p4": "4 ~ 7.995 (레벨에 따라)", // ShieldCooldownReduction
             "cooldown": "11", // ShieldCooldown
             "cost": "-"
         },
@@ -5477,7 +5462,6 @@ const customValues = {
             "cost": "65",
             "stats": {
                 "사거리": "700",
-                "투사체 속도": "1200",
                 "스킬 폭": "120"
             }
         },
@@ -5671,10 +5655,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12",
-            "cost": "60",
-            "stats": {
-                "투사체 속도": "1400"
-            }
+            "cost": "60"
         },
         "E": {
             "p1": "1.5", // SpellShieldDuration
@@ -5723,7 +5704,7 @@ const customValues = {
             "p4": "50", // Effect6Amount*-100
             "p5": "3", // MarkDuration
             "p6": "33.3", // CritChanceAmp*100
-            "p7": "50 ~ 100 (레벨에 따라)", // MinionMod
+            "p7": "50 ~ 100.002 (레벨에 따라)", // MinionMod
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
@@ -5853,7 +5834,7 @@ const customValues = {
             "p1": "20 / 30 / 40 / 50 / 60 (+ 주문력의 42.5%)", // DamagePerSecond
             "p2": "3.25", // CloudDuration
             "p3": "2", // PoisonDuration
-            "p4": "95 / 142.5 / 190 / 237.5 / 285 (+ 주문력의 202%)", // ApproximateTotalDamageTooltip
+            "p4": "95 / 142.5 / 190 / 237.5 / 285 (+ 주문력의 201.875%)", // ApproximateTotalDamageTooltip
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "0",
@@ -5892,10 +5873,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "100",
-            "cost": "100",
-            "stats": {
-                "투사체 속도": "1450"
-            }
+            "cost": "100"
         },
     },
     "Thresh": { // 쓰레쉬
@@ -5996,8 +5974,7 @@ const customValues = {
             "cost": "30",
             "stats": {
                 "사거리": "700",
-                "시전시간": "0.25",
-                "투사체 속도": "1800"
+                "시전시간": "0.25"
             }
         },
         "E": {
@@ -6458,7 +6435,7 @@ const customValues = {
         },
         "Q": {
             "p1": "10 / 25 / 40 / 55 / 70 (+ 총 공격력의 60 / 67.5 / 75 / 82.5 / 90%)", // QDamage
-            "p2": "17.5 / 43.75 / 70 / 96.25 / 122.5 (+ 총 공격력의 105 / 118 / 131.25 / 144 / 157.5%)", // QEdgeDamage
+            "p2": "17.5 / 43.75 / 70 / 96.25 / 122.5 (+ 총 공격력의 105 / 118.125 / 131.25 / 144.375 / 157.5%)", // QEdgeDamage
             "p3": "55 ~ 70% (레벨에 따라)", // QMinionDamage
             "p4": "25", // QMonsterBonus
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -7171,7 +7148,6 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/monkeyking/hud/icons2d/monkeykingcyclone2.png"],
             "stats": {
                 "사거리": "315",
-                "투사체 속도": "700",
                 "스킬 폭": "160"
             }
         },
@@ -7348,7 +7324,6 @@ const customValues = {
             "cost": "60 / 65 / 70 / 75 / 80",
             "stats": {
                 "사거리": "225",
-                "투사체 속도": "1200",
                 "스킬 폭": "80"
             }
         },
@@ -7376,7 +7351,6 @@ const customValues = {
             "stats": {
                 "사거리": "410",
                 "시전시간": "0.5",
-                "투사체 속도": "1200",
                 "스킬 폭": "80"
             }
         },
@@ -7828,10 +7802,7 @@ const customValues = {
             "cost": "30",
             "img": "https://raw.communitydragon.org/latest/game/assets/characters/yunara/hud/icons2d/yunara_q2.png",
             "imgBody": "https://raw.communitydragon.org/latest/game/assets/characters/yunara/hud/icons2d/yunara_q.png",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yunara/hud/icons2d/yunara_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/yunara/hud/icons2d/yunara_r.png"],
-            "stats": {
-                "투사체 속도": "2000"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yunara/hud/icons2d/yunara_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/yunara/hud/icons2d/yunara_r.png"]
         },
         "W": {
             "p1": "55 / 95 / 135 / 175 / 215 (+ 추가 공격력의 85% + 주문력의 50%)", // Calc_Damage_Initial
@@ -7875,7 +7846,6 @@ const customValues = {
             "cooldown": "100 / 90 / 80",
             "cost": "100",
             "stats": {
-                "투사체 속도": "2000",
                 "돌진 속도": "1350 / 1500 / 1650",
                 "스킬 폭": "100"
             }
@@ -8253,8 +8223,7 @@ const customValues = {
             "cooldown": "9",
             "cost": "30",
             "stats": {
-                "사거리": "625",
-                "투사체 속도": "1500"
+                "사거리": "625"
             }
         },
         "E": {
@@ -8318,8 +8287,7 @@ const customValues = {
             "cost": "60 / 55 / 50 / 45 / 40",
             "stats": {
                 "사거리": "1000",
-                "시전시간": "0.25",
-                "투사체 속도": "1800"
+                "시전시간": "0.25"
             }
         },
         "E": {
@@ -8508,8 +8476,7 @@ const customValues = {
             "cost": "25",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zaahen/hud/icons2d/zaahenq2.png"],
             "stats": {
-                "사거리": "200",
-                "투사체 속도": "8700"
+                "사거리": "200"
             }
         },
         "W": {
@@ -8670,8 +8637,7 @@ const customValues = {
             "cooldown": "17 / 15 / 13 / 11 / 9",
             "cost": "50 / 60 / 70 / 80 / 90",
             "stats": {
-                "사거리": "300",
-                "투사체 속도": "1450"
+                "사거리": "300"
             }
         },
         "R": {
@@ -8690,8 +8656,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "260",
-                "시전시간": "0.25",
-                "투사체 속도": "1500"
+                "시전시간": "0.25"
             }
         },
     },
@@ -8783,7 +8748,7 @@ const customValues = {
             "p1": "50 / 85 / 120 / 155 / 190 (+ 주문력의 65%)", // TotalDamage
             "p2": "2.5", // SlowDuration
             "p3": "25", // SlowAmount*100
-            "p4": "83.35 / 142 / 200.04 / 258 / 316.73 (+ 주문력의 108%)", // SweetSpotTotalDamage
+            "p4": "83.35 / 141.695 / 200.04 / 258.385 / 316.73 (+ 주문력의 108.355%)", // SweetSpotTotalDamage
             "p5": "60 / 65 / 70 / 75 / 80", // SweetSpotSlowAmount*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -8930,7 +8895,6 @@ const customValues = {
             "form1": "망치 형태",
             "stats": {
                 "사거리": "285",
-                "투사체 속도": "1500",
                 "스킬 폭": "200"
             }
         },
@@ -8958,8 +8922,7 @@ const customValues = {
             "cost": "-",
             "form1": "망치 형태",
             "stats": {
-                "사거리": "600",
-                "투사체 속도": "1500"
+                "사거리": "600"
             }
         },
         "Q2": {
@@ -9288,8 +9251,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/jinx/hud/icons2d/jinx_q2.png"],
             "stats": {
                 "사거리": "600",
-                "시전시간": "0.25",
-                "투사체 속도": "2000"
+                "시전시간": "0.25"
             }
         },
         "W": {
@@ -9467,8 +9429,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_w2.png", "https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_e2.png"],
             "stats": {
-                "사거리": "1100",
-                "투사체 속도": "1300"
+                "사거리": "1100"
             }
         },
     },
@@ -9647,7 +9608,6 @@ const customValues = {
             "stats": {
                 "사거리": "550",
                 "시전시간": "0.25",
-                "투사체 속도": "1000",
                 "스킬 폭": "150"
             }
         },
@@ -9797,8 +9757,7 @@ const customValues = {
             "cost": "30",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kaisa/hud/icons2d/kaisa_e2.png"],
             "stats": {
-                "시전시간": "1.5",
-                "투사체 속도": "1500"
+                "시전시간": "1.5"
             }
         },
         "R": {
@@ -9869,10 +9828,7 @@ const customValues = {
             "v2": "",
             "cooldown": "100 / 85 / 70",
             "cost": "100",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_q_red.png", "https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_w_red.png", "https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_e_red.png", "https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_r_red.png"],
-            "stats": {
-                "투사체 속도": "2200"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_q_red.png", "https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_w_red.png", "https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_e_red.png", "https://raw.communitydragon.org/latest/game/assets/characters/khazix/hud/icons2d/khazix_r_red.png"]
         },
     },
     "Katarina": { // 카타리나
@@ -9906,7 +9862,6 @@ const customValues = {
             "cooldown": "15 / 14 / 13 / 12 / 11",
             "cost": "-",
             "stats": {
-                "투사체 속도": "2500",
                 "스킬 폭": "60"
             }
         },
@@ -9936,8 +9891,7 @@ const customValues = {
             "cooldown": "75 / 60 / 45",
             "cost": "-",
             "stats": {
-                "사거리": "550",
-                "투사체 속도": "1450"
+                "사거리": "550"
             }
         },
     },
@@ -10467,7 +10421,6 @@ const customValues = {
             "stats": {
                 "사거리": "700",
                 "시전시간": "0.25",
-                "투사체 속도": "2200",
                 "스킬 폭": "200"
             }
         },
@@ -11127,10 +11080,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "20 / 19 / 18 / 17 / 16",
-            "cost": "15 / 20 / 25 / 30 / 35",
-            "stats": {
-                "투사체 속도": "1450"
-            }
+            "cost": "15 / 20 / 25 / 30 / 35"
         },
         "W": {
             "p1": "70 / 105 / 140 / 175 / 210 (+ 추가 공격력의 100% + 주문력의 50%)", // LandingDamage
@@ -11389,8 +11339,7 @@ const customValues = {
             "cooldown": "0",
             "cost": "-",
             "stats": {
-                "사거리": "680",
-                "투사체 속도": "1500"
+                "사거리": "680"
             }
         },
         "R": {
@@ -11657,7 +11606,6 @@ const customValues = {
             "cost": "40",
             "stats": {
                 "사거리": "425",
-                "투사체 속도": "1200",
                 "스킬 폭": "40"
             }
         },
@@ -11709,8 +11657,7 @@ const customValues = {
             "cooldown": "7 / 6 / 5 / 4 / 3",
             "cost": "30 / 40 / 50 / 60 / 70",
             "stats": {
-                "사거리": "600",
-                "투사체 속도": "1400"
+                "사거리": "600"
             }
         },
         "E": {
@@ -11829,8 +11776,7 @@ const customValues = {
             "cooldown": "4",
             "cost": "28 / 26 / 24 / 22 / 20",
             "stats": {
-                "사거리": "350",
-                "투사체 속도": "1450"
+                "사거리": "350"
             }
         },
         "W": {
@@ -11890,7 +11836,7 @@ const customValues = {
             "p1": "50 / 80 / 110 / 140 / 170 (+ 주문력의 80%)", // Tooltip_QQDamage
             "p2": "3 / 4 / 5 / 6 / 7", // Tooltip_QQBonusDamage
             "p3": "60 / 85 / 110 / 135 / 160 (+ 주문력의 30%)", // Tooltip_QWDamage
-            "p4": "120 / 202 / 302.5 / 422 / 560 (+ 주문력의 60 / 71.25 / 82.5 / 93.75 / 105%)", // Tooltip_QWBonusDamage
+            "p4": "120 / 201.875 / 302.5 / 421.875 / 560 (+ 주문력의 60 / 71.25 / 82.5 / 93.75 / 105%)", // Tooltip_QWBonusDamage
             "p5": "20 / 35 / 50 / 65 / 80 (+ 주문력의 30%)", // Tooltip_QEDamage
             "p6": "2.5", // spell.HweiQE:Duration
             "p7": "20 / 35 / 50 / 65 / 80 (+ 주문력의 24%)", // Tooltip_QEDamagePerSecond

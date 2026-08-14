@@ -373,10 +373,34 @@ function passiveCdFootnote(no, shown, real, why) {
         `</span></span>`;
 }
 
+// ★★ 레벨 비례 **기본 피해량**만 정수로 접는다 (2026-08-14).
+//   카타리나 P 가 `68.185 ~ 240.015 (레벨에 따라)` 로 나가서 읽기 불편했다 -> `68 ~ 240`.
+//
+//   ★★ 전역 반올림(`tidy` 에서 "소수 3자리면 정수로")을 시도했다가 **되돌렸다.**
+//     두 가지가 망가진다:
+//       ① **랭크별 배열이 뒤죽박죽이 된다** — 아리 Q 가
+//          `105 / 118.125 / 131.25 / 144.375 / 157.5%` -> `105 / 118 / 131.25 / 144 / 157.5%`
+//          로 **일부 칸만 정수**가 됐다. 한 줄 안에서 자릿수가 들쭉날쭉해 더 나쁘다
+//       ② **데미지가 아닌 자리까지 바뀐다** — 브랜드 P 마나 회복, 쉔 P 쿨감,
+//          신 짜오 W 미니언 배율, 그레이브즈 P **계수**(`총 공격력의 …%`)
+//     그래서 자리를 표로 못 박는다. 키는 `"<한글 챔피언명> <슬롯> / <계산식 이름>"`.
+//   ★ 값 **맨 앞의 `A ~ B`** 만 접는다. 뒤따르는 계수(`(+ 주문력의 70 ~ 100 …%)`)는 그대로 둔다
+const ROUND_BASE_DAMAGE = new Set([
+    '카타리나 P / TotalDamage',
+]);
+const roundBaseUsed = new Set();
+
+// "68.185 ~ 240.015 (레벨에 따라) (+ …)" -> "68 ~ 240 (레벨에 따라) (+ …)"
+function roundLeadingRange(val) {
+    return String(val).replace(/^(\d+(?:\.\d+)?)\s*~\s*(\d+(?:\.\d+)?)(?=\s*\(레벨에 따라\))/,
+        (all, a, b) => `${Math.round(parseFloat(a))} ~ ${Math.round(parseFloat(b))}`);
+}
+
 const statManualUsed = new Set();  // 안 쓰인 키는 오타 경고로 잡는다
 const passiveCdMade = [];         // 패시브 쿨타임을 채운 곳 (bin 의 keyCooldown)
 const passiveCdFail = [];         // keyCooldown 은 있는데 값을 못 푼 곳
 const dashMulti = [];             // 돌진 속도 후보가 둘 이상이라 건너뛴 곳
+const missileSelfDropped = [];    // 자기 대상 스킬이라 투사체 속도를 뺀 곳
 let spellIndex = {};              // 지금 처리 중인 챔피언의 스펠 객체 색인 (buildSpellIndex)
 
 // 툴팁 철자와 bin 철자가 어긋난 자리를 기록한다.
@@ -901,27 +925,10 @@ const get = async (url) => {
 };
 
 // 소수점 지저분한 것 정리 (0.30000000000000004 -> 0.3)
-// ★★ 소수 **3자리** 는 부동소수점 계산 잔여물이라 정수로 접는다 (2026-08-14).
-//   카타리나 P 가 `68.185 ~ 240.015` 로 나가서 읽기 불편했다 -> `68 ~ 240`.
-//   그레이브즈 P `100.005` · 브랜드 P `39.983` · 쉔 P `7.995` · 신 짜오 W `100.002` 도 같다.
-//   ★ **2자리 이하는 라이엇이 의도한 값이라 건드리면 안 된다** —
-//     자이라 P 쿨 `13.6`(롤위키도 13.6), 초가스 P `4.72 ~ 9.48`, 노틸러스 P `0.75 ~ 1.5`,
-//     브라움 P `1.25 ~ 1.75` 가 그렇다. 정수로 바꾸면 **뜻이 달라진다**
-//   ★★ **상대 오차 1% 미만일 때만** 접는다. 소수 자릿수만 보면 너무 넓다 —
-//     밀리오 R 시전시간 `0.713` 이 `1` 로 바뀌어 **40% 나 틀린 값**이 됐다.
-//     `68.185 -> 68` 은 0.27%, `39.983 -> 40` 은 0.04% 라 안전하다.
-//   ★ 이 규칙이 아이번 P 의 `0.006`·`0.025` 도 자동으로 걸러 준다 (0 이 되면 오차 100%).
-//     0 이 되면 "레벨이 오를수록 공짜" 라는 거짓말이 된다
-//   ★ **각주 그래프는 원본 소수를 그대로 쓴다** (`level_curves.json` 을 따로 읽으므로
-//     여기 영향을 안 받는다). 화면 수치만 정수고 레벨별 표는 정밀한 값이다
+// ★ `tidy` 는 소수 3자리로만 다듬고 **반올림은 하지 않는다.**
+//   전역 반올림을 넣었다가 되돌렸다 (2026-08-14). 아래 ROUND_BASE_DAMAGE 주석 참고.
 const tidy = (n) => {
     const r = Math.round(n * 1000) / 1000;
-    if (!Number.isInteger(r)) {
-        const decimals = String(r).split('.')[1] || '';
-        const rounded = Math.round(r);
-        if (decimals.length >= 3 && rounded !== 0
-            && Math.abs(rounded - r) / Math.abs(r) < 0.01) return String(rounded);
-    }
     return String(r);
 };
 
@@ -2410,6 +2417,11 @@ async function main() {
                     if (tier !== '본체' && tier !== '수동') rescued.push(`${c.name} P / ${name} = ${val}  [${tier}]`);
                 }
                 previewLines.push(`      P p${i + 1} (${name}) = ${val === null ? '?' : val}`);
+                // 레벨 비례 기본 피해량만 정수로 접는다 (위 ROUND_BASE_DAMAGE 주석 참고)
+                if (val !== null && ROUND_BASE_DAMAGE.has(`${c.name} P / ${name}`)) {
+                    roundBaseUsed.add(`${c.name} P / ${name}`);
+                    val = roundLeadingRange(val);
+                }
                 lines.push(`            "p${i + 1}": ${q((val === null ? '?' : val) + note)}, // ${name}`);
             });
             // 패시브는 원래 v1/v2 를 안 찍는다. 손으로 쓴 게 있을 때만 살려서 넣는다.
@@ -2486,6 +2498,11 @@ async function main() {
                 previewLines.push(`      ${key} p${i + 1} (${name}) = ${val === null ? '?' : val}` +
                     (tier === '수동' ? '   <- 수동 확인값'
                         : (tier && tier !== '본체' ? `   <- ${tier} 객체` : '')));
+                // 레벨 비례 기본 피해량만 정수로 접는다 (위 ROUND_BASE_DAMAGE 주석 참고)
+                if (val !== null && ROUND_BASE_DAMAGE.has(`${c.name} ${key} / ${name}`)) {
+                    roundBaseUsed.add(`${c.name} ${key} / ${name}`);
+                    val = roundLeadingRange(val);
+                }
                 return `            "p${i + 1}": ${q((val === null ? '?' : val) + note)}, // ${name}`;
             });
 
@@ -2604,9 +2621,31 @@ async function main() {
             const MISSILE_MAX = 100000;             // 이보다 크면 "즉시 도달" 더미
             const bodyMs = (spell && typeof spell.missileSpeed === 'number') ? spell.missileSpeed : 0;
             const msTidy = bodyMs > 20 ? tidy(bodyMs) : null;
-            const missileSpeed = (msTidy !== null
+            let missileSpeed = (msTidy !== null
                 && !MISSILE_DUMMY.some(d => Math.abs(parseFloat(msTidy) - d) < 0.05)
                 && parseFloat(msTidy) < MISSILE_MAX) ? msTidy : null;
+
+            // ★★★ **자기 대상 스킬에는 투사체가 없다** (2026-08-14, 44자리).
+            //   `mTargetingTypeData` 가 `Self` / `SelfAoe` 인데 본체에 `missileSpeed` 가
+            //   박혀 있는 자리가 무더기로 있었다 — 가렌 E(회전 공격) 700,
+            //   다이애나 W(보호막) 1800, 카타리나 W(단검 설치) 2500, 티모 E(평타 강화) 1500…
+            //   ★ **타겟팅 타입만 보면 안 된다.** 카이사 Q 도 `Self` 인데 진짜 미사일을 쏜다
+            //     (자기 중심에서 부채꼴로 발사). 그래서 "진짜 미사일이 있는가" 를 같이 본다:
+            //       · 스펠에 `mMissileEffectName` 이 있다
+            //       · 계열에 이름이 `...Missile...` 인 스펠 객체가 있다
+            //         (카이사 Q 는 `KaisaQLeftMissile1~6` 이 있고 가렌 E 는 없다)
+            //   ★ 검증: **롤위키는 투사체 스킬에만 `SPEED:` 를 적는다.** 다이애나는
+            //     Q 에 `SPEED: 1900 • 2100` 이 있고 W 에는 없다. 카타리나도 Q 1600 / W 없음.
+            //     우리 판별 결과와 정확히 갈린다
+            const ttype = spell && spell.mTargetingTypeData && spell.mTargetingTypeData.__type;
+            if (missileSpeed && (ttype === 'Self' || ttype === 'SelfAoe')) {
+                const needle = (alias + key).toLowerCase();
+                const hasMissile = !!(spell.mMissileEffectName) || Object.keys(bin).some(k => {
+                    const low = k.toLowerCase();
+                    return low.includes(needle) && /missile/.test(low.split('/').pop());
+                });
+                if (!hasMissile) { missileSpeed = null; missileSelfDropped.push(`${c.name} ${key} (${ttype})`); }
+            }
             const lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
                 ? tidy(spell.mLineWidth) : null;
 
@@ -2950,6 +2989,12 @@ async function main() {
     if (passiveCdNoteMade.length) {
         console.log(`\n[패시브 쿨타임 각주] ${passiveCdNoteMade.length}자리 — 인게임 툴팁 값과 실제가 다른 곳:`);
         passiveCdNoteMade.forEach(x => console.log(`  ${x}`));
+    }
+
+    if (missileSelfDropped.length) {
+        console.log(`
+[자기 대상 스킬의 투사체 속도 제거] ${missileSelfDropped.length}자리 — 타겟팅이 Self/SelfAoe 이고 미사일 객체가 없다:`);
+        console.log('  ' + missileSelfDropped.join(', '));
     }
 
     if (dashMulti.length) {
