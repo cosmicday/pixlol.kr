@@ -272,6 +272,8 @@ const crossMiss = [];             // 교차 참조인데 못 푼 곳
 const costFromText = [];          // CD 소모값 문구를 풀어서 채운 곳
 const costTextFail = [];          // 소모값 문구를 못 푼 곳
 const ieNotes = [];               // "무한의 대검 보유 시" 각주를 단 자리
+const passiveCdMade = [];         // 패시브 쿨타임을 채운 곳 (bin 의 keyCooldown)
+const passiveCdFail = [];         // keyCooldown 은 있는데 값을 못 푼 곳
 let spellIndex = {};              // 지금 처리 중인 챔피언의 스펠 객체 색인 (buildSpellIndex)
 
 // 툴팁 철자와 bin 철자가 어긋난 자리를 기록한다.
@@ -2169,6 +2171,50 @@ async function main() {
 
         const previewLines = [];
         const lines = [];
+
+        // ---- 패시브 쿨타임 (2026-08-14 추가) ----
+        //   ★ 예전엔 무조건 "-" 로 박았다. "패시브엔 쿨타임이 없다" 는 전제가 틀렸다 —
+        //     **173명 중 21명**의 패시브가 인게임에 쿨타임을 표시한다.
+        //   찾아가는 길은 툴팁·회색 글씨와 같다:
+        //     bin `mSpell.mClientData.mTooltipData.mLocKeys.keyCooldown` → stringtable(소문자)
+        //   문장이 `"%i:cooldown% @PassiveCooldownModified@초"` 꼴이라
+        //   본문과 **똑같은 @Placeholder@ 문법**이다. 기존 해석기를 그대로 쓴다.
+        //   ★ 화면은 `쿨타임 ${cooldown}` 으로 찍으므로 QWER 과 맞춰 **숫자만** 남긴다
+        //     (아이콘 토큰과 "초" 를 벗긴다).
+        let passiveCd = '-';
+        {
+            const pObj = (binSpells.P || [])[0];
+            const lk = pObj && pObj.spell && pObj.spell.mClientData
+                && pObj.spell.mClientData.mTooltipData && pObj.spell.mClientData.mTooltipData.mLocKeys;
+            const raw = lk && lk.keyCooldown ? strings[String(lk.keyCooldown).toLowerCase()] : null;
+            if (raw) {
+                // ★ `CooldownMultiplierCalculationPart` 는 `currentCooldown` 을 참조한다.
+                //   패시브엔 랭크별 쿨타임이 없어서 그대로 두면 **직전 챔피언의 R 쿨타임**이
+                //   섞여 들어온다. 갈리오 P 가 `CooldownMultiplier x PassiveCooldown` 이라
+                //   이 자리가 곧 배율이고, 쿨감 0% 기준 배율은 **1** 이다.
+                currentCooldown = '1';
+                ctx = `${c.name} P / keyCooldown`;
+                let ok = true;
+                const filled = String(raw)
+                    .replace(/%i:[a-zA-Z0-9_]+%/g, '')
+                    .replace(/<[^>]+>/g, '')
+                    .replace(/@([A-Za-z0-9_.*+\-/():]+?)@/g, (m0, nm) => {
+                        const r = resolveFromPool(nm.trim(), binSpells.P || [], 1);
+                        if (!r || r.val === null) { ok = false; return m0; }
+                        return r.val;
+                    })
+                    .replace(/초/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                if (ok && filled && !/[@?]/.test(filled)) {
+                    passiveCd = filled;
+                    passiveCdMade.push(`${c.name} = ${filled}`);
+                } else {
+                    passiveCdFail.push(`${c.name} (${lk.keyCooldown}) = ${filled || raw}`);
+                }
+            }
+        }
+
         // 패시브도 하위 아이콘을 가진다 (신드라 P2, 케인 암살자/그림자 패시브,
         //   카타리나 단검 회수, 피들스틱 P2 등 17자리). QWER 쪽과 달리 이 블록은
         //   따로 만들어져서 원래 icons 줄이 안 붙고 있었다 — 2026-08-09 추가.
@@ -2182,12 +2228,12 @@ async function main() {
                 lines.push(`        "P": {`);
                 if (carried.P && carried.P.v1 !== undefined) lines.push(carried.P.v1);
                 if (carried.P && carried.P.v2 !== undefined) lines.push(carried.P.v2);
-                lines.push(`            "cooldown": "-",`);
+                lines.push(`            "cooldown": ${q(passiveCd)},`);
                 if (pIconLine) lines.push(pIconLine);
                 lines.push(`            "cost": "-"`);
                 lines.push(`        },`);
             } else {
-                lines.push(`        "P": { "cooldown": "-", "cost": "-" },`);
+                lines.push(`        "P": { "cooldown": ${q(passiveCd)}, "cost": "-" },`);
             }
         } else {
             lines.push(`        "P": {`);
@@ -2233,7 +2279,7 @@ async function main() {
             // 패시브는 원래 v1/v2 를 안 찍는다. 손으로 쓴 게 있을 때만 살려서 넣는다.
             if (carried.P && carried.P.v1 !== undefined) lines.push(carried.P.v1);
             if (carried.P && carried.P.v2 !== undefined) lines.push(carried.P.v2);
-            lines.push(`            "cooldown": "-",`);
+            lines.push(`            "cooldown": ${q(passiveCd)},`);
             if (pIconLine) lines.push(pIconLine);
             lines.push(`            "cost": "-"`);
             lines.push(`        },`);
@@ -2314,8 +2360,48 @@ async function main() {
                 const p = arr.slice(0, r).map(tidy);
                 return p.every(x => x === p[0]) ? p[0] : p.join(' / ');
             };
+            // ★★ 사거리 배열은 **1번부터**가 랭크 1 이다 (2026-08-14 전수 확인).
+            //   mana 는 0번부터가 맞는데(271자리 중 267자리) 사거리만 다르다.
+            //   랭크별로 값이 변하는 19자리를 DD `rangeBurn` 과 대조하니
+            //   **1번부터가 19/19(100%), 0번부터는 3/19** 였다.
+            //   0번은 "스킬 안 찍은 상태" 라 쓰레기가 들어 있다 —
+            //   레넥톤 Q 가 `[20, 325, 325, 325, 325, 325, 20]` 이라 1랭크가 **20** 으로 나갔다.
+            //   대부분 스킬은 사거리가 랭크 불변이라(전부 같은 값) 여태 안 드러났다.
+            const lv1 = (arr, r) => {
+                if (!Array.isArray(arr) || arr.length < 2) return null;
+                const p = arr.slice(1, r + 1).map(tidy);
+                if (!p.length) return null;
+                return p.every(x => x === p[0]) ? p[0] : p.join(' / ');
+            };
+            // ★ `castRangeDisplayOverride` 가 `-1` 이면 "덮어쓸 값 없음" 표식이다.
+            //   그대로 쓰면 화면에 `사거리 -1` 이 나간다 (잔나 W 가 그랬다).
+            //   DD 는 이걸 부호 없는 정수로 읽어 `4294967295` 를 내보내는데 그쪽이 더 나쁘다.
+            //
+            // ★★ 20000 이상은 "표시할 사거리 없음" 관용 더미다 (2026-08-14).
+            //   **소환사의 협곡이 약 15000 유닛**이라 그보다 큰 값은 물리적으로 맵 전체다.
+            //   37자리가 여기 걸린다 — 25000 이 34개 + 갱플랭크 R 30000 · 쉔 R 35000 ·
+            //   헤카림 R 50000. 성격이 셋으로 갈리는데 **어느 쪽이든 숫자를 찍으면 안 된다**:
+            //     · 진짜 전역기 (애쉬 R, 카직스 R)
+            //     · 자기 중심 스킬 (아트록스 Q, 요네 E — 롤위키도 "Varied" 라고 적는다)
+            //     · **사거리가 있는데 딴 데 있는 것** (유미 W = 계열 객체 `YuumiWCast` 의 700,
+            //       아트록스 E = DataValue `EMaxRange` 의 300)
+            //   ★ 마지막 부류를 되찾으려면 손으로 표를 만드는 수밖에 없다.
+            //     이름 규칙이 없어서 자동 추출이 안 되고, **계열 객체를 자동으로 쓰면 오히려
+            //     망가진다** — 럭스 R 은 override 3340 이 정답인데 계열에 이펙트 미사일
+            //     `LuxRVfxMis=1175` 가 있고, 드레이븐 R(진짜 전역)은 계열이 `450` 이다
+            //   ★ 3000~12000 은 건드리지 않는다. 갈리오 R `4000/4750/5500`,
+            //     스웨인 W `5500~7500`, 케이틀린 R `3500` 처럼 진짜 값이 대부분이다
+            const RANGE_GLOBAL = 20000;
+            const okRange = (s) => {
+                if (s === null || s === undefined) return false;
+                const str = String(s);
+                if (/^-/.test(str) || /^0( \/ 0)*$/.test(str)) return false;
+                const first = parseFloat(str.split('/')[0]);
+                return !(isFinite(first) && first >= RANGE_GLOBAL);
+            };
+            const ovRange = lv1(spell && spell.castRangeDisplayOverride, maxRank);
             const binRange = spell
-                ? (lv0(spell.castRangeDisplayOverride, maxRank) || lv0(spell.castRange, maxRank))
+                ? (okRange(ovRange) ? ovRange : lv1(spell.castRange, maxRank))
                 : null;
             const binMana = spell ? lv0(spell.mana, maxRank) : null;
             // mana 가 없고 manaUiOverride 에만 들어 있는 스펠이 있다 (킨드레드 E).
@@ -2325,12 +2411,22 @@ async function main() {
             const binManaUi = spell ? lv0(spell.manaUiOverride, maxRank) : null;
             const castTime = (spell && typeof spell.mCastTime === 'number' && spell.mCastTime > 0)
                 ? tidy(spell.mCastTime) : null;
-            // 투사체 속도는 본체가 아니라 미사일 객체에 붙는다. 후보 전체에서 찾는다.
-            let missileSpeed = null;
-            for (const cand of pool) {
-                const ms = cand.spell.missileSpeed;
-                if (typeof ms === 'number' && ms > 0) { missileSpeed = tidy(ms); break; }
-            }
+            // ★★ 투사체 속도는 **본체에서만** 읽는다 (2026-08-14).
+            //   예전엔 pool 전체를 훑어 `> 0` 인 첫 값을 잡았는데, pool 은
+            //   본체 → 이름이 겹치는 계열 → **기타(leftovers)** 3등급이고
+            //   기타에는 `<챔프>BasicAttack`·`<챔프>CritAttack` 같은 **기본 공격 객체**가
+            //   통째로 들어 있다 (getSpellsFromBin 이 leftovers 를 다섯 슬롯 전부에 복사한다).
+            //   `missileSpeed` 는 이름으로 찾는 값이 아니라서, 등급을 내려가는 순간
+            //   **아무 객체의 값이나 걸린다.** 전수로 재니 634자리 중 310자리가 그랬다:
+            //     가렌 W = 347.8  ← GarenCritAttack (가렌 기본 공격 속도)
+            //     갈리오 W·E·R = 1000  ← 기본 공격
+            //     니코 R = 250000
+            //   본체 값이 0 이면 그건 "이 스킬엔 투사체가 없다" 는 뜻이지 "값 없음" 이 아니다.
+            //   ★ 20 이하는 근접 판정용 더미다. 본체에 20 이 박힌 자리가 70 개 있는데
+            //     (아트록스 E·알리스타 Q·다리우스 R…) 전부 투사체가 없는 스킬이다.
+            //   결과: 634 → 324자리. 남는 건 전부 진짜 투사체 스킬이다.
+            const bodyMs = (spell && typeof spell.missileSpeed === 'number') ? spell.missileSpeed : 0;
+            const missileSpeed = bodyMs > 20 ? tidy(bodyMs) : null;
             const lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
                 ? tidy(spell.mLineWidth) : null;
 
@@ -2408,8 +2504,8 @@ async function main() {
             }
             // 사거리는 클라이언트 표시값(castRangeDisplayOverride)을 우선한다
             const v1Range = lv(s.range, maxRank);
-            const rng = (binRange && !/^0( \/ 0)*$/.test(binRange)) ? binRange : v1Range;
-            const hasRange = rng && !/^0( \/ 0)*$/.test(rng);
+            const rng = okRange(binRange) ? binRange : v1Range;
+            const hasRange = okRange(rng);
 
             lines.push(`        "${key}": {`);
             if (pLines.length) lines.push(pLines.join('\n'));
@@ -2621,6 +2717,15 @@ async function main() {
     if (ieNotes.length) {
         console.log(`\n[무한의 대검 각주] ${ieNotes.length}자리 — 치명타 피해량 200% -> 230% 로 값이 달라지는 곳:`);
         ieNotes.forEach(x => console.log(`  ${x}`));
+    }
+
+    if (passiveCdMade.length || passiveCdFail.length) {
+        console.log(`\n[패시브 쿨타임] ${passiveCdMade.length}명 — bin 의 keyCooldown 에서 채웠다. 인게임 툴팁과 대조할 것:`);
+        passiveCdMade.forEach(x => console.log(`  ${x}`));
+        if (passiveCdFail.length) {
+            console.log(`  -- keyCooldown 은 있는데 못 푼 것 ${passiveCdFail.length}명:`);
+            passiveCdFail.forEach(x => console.log(`     ${x}`));
+        }
     }
 
     if (WRITE) {
