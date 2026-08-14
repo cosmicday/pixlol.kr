@@ -1545,6 +1545,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/rakan/hud/icons2d/rakan_e2.png"],
             "stats": {
                 "사거리": "650",
+                "돌진 속도": "1250",
                 "스킬 폭": "50"
             }
         },
@@ -3327,7 +3328,7 @@ const customValues = {
             "stats": {
                 "사거리": "1400",
                 "시전시간": "0.001",
-                "투사체 속도": "779.9",
+                "투사체 속도": "2000",
                 "스킬 폭": "100"
             }
         },
@@ -3422,6 +3423,7 @@ const customValues = {
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "60",
             "stats": {
+                "사거리": "850",
                 "시전시간": "0.25"
             }
         },
@@ -6484,6 +6486,7 @@ const customValues = {
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "-",
             "stats": {
+                "사거리": "300",
                 "시전시간": "0.25",
                 "돌진 속도": "800"
             }
@@ -7273,6 +7276,7 @@ const customValues = {
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "45 / 50 / 55 / 60 / 65",
             "stats": {
+                "사거리": "500",
                 "투사체 속도": "1600"
             }
         },
@@ -9835,7 +9839,7 @@ const customValues = {
             "stats": {
                 "사거리": "1000",
                 "시전시간": "0.25",
-                "투사체 속도": "828.5",
+                "투사체 속도": "1700",
                 "스킬 폭": "60"
             }
         },
@@ -11861,6 +11865,7 @@ const customValues = {
             "cooldown": "140 / 120 / 100",
             "cost": "100",
             "stats": {
+                "사거리": "1000",
                 "시전시간": "0.01",
                 "투사체 속도": "1200",
                 "돌진 속도": "1100",
