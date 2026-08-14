@@ -344,8 +344,7 @@ const customValues = {
             "cooldown": "5",
             "cost": "30",
             "stats": {
-                "시전시간": "0.001",
-                "투사체 속도": "828.5"
+                "시전시간": "0.001"
             }
         },
         "E": {
@@ -743,8 +742,7 @@ const customValues = {
             "cooldown": "120 / 100 / 80",
             "cost": "100",
             "stats": {
-                "사거리": "400",
-                "투사체 속도": "779.9"
+                "사거리": "400"
             }
         },
     },
@@ -1016,8 +1014,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/nunu/hud/icons2d/nunur.png"],
             "stats": {
                 "사거리": "650",
-                "시전시간": "0.01",
-                "투사체 속도": "828.5"
+                "시전시간": "0.01"
             }
         },
     },
@@ -1626,6 +1623,7 @@ const customValues = {
             "cooldown": "120 / 105 / 90",
             "cost": "100",
             "stats": {
+                "돌진 속도": "900 ~ 2000",
                 "스킬 폭": "75"
             }
         },
@@ -1730,10 +1728,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "6",
-            "cost": "20 열기",
-            "stats": {
-                "투사체 속도": "828.5"
-            }
+            "cost": "20 열기"
         },
         "E": {
             "p1": "55 / 80 / 105 / 130 / 155 (+ 주문력의 50%)", // TotalDamage
@@ -1913,10 +1908,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 100 / 80",
-            "cost": "-",
-            "stats": {
-                "투사체 속도": "779.9"
-            }
+            "cost": "-"
         },
     },
     "Leona": { // 레오나
@@ -1950,8 +1942,7 @@ const customValues = {
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "60",
             "stats": {
-                "사거리": "450",
-                "투사체 속도": "828.5"
+                "사거리": "450"
             }
         },
         "E": {
@@ -2786,10 +2777,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "10",
-            "cost": "40",
-            "stats": {
-                "투사체 속도": "828.5"
-            }
+            "cost": "40"
         },
         "E": {
             "p1": "5", // Duration
@@ -3272,10 +3260,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120",
-            "cost": "-",
-            "stats": {
-                "투사체 속도": "828.5"
-            }
+            "cost": "-"
         },
     },
     "MissFortune": { // 미스 포츈
@@ -3340,6 +3325,7 @@ const customValues = {
             "cooldown": "120 / 110 / 100",
             "cost": "100",
             "stats": {
+                "사거리": "1400",
                 "시전시간": "0.001",
                 "투사체 속도": "779.9",
                 "스킬 폭": "100"
@@ -3834,7 +3820,8 @@ const customValues = {
             "cost": "-",
             "img": "https://raw.communitydragon.org/latest/game/assets/characters/belveth/hud/icons2d/bv_q_15.png",
             "stats": {
-                "사거리": "450"
+                "사거리": "450",
+                "돌진 속도": "850"
             }
         },
         "W": {
@@ -4186,6 +4173,7 @@ const customValues = {
                 "사거리": "12000",
                 "시전시간": "1",
                 "투사체 속도": "2200",
+                "돌진 속도": "2500 ~ 5000",
                 "스킬 폭": "160"
             }
         },
@@ -4997,6 +4985,7 @@ const customValues = {
             "cooldown": "160 / 140 / 120",
             "cost": "100",
             "stats": {
+                "사거리": "1200",
                 "시전시간": "0.5"
             }
         },
@@ -5129,8 +5118,7 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "사거리": "400",
-                "시전시간": "0.25",
-                "투사체 속도": "779.9"
+                "시전시간": "0.25"
             }
         },
     },
@@ -6137,8 +6125,7 @@ const customValues = {
             "cost": "50 / 55 / 60 / 65 / 70",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/aurelionsol/hud/icons2d/aurelionsolw2.png"],
             "stats": {
-                "사거리": "1500",
-                "투사체 속도": "828.5"
+                "사거리": "1500"
             }
         },
         "E": {
@@ -6513,8 +6500,7 @@ const customValues = {
             "cooldown": "120 / 100 / 80",
             "cost": "-",
             "stats": {
-                "시전시간": "0.25",
-                "투사체 속도": "779.9"
+                "시전시간": "0.25"
             }
         },
     },
@@ -6628,10 +6614,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 100 / 80",
-            "cost": "100",
-            "stats": {
-                "투사체 속도": "828.5"
-            }
+            "cost": "100"
         },
     },
     "Ambessa": { // 암베사
@@ -7515,6 +7498,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yone/hud/icons2d/yonee2.png"],
             "stats": {
+                "사거리": "300",
                 "돌진 속도": "1200"
             }
         },
@@ -7914,6 +7898,7 @@ const customValues = {
             "cost": "50 / 55 / 60 / 65 / 70 / 75",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yuumi/hud/icons2d/yuumiq2.png"],
             "stats": {
+                "사거리": "850",
                 "투사체 속도": "100",
                 "스킬 폭": "65"
             }
@@ -7929,6 +7914,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yuumi/hud/icons2d/yuumiw2.png"],
             "stats": {
+                "사거리": "700",
                 "돌진 속도": "1300 / 1350 / 1400 / 1450 / 1500"
             }
         },
@@ -8632,8 +8618,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "725",
-                "시전시간": "0.001",
-                "투사체 속도": "828.5"
+                "시전시간": "0.001"
             }
         },
     },
@@ -8901,8 +8886,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "800",
-                "시전시간": "0.25",
-                "투사체 속도": "779.9"
+                "시전시간": "0.25"
             }
         },
     },
@@ -9216,7 +9200,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "시전시간": "1",
-                "투사체 속도": "828.5"
+                "투사체 속도": "3000"
             }
         },
     },
@@ -10066,8 +10050,7 @@ const customValues = {
             "cooldown": "120",
             "cost": "-",
             "stats": {
-                "사거리": "550",
-                "투사체 속도": "779.9"
+                "사거리": "550"
             }
         },
     },
@@ -10409,7 +10392,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/corki/hud/icons2d/corki_r_bigone.png"],
             "stats": {
                 "사거리": "1225",
-                "투사체 속도": "828.5",
+                "투사체 속도": "2000",
                 "스킬 폭": "40"
             }
         },
@@ -11852,8 +11835,7 @@ const customValues = {
             "cooldown": "14",
             "cost": "50 / 55 / 60 / 65 / 70",
             "stats": {
-                "사거리": "525",
-                "투사체 속도": "828.5"
+                "사거리": "525"
             }
         },
         "E": {

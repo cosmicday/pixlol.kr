@@ -272,6 +272,53 @@ const crossMiss = [];             // 교차 참조인데 못 푼 곳
 const costFromText = [];          // CD 소모값 문구를 풀어서 채운 곳
 const costTextFail = [];          // 소모값 문구를 못 푼 곳
 const ieNotes = [];               // "무한의 대검 보유 시" 각주를 단 자리
+// ============================================================
+//  ★★ 우상단 값 손 표 (2026-08-14) — 롤위키·나무위키 대조로 확정한 자리
+//
+//  bin 에서 **자동으로 못 얻는** 값들이다. 근거를 반드시 같이 적을 것.
+//    · 사거리      — `castRange` 가 25000(표시할 값 없음)이라 뺐는데 진짜 값이 있는 자리
+//    · 투사체 속도 — 본체에 기본 공격 기본값(828.5 / 779.9)이 박혀 있어 진짜 값이 딴 데 있는 자리
+//    · 돌진 속도   — 후보가 둘이라 자동으로 못 고른 자리
+//
+//  ★ 키는 `"<한글 챔피언명> <슬롯>"` 이다 (MANUAL 표와 같은 형식).
+// ============================================================
+const STAT_MANUAL = {
+    // --- 사거리: bin `castRange` 가 25000 이라 뺀 자리 중 위키에 진짜 값이 있는 것 ---
+    '유미 Q': { '사거리': '850' },    // 롤위키 850 · 나무위키 850 (bin 계열은 1150/1250 로 셋 다 달랐다)
+    '유미 W': { '사거리': '700' },    // 롤위키 700 · 나무위키 700 · bin 계열 `YuumiWCast` 700 — 셋 일치
+    '요네 E': { '사거리': '300' },    // 나무위키 300 · bin DataValue `EDashRange` 300 — 일치
+    '세라핀 R': { '사거리': '1200' }, // 나무위키 1200 · bin DataValue `RRange` 1200 — 일치
+    '미스 포츈 R': { '사거리': '1400' }, // 나무위키 1400 (bin 계열 650 은 튕기는 탄 사거리였다)
+
+    // --- 투사체 속도: 본체 값이 기본 공격 기본값이라 진짜 값이 딴 데 있는 자리 ---
+    '진 R': { '투사체 속도': '3000' },     // 나무위키 3000 (본체 828.5 는 진의 기본 공격 속도)
+    '코르키 R': { '투사체 속도': '2000' }, // 나무위키 2000 (본체 828.5)
+
+    // --- 돌진 속도: 후보가 둘이라 자동으로 건너뛴 자리 ---
+    '람머스 R': { '돌진 속도': '900 ~ 2000' },   // 롤위키 min 900 / max 2000
+    '브라이어 R': { '돌진 속도': '2500 ~ 5000' }, // 나무위키 "돌진 속도: 2500 ~ 5000"
+    '벨베스 Q': { '돌진 속도': '850' },          // 나무위키 "돌진 속도: 850" (균열 상태 1500 은 안 적는다)
+};
+
+// ★ 화면에서 빼야 하는 자리. **투사체가 없는 스킬인데 값이 박혀 있는 것**이다.
+//   `828.5` / `779.9` 는 라이엇 기본 공격 계열 기본값이라 본체에 남아 있다
+//   (347.8 과 같은 성격인데 값이 챔피언마다 달라 값만으로는 못 걸러낸다).
+const STAT_DROP = {
+    // 위키로 "투사체가 아니다" 를 확인한 자리
+    '럼블 W': ['투사체 속도'],         // 나무위키: 자기 보호막. 투사체 아님
+    '마스터 이 W': ['투사체 속도'],    // 나무위키: 자기 회복
+    '레오나 W': ['투사체 속도'],       // 나무위키: 자기 방어력 + 광역 폭발
+    '그라가스 W': ['투사체 속도'],     // 나무위키: 자기 강화
+    '아우렐리온 솔 W': ['투사체 속도'], // 나무위키: 비행 스킬 ("비행 속도" 는 따로 있다)
+    // 계열 객체조차 없고 자기 강화가 명백한 자리 (779.9 궁극기 묶음)
+    '나서스 R': ['투사체 속도'], '레넥톤 R': ['투사체 속도'], '아트록스 R': ['투사체 속도'],
+    '세트 R': ['투사체 속도'], '케넨 R': ['투사체 속도'], '제리 R': ['투사체 속도'],
+    // 828.5 묶음 중 자기 대상·주변 광역
+    '문도 박사 R': ['투사체 속도'], '알리스타 R': ['투사체 속도'], '잔나 R': ['투사체 속도'],
+    '헤카림 W': ['투사체 속도'], '누누와 윌럼프 R': ['투사체 속도'],
+};
+
+const statManualUsed = new Set();  // 안 쓰인 키는 오타 경고로 잡는다
 const passiveCdMade = [];         // 패시브 쿨타임을 채운 곳 (bin 의 keyCooldown)
 const passiveCdFail = [];         // keyCooldown 은 있는데 값을 못 푼 곳
 const dashMulti = [];             // 돌진 속도 후보가 둘 이상이라 건너뛴 곳
@@ -2610,12 +2657,23 @@ async function main() {
             if (ei && ei.length) {
                 lines.push(`            "icons": [${ei.map(x => q(x.url)).join(', ')}],`);
             }
+            // ★ 손 표를 마지막에 얹는다 (위 STAT_MANUAL / STAT_DROP 주석 참고).
+            const statKey = `${c.name} ${key}`;
+            const manualStat = STAT_MANUAL[statKey] || {};
+            const dropStat = STAT_DROP[statKey] || [];
+            if (STAT_MANUAL[statKey] || STAT_DROP[statKey]) statManualUsed.add(statKey);
+            const put = (rows, name, val) => {
+                if (dropStat.includes(name)) return;
+                const v = manualStat[name] !== undefined ? manualStat[name] : val;
+                if (v) rows.push(`                ${q(name)}: ${q(v)}`);
+            };
+
             const statRows = [];
-            if (hasRange) statRows.push(`                "사거리": ${q(rng)}`);
-            if (castTime) statRows.push(`                "시전시간": ${q(castTime)}`);
-            if (missileSpeed) statRows.push(`                "투사체 속도": ${q(missileSpeed)}`);
-            if (dashSpeed) statRows.push(`                "돌진 속도": ${q(dashSpeed)}`);
-            if (lineWidth) statRows.push(`                "스킬 폭": ${q(lineWidth)}`);
+            put(statRows, '사거리', hasRange ? rng : null);
+            put(statRows, '시전시간', castTime);
+            put(statRows, '투사체 속도', missileSpeed);
+            put(statRows, '돌진 속도', dashSpeed);
+            put(statRows, '스킬 폭', lineWidth);
             if (statRows.length) lines.push(`            "stats": {\n${statRows.join(',\n')}\n            }`);
             // 마지막 항목 뒤 쉼표 제거
             const last = lines[lines.length - 1];
@@ -2798,6 +2856,15 @@ async function main() {
     if (ieNotes.length) {
         console.log(`\n[무한의 대검 각주] ${ieNotes.length}자리 — 치명타 피해량 200% -> 230% 로 값이 달라지는 곳:`);
         ieNotes.forEach(x => console.log(`  ${x}`));
+    }
+
+    {
+        const unusedStat = [...Object.keys(STAT_MANUAL), ...Object.keys(STAT_DROP)]
+            .filter(k => !statManualUsed.has(k));
+        if (unusedStat.length) {
+            console.log(`\n[주의] STAT_MANUAL / STAT_DROP 에 안 쓰인 키 ${unusedStat.length}개 — 오타이거나 슬롯이 사라진 것:`);
+            unusedStat.forEach(x => console.log(`  ${x}`));
+        }
     }
 
     if (dashMulti.length) {

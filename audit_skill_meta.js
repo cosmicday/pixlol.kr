@@ -131,6 +131,14 @@ if (!dd) { console.error('DD championFull 캐시가 없다. build_level_curves.j
 
 const SLOTS = ['P', 'Q', 'W', 'E', 'R'];
 
+// ★ `fill_values.js` 의 STAT_MANUAL 로 **일부러** 넣은 자리 (2026-08-14).
+//   전부 DD·bin 이 쓸모없는 값(25000 / 기본 공격 속도)을 주는 자리라 위키에서 가져왔다.
+//   여기 적어 두지 않으면 "DD 와 다르다" 로 계속 걸려서 진짜 문제가 묻힌다.
+const WIKI_SOURCED = new Set([
+    '유미 Q', '유미 W', '요네 E', '세라핀 R', '미스 포츈 R',   // 사거리
+    '진 R', '코르키 R',                                        // 투사체 속도
+]);
+
 // 결과 버킷
 const R = {
     passiveCdMissing: [],   // 패시브에 쿨타임이 있는데 "-" 로 나감
@@ -226,7 +234,8 @@ for (const [ddId, champ] of Object.entries(cv)) {
         if (rng != null && rng !== '') {
             const rN = toNums(rng);
             if (rN.length && rN.every(x => x >= 20000)) R.rangeHuge.push(`${tag} = ${rng}`);
-            if (d && isNumList(rng) && toNums(d.rangeBurn).length && !sameNumList(rng, d.rangeBurn)) {
+            if (d && isNumList(rng) && toNums(d.rangeBurn).length && !sameNumList(rng, d.rangeBurn)
+                && !WIKI_SOURCED.has(tag)) {
                 R.rangeMismatch.push(`${tag}  우리 ${rng}  /  DD ${d.rangeBurn}`);
             }
         }
@@ -242,7 +251,7 @@ for (const [ddId, champ] of Object.entries(cv)) {
                 // 347.8 = 라이엇 엔진의 기본 공격 기본값 / 10억 = "즉시 도달".
                 //   둘 다 "값을 안 정했다" 는 뜻이라 투사체가 없는 스킬이다.
                 R.missileEngine.push(`${tag} = ${ms}`);
-            } else if (Math.abs(bodySpeed - our) > 0.05) {
+            } else if (Math.abs(bodySpeed - our) > 0.05 && !WIKI_SOURCED.has(tag)) {
                 const fromBA = baSpeeds.has(Math.round(our * 10) / 10);
                 R.missileDirty.push(
                     `${tag} = ${ms}   (본체 ${bodySpeed || 0}${fromBA ? ' · 기본공격 속도와 일치' : ''})`);
