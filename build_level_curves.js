@@ -166,8 +166,20 @@ function collectSkillCurves() {
         const root = rootKey ? bin[rootKey] : null;
         const slotOf = {};
         if (root) {
+            // ★★ 슬롯은 `root.spells` 로 잡는다 — `mAbilities` 는 순서가 다르다 (2026-08-14).
+            //   유미의 mAbilities 는 `[Q, W, E, **P**, R]` 라 패시브가 3번에 끼어 있다.
+            //   인덱스 0~3 을 그대로 QWER 로 보면 **P 가 R 로 잘못 잡히고 진짜 R 은 `?` 로 샌다.**
+            //   실제로 28자리가 `?` 슬롯에 빠져 있었고, 유미 R 의 `AllyHealingPerc`(치유 증폭
+            //   130~160%)가 그래서 각주를 못 받았다.
+            //   `spells` 는 `[Q, W, E, R]` 순서로 **실제 스펠 경로**를 준다
+            //   (`fill_values.js` 의 getSpellsFromBin 과 같은 기준이라 일관성도 생긴다).
+            const sp = Array.isArray(root.spells) ? root.spells : [];
+            ['Q', 'W', 'E', 'R'].forEach((s, i) => {
+                if (sp[i]) slotOf[String(sp[i]).replace(/\/[^/]+$/, '')] = s;
+            });
+            // 예전 방식도 폴백으로 남긴다 — spells 가 없는 bin 이 있을 수 있다
             const ab = Array.isArray(root.mAbilities) ? root.mAbilities : [];
-            ['Q', 'W', 'E', 'R'].forEach((s, i) => { if (ab[i]) slotOf[ab[i]] = s; });
+            ['Q', 'W', 'E', 'R'].forEach((s, i) => { if (ab[i] && !slotOf[ab[i]]) slotOf[ab[i]] = s; });
             if (root.mCharacterPassiveSpell) slotOf[String(root.mCharacterPassiveSpell).replace(/\/[^/]+$/, '')] = 'P';
         }
         // ★ 한 어빌리티 밑에 스펠 객체가 여럿이다.
@@ -255,6 +267,25 @@ function collectSkillCurves() {
                         continue;
                     }
                 }
+                // ★★ **배율 쪽이 레벨 곡선**인 경우를 본체보다 먼저 본다 (2026-08-14).
+                //   유미 R `EnhancedHealPerWave` = `TotalHealPerWave x AllyHealingPerc` 인데
+                //   본체(TotalHealPerWave)는 랭크별(30/50/70)이라 레벨 곡선이 **아니고**,
+                //   배율인 `AllyHealingPerc` 가 레벨 곡선이다 (6레벨 130% -> 12레벨 160%).
+                //   ★ 본체 곡선을 먼저 찾고 `if (!base) continue` 로 빠지면 **여기 도달을 못 한다.**
+                const mult = calc.mMultiplier;
+                if (mult && typeof mult === 'object' && typeof mult.mSpellCalculationKey === 'string'
+                    && !mine[refName] && !mine[refName + '#0']) {
+                    const mc = mine[mult.mSpellCalculationKey] || mine[mult.mSpellCalculationKey + '#0'];
+                    if (mc) {
+                        nParts++;
+                        result[alias][slot][calcName] = {
+                            spell: spellName, kind: mc.kind + `(배율 ${mult.mSpellCalculationKey})`,
+                            위치: 'mult:' + mult.mSpellCalculationKey,
+                            min: mc.min, max: mc.max, values: mc.values
+                        };
+                        continue;
+                    }
+                }
                 if (typeof refName !== 'string') continue;
                 // ★ 참조 대상이 여러 곡선으로 갈렸으면 `#0` 이 붙어 있다 —
                 //   사미라 P `EmpoweredMeleeDamageTooltip` 이 `BonusMeleeDamage` 를 부르는데
@@ -274,6 +305,23 @@ function collectSkillCurves() {
                     else if (typeof mm.mDataValue === 'string') {
                         const v = dvNumber(spell, mm.mDataValue);
                         if (v !== null) k = v;
+                    }
+                    // ★★ **배율 쪽이 레벨 곡선**인 경우가 있다 (2026-08-14).
+                    //   유미 R `EnhancedHealPerWave` = `TotalHealPerWave x AllyHealingPerc` 인데
+                    //   본체는 랭크별(30/50/70)이라 레벨 곡선이 아니고, **배율인
+                    //   `AllyHealingPerc` 가 레벨 곡선**이다 (6레벨 130% -> 12레벨 160%).
+                    //   본체만 따라가면 곡선을 못 찾는다. 이 경우 배율 곡선을 그대로 쓴다.
+                    else if (typeof mm.mSpellCalculationKey === 'string') {
+                        const mc = mine[mm.mSpellCalculationKey] || mine[mm.mSpellCalculationKey + '#0'];
+                        if (mc) {
+                            nParts++;
+                            result[alias][slot][calcName] = {
+                                spell: spellName, kind: mc.kind + `(배율 ${mm.mSpellCalculationKey})`,
+                                위치: 'mult:' + mm.mSpellCalculationKey,
+                                min: mc.min, max: mc.max, values: mc.values
+                            };
+                            continue;
+                        }
                     }
                 }
                 const put = (label, src) => {

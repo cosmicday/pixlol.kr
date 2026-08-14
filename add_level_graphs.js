@@ -93,6 +93,16 @@ function scaleByStat(champ, valueText, curve) {
     };
 }
 
+// ★ bin 에 곡선이 없어 **손으로 적는** 자리 (2026-08-14).
+//   계산식이 아니라 `mEffectAmount` 를 부르는 자리라 `build_level_curves.js` 가 못 만든다.
+//   근거(위키)를 반드시 같이 적을 것. 키는 `"<DD id> <슬롯> <pN>"`.
+const MANUAL_CURVE = {
+    // 자야 P(깨끗한 절단) 깃털이 2차 대상에게 주는 피해. 롤위키:
+    //   1~6레벨 35% · 7~12레벨 45% · 13레벨~ 55% (AD 비례)
+    //   bin 의 `f16` 은 계산식이 아니라 mEffectAmount 참조라 곡선이 안 만들어진다
+    'Xayah P p2': { kind: 'breakpoints(손 표)', values: [35, 35, 35, 35, 35, 35, 45, 45, 45, 45, 45, 45, 55, 55, 55, 55, 55, 55] },
+};
+
 const norm = (x) => String(x).toLowerCase().replace(/^spell\.[^:]*:/, '');
 
 // ★★ 한 계산식이 곡선을 **여러 개** 낼 수 있다 (2026-08-14).
@@ -200,7 +210,9 @@ for (const l of src) {
     //   카타리나 P 는 `68 ~ 240 (레벨에 따라) (+ … 주문력의 70 ~ 100 (레벨에 따라)%)` 라
     //   기본 피해량과 주문력 계수 둘 다 레벨에 따라 변한다.
     const slots = (m[2].match(/\(레벨에 따라\)/g) || []).length;
-    const all = findCurves(champ.toLowerCase(), slot, m[3]);
+    // 손 표가 있으면 그걸 먼저 쓴다 (위 MANUAL_CURVE 주석 참고)
+    const manual = MANUAL_CURVE[`${champ} ${slot} ${m[1]}`];
+    const all = manual ? [manual] : findCurves(champ.toLowerCase(), slot, m[3]);
     if (!all.length) continue;
     // 곡선이 자리보다 적으면 있는 만큼만 (대부분 1:1 이다)
     const use = all.slice(0, slots);
@@ -211,7 +223,9 @@ for (const l of src) {
     //   화면 값에서 그 자리의 `A ~ B` 를 뽑아 곡선 양 끝과 비교해 배율을 정한다.
     const scaleFor = (val, idx, curve) => {
         const before = String(val).split('(레벨에 따라)')[idx] || '';
-        const mm = before.match(/([\d.]+)\s*~\s*([\d.]+)\s*$/);
+        // ★ 끝에 `%` 가 붙는 꼴도 있다 — 유미 R 은 `…의 130 ~ 160% (레벨에 따라)` 라
+        //   `%` 를 안 넘기면 매칭이 실패해 곡선이 `1.3` 인 채로 나갔다 (화면은 130%).
+        const mm = before.match(/([\d.]+)\s*~\s*([\d.]+)\s*%?\s*$/);
         if (!mm) return 1;
         const shown = Math.abs(parseFloat(mm[2]));
         const cv = Math.abs(curve.values[curve.values.length - 1]);

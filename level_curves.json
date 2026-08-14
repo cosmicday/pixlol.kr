@@ -1,6 +1,6 @@
 {
  "aatrox": {
-  "W": {
+  "Q": {
    "QMinionDamage": {
     "spell": "AatroxQ",
     "kind": "breakpoints",
@@ -178,7 +178,7 @@
   }
  },
  "akali": {
-  "E": {
+  "W": {
    "{955fbaa3}": {
     "spell": "AkaliW",
     "kind": "breakpoints",
@@ -294,7 +294,7 @@
     ]
    }
   },
-  "W": {
+  "Q": {
    "EnergyRestore": {
     "spell": "AkaliQSpellPassive",
     "kind": "breakpoints",
@@ -818,7 +818,7 @@
   }
  },
  "annie": {
-  "Q": {
+  "R": {
    "TibbersTotalHP": {
     "spell": "AnnieR",
     "kind": "breakpoints",
@@ -906,7 +906,7 @@
     ]
    }
   },
-  "R": {
+  "E": {
    "MoveSpeedCalc": {
     "spell": "AnnieE",
     "kind": "interpolation(직선)",
@@ -1973,7 +1973,7 @@
   }
  },
  "blitzcrank": {
-  "E": {
+  "W": {
    "{c01903c1}": {
     "spell": "Overdrive",
     "kind": "breakpoints",
@@ -3721,7 +3721,7 @@
   }
  },
  "heimerdinger": {
-  "Q": {
+  "R": {
    "QUltTurretHealth": {
     "spell": "HeimerdingerR",
     "kind": "breakpoints",
@@ -3779,7 +3779,7 @@
     ]
    }
   },
-  "W": {
+  "Q": {
    "TurretHealth#0": {
     "spell": "HeimerdingerQ",
     "kind": "interpolation(직선)",
@@ -4392,7 +4392,7 @@
     ]
    }
   },
-  "Q": {
+  "R": {
    "TotalBonusResists": {
     "spell": "IvernR",
     "kind": "breakpoints",
@@ -4598,7 +4598,7 @@
   }
  },
  "jayce": {
-  "Q": {
+  "R": {
    "RangedFormShred": {
     "spell": "JayceStanceHtG",
     "kind": "breakpoints",
@@ -5373,7 +5373,7 @@
   }
  },
  "leblanc": {
-  "W": {
+  "Q": {
    "BonusMinionDamage": {
     "spell": "LeblancQ",
     "kind": "breakpoints",
@@ -5643,7 +5643,7 @@
   }
  },
  "locke": {
-  "R": {
+  "W": {
    "AttackSpeed": {
     "spell": "LockeW",
     "kind": "interpolation(직선)",
@@ -5729,7 +5729,7 @@
     ]
    }
   },
-  "W": {
+  "Q": {
    "AmmoCooldownReset": {
     "spell": "LockeQ",
     "kind": "interpolation(직선)",
@@ -6362,7 +6362,7 @@
   }
  },
  "monkeyking": {
-  "Q": {
+  "R": {
    "MonsterCap": {
     "spell": "MonkeyKingSpinToWin",
     "kind": "breakpoints",
@@ -6478,7 +6478,7 @@
   }
  },
  "mordekaiser": {
-  "W": {
+  "Q": {
    "QDamage": {
     "spell": "MordekaiserQ",
     "kind": "breakpoints",
@@ -6822,7 +6822,7 @@
     ]
    }
   },
-  "W": {
+  "R": {
    "ArmorShred": {
     "spell": "NaafiriW",
     "kind": "breakpoints",
@@ -6854,7 +6854,7 @@
   }
  },
  "nami": {
-  "R": {
+  "E": {
    "AoeMod": {
     "spell": "NamiE",
     "kind": "interpolation(직선)",
@@ -7006,7 +7006,7 @@
   }
  },
  "nidalee": {
-  "E": {
+  "W": {
    "MaxTraps": {
     "spell": "Bushwhack",
     "kind": "breakpoints",
@@ -7038,7 +7038,7 @@
   }
  },
  "nilah": {
-  "W": {
+  "Q": {
    "BonusAttackSpeedCalc": {
     "spell": "NilahQ",
     "kind": "interpolation(직선)",
@@ -7102,7 +7102,7 @@
   }
  },
  "nunu": {
-  "R": {
+  "E": {
    "RootDuration": {
     "spell": "NunuE",
     "kind": "interpolation(직선)",
@@ -7280,7 +7280,7 @@
   }
  },
  "ornn": {
-  "E": {
+  "W": {
    "BrittlePercentMaxHPCalc": {
     "spell": "OrnnW",
     "kind": "interpolation(직선)",
@@ -7342,7 +7342,7 @@
   }
  },
  "pantheon": {
-  "E": {
+  "W": {
    "{1b016817}": {
     "spell": "PantheonW",
     "kind": "interpolation(직선)",
@@ -7399,7 +7399,7 @@
     ]
    }
   },
-  "W": {
+  "Q": {
    "EmpoweredDamageCalc": {
     "spell": "PantheonQ",
     "kind": "interpolation(직선)",
@@ -7429,7 +7429,7 @@
     ]
    }
   },
-  "R": {
+  "E": {
    "HealCalc": {
     "spell": "PantheonE",
     "kind": "breakpoints",
@@ -7577,7 +7577,7 @@
   }
  },
  "pyke": {
-  "Q": {
+  "R": {
    "RDamage": {
     "spell": "PykeR",
     "kind": "breakpoints",
@@ -7662,7 +7662,7 @@
     ]
    }
   },
-  "E": {
+  "W": {
    "{601654a1}": {
     "spell": "PykeW",
     "kind": "breakpoints",
@@ -7758,7 +7758,7 @@
   }
  },
  "rakan": {
-  "W": {
+  "Q": {
    "TotalHeal": {
     "spell": "RakanQ",
     "kind": "interpolation(직선)",
@@ -8061,7 +8061,7 @@
   }
  },
  "rengar": {
-  "E": {
+  "W": {
    "BonusMonsterDamage": {
     "spell": "RengarW",
     "kind": "interpolation(직선)",
@@ -8119,7 +8119,7 @@
     ]
    }
   },
-  "W": {
+  "Q": {
    "EmpoweredQAS": {
     "spell": "RengarQ",
     "kind": "breakpoints",
@@ -8232,7 +8232,7 @@
     ]
    }
   },
-  "R": {
+  "E": {
    "TotalEmpoweredDamage": {
     "spell": "RengarE",
     "kind": "breakpoints",
@@ -9367,7 +9367,7 @@
   }
  },
  "shyvana": {
-  "R": {
+  "E": {
    "DamagePerSecond": {
     "spell": "ShyvanaE",
     "kind": "breakpoints",
@@ -9397,7 +9397,7 @@
     ]
    }
   },
-  "E": {
+  "W": {
    "Calc_Heal_Min": {
     "spell": "ShyvanaW",
     "kind": "interpolation(직선)",
@@ -9756,7 +9756,7 @@
     ]
    }
   },
-  "W": {
+  "E": {
    "GreyHealthHealingRatio": {
     "spell": "TahmKenchE",
     "kind": "interpolation(직선)",
@@ -9850,7 +9850,7 @@
     ]
    }
   },
-  "W": {
+  "Q": {
    "TotalHealing": {
     "spell": "TalonQ",
     "kind": "interpolation(직선)",
@@ -10126,7 +10126,7 @@
     ]
    }
   },
-  "Q": {
+  "R": {
    "PercentHPBlast": {
     "spell": "UdyrR",
     "kind": "interpolation(직선)",
@@ -10296,7 +10296,7 @@
     ]
    }
   },
-  "W": {
+  "Q": {
    "EmpoweredTotalAS": {
     "spell": "UdyrQ",
     "kind": "interpolation(DataValue)",
@@ -10548,7 +10548,7 @@
     ]
    }
   },
-  "R": {
+  "W": {
    "{bbb9794b}": {
     "spell": "UdyrW",
     "kind": "interpolation(직선)",
@@ -11132,7 +11132,7 @@
   }
  },
  "viktor": {
-  "W": {
+  "Q": {
    "ShieldLevelScaling": {
     "spell": "ViktorQ",
     "kind": "interpolation(직선)",
@@ -11401,7 +11401,7 @@
   }
  },
  "xinzhao": {
-  "E": {
+  "W": {
    "MinionMod": {
     "spell": "XinZhaoW",
     "kind": "breakpoints",
@@ -11661,7 +11661,7 @@
   }
  },
  "yone": {
-  "E": {
+  "W": {
    "{8dfeb810}": {
     "spell": "YoneW",
     "kind": "interpolation(직선)",
@@ -11777,7 +11777,7 @@
   }
  },
  "yorick": {
-  "W": {
+  "Q": {
    "QHeal": {
     "spell": "YorickQ",
     "kind": "breakpoints",
@@ -11807,7 +11807,7 @@
     ]
    }
   },
-  "Q": {
+  "R": {
    "YorickBigGhoulHealth": {
     "spell": "YorickR",
     "kind": "breakpoints",
@@ -12037,6 +12037,33 @@
      1,
      1
     ]
+   },
+   "{669adf33}": {
+    "spell": "YunaraW",
+    "kind": "breakpoints(배율 Calc_Minion_Damage_Mod)",
+    "위치": "mult:Calc_Minion_Damage_Mod",
+    "min": 0.5,
+    "max": 1,
+    "values": [
+     0.5,
+     0.5,
+     0.5,
+     0.5,
+     0.5,
+     0.5,
+     0.5,
+     0.5,
+     0.75,
+     0.75,
+     0.75,
+     0.75,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ]
    }
   }
  },
@@ -12129,12 +12156,39 @@
     ]
    }
   },
-  "?": {
+  "R": {
    "AllyHealingPerc": {
     "spell": "YuumiR",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": true,
+    "min": 1.3,
+    "max": 1.6,
+    "values": [
+     1.3,
+     1.3,
+     1.3,
+     1.3,
+     1.3,
+     1.3,
+     1.35,
+     1.4,
+     1.45,
+     1.5,
+     1.55,
+     1.6,
+     1.6,
+     1.6,
+     1.6,
+     1.6,
+     1.6,
+     1.6
+    ]
+   },
+   "EnhancedHealPerWave": {
+    "spell": "YuumiR",
+    "kind": "breakpoints(배율 AllyHealingPerc)",
+    "위치": "mult:AllyHealingPerc",
     "min": 1.3,
     "max": 1.6,
     "values": [
