@@ -22,13 +22,93 @@ const matchCacheSchema = new mongoose.Schema({
     matchId: { type: String, required: true, unique: true },
     detail: { type: Object, required: true },
     timeline: { type: Object },
-    createdAt: { type: Date, expires: '14d', default: Date.now }
+    // ★ 7일이다 (2026-08-15에 14일에서 줄였다). 검색 트래픽이 거의 없어서 원본을
+    //   2주씩 들고 있을 이유가 적고, 통계 슬림(matchstats)에 자리를 내주기 위해서다.
+    //   ※ expires 를 고쳐도 **이미 만들어진 TTL 인덱스는 안 바뀐다** — ensureStatIndexes() 참고
+    createdAt: { type: Date, expires: '7d', default: Date.now }
 });
 
 // ★ 폴백 조회용 인덱스 (puuid로 매치를 찾고 최신순 정렬)
 matchCacheSchema.index({ 'detail.metadata.participants': 1, 'detail.info.gameEndTimestamp': -1 });
 
 const MatchCache = mongoose.model('MatchCache', matchCacheSchema);
+
+// ==========================================
+// 통계 수집용 스키마 (2026-08-15 신설)
+//   ★ 원본(detail)을 저장하지 않는다. 받는 즉시 쓸 값만 뽑아 배열로 눕히고 버린다.
+//     한 판 82KB -> 0.76KB (108배). 원본 용량의 대부분은 값이 아니라 키 이름이다 —
+//     "totalDamageDealtToChampions"(28자)를 참가자 10명 x 경기마다 반복 저장한다.
+//     배열로 바꾸면 키가 통째로 사라진다.
+// ==========================================
+
+// matchlist 에서 본 경기. "명단 유저 몇 명에게서 보였나"를 센다.
+//   ★★ 이 횟수가 곧 마스터+ 인원(k)의 하한이다. 한 판에 명단 유저가 k명 있으면
+//     그 매치 ID 가 k명의 matchlist 에 중복으로 나타나기 때문이다.
+//     그래서 detail 을 받기 **전에** 거를 수 있다 — 이게 호출 예산의 핵심이다.
+//     (승격 직후라 명단에 아직 없는 사람은 안 세지므로 항상 하한이다. 넘치는 쪽으로만
+//      보수적이라 통계가 오염되지 않는다.)
+const matchSeenSchema = new mongoose.Schema({
+    matchId: { type: String, required: true, unique: true },
+    cnt: { type: Number, default: 1 },          // 명단 유저 몇 명에게서 보였나
+    done: { type: Boolean, default: false },    // detail 처리를 끝냈나
+    createdAt: { type: Date, expires: '3d', default: Date.now }
+});
+matchSeenSchema.index({ done: 1, cnt: -1 });
+const MatchSeen = mongoose.model('MatchSeen', matchSeenSchema);
+
+// 통계용 슬림 경기. 원본 대신 이것만 남는다.
+const matchStatSchema = new mongoose.Schema({
+    matchId: { type: String, required: true, unique: true },
+    k: { type: Number, required: true },   // 마스터+ 인원 (detail 로 센 정확한 값)
+    v: { type: String },                   // 패치 "16.16"
+    t: { type: Number },                   // 경기 시작 (초)
+    d: { type: Number },                   // 경기 길이 (초)
+    // 참가자 10명 x [챔피언, 라인, 승, 팀, 킬, 데스, 어시, 딜량, 골드, 아이템0~5]
+    p: { type: [[Number]], required: true },
+    b: { type: [Number] },                 // 밴 (-1 = 밴 안 함은 제외하고 담는다)
+    // 45일. 한 건이 1.33KB 라 하루 3,000판이면 3.9MB/일 → 정착점 176MB.
+    // 90일로 두면 351MB 가 되어 matchcaches 와 합쳐 512MB 를 넘는다.
+    createdAt: { type: Date, expires: '45d', default: Date.now }
+});
+// 집계는 "패치 + k" 로 훑는다. 원본은 재집계 대비용이라 90일이면 충분하다.
+matchStatSchema.index({ v: 1, k: 1 });
+matchStatSchema.index({ t: 1 });
+const MatchStat = mongoose.model('MatchStat', matchStatSchema);
+
+// 집계 결과. 화면이 읽는 건 이 두 컬렉션뿐이고 MatchStat 은 재집계용 원본이다.
+//   scope = "p:16.16"(패치) 또는 "d:2026-08-15"(일자, 한국시간 기준)
+//   kb    = k 밴드. "5-7" / "8-10" 으로 **나눠서** 담는다 —
+//           마스터 하위권이 실제로 얼마나 들어오는지 보고 나중에 기준을 고르려면
+//           합치는 건 되지만 나누는 건 소급이 안 되기 때문이다.
+//   pos   = 0~4 라인별, -1 = 라인 무관 합계
+const champStatSchema = new mongoose.Schema({
+    scope: { type: String, required: true },
+    kb: { type: String, required: true },
+    champ: { type: Number, required: true },
+    pos: { type: Number, required: true },
+    games: { type: Number, default: 0 },
+    wins: { type: Number, default: 0 },
+    // 밴은 라인 개념이 없어서 pos: -1 줄에만 담긴다. 두 가지를 다 센다 —
+    //   bans     = 밴 슬롯을 몇 개 먹었나 (양 팀이 같은 챔피언을 밴하면 2)
+    //   banGames = 몇 판에서 밴됐나       (양 팀이 밴해도 1)
+    bans: { type: Number, default: 0 },
+    banGames: { type: Number, default: 0 },
+    kills: { type: Number, default: 0 },
+    deaths: { type: Number, default: 0 },
+    assists: { type: Number, default: 0 }
+});
+champStatSchema.index({ scope: 1, kb: 1, pos: 1 });
+const ChampStat = mongoose.model('ChampStat', champStatSchema);
+
+// scope 별 총 경기 수. 픽률·밴률의 **분모**라 따로 둔다.
+const statScopeSchema = new mongoose.Schema({
+    scope: { type: String, required: true },
+    kb: { type: String, required: true },
+    games: { type: Number, default: 0 },
+    updatedAt: { type: Date, default: Date.now }
+});
+statScopeSchema.index({ scope: 1, kb: 1 }, { unique: true });
+const StatScope = mongoose.model('StatScope', statScopeSchema);
 
 const summonerCacheSchema = new mongoose.Schema({
     puuid: { type: String, required: true, unique: true },
@@ -51,7 +131,11 @@ const summonerCacheSchema = new mongoose.Schema({
     //   전 큐 통합 누적값이라 "솔랭 모스트" 가 아니다 — 라이엇이 그것만 준다.
     //   fillMasteryInBackground 가 분당 10명씩 채운다.
     mastery: { type: [Number] },
-    masteryAt: { type: Number }
+    masteryAt: { type: Number },
+
+    // ★ 통계 수집 잡이 이 사람 matchlist 를 마지막으로 훑은 시각.
+    //   DB 에 남겨야 재시작해도 순회 위치가 유지된다 (한 바퀴가 하루짜리다).
+    matchScanAt: { type: Number }
 });
 
 summonerCacheSchema.index({ displayName: 1 });
@@ -84,6 +168,14 @@ let failedMasteryPuuids = {};
 let isFetchingMastery = false;
 let resolvedCountIn10Mins = 0;
 let arenaAugments = {};
+
+// ★ 통계 수집 (2026-08-15)
+let rankPuuidSet = new Set();   // 명단 puuid 집합. k 를 셀 때 쓴다 (updateChallengerList 가 갱신)
+let matchScanAt = {};           // puuid -> matchlist 를 마지막으로 훑은 시각
+let isScanningMatches = false;
+let isFetchingStats = false;
+let isBuildingStats = false;
+let statCounters = { scan: 0, seen: 0, fetch: 0, save: 0, skip: 0 };
 
 app.use(cors());
 
@@ -171,6 +263,9 @@ async function loadResolvedNames() {
             if (s.mastery && s.mastery.length) {
                 resolvedMastery[s.puuid] = { top: s.mastery, updatedAt: s.masteryAt || 0 };
             }
+            // ★ 통계 수집 순회 위치도 같이 올린다. 안 올리면 재시작마다 명단 전체를
+            //   처음부터 다시 훑어 하루치 호출을 통째로 날린다.
+            if (s.matchScanAt) matchScanAt[s.puuid] = s.matchScanAt;
         });
         console.log(`[System] DB 로드: 닉네임 ${summoners.length}명, 숙련도 ${Object.keys(resolvedMastery).length}명, 전적 ${await MatchCache.countDocuments()}게임`);
     } catch (err) {
@@ -262,6 +357,8 @@ async function updateChallengerList() {
 
         if (combinedEntries.length > 0) {
             challengerList = combinedEntries.sort((a, b) => b.leaguePoints - a.leaguePoints);
+            // ★ k 판정용 집합을 같이 갱신한다. 명단이 10분마다 바뀌므로 여기서만 만든다.
+            rankPuuidSet = new Set(challengerList.map(p => p.puuid));
             rankUpdatedAt = Date.now();
             myCache.del('challenger_ranking_data');   // 새 명단이 왔으면 옛 응답을 버린다
             console.log(`[Task] 랭킹 명단 갱신 완료 (총 ${challengerList.length}명)`);
@@ -406,7 +503,376 @@ async function fillMasteryInBackground() {
     isFetchingMastery = false;
 }
 
+// ==========================================
+// 통계 수집 (2026-08-15 신설)
+//
+//   흐름:  명단 11,000명 matchlist  ->  매치 ID 등장 횟수 = k 하한
+//            -> k >= 5 인 것만 detail  ->  슬림 문서로 저장하고 원본은 버린다
+//
+//   ★ matchlist 로 먼저 거르는 게 핵심이다. detail 을 받고 나서 걸러도 통계는 같지만
+//     호출은 이미 나간 뒤라 한 푼도 아껴지지 않는다.
+//   ★ 하루 1바퀴로 충분하다. 순회를 더 자주 돌아도 마스터+ 가 하루에 하는 판은 정해져
+//     있어서 **수집되는 판 수가 안 늘고** 집계 지연만 줄어든다.
+// ==========================================
+const POS_CODE = { TOP: 0, JUNGLE: 1, MIDDLE: 2, BOTTOM: 3, UTILITY: 4 };
+const STAT_QUEUE = 420;                      // 솔로랭크만 (라인 개념이 있고 표본이 가장 크다)
+const STAT_MIN_K = 5;                        // 이 인원 이상일 때만 detail 을 받는다
+const SCAN_TTL = 24 * 60 * 60 * 1000;        // 한 사람을 하루 한 번 훑는다
+const SCAN_PER_CYCLE = 8;                    // 분당 matchlist 호출 (11,000 / 8 = 하루 1바퀴)
+// ★ 하루 필요량은 약 3,400건이다 (11,000명 x 하루 3판 = 참가 33,000, 관측되는 판의
+//   평균 k 가 8.7 이라 고유 매치 3,800, 그중 k>=5 가 88%). 분당 6이면 8,640건이라
+//   2.5배 여유다. 4로 두면 1.7배뿐인데, 밀리면 matchseens TTL(3일)에 걸려
+//   **처리도 못 해보고 사라진다.**
+const FETCH_PER_CYCLE = 6;                   // 분당 detail 호출
+
+// detail -> 슬림 문서. 통계에 쓸 값만 배열로 눕힌다.
+function toSlimMatch(detail) {
+    const info = detail?.info;
+    const meta = detail?.metadata;
+    if (!info || !meta || info.queueId !== STAT_QUEUE) return null;
+    if (!Array.isArray(info.participants) || info.participants.length !== 10) return null;
+
+    // ★ 리메이크(다시하기)는 뺀다. 실제 경기가 아닌데 win 이 5:5 로 찍혀서
+    //   안 빼면 승률에 그대로 노이즈가 섞인다. 솔랭 기준 0.7% 정도 나온다.
+    //   gameDuration 으로 자르면 안 된다 — 리메이크는 65~90초인데 5분 근처엔
+    //   정상 경기(326초 GameComplete)도 있다. 전용 필드가 정확하다.
+    if (info.participants.some(p => p.gameEndedInEarlySurrender)) return null;
+
+    // ★ 정확한 k 는 여기서 나온다. matchlist 등장 횟수는 하한일 뿐이다.
+    const k = (meta.participants || []).filter(id => rankPuuidSet.has(id)).length;
+
+    return {
+        matchId: meta.matchId,
+        k,
+        v: (info.gameVersion || '').split('.').slice(0, 2).join('.'),
+        t: Math.floor((info.gameCreation || 0) / 1000),
+        d: info.gameDuration || 0,
+        p: info.participants.map(p => [
+            p.championId ?? 0,
+            POS_CODE[p.teamPosition] ?? -1,
+            p.win ? 1 : 0,
+            p.teamId ?? 0,
+            p.kills ?? 0, p.deaths ?? 0, p.assists ?? 0,
+            p.totalDamageDealtToChampions ?? 0, p.goldEarned ?? 0,
+            p.item0 ?? 0, p.item1 ?? 0, p.item2 ?? 0, p.item3 ?? 0, p.item4 ?? 0, p.item5 ?? 0
+        ]),
+        // ★ -1 은 "밴을 안 했다" 는 뜻이라 뺀다. 솔랭 판의 66%에 하나 이상 들어 있어서
+        //   그대로 담으면 밴률 분자가 엉킨다.
+        b: (info.teams || []).flatMap(t => (t.bans || []).map(x => x.championId)).filter(id => id > 0)
+    };
+}
+
+// ① 명단을 훑으며 매치 ID 등장 횟수를 센다
+async function scanMatchlists() {
+    if (challengerList.length === 0 || isScanningMatches) return;
+    isScanningMatches = true;
+
+    try {
+        const now = Date.now();
+        const since = Math.floor((now - SCAN_TTL) / 1000);   // 라이엇은 초 단위를 받는다
+
+        const targets = challengerList
+            .filter(p => !matchScanAt[p.puuid] || now - matchScanAt[p.puuid] > SCAN_TTL)
+            .slice(0, SCAN_PER_CYCLE);
+
+        for (const p of targets) {
+            try {
+                const res = await riotApi.get(
+                    `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${p.puuid}/ids` +
+                    `?queue=${STAT_QUEUE}&startTime=${since}&start=0&count=20`
+                );
+                const ids = res.data || [];
+
+                if (ids.length > 0) {
+                    // 한 번에 밀어 넣는다. 20건을 낱개로 보내면 DB 왕복만 20번이다.
+                    await MatchSeen.bulkWrite(ids.map(id => ({
+                        updateOne: {
+                            filter: { matchId: id },
+                            update: { $inc: { cnt: 1 }, $setOnInsert: { createdAt: new Date() } },
+                            upsert: true
+                        }
+                    })), { ordered: false });
+                    statCounters.seen += ids.length;
+                }
+
+                matchScanAt[p.puuid] = now;
+                statCounters.scan++;
+                // 닉네임이 없는 사람은 SummonerCache 에 줄이 없다(displayName 이 필수라
+                // upsert 도 못 한다). 그런 사람은 메모리에만 두고 넘어간다.
+                SummonerCache.updateOne({ puuid: p.puuid }, { matchScanAt: now }).catch(() => { });
+
+            } catch (err) {
+                const status = err.response?.status;
+                if (status === 429) {
+                    // 한도에 닿았으면 이번 사이클은 접는다. 다음 분에 다시 온다.
+                    console.warn('[Stat] 429 — 이번 사이클 중단');
+                    break;
+                }
+                // 그 외 오류는 다음 바퀴에 자연히 재시도된다 (matchScanAt 을 안 찍는다)
+                console.error(`[Stat] matchlist 실패 ${p.puuid.substring(0, 8)}: ${status || err.message}`);
+            }
+            await sleep(1200);
+        }
+    } finally {
+        isScanningMatches = false;
+    }
+}
+
+// ② 기준을 넘긴 매치만 detail 을 받아 슬림으로 저장한다
+async function fetchMatchStats() {
+    if (isFetchingStats || rankPuuidSet.size === 0) return;
+    isFetchingStats = true;
+
+    try {
+        // 사람이 많이 낀 판부터 처리한다. 명단 커버리지가 높은 판이 통계 가치도 높다.
+        const targets = await MatchSeen
+            .find({ done: { $ne: true }, cnt: { $gte: STAT_MIN_K } })
+            .sort({ cnt: -1 })
+            .limit(FETCH_PER_CYCLE)
+            .lean();
+
+        for (const t of targets) {
+            try {
+                const { data } = await riotApi.get(
+                    `https://asia.api.riotgames.com/lol/match/v5/matches/${t.matchId}`
+                );
+                const slim = toSlimMatch(data);
+
+                if (slim) {
+                    await MatchStat.updateOne({ matchId: slim.matchId }, { $set: slim }, { upsert: true });
+                    statCounters.save++;
+                } else {
+                    statCounters.skip++;   // 리메이크 / 다른 큐 / 형태가 이상한 판
+                }
+                statCounters.fetch++;
+                await MatchSeen.updateOne({ _id: t._id }, { $set: { done: true } });
+
+            } catch (err) {
+                const status = err.response?.status;
+                if (status === 429) {
+                    console.warn('[Stat] 429 — detail 이번 사이클 중단');
+                    break;
+                }
+                if (status === 404) {
+                    // 없는 경기는 다시 시도해도 소용없다
+                    await MatchSeen.updateOne({ _id: t._id }, { $set: { done: true } });
+                } else {
+                    console.error(`[Stat] detail 실패 ${t.matchId}: ${status || err.message}`);
+                }
+            }
+            await sleep(1200);
+        }
+    } catch (e) {
+        console.error('[Stat] 수집 오류:', e.message);
+    } finally {
+        isFetchingStats = false;
+    }
+}
+
+// ==========================================
+// ③ 집계 — 슬림 경기를 챔피언별 통계로 (라이엇 호출 0회, DB 안에서만 돈다)
+//
+//   ★ 증분이 아니라 scope 단위 **전체 재계산**이다. 증분은 중복 반영·누락 버그가
+//     나기 쉬운데, 일별은 하루치(3~4천 건)라 가볍고 패치별도 2주치뿐이다.
+// ==========================================
+const K_BAND_CUT = 8;              // 이 값 이상이면 "8-10", 미만이면 "5-7"
+const DAILY_SCOPE_DAYS = 7;        // 최근 며칠치 일별 집계를 유지할지
+
+// 한국시간 기준 날짜 문자열. 경기 시각(t)이 UTC epoch 라 그냥 자르면 하루가 밀린다.
+const kstDayStr = (ms) => new Date(ms + 9 * 3600000).toISOString().slice(0, 10);
+
+async function buildOneScope(scopeKey, matchCond) {
+    const rows = await MatchStat.aggregate([
+        { $match: matchCond },
+        { $addFields: { kb: { $cond: [{ $gte: ['$k', K_BAND_CUT] }, '8-10', '5-7'] } } },
+        {
+            $facet: {
+                // 참가자를 펼쳐 챔피언 x 라인으로 센다
+                picks: [
+                    { $unwind: '$p' },
+                    {
+                        $group: {
+                            _id: { kb: '$kb', c: { $arrayElemAt: ['$p', 0] }, pos: { $arrayElemAt: ['$p', 1] } },
+                            games: { $sum: 1 },
+                            wins: { $sum: { $arrayElemAt: ['$p', 2] } },
+                            kills: { $sum: { $arrayElemAt: ['$p', 4] } },
+                            deaths: { $sum: { $arrayElemAt: ['$p', 5] } },
+                            assists: { $sum: { $arrayElemAt: ['$p', 6] } }
+                        }
+                    }
+                ],
+                // ★★ 롤 솔랭은 **양 팀이 같은 챔피언을 밴할 수 있다** — 실측 685판 중
+                //   59.3% 에서 실제로 일어난다. 그래서 세는 방법이 두 가지고 뜻이 다르다:
+                //     bans     = 밴 슬롯을 몇 개 먹었나 (양 팀이 밴하면 2)  ← 지금 화면 기본값
+                //     banGames = 몇 판에서 밴됐나       (양 팀이 밴해도 1)  ← 흔히 말하는 "밴률"
+                //   카밀 실측이 612회(89.3%) vs 480판(70.1%) 로 19%p 차이가 난다.
+                //   ★ bans 를 쓰면 **픽률 + 밴률이 100%를 넘을 수 있다**. 버그가 아니라
+                //     정의상 그렇다 (밴 슬롯은 판당 10개라 합계가 1000%까지 가능하다).
+                //     둘 다 담아 두는 건 나중에 화면에서 고르기 위해서다.
+                bans: [
+                    { $unwind: '$b' },
+                    { $group: { _id: { kb: '$kb', c: '$b' }, bans: { $sum: 1 } } }
+                ],
+                banGames: [
+                    { $addFields: { b: { $setUnion: ['$b', []] } } },
+                    { $unwind: '$b' },
+                    { $group: { _id: { kb: '$kb', c: '$b' }, n: { $sum: 1 } } }
+                ],
+                totals: [{ $group: { _id: '$kb', games: { $sum: 1 } } }]
+            }
+        }
+    ]).allowDiskUse(true);
+
+    const f = rows[0] || { picks: [], bans: [], banGames: [], totals: [] };
+    if (!f.totals.length) return 0;
+
+    const agg = new Map();
+    const put = (kb, c, pos, add) => {
+        const key = `${kb}|${c}|${pos}`;
+        let cur = agg.get(key);
+        if (!cur) agg.set(key, cur = {
+            scope: scopeKey, kb, champ: c, pos,
+            games: 0, wins: 0, bans: 0, banGames: 0, kills: 0, deaths: 0, assists: 0
+        });
+        for (const k in add) cur[k] += add[k];
+    };
+
+    f.picks.forEach(r => {
+        const { kb, c } = r._id;
+        if (c == null) return;
+        const pos = r._id.pos ?? -1;
+        const add = { games: r.games, wins: r.wins, kills: r.kills, deaths: r.deaths, assists: r.assists };
+        // ★ pos 가 -1(라인 판정 실패)이면 합계에만 넣는다. 둘 다 넣으면 이중 계산이다.
+        if (pos >= 0) put(kb, c, pos, add);
+        put(kb, c, -1, add);
+    });
+    // ★ 밴은 라인 개념이 없으므로 pos: -1 줄에만 얹는다.
+    f.bans.forEach(r => { if (r._id.c != null) put(r._id.kb, r._id.c, -1, { bans: r.bans }); });
+    f.banGames.forEach(r => { if (r._id.c != null) put(r._id.kb, r._id.c, -1, { banGames: r.n }); });
+
+    // 재계산이라 통째로 갈아 끼운다. $set 으로 덮으면 이번에 안 나온 챔피언 줄이
+    // 옛 숫자를 그대로 들고 남는다.
+    const docs = [...agg.values()];
+    await ChampStat.deleteMany({ scope: scopeKey });
+    if (docs.length) await ChampStat.insertMany(docs, { ordered: false });
+
+    await StatScope.bulkWrite(f.totals.map(t => ({
+        updateOne: {
+            filter: { scope: scopeKey, kb: t._id },
+            update: { $set: { games: t.games, updatedAt: new Date() } },
+            upsert: true
+        }
+    })));
+
+    return f.totals.reduce((a, t) => a + t.games, 0);
+}
+
+async function buildChampStats() {
+    if (isBuildingStats) return;
+    isBuildingStats = true;
+    const started = Date.now();
+
+    try {
+        const scopes = [];
+
+        // 패치별 — MatchStat 에 실제로 들어 있는 패치만
+        (await MatchStat.distinct('v')).filter(Boolean)
+            .forEach(v => scopes.push({ key: `p:${v}`, cond: { v } }));
+
+        // 일별 — 최근 7일 (한국시간 기준)
+        const now = Date.now();
+        for (let i = 0; i < DAILY_SCOPE_DAYS; i++) {
+            const day = kstDayStr(now - i * 86400000);
+            const from = Math.floor(Date.parse(`${day}T00:00:00+09:00`) / 1000);
+            scopes.push({ key: `d:${day}`, cond: { t: { $gte: from, $lt: from + 86400 } } });
+        }
+
+        let total = 0;
+        for (const s of scopes) total += await buildOneScope(s.key, s.cond);
+
+        // 기간이 지난 일별 집계는 지운다 (패치별은 남긴다).
+        // ★ 한 객체에 같은 키를 두 번 쓰면 뒤엣것만 남으므로 연산자를 합쳐서 쓴다.
+        const keep = scopes.map(s => s.key);
+        await ChampStat.deleteMany({ scope: { $regex: '^d:', $nin: keep } });
+        await StatScope.deleteMany({ scope: { $regex: '^d:', $nin: keep } });
+
+        if (total > 0) {
+            console.log(`[Stat] 집계 완료: scope ${scopes.length}개 / 연인원 ${total}판 / ${((Date.now() - started) / 1000).toFixed(1)}초`);
+        }
+    } catch (e) {
+        console.error('[Stat] 집계 실패:', e.message);
+    } finally {
+        isBuildingStats = false;
+    }
+}
+
+// ==========================================
+// 인덱스 보정 (2026-08-15 신설)
+//
+//   ★★ mongoose 가 스키마에 적은 인덱스를 실제로 만들어 주지 않고 있었다.
+//     `.index()` 로 선언한 3개(429 폴백 조회용·자동완성용)가 DB 에 통째로 없었고,
+//     새로 만든 TTL 두 개도 안 생겼다. **`unique: true` 로 붙은 것만 살아 있었다.**
+//   ★★ 그리고 **이미 있는 TTL 은 `expires` 를 고쳐도 안 바뀐다.** 인덱스는 한번 만들어지면
+//     정의가 고정되므로 `collMod` 로 값을 갈아야 한다. 스키마만 고치고 끝내면
+//     "코드에는 7일이라고 적혀 있는데 실제로는 14일" 인 상태가 조용히 유지된다.
+// ==========================================
+async function ensureStatIndexes() {
+    const want = [
+        // TTL — 값이 다르면 collMod 로 갈아 끼운다
+        { col: 'matchcaches', key: { createdAt: 1 }, ttl: 7 * 86400 },
+        { col: 'matchstats', key: { createdAt: 1 }, ttl: 45 * 86400 },
+        { col: 'matchseens', key: { createdAt: 1 }, ttl: 3 * 86400 },
+        // 조회용 — 선언만 돼 있고 실제로 없던 것들
+        { col: 'matchcaches', key: { 'detail.metadata.participants': 1, 'detail.info.gameEndTimestamp': -1 } },
+        { col: 'summonercaches', key: { displayName: 1 } },
+        { col: 'summonercaches', key: { namePartLower: 1, tierScore: -1 } },
+        // 통계 수집·집계용
+        { col: 'matchseens', key: { done: 1, cnt: -1 } },
+        { col: 'matchstats', key: { v: 1, k: 1 } },
+        { col: 'matchstats', key: { t: 1 } },
+        { col: 'champstats', key: { scope: 1, kb: 1, pos: 1 } },
+        { col: 'statscopes', key: { scope: 1, kb: 1 }, unique: true }
+    ];
+
+    const db = mongoose.connection.db;
+    let made = 0, changed = 0;
+
+    for (const w of want) {
+        try {
+            const existing = await db.collection(w.col).indexes().catch(() => []);
+            const hit = existing.find(i => JSON.stringify(i.key) === JSON.stringify(w.key));
+
+            if (!hit) {
+                const opts = {};
+                if (w.ttl) opts.expireAfterSeconds = w.ttl;
+                if (w.unique) opts.unique = true;
+                await db.collection(w.col).createIndex(w.key, opts);
+                console.log(`[Index] 생성 ${w.col} ${JSON.stringify(w.key)}${w.ttl ? ` (TTL ${w.ttl / 86400}일)` : ''}`);
+                made++;
+            } else if (w.ttl && hit.expireAfterSeconds !== w.ttl) {
+                const from = (hit.expireAfterSeconds / 86400).toFixed(0);
+                try {
+                    // collMod 가 되면 이게 낫다 — 인덱스가 잠시도 사라지지 않는다.
+                    await db.command({ collMod: w.col, index: { name: hit.name, expireAfterSeconds: w.ttl } });
+                } catch (e) {
+                    // ★ Atlas 무료 티어(M0)는 collMod 권한이 없다
+                    //   ("user is not allowed to do action [collMod]").
+                    //   그럴 땐 지우고 다시 만든다. TTL 청소는 60초 주기라 그 틈에 새는 건 없다.
+                    await db.collection(w.col).dropIndex(hit.name);
+                    await db.collection(w.col).createIndex(w.key, { expireAfterSeconds: w.ttl });
+                }
+                console.log(`[Index] TTL 변경 ${w.col} ${from}일 → ${w.ttl / 86400}일`);
+                changed++;
+            }
+        } catch (e) {
+            console.error(`[Index] ${w.col} ${JSON.stringify(w.key)} 실패: ${e.message}`);
+        }
+    }
+    if (made || changed) console.log(`[Index] 보정 완료 (생성 ${made} / TTL 변경 ${changed})`);
+}
+
 async function startJobs() {
+    await ensureStatIndexes();
     await loadResolvedNames();
     await backfillSearchFields();
     await updateVersion();
@@ -427,10 +893,34 @@ async function startJobs() {
     }, 30 * 1000);
     setInterval(updateArenaAugments, 24 * 60 * 60 * 1000);
 
+    // ★ 통계 수집 두 잡도 기존 잡들과 15초씩 어긋나게 띄운다.
+    //   0초 닉네임 / 15초 matchlist / 30초 숙련도 / 45초 detail 순서다.
+    //   정상상태 합계는 약 13회/분이라 한도(50회/분)의 4분의 1만 쓴다.
+    setTimeout(() => {
+        scanMatchlists();
+        setInterval(scanMatchlists, 60 * 1000);
+    }, 15 * 1000);
+
+    setTimeout(() => {
+        fetchMatchStats();
+        setInterval(fetchMatchStats, 60 * 1000);
+    }, 45 * 1000);
+
+    // 집계는 DB 안에서만 도니까 호출 예산과 무관하다. 1시간마다 다시 계산한다.
+    setTimeout(() => {
+        buildChampStats();
+        setInterval(buildChampStats, 60 * 60 * 1000);
+    }, 90 * 1000);
+
     setInterval(() => {
         if (resolvedCountIn10Mins > 0) {
             console.log(`[Task] 백그라운드 닉네임 변환 진행 (최근 10분간 ${resolvedCountIn10Mins}건 갱신 완료)`);
             resolvedCountIn10Mins = 0;
+        }
+        const c = statCounters;
+        if (c.scan || c.fetch) {
+            console.log(`[Stat] 최근 10분: 명단 ${c.scan}명 훑음 / 매치 ${c.seen}건 관측 / detail ${c.fetch}건 (저장 ${c.save} · 제외 ${c.skip})`);
+            statCounters = { scan: 0, seen: 0, fetch: 0, save: 0, skip: 0 };
         }
     }, 600 * 1000);
 }
@@ -1393,6 +1883,68 @@ app.get('/api/suggest', async (req, res) => {
 });
 
 // 랭킹
+// ==========================================
+// 챔피언 통계 (티어리스트)
+//   집계는 buildChampStats() 가 1시간마다 미리 해 두므로 여기서는 읽기만 한다.
+//   ★ 라인별까지 통째로 내려보낸다 (최대 1,000행쯤). 라인 필터를 누를 때마다
+//     다시 부르면 느리고, 어차피 한 번에 받아도 100KB 안쪽이다.
+// ==========================================
+app.get('/api/champion-stats', async (req, res) => {
+    try {
+        const scopes = await StatScope.find({}).lean();
+        if (!scopes.length) {
+            return res.json({ ready: false, scopes: [], rows: [], totals: {} });
+        }
+
+        // ★ 패치는 **숫자로** 정렬해야 한다. 문자열로 하면 "16.9" > "16.16" 이 된다.
+        const patchKeys = [...new Set(scopes.filter(s => s.scope.startsWith('p:')).map(s => s.scope))]
+            .sort((a, b) => {
+                const pa = a.slice(2).split('.').map(Number), pb = b.slice(2).split('.').map(Number);
+                return (pb[0] - pa[0]) || (pb[1] - pa[1]);
+            });
+        const dayKeys = [...new Set(scopes.filter(s => s.scope.startsWith('d:')).map(s => s.scope))]
+            .sort().reverse();
+        const scopeKeys = [...patchKeys, ...dayKeys];
+
+        // scope 별 총 경기 수 (밴드 합산)
+        const gamesOf = {};
+        scopes.forEach(s => { gamesOf[s.scope] = (gamesOf[s.scope] || 0) + s.games; });
+
+        // ★ 기본값은 "표본이 어느 정도 쌓인 가장 최신 패치" 다.
+        //   그냥 최신 패치를 쓰면 **패치 당일마다 화면이 텅 빈다** — 수요일에 패치가 나오면
+        //   그 패치 표본이 몇 판뿐이라 전 챔피언이 표본 미달(회색)로 나온다.
+        //   그것도 없으면(수집 초기) **표본이 가장 많은 패치**로 물러난다.
+        const MIN_SCOPE_GAMES = 300;
+        const requested = req.query.scope;
+        const scope = scopeKeys.includes(requested)
+            ? requested
+            : (patchKeys.find(k => gamesOf[k] >= MIN_SCOPE_GAMES)
+                || [...patchKeys].sort((a, b) => gamesOf[b] - gamesOf[a])[0]
+                || scopeKeys[0]);
+
+        const [rows, totalRows] = await Promise.all([
+            ChampStat.find({ scope }).select('-_id -__v').lean(),
+            StatScope.find({ scope }).lean()
+        ]);
+
+        // kb 별 총 경기 수. 화면에서 5-7 과 8-10 을 합쳐 볼 수 있게 둘 다 준다.
+        const totals = {};
+        totalRows.forEach(t => { totals[t.kb] = t.games; });
+
+        res.json({
+            ready: true,
+            scope,
+            scopes: scopeKeys,
+            totals,
+            rows,
+            updatedAt: Math.max(...totalRows.map(t => +t.updatedAt || 0))
+        });
+    } catch (e) {
+        console.error('[API] 챔피언 통계 실패:', e.message);
+        res.status(500).json({ error: '통계를 불러오지 못했습니다.' });
+    }
+});
+
 app.get('/api/ranking', async (req, res) => {
     const cachedRanking = myCache.get('challenger_ranking_data');
     if (cachedRanking) return res.json(cachedRanking);

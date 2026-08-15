@@ -2270,17 +2270,15 @@ body::before {
     table-layout: fixed;
 }
 
-.stats-table th:nth-child(1) {
-    width: 35%;
-}
-
-.stats-table th:nth-child(2),
-.stats-table th:nth-child(3),
-.stats-table th:nth-child(4),
-.stats-table th:nth-child(5),
-.stats-table th:nth-child(6) {
-    width: 13%;
-}
+/* ★ 자리 기반(nth-child) 이라 칸을 늘리면 반드시 여기도 같이 고쳐야 한다.
+   2026-08-15에 "표본" 칸이 붙어 6칸 -> 7칸이 됐다. 합이 100% 여야 한다. */
+.stats-table th:nth-child(1) { width: 28%; }
+.stats-table th:nth-child(2) { width: 10%; }
+.stats-table th:nth-child(3) { width: 12%; }
+.stats-table th:nth-child(4) { width: 12%; }
+.stats-table th:nth-child(5) { width: 12%; }
+.stats-table th:nth-child(6) { width: 12%; }
+.stats-table th:nth-child(7) { width: 14%; }
 
 .stats-table th {
     background: #2b1a52;
@@ -2344,6 +2342,119 @@ body::before {
     font-size: 11px;
     color: #9aa4af;
     margin-top: 2px;
+}
+
+/* ===== 통계 탭 (2026-08-15 실제 집계로 교체하면서 추가) ===== */
+
+.stats-sub {
+    color: #9aa4af;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.stats-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.stats-select {
+    background: #1a1a2e;
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.stats-select:focus {
+    outline: none;
+    border-color: #8b5cf6;
+}
+
+.stats-band {
+    display: flex;
+    gap: 4px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    padding: 3px;
+}
+
+.stats-band-btn {
+    background: transparent;
+    color: #9aa4af;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.stats-band-btn:hover {
+    color: #e2e8f0;
+}
+
+.stats-band-btn.active {
+    background: #2b1a52;
+    color: #a78bfa;
+    font-weight: 600;
+}
+
+.stats-win {
+    color: #10b981;
+    font-weight: bold;
+}
+
+.stats-num {
+    color: #e2e8f0;
+}
+
+.stats-games {
+    color: #9aa4af;
+    font-size: 12px;
+}
+
+.stats-tier-none {
+    color: #4b5563;
+    font-weight: 700;
+}
+
+/* 표본 미달 줄. 지우지 않고 흐리게만 둔다 — 없애면 "왜 이 챔피언이 없지" 가 된다 */
+.stats-row-low {
+    opacity: 0.45;
+}
+
+.stats-row-low .stats-win {
+    color: #6b7280;
+    font-weight: normal;
+}
+
+.stats-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #9aa4af;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.stats-empty-row {
+    padding: 40px !important;
+    color: #9aa4af;
+    text-align: center;
+}
+
+.stats-note {
+    margin: 14px 4px 40px;
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.7;
+    text-align: center;
 }
 
 .stats-filter-container {
@@ -2929,7 +3040,17 @@ body::before {
     }
 
     .stats-table {
-        min-width: 600px;
+        /* 칸이 7개로 늘어서 640px 이 필요하다. 이 아래로 두면 챔피언 이름이 겹친다 */
+        min-width: 640px;
+    }
+
+    .stats-controls {
+        padding: 0 10px;
+    }
+
+    .stats-note {
+        padding: 0 12px;
+        text-align: left;
     }
 
     .masters-wrap {

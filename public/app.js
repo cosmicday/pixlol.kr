@@ -439,13 +439,12 @@ function clearSearchError() {
 
 // ============================================================
 // 미완성 페이지 비공개 처리
-//   통계 / 장인랭킹은 statsData.js · mastersData.js의 하드코딩 데이터를 쓴다.
-//   실제 집계가 아니라서 프로덕션 키 심사 동안 노출하지 않는다.
+//   ★ 이제 장인랭킹(showMasters) 하나만 막는다. 통계는 2026-08-15에 실제 집계로
+//     바꾸면서 공개했고 이 가드를 뗐다 (mastersData.js 는 여전히 하드코딩 샘플이다).
 //
 //   되살릴 때:
 //     1) 아래 값을 false로
-//     2) index.html의 nav 주석(통계 · 장인랭킹) 해제
-//   페이지 코드와 데이터 파일은 그대로 두었으므로 두 군데만 고치면 복구된다.
+//     2) index.html의 nav 주석(장인랭킹) 해제
 // ============================================================
 const HIDE_UNFINISHED_PAGES = true;
 
@@ -2403,8 +2402,279 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // [7] 통계 및 랭킹 페이지 로직
 // ==========================================
+// ============================================================
+// 챔피언 통계 (티어리스트) — 2026-08-15에 실제 집계로 교체
+//
+//   예전엔 statsData.js 의 하드코딩 샘플을 썼다. 지금은 server.js 의
+//   /api/champion-stats 가 champstats 컬렉션을 그대로 내려준다.
+//   ★ 표본은 "마스터+ 가 5명 이상인 솔랭" 이다. 전체 티어 통계가 아니다
+//     — 명단 1.1만 명을 전수로 훑기 때문에 그 구간만은 커버리지가 높다.
+// ============================================================
+const STAT_POS = [
+    { code: 0, key: 'top', name: '탑' },
+    { code: 1, key: 'jungle', name: '정글' },
+    { code: 2, key: 'mid', name: '미드' },
+    { code: 3, key: 'adc', name: '바텀' },
+    { code: 4, key: 'support', name: '서포터' }
+];
+const STAT_LANE_ICON = {
+    top: 'https://s-lol-web.op.gg/images/icon/icon-position-top.svg',
+    jungle: 'https://s-lol-web.op.gg/images/icon/icon-position-jungle.svg',
+    mid: 'https://s-lol-web.op.gg/images/icon/icon-position-mid.svg',
+    adc: 'https://s-lol-web.op.gg/images/icon/icon-position-adc.svg',
+    support: 'https://s-lol-web.op.gg/images/icon/icon-position-support.svg'
+};
+
+// ★ 이 아래는 티어를 안 매기고 회색으로 둔다. 30판이면 승률 95% 신뢰구간이
+//   ±18%p 라, 숫자를 진하게 찍으면 없느니만 못하다.
+const STAT_MIN_GAMES = 30;
+
+// 승률 백분위로 S~D 를 매긴다. 표본 미달은 순위 계산에서 아예 뺀다
+// (적은 표본의 극단값이 들어오면 전체 분포가 밀린다).
+function assignStatTiers(list) {
+    const ranked = list.filter(c => c.games >= STAT_MIN_GAMES)
+        .sort((a, b) => b.winRate - a.winRate);
+    ranked.forEach((c, i) => {
+        const p = (i + 0.5) / ranked.length;
+        c.tier = p < 0.10 ? 'S' : p < 0.25 ? 'A' : p < 0.50 ? 'B' : p < 0.75 ? 'C' : 'D';
+    });
+    list.forEach(c => { if (c.games < STAT_MIN_GAMES) c.tier = null; });
+}
+
+function statScopeLabel(scope) {
+    if (!scope) return '';
+    return scope.startsWith('p:') ? `${scope.slice(2)} 패치` : `${scope.slice(2)}`;
+}
+
 async function showStats() {
-    // 메뉴를 가려도 /stats 주소를 직접 치면 들어올 수 있어서 여기서도 막는다
+    if (window.location.pathname !== '/stats') window.history.pushState({ page: 'stats' }, '', '/stats');
+    hideAllContainers();
+    const box = document.getElementById('stats-container');
+    box.style.display = 'block';
+    box.innerHTML = `<div class="stats-empty">통계를 불러오는 중입니다...</div>`;
+
+    await fetchChampionMap();
+
+    let data;
+    try {
+        const res = await fetch(`/api/champion-stats${window.statScope ? `?scope=${encodeURIComponent(window.statScope)}` : ''}`);
+        data = await res.json();
+    } catch (e) {
+        box.innerHTML = `<div class="stats-empty">통계를 불러오지 못했습니다.</div>`;
+        return;
+    }
+
+    if (!data.ready || !data.rows?.length) {
+        box.innerHTML = `
+            <div class="stats-header">
+                <h1 class="ranking-title">챔피언 통계</h1>
+            </div>
+            <div class="stats-empty">
+                <div style="font-size:15px; color:#e2e8f0; margin-bottom:10px;">아직 표본을 모으는 중입니다.</div>
+                마스터 이상 솔로랭크 경기를 모아 집계합니다.<br>
+                하루 정도 지나야 첫 통계가 나옵니다.
+            </div>`;
+        return;
+    }
+
+    window.statScope = data.scope;
+    let curLane = 'all';        // 'all' 또는 0~4
+    let curBand = 'all';        // 'all' | '8-10' | '5-7'
+    let sortCol = 'tier', sortDir = 'desc';
+
+    // ── 화면 뼈대. 표는 renderStatsTable() 이 매번 새로 그린다.
+    const scopeOpts = data.scopes.map(s =>
+        `<option value="${s}"${s === data.scope ? ' selected' : ''}>${statScopeLabel(s)}</option>`).join('');
+
+    box.innerHTML = `
+        <div class="stats-header">
+            <h1 class="ranking-title">챔피언 통계</h1>
+            <p class="stats-sub">
+                마스터 이상 솔로랭크 · <span id="stats-total"></span>
+            </p>
+        </div>
+
+        <div class="stats-controls">
+            <select class="stats-select" id="stats-scope">${scopeOpts}</select>
+            <div class="stats-band" id="stats-band">
+                <button class="stats-band-btn active" data-band="all">전체</button>
+                <button class="stats-band-btn" data-band="8-10">8~10명</button>
+                <button class="stats-band-btn" data-band="5-7">5~7명</button>
+            </div>
+        </div>
+
+        <div class="stats-filter-container">
+            <button class="stats-filter-btn all-btn active" data-lane="all">ALL</button>
+            ${STAT_POS.map(p => `<button class="stats-filter-btn" data-lane="${p.code}" title="${p.name}"><img src="${STAT_LANE_ICON[p.key]}" alt="${p.name}"></button>`).join('')}
+        </div>
+
+        <div class="stats-table-wrapper">
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th class="sortable-th" data-sort="name" style="text-align:left; padding-left:20px;">챔피언 <span class="sort-icon">▲</span></th>
+                        <th class="sortable-th active" data-sort="tier">티어 <span class="sort-icon">▼</span></th>
+                        <th class="stats-lane-th">라인</th>
+                        <th class="sortable-th" data-sort="winRate">승률 <span class="sort-icon">▼</span></th>
+                        <th class="sortable-th" data-sort="pickRate">픽률 <span class="sort-icon">▼</span></th>
+                        <th class="sortable-th" data-sort="banRate">밴률 <span class="sort-icon">▼</span></th>
+                        <th class="sortable-th" data-sort="games">표본 <span class="sort-icon">▼</span></th>
+                    </tr>
+                </thead>
+                <tbody id="stats-tbody"></tbody>
+            </table>
+        </div>
+        <p class="stats-note">
+            승률 기준 백분위로 티어를 매깁니다 (상위 10% S · 25% A · 50% B · 75% C).
+            표본 ${STAT_MIN_GAMES}판 미만은 티어를 매기지 않고 흐리게 표시합니다.
+            밴률은 밴 슬롯 기준이라 같은 챔피언을 양 팀이 밴하면 2로 셉니다.
+        </p>
+    `;
+
+    // ── kb 밴드를 골라 champ+pos 로 합산한다
+    function collect() {
+        const rows = curBand === 'all' ? data.rows : data.rows.filter(r => r.kb === curBand);
+        const total = curBand === 'all'
+            ? Object.values(data.totals).reduce((a, b) => a + b, 0)
+            : (data.totals[curBand] || 0);
+
+        const byKey = new Map();
+        rows.forEach(r => {
+            const k = `${r.champ}|${r.pos}`;
+            let c = byKey.get(k);
+            if (!c) byKey.set(k, c = { champ: r.champ, pos: r.pos, games: 0, wins: 0, bans: 0, kills: 0, deaths: 0, assists: 0 });
+            c.games += r.games; c.wins += r.wins; c.bans += r.bans;
+            c.kills += r.kills; c.deaths += r.deaths; c.assists += r.assists;
+        });
+        return { list: [...byKey.values()], total };
+    }
+
+    function renderStatsTable() {
+        const { list, total } = collect();
+        document.getElementById('stats-total').textContent =
+            `${statScopeLabel(data.scope)} · ${total.toLocaleString()}판`;
+
+        // 밴은 라인 개념이 없어서 pos=-1 줄에만 있다. 라인 필터에서도 이 값을 쓴다.
+        const banOf = {};
+        list.forEach(c => { if (c.pos === -1) banOf[c.champ] = c.bans; });
+        // 챔피언별 전체 판수 (라인 비율의 분모)
+        const totalOf = {};
+        list.forEach(c => { if (c.pos === -1) totalOf[c.champ] = c.games; });
+
+        let rows;
+        if (curLane === 'all') {
+            rows = list.filter(c => c.pos === -1).map(c => {
+                // 주 라인 = 라인별 중 가장 많이 뛴 곳
+                let best = null;
+                list.forEach(x => {
+                    if (x.champ === c.champ && x.pos >= 0 && (!best || x.games > best.games)) best = x;
+                });
+                return { ...c, lanePos: best ? best.pos : -1, laneRate: best && c.games ? best.games / c.games * 100 : 0 };
+            });
+        } else {
+            rows = list.filter(c => c.pos === Number(curLane)).map(c => ({
+                ...c,
+                bans: banOf[c.champ] || 0,
+                lanePos: c.pos,
+                laneRate: totalOf[c.champ] ? c.games / totalOf[c.champ] * 100 : 0
+            }));
+        }
+
+        rows.forEach(c => {
+            c.winRate = c.games ? c.wins / c.games * 100 : 0;
+            c.pickRate = total ? c.games / total * 100 : 0;
+            c.banRate = total ? c.bans / total * 100 : 0;
+            c.name = window.korChampMap[championIdMap[c.champ]] || '알 수 없음';
+        });
+        assignStatTiers(rows);
+
+        const TIER_W = { S: 5, A: 4, B: 3, C: 2, D: 1 };
+        rows.sort((a, b) => {
+            let va, vb;
+            if (sortCol === 'tier') { va = TIER_W[a.tier] || 0; vb = TIER_W[b.tier] || 0; if (va === vb) { va = a.winRate; vb = b.winRate; } }
+            else if (sortCol === 'name') { return sortDir === 'desc' ? b.name.localeCompare(a.name, 'ko') : a.name.localeCompare(b.name, 'ko'); }
+            else { va = a[sortCol]; vb = b[sortCol]; }
+            return sortDir === 'desc' ? vb - va : va - vb;
+        });
+
+        const tbody = document.getElementById('stats-tbody');
+        if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="7" class="stats-empty-row">데이터가 없습니다.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = rows.map(c => {
+            const engId = championIdMap[c.champ] || '0';
+            const low = c.games < STAT_MIN_GAMES;
+            const laneKey = STAT_POS.find(p => p.code === c.lanePos)?.key;
+            return `
+            <tr class="${low ? 'stats-row-low' : ''}">
+                <td class="stats-champ-info">
+                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${engId}.png"
+                         onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
+                    <span class="stats-champ-name">${c.name}</span>
+                </td>
+                <td>${c.tier ? `<span class="stats-tier tier-${c.tier.toLowerCase()}">${c.tier}</span>` : `<span class="stats-tier-none">-</span>`}</td>
+                <td class="stats-lane">
+                    ${laneKey ? `<img src="${STAT_LANE_ICON[laneKey]}" alt="">` : ''}
+                    <div class="stats-lane-rate">${c.laneRate.toFixed(0)}%</div>
+                </td>
+                <td class="stats-win">${c.winRate.toFixed(1)}%</td>
+                <td class="stats-num">${c.pickRate.toFixed(1)}%</td>
+                <td class="stats-num">${c.banRate.toFixed(1)}%</td>
+                <td class="stats-games">${c.games.toLocaleString()}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    renderStatsTable();
+
+    // ── 컨트롤
+    document.getElementById('stats-scope').addEventListener('change', (e) => {
+        window.statScope = e.target.value;
+        showStats();
+    });
+
+    document.querySelectorAll('.stats-band-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.stats-band-btn').forEach(b => b.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            curBand = e.currentTarget.dataset.band;
+            renderStatsTable();
+        });
+    });
+
+    const filterBtns = document.querySelectorAll('.stats-filter-btn');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            curLane = e.currentTarget.dataset.lane;
+            renderStatsTable();
+        });
+    });
+
+    const ths = document.querySelectorAll('.stats-table .sortable-th');
+    ths.forEach(th => {
+        th.addEventListener('click', (e) => {
+            const col = e.currentTarget.dataset.sort;
+            if (sortCol === col) sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+            else { sortCol = col; sortDir = col === 'name' ? 'asc' : 'desc'; }
+
+            ths.forEach(h => {
+                h.classList.remove('active');
+                h.querySelector('.sort-icon').textContent = h.dataset.sort === 'name' ? '▲' : '▼';
+            });
+            e.currentTarget.classList.add('active');
+            e.currentTarget.querySelector('.sort-icon').textContent = sortDir === 'asc' ? '▲' : '▼';
+            renderStatsTable();
+        });
+    });
+}
+
+/* ▼▼ 2026-08-15 이전의 샘플 데이터 버전. 실제 집계로 대체했고 statsData.js 도 안 쓴다.
+      되살릴 일은 없지만 표 구조 참고용으로 한동안 남겨 둔다.
+async function showStatsLegacy() {
     if (HIDE_UNFINISHED_PAGES) { goLobby(); return; }
 
     if (window.location.pathname !== '/stats') window.history.pushState({ page: 'stats' }, '', '/stats');
@@ -2560,6 +2830,7 @@ async function showStats() {
         });
     });
 }
+▲▲ 샘플 데이터 버전 끝 ▲▲ */
 
 let fullRankingData = [];
 let currentRankingPage = 1;
