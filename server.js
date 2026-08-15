@@ -693,9 +693,13 @@ async function fetchMatchStats() {
     isFetchingStats = true;
 
     try {
+        // ★ 지금 순회를 마친 날짜만 처리한다. 이전 날짜가 섞이면 안 되는데,
+        //   서버를 늦은 시각에 처음 띄우면 그날은 순회를 다 못 채우고 자정에 대상이
+        //   넘어간다. 그 **부분만 모인 날짜**를 그대로 집계하면 일별 통계가 왜곡된다.
+        //   남겨 둬도 matchseens TTL(3일)이 알아서 치운다.
         // 사람이 많이 낀 판부터 처리한다. 명단 커버리지가 높은 판이 통계 가치도 높다.
         const targets = await MatchSeen
-            .find({ done: { $ne: true }, cnt: { $gte: STAT_MIN_K } })
+            .find({ done: { $ne: true }, cnt: { $gte: STAT_MIN_K }, day: scanTargetDay() })
             .sort({ cnt: -1 })
             .limit(FETCH_PER_CYCLE)
             .lean();
