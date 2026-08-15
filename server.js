@@ -64,12 +64,13 @@ const matchStatSchema = new mongoose.Schema({
     v: { type: String },                   // 패치 "16.16"
     t: { type: Number },                   // 경기 시작 (초)
     d: { type: Number },                   // 경기 길이 (초)
-    // 참가자 10명 x [챔피언, 라인, 승, 팀, 킬, 데스, 어시, 딜량, 골드, 아이템0~5]
+    // 참가자 10명 x 28칸. 자리 뜻은 toSlimMatch() 주석 참고 (자리가 곧 의미다)
     p: { type: [[Number]], required: true },
     b: { type: [Number] },                 // 밴 (-1 = 밴 안 함은 제외하고 담는다)
-    // 45일. 한 건이 1.33KB 라 하루 3,000판이면 3.9MB/일 → 정착점 176MB.
-    // 90일로 두면 351MB 가 되어 matchcaches 와 합쳐 512MB 를 넘는다.
-    createdAt: { type: Date, expires: '45d', default: Date.now }
+    // ★ 30일이다 (2026-08-15에 룬·주문을 넣으면서 45 → 30). 한 건이 2.4KB 라
+    //   하루 3,000판이면 7MB/일 → 정착점 213MB. 45일로 두면 320MB 가 되어
+    //   matchcaches 와 합쳐 512MB 의 85%를 먹는다.
+    createdAt: { type: Date, expires: '30d', default: Date.now }
 });
 // 집계는 "패치 + k" 로 훑는다. 원본은 재집계 대비용이라 90일이면 충분하다.
 matchStatSchema.index({ v: 1, k: 1 });
@@ -552,7 +553,35 @@ const scanPending = () => {
 //   **일별 통계도 그 날짜가 통째로 채워진다** (지금은 부분만 채워진다).
 const scanTargetDay = () => kstDay(Date.now() - 86400000);
 
+// 룬 11칸을 뽑는다. 실측 1,000명 전원이 "주 계열 + 룬 4개 / 보조 계열 + 룬 2개 /
+// 스탯 파편 3개" 로 형태가 같아서 길이를 못 박아도 안전하다.
+function perkValues(p) {
+    const styles = p.perks?.styles || [];
+    const primary = styles.find(s => s.description === 'primaryStyle') || styles[0] || {};
+    const sub = styles.find(s => s.description === 'subStyle') || styles[1] || {};
+    const ps = (primary.selections || []).map(s => s.perk);
+    const ss = (sub.selections || []).map(s => s.perk);
+    const sp = p.perks?.statPerks || {};
+    return [
+        primary.style ?? 0, ps[0] ?? 0, ps[1] ?? 0, ps[2] ?? 0, ps[3] ?? 0,
+        sub.style ?? 0, ss[0] ?? 0, ss[1] ?? 0,
+        sp.offense ?? 0, sp.flex ?? 0, sp.defense ?? 0
+    ];
+}
+
 // detail -> 슬림 문서. 통계에 쓸 값만 배열로 눕힌다.
+//
+// ★★ 참가자 1명 = 28칸이고 **자리가 곧 의미다.** 집계가 $arrayElemAt 으로 자리를
+//   찍어 읽으므로, 순서를 바꾸거나 중간에 끼워 넣으면 **이미 저장된 문서가 통째로
+//   어긋난다.** 새 값은 반드시 **뒤에** 붙일 것.
+//
+//    0 챔피언   1 라인(0탑~4서폿, -1 판정실패)   2 승패   3 팀(100/200)
+//    4 킬   5 데스   6 어시   7 챔피언 딜량   8 골드
+//    9~14 최종 아이템 6칸
+//   15 소환사 주문1   16 소환사 주문2
+//   17 주 룬계열   18~21 주 룬 4개
+//   22 보조 룬계열   23~24 보조 룬 2개
+//   25 공격 파편   26 유연 파편   27 방어 파편
 function toSlimMatch(detail) {
     const info = detail?.info;
     const meta = detail?.metadata;
@@ -581,7 +610,9 @@ function toSlimMatch(detail) {
             p.teamId ?? 0,
             p.kills ?? 0, p.deaths ?? 0, p.assists ?? 0,
             p.totalDamageDealtToChampions ?? 0, p.goldEarned ?? 0,
-            p.item0 ?? 0, p.item1 ?? 0, p.item2 ?? 0, p.item3 ?? 0, p.item4 ?? 0, p.item5 ?? 0
+            p.item0 ?? 0, p.item1 ?? 0, p.item2 ?? 0, p.item3 ?? 0, p.item4 ?? 0, p.item5 ?? 0,
+            p.summoner1Id ?? 0, p.summoner2Id ?? 0,
+            ...perkValues(p)
         ]),
         // ★ -1 은 "밴을 안 했다" 는 뜻이라 뺀다. 솔랭 판의 66%에 하나 이상 들어 있어서
         //   그대로 담으면 밴률 분자가 엉킨다.
@@ -858,7 +889,7 @@ async function ensureStatIndexes() {
     const want = [
         // TTL — 값이 다르면 collMod 로 갈아 끼운다
         { col: 'matchcaches', key: { createdAt: 1 }, ttl: 7 * 86400 },
-        { col: 'matchstats', key: { createdAt: 1 }, ttl: 45 * 86400 },
+        { col: 'matchstats', key: { createdAt: 1 }, ttl: 30 * 86400 },
         { col: 'matchseens', key: { createdAt: 1 }, ttl: 3 * 86400 },
         // 조회용 — 선언만 돼 있고 실제로 없던 것들
         { col: 'matchcaches', key: { 'detail.metadata.participants': 1, 'detail.info.gameEndTimestamp': -1 } },
