@@ -49,6 +49,7 @@ const MatchCache = mongoose.model('MatchCache', matchCacheSchema);
 //      보수적이라 통계가 오염되지 않는다.)
 const matchSeenSchema = new mongoose.Schema({
     matchId: { type: String, required: true, unique: true },
+    day: { type: String },                      // 이 경기가 속한 날짜 (KST "2026-08-14")
     cnt: { type: Number, default: 1 },          // 명단 유저 몇 명에게서 보였나
     done: { type: Boolean, default: false },    // detail 처리를 끝냈나
     createdAt: { type: Date, expires: '3d', default: Date.now }
@@ -133,9 +134,11 @@ const summonerCacheSchema = new mongoose.Schema({
     mastery: { type: [Number] },
     masteryAt: { type: Number },
 
-    // ★ 통계 수집 잡이 이 사람 matchlist 를 마지막으로 훑은 시각.
-    //   DB 에 남겨야 재시작해도 순회 위치가 유지된다 (한 바퀴가 하루짜리다).
-    matchScanAt: { type: Number }
+    // ★ 통계 수집 잡이 이 사람에게서 **어느 날짜의 경기를** 훑었는지 (KST "2026-08-14").
+    //   시각이 아니라 날짜인 이유는 아래 scanMatchlists 주석 참고 —
+    //   모두가 같은 날짜 창을 봐야 매치 등장 횟수(k 하한)가 정확해진다.
+    //   DB 에 남겨야 재시작해도 순회 위치가 유지된다.
+    matchScanDay: { type: String }
 });
 
 summonerCacheSchema.index({ displayName: 1 });
@@ -171,7 +174,7 @@ let arenaAugments = {};
 
 // ★ 통계 수집 (2026-08-15)
 let rankPuuidSet = new Set();   // 명단 puuid 집합. k 를 셀 때 쓴다 (updateChallengerList 가 갱신)
-let matchScanAt = {};           // puuid -> matchlist 를 마지막으로 훑은 시각
+let matchScanDay = {};          // puuid -> 마지막으로 훑은 경기 날짜 (KST "2026-08-14")
 let isScanningMatches = false;
 let isFetchingStats = false;
 let isBuildingStats = false;
@@ -264,8 +267,8 @@ async function loadResolvedNames() {
                 resolvedMastery[s.puuid] = { top: s.mastery, updatedAt: s.masteryAt || 0 };
             }
             // ★ 통계 수집 순회 위치도 같이 올린다. 안 올리면 재시작마다 명단 전체를
-            //   처음부터 다시 훑어 하루치 호출을 통째로 날린다.
-            if (s.matchScanAt) matchScanAt[s.puuid] = s.matchScanAt;
+            //   처음부터 다시 훑어 반나절치 호출을 통째로 날린다.
+            if (s.matchScanDay) matchScanDay[s.puuid] = s.matchScanDay;
         });
         console.log(`[System] DB 로드: 닉네임 ${summoners.length}명, 숙련도 ${Object.keys(resolvedMastery).length}명, 전적 ${await MatchCache.countDocuments()}게임`);
     } catch (err) {
@@ -517,13 +520,37 @@ async function fillMasteryInBackground() {
 const POS_CODE = { TOP: 0, JUNGLE: 1, MIDDLE: 2, BOTTOM: 3, UTILITY: 4 };
 const STAT_QUEUE = 420;                      // 솔로랭크만 (라인 개념이 있고 표본이 가장 크다)
 const STAT_MIN_K = 5;                        // 이 인원 이상일 때만 detail 을 받는다
-const SCAN_TTL = 24 * 60 * 60 * 1000;        // 한 사람을 하루 한 번 훑는다
-const SCAN_PER_CYCLE = 8;                    // 분당 matchlist 호출 (11,000 / 8 = 하루 1바퀴)
-// ★ 하루 필요량은 약 3,400건이다 (11,000명 x 하루 3판 = 참가 33,000, 관측되는 판의
-//   평균 k 가 8.7 이라 고유 매치 3,800, 그중 k>=5 가 88%). 분당 6이면 8,640건이라
-//   2.5배 여유다. 4로 두면 1.7배뿐인데, 밀리면 matchseens TTL(3일)에 걸려
-//   **처리도 못 해보고 사라진다.**
-const FETCH_PER_CYCLE = 6;                   // 분당 detail 호출
+
+// ★★ 하루를 반으로 나눠 역할을 분리한다 (2026-08-15).
+//     00~12시  명단 순회      분당 16명 x 720분 = 11,520명  (명단 11,000명)
+//     12~24시  detail 수집    분당 10건 x 720분 =  7,200건  (필요량 약 3,400건)
+//   이렇게 하면 **정오에 순회가 완전히 끝나서 등장 횟수(k 하한)가 확정된 뒤에**
+//   detail 을 받는다. 순회 도중에 받으면 아직 덜 세어진 판을 놓칠 수 있다.
+//   덤으로 두 잡의 호출이 시간대로 갈려서 순간 호출량도 낮아진다.
+const SCAN_PER_CYCLE = 16;                   // 분당 matchlist 호출 (순회 단계)
+const FETCH_PER_CYCLE = 10;                  // 분당 detail 호출 (수집 단계)
+
+// 한국시간 날짜
+const kstDay = (ms) => new Date(ms + 9 * 3600000).toISOString().slice(0, 10);
+
+// ★ 단계는 **시각이 아니라 진행 상태**로 가른다.
+//   분당 16명이면 11,000명에 11.5시간이라 자정에 시작해 정오쯤 끝나고, 결과적으로
+//   "오전 순회 / 오후 수집" 이 된다. 그런데 시각으로 하드코딩하면 재시작하거나
+//   429 로 밀렸을 때 **그날 순회를 통째로 건너뛴다.** 남은 인원으로 판단하면
+//   늦게 시작해도 알아서 따라잡는다.
+const scanPending = () => {
+    const day = scanTargetDay();
+    return challengerList.filter(p => matchScanDay[p.puuid] !== day).length;
+};
+
+// ★★ 수집 대상은 **어제 하루 전체**다 ("최근 24시간" 이 아니다).
+//   예전엔 각자 "훑는 시점 기준 24시간" 을 봤는데, 순회가 반나절에 걸쳐 있어서
+//   **사람마다 보는 창이 어긋났다.** A 를 0시에 훑으면 전날 0~24시를, B 를 11시에
+//   훑으면 전날 11시~당일 11시를 보게 되어, 같은 판을 했어도 한쪽만 세는 일이 생긴다.
+//   실측에서 `cnt < 실제 k` 가 52건 중 50건이었던 게 이것이다.
+//   날짜로 못 박으면 전원이 같은 창을 보므로 등장 횟수가 정확해지고,
+//   **일별 통계도 그 날짜가 통째로 채워진다** (지금은 부분만 채워진다).
+const scanTargetDay = () => kstDay(Date.now() - 86400000);
 
 // detail -> 슬림 문서. 통계에 쓸 값만 배열로 눕힌다.
 function toSlimMatch(detail) {
@@ -562,44 +589,50 @@ function toSlimMatch(detail) {
     };
 }
 
-// ① 명단을 훑으며 매치 ID 등장 횟수를 센다
+// ① 명단을 훑으며 매치 ID 등장 횟수를 센다 (오전에만 돈다)
 async function scanMatchlists() {
     if (challengerList.length === 0 || isScanningMatches) return;
     isScanningMatches = true;
 
     try {
-        const now = Date.now();
-        const since = Math.floor((now - SCAN_TTL) / 1000);   // 라이엇은 초 단위를 받는다
+        const day = scanTargetDay();
+        const from = Math.floor(Date.parse(`${day}T00:00:00+09:00`) / 1000);
+        const to = from + 86400;
 
+        // 이 날짜를 아직 안 훑은 사람만. 다 훑었으면 쉰다 (그때부터 수집 단계다).
         const targets = challengerList
-            .filter(p => !matchScanAt[p.puuid] || now - matchScanAt[p.puuid] > SCAN_TTL)
+            .filter(p => matchScanDay[p.puuid] !== day)
             .slice(0, SCAN_PER_CYCLE);
+        if (targets.length === 0) { isScanningMatches = false; return; }
 
         for (const p of targets) {
             try {
+                // ★ endTime 까지 준다. 하루가 통째로 닫힌 구간이라 전원이 같은 창을 본다.
+                //   count 는 100(최대)로 둔다 — 하루 100판을 넘기는 사람은 없고,
+                //   모자라면 그 사람 판이 통째로 누락되므로 넉넉한 쪽이 안전하다.
                 const res = await riotApi.get(
                     `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${p.puuid}/ids` +
-                    `?queue=${STAT_QUEUE}&startTime=${since}&start=0&count=20`
+                    `?queue=${STAT_QUEUE}&startTime=${from}&endTime=${to}&start=0&count=100`
                 );
                 const ids = res.data || [];
 
                 if (ids.length > 0) {
-                    // 한 번에 밀어 넣는다. 20건을 낱개로 보내면 DB 왕복만 20번이다.
+                    // 한 번에 밀어 넣는다. 낱개로 보내면 DB 왕복만 그만큼이다.
                     await MatchSeen.bulkWrite(ids.map(id => ({
                         updateOne: {
                             filter: { matchId: id },
-                            update: { $inc: { cnt: 1 }, $setOnInsert: { createdAt: new Date() } },
+                            update: { $inc: { cnt: 1 }, $setOnInsert: { day, createdAt: new Date() } },
                             upsert: true
                         }
                     })), { ordered: false });
                     statCounters.seen += ids.length;
                 }
 
-                matchScanAt[p.puuid] = now;
+                matchScanDay[p.puuid] = day;
                 statCounters.scan++;
                 // 닉네임이 없는 사람은 SummonerCache 에 줄이 없다(displayName 이 필수라
                 // upsert 도 못 한다). 그런 사람은 메모리에만 두고 넘어간다.
-                SummonerCache.updateOne({ puuid: p.puuid }, { matchScanAt: now }).catch(() => { });
+                SummonerCache.updateOne({ puuid: p.puuid }, { matchScanDay: day }).catch(() => { });
 
             } catch (err) {
                 const status = err.response?.status;
@@ -608,7 +641,7 @@ async function scanMatchlists() {
                     console.warn('[Stat] 429 — 이번 사이클 중단');
                     break;
                 }
-                // 그 외 오류는 다음 바퀴에 자연히 재시도된다 (matchScanAt 을 안 찍는다)
+                // 그 외 오류는 다음 사이클에 자연히 재시도된다 (matchScanDay 를 안 찍는다)
                 console.error(`[Stat] matchlist 실패 ${p.puuid.substring(0, 8)}: ${status || err.message}`);
             }
             await sleep(1200);
@@ -618,9 +651,14 @@ async function scanMatchlists() {
     }
 }
 
-// ② 기준을 넘긴 매치만 detail 을 받아 슬림으로 저장한다
+// ② 기준을 넘긴 매치만 detail 을 받아 슬림으로 저장한다 (오후에만 돈다)
+//   ★ 순회가 끝난 뒤에 도는 게 핵심이다. 순회 도중이면 등장 횟수가 아직 덜 세어져서
+//     기준(5)을 못 넘긴 판을 그냥 지나칠 수 있다.
 async function fetchMatchStats() {
     if (isFetchingStats || rankPuuidSet.size === 0) return;
+    // ★ 순회가 남아 있으면 손대지 않는다. 등장 횟수가 아직 덜 세어져서
+    //   기준(5)을 못 넘긴 판을 그냥 지나치게 된다.
+    if (scanPending() > 0) return;
     isFetchingStats = true;
 
     try {
@@ -679,7 +717,7 @@ const K_BAND_CUT = 8;              // 이 값 이상이면 "8-10", 미만이면 
 const DAILY_SCOPE_DAYS = 7;        // 최근 며칠치 일별 집계를 유지할지
 
 // 한국시간 기준 날짜 문자열. 경기 시각(t)이 UTC epoch 라 그냥 자르면 하루가 밀린다.
-const kstDayStr = (ms) => new Date(ms + 9 * 3600000).toISOString().slice(0, 10);
+// (한국시간 날짜 헬퍼는 위 수집 절의 kstDay 를 그대로 쓴다)
 
 async function buildOneScope(scopeKey, matchCond) {
     const rows = await MatchStat.aggregate([
@@ -782,7 +820,7 @@ async function buildChampStats() {
         // 일별 — 최근 7일 (한국시간 기준)
         const now = Date.now();
         for (let i = 0; i < DAILY_SCOPE_DAYS; i++) {
-            const day = kstDayStr(now - i * 86400000);
+            const day = kstDay(now - i * 86400000);
             const from = Math.floor(Date.parse(`${day}T00:00:00+09:00`) / 1000);
             scopes.push({ key: `d:${day}`, cond: { t: { $gte: from, $lt: from + 86400 } } });
         }
@@ -895,7 +933,8 @@ async function startJobs() {
 
     // ★ 통계 수집 두 잡도 기존 잡들과 15초씩 어긋나게 띄운다.
     //   0초 닉네임 / 15초 matchlist / 30초 숙련도 / 45초 detail 순서다.
-    //   정상상태 합계는 약 13회/분이라 한도(50회/분)의 4분의 1만 쓴다.
+    //   ★ 둘은 시간대가 갈려서 절대 같이 안 돈다 (오전 순회 16 / 오후 수집 10).
+    //     그래서 순간 최대가 17회/분이고 한도(50회/분)의 3분의 1이다.
     setTimeout(() => {
         scanMatchlists();
         setInterval(scanMatchlists, 60 * 1000);
@@ -919,7 +958,9 @@ async function startJobs() {
         }
         const c = statCounters;
         if (c.scan || c.fetch) {
-            console.log(`[Stat] 최근 10분: 명단 ${c.scan}명 훑음 / 매치 ${c.seen}건 관측 / detail ${c.fetch}건 (저장 ${c.save} · 제외 ${c.skip})`);
+            const left = scanPending();
+            const phase = left > 0 ? `순회 ${left}명 남음` : '수집';
+            console.log(`[Stat] 최근 10분(${phase}): 명단 ${c.scan}명 훑음 / 매치 ${c.seen}건 관측 / detail ${c.fetch}건 (저장 ${c.save} · 제외 ${c.skip})`);
             statCounters = { scan: 0, seen: 0, fetch: 0, save: 0, skip: 0 };
         }
     }, 600 * 1000);
