@@ -2569,6 +2569,9 @@ const RANKING_ITEMS_PER_PAGE = 50;
 
 // ★ 티어는 서버가 한 글자로 보내 준다 (server.js 의 TIER_CODE).
 //   순위 번호로 짐작하던 걸 대체한 것이다 — 마스터가 그마보다 LP 가 높은 일이 실제로 있다.
+// ★ color 는 2026-08-15부터 안 쓴다 — 티어 이름·LP·승률을 전부 흰색으로 통일했고,
+//   티어 구분은 왼쪽 메달 그림이 한다. 색을 되돌리고 싶으면 이 값을
+//   style="color: ${t.color}" 로 다시 실으면 되니까 표에는 남겨 둔다.
 const RANK_TIER_INFO = {
     C: { name: '챌린저', short: '챌', color: '#ca8a04', icon: 'challenger' },
     G: { name: '그랜드마스터', short: '그마', color: '#d33148', icon: 'grandmaster' },
@@ -2601,7 +2604,7 @@ function renderRankingHeader() {
             <p class="rank-updated" id="rank-updated">${rankUpdatedText()}</p>
             <div class="rank-search-box">
                 <input type="text" id="rank-search" class="rank-search" autocomplete="off"
-                       placeholder="닉네임 검색 (초성 · 영문 자판 그대로)"
+                       placeholder="닉네임/태그 검색"
                        oninput="onRankingSearch(this.value)">
                 <button type="button" class="rank-search-clear" id="rank-search-clear"
                         onclick="onRankingSearch('')" title="검색어 지우기">&times;</button>
@@ -2822,12 +2825,12 @@ function renderRankingPage(page, opts = {}) {
                 <td class="rank-name">${nameCell}</td>
                 <td class="rank-tier">
                     <img class="rank-tier-medal" src="https://opgg-static.akamaized.net/images/medals_new/${t.icon}.png" alt="" loading="lazy">
-                    <span class="rank-tier-name" style="color: ${t.color};">${t.name}</span>
-                    <span class="rank-tier-short" style="color: ${t.color};">${t.short}</span>
+                    <span class="rank-tier-name">${t.name}</span>
+                    <span class="rank-tier-short">${t.short}</span>
                 </td>
-                <td class="rank-lp" style="color: ${t.color};">${player.leaguePoints}</td>
+                <td class="rank-lp">${player.leaguePoints}</td>
                 <td class="rank-wr">
-                    <span class="rank-wr-num" style="color: ${winRate >= 55 ? '#f87171' : '#60a5fa'}">${winRate}%</span>
+                    <span class="rank-wr-num">${winRate}%</span>
                     <span class="rank-wl">(${player.wins}W ${player.losses}L)</span>
                 </td>
                 <td class="rank-mastery">${rankMasteryHtml(player.mastery)}</td>
@@ -2841,7 +2844,8 @@ function renderRankingPage(page, opts = {}) {
     const tableHtml = `
         <!-- ★ 인라인 style 을 클래스로 뺐다 (2026-08-11). min-width:600px 이 인라인이라
              @media 로 못 풀었고, 폰에서 LP·승률 칸이 화면 밖으로 밀려 옆으로 스크롤해야
-             보였다. 값은 그대로고 색만 계산값이라 인라인에 남는다. style.css 16번 절 참고. -->
+             보였다. 2026-08-15에 LP·승률·티어 이름을 전부 흰색으로 통일하면서 색도
+             CSS 로 갔다 — 이제 이 표에 인라인 style= 이 하나도 없다. style.css 16번 절 참고. -->
         <div class="rank-table-wrap">
             <table class="rank-table">
                 <thead>
