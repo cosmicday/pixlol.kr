@@ -346,6 +346,28 @@ body::before {
     width: 100%;
 }
 
+/* 로테이션 날짜 (UTC 기준). 제목 옆에 작게. */
+.mythic-rotation {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+/* ★ 아직 오늘 수집 전이거나 불러오기 실패했을 때. 수집이 반자동이라 빈 날이 생기는데
+   **어제 것을 대신 보여주면 안 되므로** 자리를 비워 두고 이유를 적는다.
+   높이를 카드와 비슷하게 잡아 목록이 있을 때와 없을 때 아래가 안 튀게 한다. */
+.mythic-empty {
+    width: 100%;
+    min-height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+}
+
 .mythic-item-card {
     flex: 1;
     min-width: 0;

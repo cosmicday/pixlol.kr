@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const NodeCache = require('node-cache');
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
 const { ipKeyGenerator } = require('express-rate-limit');
@@ -178,6 +179,37 @@ summonerCacheSchema.index({ displayName: 1 });
 summonerCacheSchema.index({ namePartLower: 1, tierScore: -1 });
 
 const SummonerCache = mongoose.model('SummonerCache', summonerCacheSchema);
+
+// ==========================================
+// 신화급 상점 일일 상품 (2026-08-16 신설)
+//   윈도우 로컬 수집기(별도 프로젝트)가 롤 클라 화면을 읽어 POST /api/mythic-shop 로 보낸다.
+//   명세는 mythic-collector/SERVER_SPEC.md 다.
+//
+//   ★ 정적 파일이 아니라 DB 인 이유: Railway 파일시스템이 배포마다 날아가서 서버가
+//     파일을 못 만든다. 정적 파일로 가면 수집할 때마다 사람이 git push 를 해야 한다.
+//   ★ TTL 이 없다 — **영구 기록이다.** 하루 4건 x 200B 면 1년에 300KB 라 지울 이유가 없다.
+//   ★ `date` 는 **UTC 기준 날짜**다. 로테이션이 00:00 UTC(한국 09:00) 갱신이라
+//     그 날짜가 곧 로테이션 ID 다. 한국 날짜와 다를 수 있으니 화면에서 조심할 것.
+// ==========================================
+const mythicShopSchema = new mongoose.Schema({
+    date: { type: String, required: true, unique: true },   // "2026-08-16" (UTC)
+    collectedAt: { type: Date, required: true },            // 수집 시각 (표시용)
+    items: [{
+        _id: false,
+        name: { type: String, required: true },    // 정식 명칭 (수집기가 CD 로 대조해 보낸다)
+        type: { type: String, required: true },    // 'icon' | 'emote'
+        price: { type: Number, required: true },   // 5 | 25
+        catalogId: { type: String },               // CommunityDragon id
+        // ★ 이미지 URL 은 **수집기가 만들어 보낸다. 서버·프론트가 만들지 말 것.**
+        //   아이콘은 id 로 경로를 만들 수 있지만 감정표현은 경로가 제각각이라 유추가 안 된다.
+        image: { type: String },
+        score: { type: Number }                    // 이름 대조 점수 0~1 (감사용, 화면엔 안 쓴다)
+    }],
+    collectorVersion: { type: String },
+    createdAt: { type: Date, default: Date.now }
+});
+mythicShopSchema.index({ 'items.catalogId': 1, date: -1 });   // "마지막 등장일" 조회용
+const MythicShop = mongoose.model('MythicShop', mythicShopSchema);
 
 // ==========================================
 // [2] 전역 변수 및 서버(Express) 세팅
@@ -1023,6 +1055,13 @@ async function ensureStatIndexes() {
         // 통계 수집·집계용
         { col: 'matchseens', key: { done: 1, cnt: -1 } },
         { col: 'champbuilds', key: { scope: 1, champ: 1 } },
+        // 신화상점.
+        //   ★★ `date` 의 unique 도 여기 적어야 한다. 스키마에 `unique: true` 를 써 놨지만
+        //     **실제로 안 만들어졌다** (2026-08-16 실측: `_id_` 와 아래 복합 인덱스뿐이었다).
+        //     이게 없으면 같은 날짜가 동시에 두 번 들어올 때 문서가 둘 생기고
+        //     POST 의 11000 처리도 영영 안 탄다 — 하루 한 번짜리라 드물지만 막을 수 있는 건 막는다.
+        { col: 'mythicshops', key: { date: 1 }, unique: true },
+        { col: 'mythicshops', key: { 'items.catalogId': 1, date: -1 } },   // "마지막 등장일" 조회용
         { col: 'matchstats', key: { v: 1, k: 1 } },
         { col: 'matchstats', key: { t: 1 } },
         { col: 'champstats', key: { scope: 1, kb: 1, pos: 1 } },
@@ -2205,6 +2244,258 @@ app.get('/api/champion-builds', async (req, res) => {
     } catch (e) {
         console.error('[API] 룬 빌드 실패:', e.message);
         res.status(500).json({ error: '룬 통계를 불러오지 못했습니다.' });
+    }
+});
+
+// ==========================================
+// 신화급 상점 (2026-08-16 신설)
+//   POST 는 로컬 수집기가 보내는 곳이고, GET 셋은 화면이 읽는 곳이다.
+//   명세: mythic-collector/SERVER_SPEC.md
+// ==========================================
+
+// UTC 기준 날짜. 로테이션이 00:00 UTC 갱신이라 이게 곧 로테이션 ID 다.
+//   ★ 한국시간 날짜(kstDay)와 헷갈리지 말 것 — 오전 9시 전에는 하루 차이가 난다.
+const utcDay = (ms = Date.now()) => new Date(ms).toISOString().slice(0, 10);
+
+// ★ 토큰 비교는 길이가 새지 않게 한다. 양쪽을 sha256 으로 눌러 길이를 맞춘 뒤
+//   timingSafeEqual 을 쓴다 (길이가 다르면 그 함수가 예외를 던진다).
+function checkCollectorToken(req) {
+    const expected = process.env.COLLECTOR_TOKEN || '';
+    const got = req.get('X-Collector-Token') || '';
+    if (!expected || !got) return false;
+    const a = crypto.createHash('sha256').update(expected).digest();
+    const b = crypto.createHash('sha256').update(got).digest();
+    return crypto.timingSafeEqual(a, b);
+}
+
+// ★★ 수집기를 믿지 않는다. 화면을 잘못 읽을 수도 있고 토큰이 새면 아무나 보낼 수 있다.
+//   틀린 값이 조용히 들어가는 게 이 기능에서 가장 나쁜 결과라 서버에서 다시 본다.
+const MYTHIC_PRICE = { icon: 5, emote: 25 };
+const MYTHIC_IMAGE_PREFIX = 'https://raw.communitydragon.org/';
+
+function validateMythicBody(body) {
+    if (!body || typeof body !== 'object') return '본문이 없습니다.';
+
+    const date = body.date;
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return 'date 는 YYYY-MM-DD 여야 합니다.';
+    }
+    // 미래 날짜 금지. 수집기 시계가 틀어졌거나 장난이다.
+    if (date > utcDay()) return `date 가 미래입니다 (오늘 UTC ${utcDay()}).`;
+
+    const items = body.items;
+    if (!Array.isArray(items) || items.length < 1 || items.length > 12) {
+        return 'items 는 1개 이상 12개 이하의 배열이어야 합니다.';
+    }
+
+    for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        const at = `items[${i}]`;
+        if (!it || typeof it !== 'object') return `${at} 가 객체가 아닙니다.`;
+
+        if (typeof it.name !== 'string' || !it.name.trim() || it.name.length > 200) {
+            return `${at}.name 은 1~200자 문자열이어야 합니다.`;
+        }
+        if (it.type !== 'icon' && it.type !== 'emote') {
+            return `${at}.type 은 icon 또는 emote 여야 합니다.`;
+        }
+        if (it.price !== 5 && it.price !== 25) {
+            return `${at}.price 는 5 또는 25 여야 합니다.`;
+        }
+        // 타입과 가격이 어긋나면 화면을 잘못 읽은 것이다 (아이콘 5 / 감정표현 25 고정)
+        if (MYTHIC_PRICE[it.type] !== it.price) {
+            return `${at} 는 ${it.type} 인데 가격이 ${it.price} 입니다 (${MYTHIC_PRICE[it.type]} 이어야 함).`;
+        }
+        // ★ 이미지 출처를 고정한다. 토큰이 샜을 때 임의의 URL 을 프론트에 심는 걸 막는다 —
+        //   이 값은 그대로 <img src> 로 들어간다.
+        if (it.image != null && it.image !== '') {
+            if (typeof it.image !== 'string' || !it.image.startsWith(MYTHIC_IMAGE_PREFIX)) {
+                return `${at}.image 는 ${MYTHIC_IMAGE_PREFIX} 로 시작해야 합니다.`;
+            }
+        }
+        if (it.catalog_id != null && typeof it.catalog_id !== 'string' && typeof it.catalog_id !== 'number') {
+            return `${at}.catalog_id 가 문자열이 아닙니다.`;
+        }
+    }
+    return null;
+}
+
+// 수집기 본문(snake_case) → 저장 형태(camelCase)
+const toMythicItems = (items) => items.map(it => ({
+    name: it.name.trim(),
+    type: it.type,
+    price: it.price,
+    catalogId: it.catalog_id != null ? String(it.catalog_id) : undefined,
+    image: it.image || undefined,
+    score: typeof it.score === 'number' ? it.score : undefined
+}));
+
+// ★ 같은 날짜인지 비교할 때는 name/type/price 만 본다.
+//   score 와 collected_at 은 같은 화면을 두 번 읽어도 달라질 수 있어서 뺀다.
+const mythicFingerprint = (items) =>
+    JSON.stringify(items.map(i => [i.name, i.type, i.price]));
+
+// 화면이 읽는 캐시를 지운다. 갱신 직후에 옛 값이 남으면 안 된다.
+const clearMythicCache = (date) => {
+    myCache.del('mythic_today');
+    myCache.del(`mythic_day_${date}`);
+    myCache.keys().filter(k => k.startsWith('mythic_')).forEach(k => myCache.del(k));
+};
+
+// 수집기 전용 제한. 하루 몇 번이면 충분하다 (/api/ 의 30회/분보다 좁게).
+//   ★ 로컬에서 검증 규칙을 한 줄씩 눌러 보려면 30번 넘게 쏴야 해서 막힌다.
+//     `COLLECTOR_RATE_MAX=1000` 으로 띄우면 풀린다. **프로덕션에는 넣지 말 것.**
+const collectorLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: Number(process.env.COLLECTOR_RATE_MAX) || 10,
+    keyGenerator: (req) => ipKeyGenerator(req.headers['cf-connecting-ip'] || req.ip),
+    message: { ok: false, reason: 'rate_limited' }
+});
+
+// ── 수집기가 보내는 곳
+//   ★ express.json 을 전역이 아니라 이 경로에만 건다. 서버에 쓰기 엔드포인트가 여기
+//     하나뿐이라 다른 경로에서 본문을 파싱할 이유가 없다.
+app.post('/api/mythic-shop', collectorLimiter, express.json({ limit: '64kb' }), async (req, res) => {
+    if (!checkCollectorToken(req)) {
+        return res.status(401).json({ ok: false, reason: 'unauthorized' });
+    }
+
+    const bad = validateMythicBody(req.body);
+    if (bad) {
+        console.warn('[Mythic] 검증 실패:', bad);
+        return res.status(400).json({ ok: false, reason: 'invalid', message: bad });
+    }
+
+    const date = req.body.date;
+    const items = toMythicItems(req.body.items);
+    const collectedAt = req.body.collected_at ? new Date(req.body.collected_at) : new Date();
+    const force = req.query.force === '1';
+
+    try {
+        const existing = await MythicShop.findOne({ date }).lean();
+
+        if (!existing) {
+            await MythicShop.create({
+                date, collectedAt: isNaN(+collectedAt) ? new Date() : collectedAt,
+                items, collectorVersion: req.body.collector_version
+            });
+            clearMythicCache(date);
+            console.log(`[Mythic] ${date} 저장 (${items.length}개)`);
+            return res.status(201).json({ ok: true, created: true, date, count: items.length });
+        }
+
+        // ★★ 조용히 덮어쓰지 않는다. 같은 날짜에 다른 내용이 온다는 건 둘 중 하나가
+        //   틀렸다는 뜻이라 사람이 봐야 한다. 수집기는 409 를 받으면 재시도하지 않는다.
+        if (mythicFingerprint(existing.items) === mythicFingerprint(items)) {
+            return res.json({ ok: true, created: false, date, count: items.length });
+        }
+
+        if (!force) {
+            console.warn(`[Mythic] ${date} 충돌 — 기존 ${existing.items.length}개 vs 새 ${items.length}개`);
+            return res.status(409).json({
+                ok: false, reason: 'conflict', date,
+                existing: existing.items, incoming: items
+            });
+        }
+
+        await MythicShop.updateOne({ date }, {
+            $set: {
+                collectedAt: isNaN(+collectedAt) ? new Date() : collectedAt,
+                items, collectorVersion: req.body.collector_version
+            }
+        });
+        clearMythicCache(date);
+        console.log(`[Mythic] ${date} 강제 덮어쓰기 (${items.length}개)`);
+        return res.json({ ok: true, created: false, overwritten: true, date, count: items.length });
+
+    } catch (e) {
+        // unique 인덱스 충돌 — 같은 순간에 두 번 들어온 경우다
+        if (e.code === 11000) {
+            return res.status(409).json({ ok: false, reason: 'conflict', date });
+        }
+        console.error('[Mythic] 저장 실패:', e.message);
+        return res.status(500).json({ ok: false, reason: 'server_error' });
+    }
+});
+
+// ── 오늘(UTC) 로테이션
+//   ★ 없을 때 404 가 아니라 200 + items: null 로 준다. 404 로 주면 화면에서
+//     "아직 수집 전" 과 "서버 오류" 를 구분할 수 없다.
+app.get('/api/mythic-shop/today', async (req, res) => {
+    try {
+        const hit = myCache.get('mythic_today');
+        if (hit) return res.json(hit);
+
+        const date = utcDay();
+        const doc = await MythicShop.findOne({ date }).select('-_id -__v -createdAt').lean();
+        const payload = doc
+            ? { ok: true, date, collectedAt: doc.collectedAt, items: doc.items }
+            : { ok: true, date, collectedAt: null, items: null };
+
+        // 하루 한 번 바뀌는 데이터지만 갱신 직후 옛 값이 남으면 안 되니 짧게 둔다.
+        // (POST 가 성공하면 clearMythicCache 가 어차피 지운다)
+        myCache.set('mythic_today', payload, 60);
+        res.json(payload);
+    } catch (e) {
+        console.error('[Mythic] today 실패:', e.message);
+        res.status(500).json({ ok: false, reason: 'server_error' });
+    }
+});
+
+// ── 그 아이템이 나온 날짜들 (최신순). "마지막 등장일" 용
+//   ★ /api/mythic-shop 보다 **먼저** 선언해야 한다. 뒤에 두면 그쪽이 먼저 잡는다.
+app.get('/api/mythic-shop/history/:catalogId', async (req, res) => {
+    try {
+        const catalogId = String(req.params.catalogId || '').slice(0, 40);
+        if (!catalogId) return res.status(400).json({ ok: false, reason: 'invalid' });
+
+        const key = `mythic_hist_${catalogId}`;
+        const hit = myCache.get(key);
+        if (hit) return res.json(hit);
+
+        const docs = await MythicShop.find({ 'items.catalogId': catalogId })
+            .select('date items').sort({ date: -1 }).limit(400).lean();
+
+        const dates = docs.map(d => d.date);
+        // 이름은 가장 최근 것으로 (이름이 바뀌었어도 최신 표기를 보여 준다)
+        const name = docs.length
+            ? (docs[0].items.find(i => i.catalogId === catalogId)?.name || null)
+            : null;
+
+        const payload = { ok: true, catalogId, name, dates };
+        myCache.set(key, payload, 300);
+        res.json(payload);
+    } catch (e) {
+        console.error('[Mythic] history 실패:', e.message);
+        res.status(500).json({ ok: false, reason: 'server_error' });
+    }
+});
+
+// ── 기간 조회. 기본 최근 30일
+app.get('/api/mythic-shop', async (req, res) => {
+    try {
+        const isDate = (s) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 30, 1), 400);
+        const q = {};
+        if (isDate(req.query.from) || isDate(req.query.to)) {
+            q.date = {};
+            if (isDate(req.query.from)) q.date.$gte = req.query.from;
+            if (isDate(req.query.to)) q.date.$lte = req.query.to;
+        }
+
+        const key = `mythic_range_${req.query.from || ''}_${req.query.to || ''}_${limit}`;
+        const hit = myCache.get(key);
+        if (hit) return res.json(hit);
+
+        const docs = await MythicShop.find(q)
+            .select('-_id -__v -createdAt').sort({ date: -1 }).limit(limit).lean();
+
+        const payload = { ok: true, count: docs.length, days: docs };
+        myCache.set(key, payload, 60);
+        res.json(payload);
+    } catch (e) {
+        console.error('[Mythic] 기간 조회 실패:', e.message);
+        res.status(500).json({ ok: false, reason: 'server_error' });
     }
 });
 

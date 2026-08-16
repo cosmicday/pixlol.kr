@@ -4215,20 +4215,61 @@ window.showTerms = function () {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-window.loadMythicShop = function () {
-    const mythicItems = [
-        { name: "와락!", price: 25, imgUrl: "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loadouts/summoneremotes/events/spacegroove/spacegroove_blitzcrank_emote_inventory.png" },
-        { name: "공격 준비 완료", price: 25, imgUrl: "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loadouts/summoneremotes/tft/grindrewards/4488_ready_to_strike_inventory.png" },
-        { name: "강타 준비됐어?", price: 25, imgUrl: "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loadouts/summoneremotes/rewards/watchrewards/em_esports_graves_inventory.png" },
-        { name: "천상비늘 잔나 크로마 아이콘", price: 5, imgUrl: "https://ddragon.leagueoflegends.com/cdn/14.4.1/img/profileicon/6512.png" }
-    ];
-    const meIcon = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/rarity-gem-icons/mythic.png";
-    document.getElementById('mythic-items').innerHTML = mythicItems.map(item => `
+// ============================================================
+//  오늘의 신화 상점 (2026-08-16에 실제 데이터로 교체)
+//
+//    예전엔 아이템 4개가 하드코딩돼 있었다. 지금은 윈도우 로컬 수집기가 롤 클라
+//    화면을 읽어 POST /api/mythic-shop 으로 보낸 걸 /today 로 받아 그린다.
+//
+//    ★★ 수집이 반자동이라 **그날 데이터가 없는 날이 생긴다.** 그때 어제 것이 오늘 것처럼
+//      보이면 안 되므로 `items: null` 을 반드시 구분해서 표시한다. 서버가 404 가 아니라
+//      200 + items:null 로 주는 이유도 이것이다 (404 면 서버 오류와 구분이 안 된다).
+//    ★ `date` 는 **UTC 기준**이다. 로테이션이 00:00 UTC(한국 09:00) 갱신이라
+//      한국 날짜와 하루 어긋날 수 있어서, 화면에 "N월 N일 로테이션" 이라고 적는다.
+//    ★ 이미지는 `items[].image` 를 그대로 쓴다. **id 로 만들지 말 것** —
+//      감정표현은 경로가 제각각이라 유추가 안 된다 (아이콘만 규칙적이다).
+// ============================================================
+const ME_GEM_ICON = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/rarity-gem-icons/mythic.png";
+const MYTHIC_FALLBACK_IMG = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/hextech-images/chest.png";
+
+function mythicRotationLabel(date) {
+    // "2026-08-16" → "8월 16일 로테이션"
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date || '');
+    return m ? `${Number(m[2])}월 ${Number(m[3])}일 로테이션` : '';
+}
+
+window.loadMythicShop = async function () {
+    const box = document.getElementById('mythic-items');
+    if (!box) return;
+
+    let data;
+    try {
+        const res = await fetch('/api/mythic-shop/today');
+        data = await res.json();
+        if (!data.ok) throw new Error('not ok');
+    } catch (e) {
+        box.innerHTML = `<div class="mythic-empty">신화 상점 정보를 불러오지 못했습니다.</div>`;
+        return;
+    }
+
+    const label = document.getElementById('mythic-rotation');
+    if (label) label.textContent = mythicRotationLabel(data.date);
+
+    // ★ 아직 오늘 수집 전. 어제 것을 대신 보여주면 거짓말이 되므로 비워 두고 말한다.
+    if (!data.items || !data.items.length) {
+        box.innerHTML = `<div class="mythic-empty">아직 오늘 로테이션을 수집하지 않았습니다.</div>`;
+        return;
+    }
+
+    box.innerHTML = data.items.map(item => `
         <div class="mythic-item-card">
-            <div class="mythic-item-img-box"><img src="${item.imgUrl}" onerror="this.src='https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/hextech-images/chest.png'"></div>
+            <div class="mythic-item-img-box">
+                <img src="${item.image || MYTHIC_FALLBACK_IMG}" alt=""
+                     onerror="this.src='${MYTHIC_FALLBACK_IMG}'">
+            </div>
             <div class="mythic-item-info">
-                <span class="mythic-item-name" title="${item.name}">${item.name}</span>
-                <div class="mythic-item-price"><img src="${meIcon}" style="width: 13px; height: 13px;"><span style="color: #facc15; font-size: 14px; font-weight: 700;">${item.price}</span></div>
+                <span class="mythic-item-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+                <div class="mythic-item-price"><img src="${ME_GEM_ICON}" style="width: 13px; height: 13px;"><span style="color: #facc15; font-size: 14px; font-weight: 700;">${item.price}</span></div>
             </div>
         </div>
     `).join('');
