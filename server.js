@@ -2259,13 +2259,20 @@ const utcDay = (ms = Date.now()) => new Date(ms).toISOString().slice(0, 10);
 
 // ★ 토큰 비교는 길이가 새지 않게 한다. 양쪽을 sha256 으로 눌러 길이를 맞춘 뒤
 //   timingSafeEqual 을 쓴다 (길이가 다르면 그 함수가 예외를 던진다).
+//   ★★ 실패 이유를 셋으로 갈라서 돌려준다 (2026-08-16). 전부 401 로 뭉뚱그렸더니
+//     프로덕션에서 401 이 났을 때 **"서버에 토큰이 없다 / 헤더가 안 왔다 / 값이 다르다"**
+//     를 구분할 수가 없었다. 셋 다 원인도 고칠 곳도 다르다.
+//     값 자체는 안 흘린다 — 맞았는지 여부는 어차피 201/401 로 이미 드러난다.
 function checkCollectorToken(req) {
     const expected = process.env.COLLECTOR_TOKEN || '';
     const got = req.get('X-Collector-Token') || '';
-    if (!expected || !got) return false;
+
+    if (!expected) return 'server_token_missing';   // 서버(Railway) 환경변수가 비었다
+    if (!got) return 'header_missing';              // 헤더가 안 왔다 (프록시가 지웠을 수도)
+
     const a = crypto.createHash('sha256').update(expected).digest();
     const b = crypto.createHash('sha256').update(got).digest();
-    return crypto.timingSafeEqual(a, b);
+    return crypto.timingSafeEqual(a, b) ? null : 'token_mismatch';
 }
 
 // ★★ 수집기를 믿지 않는다. 화면을 잘못 읽을 수도 있고 토큰이 새면 아무나 보낼 수 있다.
@@ -2356,8 +2363,10 @@ const collectorLimiter = rateLimit({
 //   ★ express.json 을 전역이 아니라 이 경로에만 건다. 서버에 쓰기 엔드포인트가 여기
 //     하나뿐이라 다른 경로에서 본문을 파싱할 이유가 없다.
 app.post('/api/mythic-shop', collectorLimiter, express.json({ limit: '64kb' }), async (req, res) => {
-    if (!checkCollectorToken(req)) {
-        return res.status(401).json({ ok: false, reason: 'unauthorized' });
+    const authFail = checkCollectorToken(req);
+    if (authFail) {
+        console.warn(`[Mythic] 인증 실패: ${authFail}`);
+        return res.status(401).json({ ok: false, reason: 'unauthorized', detail: authFail });
     }
 
     const bad = validateMythicBody(req.body);
