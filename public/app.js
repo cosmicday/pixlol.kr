@@ -321,6 +321,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('stats-container').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:#9aa4af;'>통계 데이터를 불러오는 중입니다...</div>";
         showStats();
         setActiveNav('nav-stats');
+    } else if (pathParts[1] === 'codex') {
+        // /codex 또는 /codex/rune 처럼 탭을 주소에 담을 수 있다
+        document.getElementById('codex-container').style.display = "block";
+        showCodex(pathParts[2] ? decodeURIComponent(pathParts[2]) : null);
+        setActiveNav('nav-codex');
     } else if (pathParts[1] === 'privacy') {
         showPrivacyPolicy();
     } else if (pathParts[1] === 'terms') {
@@ -375,6 +380,12 @@ window.addEventListener('popstate', (event) => {
     } else if (currentPath === '/stats') {
         showStats();
         setActiveNav('nav-stats');
+    } else if (currentPath.startsWith('/codex')) {
+        // ★ 진입부(pathParts 분기)와 여기 두 곳을 항상 같이 고친다. 한쪽만 고치면
+        //   뒤로가기로 들어왔을 때 다르게 동작한다 (랭킹 헤더에서 겪은 그 문제다).
+        const seg = currentPath.split('/');
+        showCodex(seg[2] ? decodeURIComponent(seg[2]) : null);
+        setActiveNav('nav-codex');
     } else if (currentPath.startsWith('/champions-classic')) {
         // '/champions'보다 먼저 검사해야 한다. startsWith라 순서가 뒤바뀌면 이쪽으로 안 온다.
         const pathParts = currentPath.split('/');
@@ -2403,6 +2414,117 @@ document.addEventListener('DOMContentLoaded', () => {
 // [7] 통계 및 랭킹 페이지 로직
 // ==========================================
 // ============================================================
+//  스킬·아이템·룬 툴팁 색 (2026-08-09 인게임 스크린샷 실측 / 2026-08-16 상수로 분리)
+//
+//    ★★ 이 표는 **한 벌만 있어야 한다.** 챔피언 스킬 탭과 도감 탭이 같이 쓴다 —
+//      아이템·룬 설명도 라이엇이 같은 태그를 쓰기 때문이다 (도감에 나오는 36종 중
+//      31종이 이미 여기 있었다). 복붙해서 두 벌이 되면 색이 어긋난다.
+//
+//    ★ style.css 로 옮기면 안 된다. `li` · `b` · `i` · `font` 같은 **진짜 HTML 태그**에도
+//      규칙을 걸고 있어서, 전역이 되면 약관·개인정보 페이지의 <li> 까지 줄표가 붙는다
+//      (index.html 5곳 · app.js 4곳에서 <li> 를 쓴다). 그래서 쓰는 쪽에 끼워 넣는다.
+// ============================================================
+const TOOLTIP_STYLE_CSS = `
+            mainText { display: block; font-size: 14px; line-height: 1.6; color: #ddd; } stats { display: block; color: #a78bfa; font-size: 13px; margin-bottom: 12px; font-weight: bold; background: rgba(167, 139, 250, 0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(167, 139, 250, 0.1); }
+            /* ★ 아래 색은 인게임 툴팁 스크린샷에서 픽셀을 직접 뽑은 값이다 (2026-08-09).
+                 렐 W / 쉬바나 Q / 바드 P / 우디르 Q / 로크 W 를 썼고,
+                 색이 나타나는 좌표가 해당 단어 위치와 맞는지 역으로 검증했다.
+                 겹치는 태그는 서로 다른 스크린샷에서 같은 값이 나와 교차 확인됐다
+                 (magicdamage 는 렐·쉬바나·바드 3장에서 동일).
+                 ※ "구분이 잘 되게" 가 아니라 "인게임과 같게" 가 기준이다. 색끼리 비슷해도 그대로 둔다. */
+            magicdamage { color: #0acbe6; font-weight: bold; } physicaldamage { color: #f26522; font-weight: bold; } truedamage { color: #cdfafa; font-weight: bold; }
+            /* health 는 유미 P 처럼 <healing><health>…</health></healing> 로 중첩돼 있어
+               같은 색을 쓴다. heal 도 같은 의미라 함께 묶었다 (실측한 건 healing 뿐). */
+            healing, heal, health { color: #60e08f; font-weight: bold; } shield { color: #4dd0eb; font-weight: bold; }
+            scalearmor { color: #f0ba57; } scalemr { color: #4fdfff; } scalemana { color: #189ce7; }
+            keywordmajor { color: #dddd77; font-weight: bold; }
+            speed { color: #fffdc9; font-weight: bold; } status { color: #ad76c4; font-weight: bold; }
+            attackspeed { color: #ffe384; font-weight: bold; }
+            spellname, onhit, scalelevel, attention, unique { color: #f0e6d2; font-weight: bold; }
+            recast { color: #d67351; font-weight: bold; }
+            scalead { color: #eb8d34; } scaleap { color: #786cff; }
+            keywordstealth { color: #d182be; font-weight: bold; }
+            evolve { color: #bc3598; font-weight: bold; }
+            danger { color: #ff0000; font-weight: bold; }
+            /* ★ 인게임 실측값은 #5a5955 인데 우리 배경이 인게임 툴팁보다 어두워서
+                 거의 안 읽혔다. 밝기만 올린 값이다 (색상·채도는 그대로). 2026-08-12 */
+            rules { color: #918f86; }
+            /* 라벨류는 전부 "기본 지속 효과:" 색으로 통일한다.
+               인게임은 스킬마다 미묘하게 다르지만(니코 W 는 사용 시만 연노랑,
+               갈리오 W 는 충전 시작 시가 또 다름) 통일하는 쪽이 읽기 낫다는 판단. */
+            active, passive, charge, release, toggle, tap, hold { display: block; margin-top: 8px; color: #f0e6d2; font-weight: bold; }
+            /* ★ 이 태그들이 **파트 맨 앞**에 올 때는 위 여백을 없앤다 (2026-08-10).
+               하위 스킬 파트는 각자 자기 <div> 에 들어가므로 첫 태그의 margin-top 8px 이
+               텍스트만 아래로 밀어 **옆 아이콘과 수평이 어긋난다.**
+               모데카이저 W(<active> 로 시작)와 르블랑 R(<spellname> 로 시작)이
+               서로 다르게 보이던 원인이 이거였다. 구분선이 이미 간격을 주므로 여백은 불필요. */
+            active:first-child, passive:first-child, charge:first-child,
+            release:first-child, toggle:first-child, tap:first-child, hold:first-child { margin-top: 0; }
+            /* 강인함(slow)은 인게임에서 색이 안 들어간다. 본문색을 그대로 따라간다. */
+            slow { color: inherit; font-weight: normal; }
+            /* scalehealth 와 lifesteal 은 실제로 같은 초록이다 (블라디미르 P / 아트록스 E).
+               keyword 와 keywordstealth 도 같은 분홍보라다 (블라디미르 W / 니코 W).
+               "구분이 안 된다" 가 아니라 라이엇이 원래 같은 색을 쓴다. */
+            scalehealth, lifesteal { color: #1f995c; font-weight: bold; }
+            keyword { color: #d182be; font-weight: bold; }
+            armorpen { color: #f95f55; font-weight: bold; }
+            omnivamp { color: #cb0c2d; font-weight: bold; }
+            specialrules { color: #f0e6d2; font-weight: bold; }
+            /* 아래는 인게임에서 색이 안 들어가는 자리다. 본문색을 그대로 따라간다. 전부 실측 확인:
+               keywordname 탐 켄치 R "고정"·"심연 잠수", slow 가렌 W "60%의 강인함",
+               level 애니비아 P, stattracking 드레이븐 P (뒤 둘은 스샷에 강조색 자체가 없었다). */
+            keywordname, stattracking, level { color: inherit; }
+            /* ★ <li> 에 CSS 가 없어서 브라우저 기본 불릿(동그라미)이 찍히고 있었다 (2026-08-12).
+                 <ul> 없이 <li> 만 쓰는 문장이라 마커가 글 밖으로 삐져나오기도 했다.
+                 인게임 툴팁은 동그라미가 아니라 짧은 줄표를 쓴다. DD 폴백 경로도
+                 cleanTooltipText 가 <li> 를 "- " 로 바꾸고 있어서 이제 양쪽이 같아졌다. */
+            li { display: block; margin: 2px 0; }
+            li::before { content: '- '; color: #9aa4af; }
+            /* activerank 는 구분선 아래 회색 글씨에서만 나온다 (볼리베어 E 한 자리).
+               인게임 색을 실측한 적이 없으므로 색을 지어내지 않고 본문색을 따라간다. */
+            activerank { color: inherit; }
+            /* ★ 구분선 아래 회색 글씨(.skill-rules) 안에서는 라벨류를 인라인으로 되돌린다.
+                 위 규칙이 display:block 이라 문장 한가운데서 줄이 끊긴다 —
+                 이렐리아 W 의 "<charge>충전</charge>이 끝나면" 이 세 줄로 갈라졌다.
+                 여기서는 라벨이 아니라 그냥 단어로 쓰인다. */
+            .skill-rules active, .skill-rules passive, .skill-rules charge,
+            .skill-rules release, .skill-rules toggle, .skill-rules tap, .skill-rules hold
+                { display: inline; margin-top: 0; }
+            /* --- 문장에 안 쓰이는 태그. 확인 대상이 아니다 --- */
+            gold { color: #ffd700; font-weight: bold; }
+            b { font-weight: bold; }
+            i { font-style: italic; }
+            /* ★ <font color=...> 는 라이엇이 원문에 색을 직접 박아 둔 것이고,
+                 그 값이 인게임 색과 정확히 일치한다 (바드 P 의 "고대의 종" #cccc00,
+                 "정령" #ff9900 을 스크린샷에서 뽑아 확인). 그러니 color 는 건드리지 않는다.
+                 예전엔 여기서 color 를 !important 로 덮어써서 44곳의 라이엇 지정색이
+                 전부 죽어 있었다 (아펠리오스 무기색·바드 종·아우렐리온 솔 별가루 등).
+                 font-size 는 원문에 <font size='18'> 같은 게 있어 글자가 튀므로 계속 막는다. */
+            font { display: inline; font-size: inherit !important; font-weight: bold; }
+            /* ★ 아래 5종은 **도감(아이템·룬)에만 나오는 태그**다 (2026-08-16).
+                 위 색들과 달리 인게임 스크린샷 실측이 아니라 뜻에 맞춰 고른 값이다 —
+                 나중에 실측하면 여기만 고치면 된다. 도감 36종 중 나머지 31종은
+                 스킬 툴팁에서 이미 실측해 둔 값을 그대로 쓴다. */
+            raritylegendary { color: #ff9b00; font-weight: bold; }   /* 아이템 "전설" 표기 */
+            raritygeneric { color: #f0e6d2; font-weight: bold; }
+            scalelethality { color: #f95f55; }                        /* armorpen 과 같은 계열이라 맞췄다 */
+            statgood { color: #60e08f; font-weight: bold; }
+            /* 룬 설명의 커스텀 엘리먼트. 인게임에선 hover 하면 용어 설명이 뜨는 자리인데
+               우리는 그 툴팁이 없으므로 점선 밑줄로 "용어" 라는 것만 표시한다. */
+            lol-uikit-tooltipped-keyword { color: inherit; border-bottom: 1px dotted rgba(255,255,255,0.35); }
+            .custom-footnote { position: relative; display: inline-block; cursor: pointer; color: #a78bfa; margin-left: 2px; }
+            .custom-footnote .footnote-text {
+                visibility: hidden; width: max-content; max-width: 250px; background-color: #111; color: #fff;
+                text-align: left; border-radius: 6px; padding: 6px 10px; position: absolute; z-index: 99;
+                bottom: 150%; left: 50%; transform: translateX(-50%); border: 1px solid rgba(255,255,255,0.2);
+                font-size: 12px; font-weight: normal; line-height: 1.5; opacity: 0; transition: opacity 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            }
+            .custom-footnote:hover .footnote-text { visibility: visible; opacity: 1; }
+            .skill-damage-line { color: #ddd; font-size: 14px; line-height: 1.7; }
+            .skill-damage-line + .skill-damage-line { margin-top: 6px; }
+`;
+
+// ============================================================
 // 챔피언 통계 (티어리스트) — 2026-08-15에 실제 집계로 교체
 //
 //   예전엔 statsData.js 의 하드코딩 샘플을 썼다. 지금은 server.js 의
@@ -2444,6 +2566,329 @@ function assignStatTiers(list) {
 function statScopeLabel(scope) {
     if (!scope) return '';
     return scope.startsWith('p:') ? `${scope.slice(2)} 패치` : `${scope.slice(2)}`;
+}
+
+// ============================================================
+//  도감 — 아이템 · 룬 · 소환사 주문 (2026-08-16 신설)
+//
+//    왼쪽 목록 + 오른쪽 상세. 골격은 스킨 탭과 같다.
+//    데이터는 build_codex_data.js 가 만든 codex_data.js 한 파일이다 (런타임 의존 0).
+//
+//    ★ 설명 안의 <passive>·<magicDamage> 같은 태그는 **챔피언 스킬 툴팁과 같은 계열**이라
+//      TOOLTIP_STYLE_CSS 를 그대로 끼워 넣는다. 색표를 두 벌 두면 어긋난다.
+// ============================================================
+let codexDataPromise = null;
+function loadCodexData() {
+    if (codexDataPromise) return codexDataPromise;
+    const tag = document.querySelector('script.lazy-codex-data[data-src]');
+    if (!tag) return Promise.reject(new Error('codex_data.js 태그가 없습니다.'));
+
+    codexDataPromise = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.async = false;
+        s.src = tag.dataset.src;      // ?v=mtime 은 server.js 가 붙여 놨다
+        s.onload = () => (typeof codexData !== 'undefined')
+            ? resolve(codexData)
+            : reject(new Error('도감 데이터가 비어 있습니다.'));
+        s.onerror = () => reject(new Error('도감 데이터를 받지 못했습니다.'));
+        document.head.appendChild(s);
+    });
+    codexDataPromise.catch(() => { codexDataPromise = null; });
+    return codexDataPromise;
+}
+
+// 아이템 등급. DD 의 `depth` 를 그대로 쓴다 — 조합 단계가 곧 등급이다.
+const CODEX_DEPTH = { 1: '기본', 2: '중급', 3: '완성' };
+
+// 왼쪽 목록 위 분류 버튼. 태그 하나로 못 가르는 것(신발·소모품)은 따로 뺀다.
+//   ★ 태그는 아이템 하나에 여러 개 붙으므로 **분류가 겹친다.** 합계가 254를 넘는 게 정상이다.
+const CODEX_ITEM_CATS = [
+    { key: 'all', name: '전체', test: () => true },
+    { key: 'boots', name: '신발', test: it => it.g2.includes('Boots') },
+    { key: 'ad', name: '공격', test: it => it.g2.some(t => ['Damage', 'CriticalStrike', 'AttackSpeed', 'ArmorPenetration', 'LifeSteal', 'OnHit'].includes(t)) && !it.g2.includes('Boots') },
+    { key: 'ap', name: '주문', test: it => it.g2.some(t => ['SpellDamage', 'MagicPenetration', 'Mana', 'ManaRegen', 'SpellVamp'].includes(t)) && !it.g2.includes('Boots') },
+    { key: 'tank', name: '방어', test: it => it.g2.some(t => ['Health', 'Armor', 'SpellBlock', 'HealthRegen', 'Tenacity'].includes(t)) && !it.g2.includes('Boots') },
+    { key: 'etc', name: '기타', test: it => it.g2.some(t => ['Consumable', 'Trinket', 'Vision', 'Jungle', 'Lane', 'GoldPer', 'Aura', 'Active'].includes(t)) }
+];
+
+const CODEX_TABS = [
+    { key: 'item', name: '아이템' },
+    { key: 'rune', name: '룬' },
+    { key: 'spell', name: '소환사 주문' }
+];
+
+// 아이콘 주소
+const codexItemIcon = id => `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${id}.png`;
+const codexSpellIcon = f => `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${f}`;
+// 룬·계열·파편은 CD 경로다. 소문자 변환은 스킨 탭이 쓰던 그 함수가 한다.
+const codexPerkIcon = p => cdAssetUrl(p);
+
+async function showCodex(target) {
+    if (!window.location.pathname.startsWith('/codex')) {
+        window.history.pushState({ page: 'codex' }, '', '/codex');
+    }
+    hideAllContainers();
+    const box = document.getElementById('codex-container');
+    box.style.display = 'block';
+    box.innerHTML = `<div class="codex-empty">도감을 불러오는 중입니다...</div>`;
+
+    let D;
+    try {
+        D = await loadCodexData();
+    } catch (e) {
+        box.innerHTML = `<div class="codex-empty">도감 데이터를 불러오지 못했습니다.</div>`;
+        return;
+    }
+
+    let curTab = CODEX_TABS.some(t => t.key === target) ? target : 'item';
+    let curCat = 'all';
+    let query = '';
+    let selected = null;      // 지금 고른 항목 id (탭마다 따로 기억한다)
+    const lastPick = {};
+
+    // ★ TOOLTIP_STYLE_CSS 를 여기 끼운다. style.css 로 못 옮기는 이유는 그 상수 주석 참고.
+    box.innerHTML = `
+        <style>${TOOLTIP_STYLE_CSS}</style>
+        <div class="codex-header">
+            <h1 class="ranking-title">도감</h1>
+            <p class="codex-sub">소환사의 협곡 기준 · <span id="codex-count"></span></p>
+        </div>
+        <div class="codex-tabs">
+            ${CODEX_TABS.map(t => `<button class="codex-tab${t.key === curTab ? ' active' : ''}" data-tab="${t.key}">${t.name}</button>`).join('')}
+        </div>
+        <div class="codex-body">
+            <div class="codex-left">
+                <input type="text" class="codex-search" id="codex-search" placeholder="이름 검색 (초성 · 별명)">
+                <div class="codex-cats" id="codex-cats"></div>
+                <div class="codex-list" id="codex-list"></div>
+            </div>
+            <div class="codex-detail" id="codex-detail"></div>
+        </div>
+    `;
+
+    // ── 탭별 항목 목록을 한 모양으로 맞춘다
+    function entries() {
+        if (curTab === 'item') {
+            return Object.keys(D.items).map(id => {
+                const it = D.items[id];
+                // ★ 등급을 같이 적는다. 목록이 [등급 → 가격] 순이라 등급이 넘어가는 자리에서
+                //   가격이 되돌아가는데(1,300 다음에 400), 등급이 안 보이면 정렬이 깨진 것처럼 읽힌다.
+                return {
+                    id, name: it.n, icon: codexItemIcon(id),
+                    sub: `${CODEX_DEPTH[it.dp] || ''} · ${it.g.toLocaleString()} G`,
+                    raw: it, sort: [it.dp, it.g]
+                };
+            });
+        }
+        if (curTab === 'rune') {
+            const list = Object.keys(D.runes).map(id => {
+                const r = D.runes[id];
+                return { id, name: r.n, icon: codexPerkIcon(r.i), sub: D.styles[r.st]?.n || '', raw: r, sort: [r.st, r.sl] };
+            });
+            // 스탯 파편도 같은 목록에 붙인다 (룬 페이지의 일부다)
+            Object.keys(D.shards).forEach(id => {
+                const s = D.shards[id];
+                list.push({ id, name: s.n, icon: codexPerkIcon(s.i), sub: '스탯 파편', raw: s, shard: true, sort: [99999, s.row] });
+            });
+            return list;
+        }
+        return Object.keys(D.spells).map(id => {
+            const s = D.spells[id];
+            return { id, name: s.n, icon: codexSpellIcon(s.i), sub: `쿨 ${s.cd}초`, raw: s, sort: [Number(id), 0] };
+        });
+    }
+
+    // ★ 검색은 챔피언·랭킹과 같은 헬퍼를 쓴다 (초성 · 영타). 표를 두 벌 두면 어긋난다.
+    //   아이템은 여기에 **라이엇이 넣어 둔 별명(colloq)** 까지 더한다 — "인피"·"똥신" 같은 것들.
+    function matches(e, cands) {
+        if (!cands.length) return true;
+        const hay = (e.name + '|' + getChosung(e.name) + '|' + (e.raw.c || '')).toLowerCase();
+        return cands.some(c => hay.includes(c));
+    }
+
+    function renderCats() {
+        const el = document.getElementById('codex-cats');
+        if (curTab !== 'item') { el.innerHTML = ''; el.style.display = 'none'; return; }
+        el.style.display = 'flex';
+        el.innerHTML = CODEX_ITEM_CATS.map(c =>
+            `<button class="codex-cat${c.key === curCat ? ' active' : ''}" data-cat="${c.key}">${c.name}</button>`).join('');
+        el.querySelectorAll('.codex-cat').forEach(b => b.addEventListener('click', () => {
+            curCat = b.dataset.cat; renderCats(); renderList();
+        }));
+    }
+
+    function visible() {
+        const cands = query.trim() ? koCandidates(query.trim().toLowerCase()) : [];
+        const cat = CODEX_ITEM_CATS.find(c => c.key === curCat) || CODEX_ITEM_CATS[0];
+        return entries()
+            .filter(e => curTab !== 'item' || cat.test(e.raw))
+            .filter(e => matches(e, cands))
+            .sort((a, b) => (a.sort[0] - b.sort[0]) || (a.sort[1] - b.sort[1]) || a.name.localeCompare(b.name, 'ko'));
+    }
+
+    // keepScroll — 목록 내용이 바뀌지 않는 경우(고른 항목만 달라질 때)만 true.
+    //   ★ 탭·검색·분류를 바꿀 땐 맨 위로 되돌려야 한다. 같은 <div> 를 재사용하므로
+    //     scrollTop 이 그대로 남아서, 룬 탭으로 옮기면 **아이템 탭에서 보던 위치**가
+    //     유지되고 고른 항목(맨 위)이 화면 밖에 있게 된다.
+    function renderList(keepScroll) {
+        const list = visible();
+        document.getElementById('codex-count').textContent =
+            `${CODEX_TABS.find(t => t.key === curTab).name} ${list.length}개`;
+
+        const el = document.getElementById('codex-list');
+        const keep = keepScroll ? el.scrollTop : 0;
+        if (!list.length) {
+            el.innerHTML = `<div class="codex-none">결과가 없습니다.</div>`;
+            return;
+        }
+        // 고른 게 목록에서 사라졌으면 첫 항목으로 옮긴다 (상세가 빈 채로 남지 않게)
+        if (!selected || !list.some(e => e.id === selected)) selected = list[0].id;
+
+        el.innerHTML = list.map(e => `
+            <div class="codex-item${e.id === selected ? ' active' : ''}" data-id="${e.id}">
+                <img class="codex-item-img" src="${e.icon}" alt="" loading="lazy">
+                <div class="codex-item-body">
+                    <div class="codex-item-name">${e.name}</div>
+                    <div class="codex-item-sub">${e.sub}</div>
+                </div>
+            </div>`).join('');
+
+        // ★ 이름을 onclick 문자열에 박지 않는다 — 아포스트로피 든 이름에서 깨진다
+        //   (랭킹 표에서 겪은 것과 같다). data-id + 위임으로 처리한다.
+        el.scrollTop = keep;
+        renderDetail();
+    }
+
+    document.getElementById('codex-list').addEventListener('click', (ev) => {
+        const row = ev.target.closest('.codex-item');
+        if (!row) return;
+        selected = row.dataset.id;
+        lastPick[curTab] = selected;
+        document.querySelectorAll('.codex-item').forEach(r => r.classList.toggle('active', r.dataset.id === selected));
+        renderDetail();
+    });
+
+    // ── 오른쪽 상세
+    function renderDetail() {
+        const el = document.getElementById('codex-detail');
+        const e = visible().find(x => x.id === selected);
+        if (!e) { el.innerHTML = ''; return; }
+        el.innerHTML = curTab === 'item' ? itemDetailHtml(e)
+            : curTab === 'rune' ? runeDetailHtml(e)
+                : spellDetailHtml(e);
+
+        // 조합식 아이콘을 누르면 그 아이템으로 옮겨간다
+        el.querySelectorAll('.codex-recipe-item').forEach(b => b.addEventListener('click', () => {
+            const id = b.dataset.id;
+            if (!D.items[id]) return;
+            // 분류·검색 때문에 목록에 없을 수 있으니 풀어 준다
+            curCat = 'all';
+            query = '';
+            document.getElementById('codex-search').value = '';
+            selected = id;
+            lastPick.item = id;
+            renderCats(); renderList();
+            // 목록이 통째로 새로 그려졌으니 고른 자리로 데려간다
+            document.querySelector('.codex-item.active')?.scrollIntoView({ block: 'center' });
+        }));
+    }
+
+    function recipeRow(label, ids) {
+        if (!ids.length) return '';
+        return `
+        <div class="codex-recipe">
+            <span class="codex-recipe-label">${label}</span>
+            <div class="codex-recipe-list">
+                ${ids.map(id => `
+                    <div class="codex-recipe-item" data-id="${id}" title="${D.items[id]?.n || ''}">
+                        <img src="${codexItemIcon(id)}" alt="">
+                        <span>${D.items[id]?.n || ''}</span>
+                    </div>`).join('')}
+            </div>
+        </div>`;
+    }
+
+    function itemDetailHtml(e) {
+        const it = e.raw;
+        // 재료값 합계 대비 조합 비용 — "얼마를 더 내는가" 가 궁금한 자리다
+        const partsCost = it.f.reduce((a, id) => a + (D.items[id]?.g || 0), 0);
+        const combine = it.g - partsCost;
+        return `
+        <div class="codex-detail-head">
+            <img class="codex-detail-img" src="${codexItemIcon(e.id)}" alt="">
+            <div>
+                <div class="codex-detail-name">${it.n}</div>
+                <div class="codex-detail-meta">
+                    <span class="codex-gold">${it.g.toLocaleString()} G</span>
+                    ${it.f.length ? `<span class="codex-dim">(조합비 ${combine.toLocaleString()})</span>` : ''}
+                    <span class="codex-dim">판매 ${it.s.toLocaleString()}</span>
+                    <span class="codex-badge">${CODEX_DEPTH[it.dp] || ''}</span>
+                    ${it.rc ? `<span class="codex-badge">${it.rc} 전용</span>` : ''}
+                </div>
+                ${it.p ? `<div class="codex-plain">${it.p}</div>` : ''}
+            </div>
+        </div>
+        <div class="codex-desc">${it.d || '<span class="codex-dim">설명이 없습니다.</span>'}</div>
+        ${recipeRow('재료', it.f)}
+        ${recipeRow('상위 아이템', it.t)}`;
+    }
+
+    function runeDetailHtml(e) {
+        const r = e.raw;
+        const styleName = e.shard ? '스탯 파편' : (D.styles[r.st]?.n || '');
+        const slotName = e.shard ? `${r.row + 1}번째 줄` : (r.sl === 0 ? '핵심 룬' : `${r.sl}번째 줄`);
+        return `
+        <div class="codex-detail-head">
+            <img class="codex-detail-img codex-detail-img-round" src="${codexPerkIcon(r.i)}" alt="">
+            <div>
+                <div class="codex-detail-name">${r.n}</div>
+                <div class="codex-detail-meta">
+                    ${!e.shard && D.styles[r.st] ? `<img class="codex-style-icon" src="${codexPerkIcon(D.styles[r.st].i)}" alt="">` : ''}
+                    <span>${styleName}</span>
+                    <span class="codex-badge">${slotName}</span>
+                </div>
+                ${r.s ? `<div class="codex-plain">${r.s}</div>` : ''}
+            </div>
+        </div>
+        <div class="codex-desc">${r.d || '<span class="codex-dim">설명이 없습니다.</span>'}</div>`;
+    }
+
+    function spellDetailHtml(e) {
+        const s = e.raw;
+        return `
+        <div class="codex-detail-head">
+            <img class="codex-detail-img" src="${codexSpellIcon(s.i)}" alt="">
+            <div>
+                <div class="codex-detail-name">${s.n}</div>
+                <div class="codex-detail-meta">
+                    <span class="codex-badge">재사용 ${s.cd}초</span>
+                    <span class="codex-badge">사거리 ${s.r === '0' ? '자신' : s.r}</span>
+                    <span class="codex-dim">소환사 레벨 ${s.lv} 해금</span>
+                </div>
+            </div>
+        </div>
+        <div class="codex-desc">${s.d}</div>`;
+    }
+
+    // ── 컨트롤
+    document.querySelectorAll('.codex-tab').forEach(b => b.addEventListener('click', () => {
+        document.querySelectorAll('.codex-tab').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        curTab = b.dataset.tab;
+        curCat = 'all';
+        query = '';
+        document.getElementById('codex-search').value = '';
+        selected = lastPick[curTab] || null;    // 탭으로 돌아오면 보던 걸 다시 연다
+        renderCats(); renderList();
+    }));
+
+    document.getElementById('codex-search').addEventListener('input', (ev) => {
+        query = ev.target.value;
+        renderList();
+    });
+
+    renderCats();
+    renderList();
 }
 
 // ============================================================
@@ -4997,93 +5442,7 @@ window.selectChampion = async function (champId, champName, isReplace = false) {
         // ★ HTML 틀 구성 (보조 아이콘 컨테이너 추가, 소모값 색상 #ddd 통일, 하단 커스텀 영역 확보)
         const skillsHtml = `
         <style>
-            mainText { display: block; font-size: 14px; line-height: 1.6; color: #ddd; } stats { display: block; color: #a78bfa; font-size: 13px; margin-bottom: 12px; font-weight: bold; background: rgba(167, 139, 250, 0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(167, 139, 250, 0.1); }
-            /* ★ 아래 색은 인게임 툴팁 스크린샷에서 픽셀을 직접 뽑은 값이다 (2026-08-09).
-                 렐 W / 쉬바나 Q / 바드 P / 우디르 Q / 로크 W 를 썼고,
-                 색이 나타나는 좌표가 해당 단어 위치와 맞는지 역으로 검증했다.
-                 겹치는 태그는 서로 다른 스크린샷에서 같은 값이 나와 교차 확인됐다
-                 (magicdamage 는 렐·쉬바나·바드 3장에서 동일).
-                 ※ "구분이 잘 되게" 가 아니라 "인게임과 같게" 가 기준이다. 색끼리 비슷해도 그대로 둔다. */
-            magicdamage { color: #0acbe6; font-weight: bold; } physicaldamage { color: #f26522; font-weight: bold; } truedamage { color: #cdfafa; font-weight: bold; }
-            /* health 는 유미 P 처럼 <healing><health>…</health></healing> 로 중첩돼 있어
-               같은 색을 쓴다. heal 도 같은 의미라 함께 묶었다 (실측한 건 healing 뿐). */
-            healing, heal, health { color: #60e08f; font-weight: bold; } shield { color: #4dd0eb; font-weight: bold; }
-            scalearmor { color: #f0ba57; } scalemr { color: #4fdfff; } scalemana { color: #189ce7; }
-            keywordmajor { color: #dddd77; font-weight: bold; }
-            speed { color: #fffdc9; font-weight: bold; } status { color: #ad76c4; font-weight: bold; }
-            attackspeed { color: #ffe384; font-weight: bold; }
-            spellname, onhit, scalelevel, attention, unique { color: #f0e6d2; font-weight: bold; }
-            recast { color: #d67351; font-weight: bold; }
-            scalead { color: #eb8d34; } scaleap { color: #786cff; }
-            keywordstealth { color: #d182be; font-weight: bold; }
-            evolve { color: #bc3598; font-weight: bold; }
-            danger { color: #ff0000; font-weight: bold; }
-            /* ★ 인게임 실측값은 #5a5955 인데 우리 배경이 인게임 툴팁보다 어두워서
-                 거의 안 읽혔다. 밝기만 올린 값이다 (색상·채도는 그대로). 2026-08-12 */
-            rules { color: #918f86; }
-            /* 라벨류는 전부 "기본 지속 효과:" 색으로 통일한다.
-               인게임은 스킬마다 미묘하게 다르지만(니코 W 는 사용 시만 연노랑,
-               갈리오 W 는 충전 시작 시가 또 다름) 통일하는 쪽이 읽기 낫다는 판단. */
-            active, passive, charge, release, toggle, tap, hold { display: block; margin-top: 8px; color: #f0e6d2; font-weight: bold; }
-            /* ★ 이 태그들이 **파트 맨 앞**에 올 때는 위 여백을 없앤다 (2026-08-10).
-               하위 스킬 파트는 각자 자기 <div> 에 들어가므로 첫 태그의 margin-top 8px 이
-               텍스트만 아래로 밀어 **옆 아이콘과 수평이 어긋난다.**
-               모데카이저 W(<active> 로 시작)와 르블랑 R(<spellname> 로 시작)이
-               서로 다르게 보이던 원인이 이거였다. 구분선이 이미 간격을 주므로 여백은 불필요. */
-            active:first-child, passive:first-child, charge:first-child,
-            release:first-child, toggle:first-child, tap:first-child, hold:first-child { margin-top: 0; }
-            /* 강인함(slow)은 인게임에서 색이 안 들어간다. 본문색을 그대로 따라간다. */
-            slow { color: inherit; font-weight: normal; }
-            /* scalehealth 와 lifesteal 은 실제로 같은 초록이다 (블라디미르 P / 아트록스 E).
-               keyword 와 keywordstealth 도 같은 분홍보라다 (블라디미르 W / 니코 W).
-               "구분이 안 된다" 가 아니라 라이엇이 원래 같은 색을 쓴다. */
-            scalehealth, lifesteal { color: #1f995c; font-weight: bold; }
-            keyword { color: #d182be; font-weight: bold; }
-            armorpen { color: #f95f55; font-weight: bold; }
-            omnivamp { color: #cb0c2d; font-weight: bold; }
-            specialrules { color: #f0e6d2; font-weight: bold; }
-            /* 아래는 인게임에서 색이 안 들어가는 자리다. 본문색을 그대로 따라간다. 전부 실측 확인:
-               keywordname 탐 켄치 R "고정"·"심연 잠수", slow 가렌 W "60%의 강인함",
-               level 애니비아 P, stattracking 드레이븐 P (뒤 둘은 스샷에 강조색 자체가 없었다). */
-            keywordname, stattracking, level { color: inherit; }
-            /* ★ <li> 에 CSS 가 없어서 브라우저 기본 불릿(동그라미)이 찍히고 있었다 (2026-08-12).
-                 <ul> 없이 <li> 만 쓰는 문장이라 마커가 글 밖으로 삐져나오기도 했다.
-                 인게임 툴팁은 동그라미가 아니라 짧은 줄표를 쓴다. DD 폴백 경로도
-                 cleanTooltipText 가 <li> 를 "- " 로 바꾸고 있어서 이제 양쪽이 같아졌다. */
-            li { display: block; margin: 2px 0; }
-            li::before { content: '- '; color: #9aa4af; }
-            /* activerank 는 구분선 아래 회색 글씨에서만 나온다 (볼리베어 E 한 자리).
-               인게임 색을 실측한 적이 없으므로 색을 지어내지 않고 본문색을 따라간다. */
-            activerank { color: inherit; }
-            /* ★ 구분선 아래 회색 글씨(.skill-rules) 안에서는 라벨류를 인라인으로 되돌린다.
-                 위 규칙이 display:block 이라 문장 한가운데서 줄이 끊긴다 —
-                 이렐리아 W 의 "<charge>충전</charge>이 끝나면" 이 세 줄로 갈라졌다.
-                 여기서는 라벨이 아니라 그냥 단어로 쓰인다. */
-            .skill-rules active, .skill-rules passive, .skill-rules charge,
-            .skill-rules release, .skill-rules toggle, .skill-rules tap, .skill-rules hold
-                { display: inline; margin-top: 0; }
-            /* --- 문장에 안 쓰이는 태그. 확인 대상이 아니다 --- */
-            gold { color: #ffd700; font-weight: bold; }
-            b { font-weight: bold; }
-            i { font-style: italic; }
-            /* ★ <font color=...> 는 라이엇이 원문에 색을 직접 박아 둔 것이고,
-                 그 값이 인게임 색과 정확히 일치한다 (바드 P 의 "고대의 종" #cccc00,
-                 "정령" #ff9900 을 스크린샷에서 뽑아 확인). 그러니 color 는 건드리지 않는다.
-                 예전엔 여기서 color 를 !important 로 덮어써서 44곳의 라이엇 지정색이
-                 전부 죽어 있었다 (아펠리오스 무기색·바드 종·아우렐리온 솔 별가루 등).
-                 font-size 는 원문에 <font size='18'> 같은 게 있어 글자가 튀므로 계속 막는다. */
-            font { display: inline; font-size: inherit !important; font-weight: bold; }
-            .custom-footnote { position: relative; display: inline-block; cursor: pointer; color: #a78bfa; margin-left: 2px; }
-            .custom-footnote .footnote-text {
-                visibility: hidden; width: max-content; max-width: 250px; background-color: #111; color: #fff;
-                text-align: left; border-radius: 6px; padding: 6px 10px; position: absolute; z-index: 99;
-                bottom: 150%; left: 50%; transform: translateX(-50%); border: 1px solid rgba(255,255,255,0.2);
-                font-size: 12px; font-weight: normal; line-height: 1.5; opacity: 0; transition: opacity 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.8);
-            }
-            .custom-footnote:hover .footnote-text { visibility: visible; opacity: 1; }
-            .skill-damage-line { color: #ddd; font-size: 14px; line-height: 1.7; }
-            .skill-damage-line + .skill-damage-line { margin-top: 6px; }
-        </style>
+${TOOLTIP_STYLE_CSS}        </style>
         <div class="champ-skill-layout">
             <div class="champ-skill-btns">
                 ${window.currentChampSkills.map((skill, idx) => `
