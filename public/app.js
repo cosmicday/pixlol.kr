@@ -2597,20 +2597,40 @@ function loadCodexData() {
     return codexDataPromise;
 }
 
-// 아이템 등급. DD 의 `depth` 를 그대로 쓴다 — 조합 단계가 곧 등급이다.
-const CODEX_DEPTH = { 1: '기본', 2: '중급', 3: '완성' };
+// ★★ 아이템 등급은 게임 bin 의 `epicness` 다 (2026-08-16 정정. build_codex_data.js 가 `ep` 로 담는다).
+//   예전엔 DD 의 `depth` 를 등급이라 보고 `기본/중급/완성` 이라 적었는데 **둘 다 틀렸다** —
+//   `depth` 는 재료를 몇 겹 쌓았나라서 **무한의 대검(3500G, 전설급)이 depth 2 로 거인의
+//   허리띠(900G, 서사급)와 같은 칸**에 들어갔고, 실제로 "중급" 으로 찍히고 있었다.
+//   이름도 우리가 지어낸 것이고 라이엇 공식 한국어는 stringtable 의 `shop_group_*` 에 있다.
+// ★ 값을 합치지 않고 라이엇이 나눈 그대로 5칸이다. 7번은 영약 3 + 신발 업그레이드 7 이
+//   섞여 있어 공식 이름이 없다 — 그 칸만 우리가 이름을 붙여야 한다.
+//   ★ `상위` 로 뒀다 (stringtable 의 `shop_group_superior`). 처음엔 `기타` 였는데
+//     **아래 분류 줄 마지막 칸도 `기타` 라 위아래로 같은 이름이 나란히 붙었다.**
+const CODEX_EPICNESS = {
+    0: { name: '기본', order: 0 },      // 장화·롱소드·B.F. 대검 … (bin 에 필드가 아예 없다)
+    1: { name: '시작', order: 1 },      // 도란템·물약·와드·장신구
+    4: { name: '서사급', order: 2 },
+    5: { name: '전설급', order: 3 },
+    7: { name: '상위', order: 4 }       // 영약 3 + 신발 업그레이드 7
+};
+// 처음 보는 값이 와도 목록에서 사라지지 않게 맨 뒤 칸으로 흘려보낸다
+const epInfo = ep => CODEX_EPICNESS[ep] || { name: '상위', order: 4 };
 
 // 왼쪽 목록 위 분류 버튼. **등급과 계열 두 줄이고 서로 AND 로 걸린다** (2026-08-16).
 //   ★ 소모품·장신구는 계열로 갈라 봐야 뜻이 없어서(스탯이 아니라 쓰는 물건이다)
 //     "소모품" 으로 따로 뺐다. 예전엔 "기타" 안에 장신구·와드와 섞여 있었다.
 //   ★ 태그는 아이템 하나에 여러 개 붙으므로 **계열 분류는 겹친다.**
 //     공격 + 방어에 같이 나오는 아이템이 있고 합계가 215를 넘는 게 정상이다.
-//     겹치지 않는 건 등급 쪽뿐이다 (depth 는 아이템당 하나다).
+//     겹치지 않는 건 등급 쪽뿐이다 (epicness 는 아이템당 하나다).
+//   ★ 마지막 칸은 `ep === 7` 이 아니라 **"앞 네 칸에 안 걸리는 전부"** 로 잡는다.
+//     라이엇이 새 등급 값을 쓰기 시작해도 그 아이템이 목록에서 통째로 사라지지 않는다.
 const CODEX_DEPTH_CATS = [
     { key: 'all', name: '전체', test: () => true },
-    { key: '1', name: '기본', test: it => it.dp === 1 },
-    { key: '2', name: '중급', test: it => it.dp === 2 },
-    { key: '3', name: '완성', test: it => it.dp === 3 }
+    { key: '0', name: '기본', test: it => it.ep === 0 },
+    { key: '1', name: '시작', test: it => it.ep === 1 },
+    { key: '4', name: '서사급', test: it => it.ep === 4 },
+    { key: '5', name: '전설급', test: it => it.ep === 5 },
+    { key: 'etc', name: '상위', test: it => ![0, 1, 4, 5].includes(it.ep) }
 ];
 
 // 소모품(물약·와드)과 장신구는 다른 계열 검사보다 **먼저** 걸러낸다 —
@@ -2680,7 +2700,7 @@ async function showCodex(target) {
 
     let curTab = CODEX_TABS.some(t => t.key === target) ? target : 'item';
     let curCat = 'all';     // 아이템 계열 (공격·주문·방어·신발·소모품·기타)
-    let curDepth = 'all';   // 아이템 등급 (기본·중급·완성)
+    let curDepth = 'all';   // 아이템 등급 (기본·시작·서사급·전설급·상위)
     let curStyle = 'all';   // 룬 계열 (정밀·지배·마법·영감·결의·파편)
     let query = '';
     let selected = null;      // 지금 고른 항목 id (탭마다 따로 기억한다)
@@ -2715,8 +2735,8 @@ async function showCodex(target) {
                 //   가격이 되돌아가는데(1,300 다음에 400), 등급이 안 보이면 정렬이 깨진 것처럼 읽힌다.
                 return {
                     id, name: it.n, icon: codexItemIcon(id),
-                    sub: `${CODEX_DEPTH[it.dp] || ''} · ${it.g.toLocaleString()} G`,
-                    raw: it, sort: [it.dp, it.g]
+                    sub: `${epInfo(it.ep).name} · ${it.g.toLocaleString()} G`,
+                    raw: it, sort: [epInfo(it.ep).order, it.g]
                 };
             });
         }
@@ -2902,7 +2922,7 @@ async function showCodex(target) {
                     <span class="codex-gold">${it.g.toLocaleString()} G</span>
                     ${it.f.length ? `<span class="codex-dim">(조합비 ${combine.toLocaleString()})</span>` : ''}
                     <span class="codex-dim">판매 ${it.s.toLocaleString()}</span>
-                    <span class="codex-badge">${CODEX_DEPTH[it.dp] || ''}</span>
+                    <span class="codex-badge">${epInfo(it.ep).name}</span>
                     ${it.rc ? `<span class="codex-badge">${it.rc} 전용</span>` : ''}
                 </div>
                 ${it.p ? `<div class="codex-plain">${it.p}</div>` : ''}

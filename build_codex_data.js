@@ -20,6 +20,13 @@
 // ★ 설명 안의 <passive>·<magicDamage> 같은 태그는 **챔피언 스킬 툴팁과 같은 계열**이라
 //   app.js 의 TOOLTIP_STYLE_CSS 를 그대로 쓴다. 36종 중 31종이 이미 실측 색을 갖고 있었다.
 //
+// ★★ 아이템 등급은 DD `depth` 가 아니라 **게임 bin 의 `epicness`** 다 (2026-08-16 정정).
+//   `depth` 는 "재료를 몇 겹 쌓았나" 라서 등급과 다르다 — **무한의 대검(3500G, 전설급)이
+//   depth 2 라 거인의 허리띠(900G, 서사급)와 같은 칸에 들어간다.** 실제로 도감에서
+//   무한의 대검·라바돈의 죽음모자가 "중급" 으로 찍히고 있었다.
+//   등급 이름도 우리가 지어낸 것(기본/중급/완성)이었다. 라이엇 공식 한국어는
+//   stringtable 의 `shop_group_*` 에 있다 — 기본 / 시작 / 서사급 / 전설급 / 신화급(아레나).
+//
 // 패치가 오면 다시 돌린다. 런타임 의존은 없다.
 // ==========================================
 const fs = require('fs');
@@ -29,6 +36,8 @@ const zlib = require('zlib');
 const DD_VER = process.env.DD_VER || '16.16.1';
 const DD = `https://ddragon.leagueoflegends.com/cdn/${DD_VER}/data/ko_KR`;
 const CD = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/ko_kr/v1';
+// 아이템 등급(`epicness`) 이 여기에만 있다. 15MB 라 빌드 때만 받는다 (런타임 의존 0).
+const CD_ITEM_BIN = 'https://raw.communitydragon.org/latest/game/items.cdtb.bin.json';
 const WRITE = process.argv.includes('--write');
 
 async function getJson(url) {
@@ -38,11 +47,12 @@ async function getJson(url) {
 }
 
 (async () => {
-    const [ddItem, ddSumm, perks, perkStyles] = await Promise.all([
+    const [ddItem, ddSumm, perks, perkStyles, itemBin] = await Promise.all([
         getJson(`${DD}/item.json`),
         getJson(`${DD}/summoner.json`),
         getJson(`${CD}/perks.json`),
-        getJson(`${CD}/perkstyles.json`)
+        getJson(`${CD}/perkstyles.json`),
+        getJson(CD_ITEM_BIN)
     ]);
 
     // ── 아이템
@@ -71,6 +81,18 @@ async function getJson(url) {
     const liveIds = Object.keys(all).filter(i =>
         all[i].maps?.['11'] && all[i].gold?.purchasable !== false && !isOtherModeClone(i));
 
+    // ★★ 등급은 게임 bin 의 `epicness` 다 (위 머리주석 참고). 값을 합치거나 다시 매기지 않고
+    //   **그대로 담는다** — 화면(app.js 의 CODEX_EPICNESS)이 이름만 붙인다.
+    //   협곡 215개 실측: 없음·0 = 20(기본) / 1 = 23(시작·소모품) / 4 = 50(서사급) /
+    //   5 = 112(전설급) / 7 = 10(영약 3 + 신발 업그레이드 7). 합이 정확히 215다.
+    //   ★ 필드가 없으면 0(기본)이다 — 장화·롱소드 같은 재료 아이템 19개가 그렇다.
+    const noBin = [];
+    const epicnessOf = (id) => {
+        const e = itemBin['Items/' + id];
+        if (!e) { noBin.push(id); return 0; }
+        return e.epicness || 0;
+    };
+
     const items = {};
     liveIds.forEach(i => {
         const x = all[i];
@@ -85,7 +107,7 @@ async function getJson(url) {
             f: (x.from || []).map(Number).filter(id => liveIds.includes(String(id))),
             t: (x.into || []).map(Number).filter(id => liveIds.includes(String(id))),
             g2: x.tags || [],
-            dp: x.depth || 1,
+            ep: epicnessOf(i),
             // 검색 별칭. 라이엇이 넣어 둔 것이라 "인피"·"똥신" 같은 별명이 그대로 있다
             c: (x.colloq || '').split(';').filter(Boolean).join(' '),
             // ★ 챔피언 전용 아이템(오른 등)만 채운다. 칼리스타의 칠흑의 창은
@@ -152,9 +174,16 @@ const codexData = ${body};
 `;
 
     console.log(`아이템 ${Object.keys(items).length}개 (전체 ${Object.keys(all).length}개 중)`);
-    const byDepth = {};
-    Object.values(items).forEach(x => byDepth[x.dp] = (byDepth[x.dp] || 0) + 1);
-    console.log(`  등급별: ${Object.entries(byDepth).map(([k, v]) => `depth${k} ${v}개`).join(' / ')}`);
+    const EP_NAME = { 0: '기본', 1: '시작', 4: '서사급', 5: '전설급', 7: '상위(영약·신발 업그레이드)' };
+    const byEp = {};
+    Object.values(items).forEach(x => byEp[x.ep] = (byEp[x.ep] || 0) + 1);
+    console.log(`  등급별: ${Object.entries(byEp).sort((a, b) => a[0] - b[0])
+        .map(([k, v]) => `${EP_NAME[k] || '???'}(epicness ${k}) ${v}개`).join(' / ')}`);
+    // ★ 모르는 등급 값이 나오면 app.js 의 CODEX_EPICNESS 에 칸을 추가해야 한다.
+    //   안 그러면 그 아이템이 등급 버튼 어디에도 안 걸려 목록에서 통째로 사라진다.
+    const unknownEp = Object.keys(byEp).filter(k => !(k in EP_NAME));
+    if (unknownEp.length) console.log(`  ★ 처음 보는 epicness: ${unknownEp.join(', ')} — app.js 의 CODEX_EPICNESS 를 고칠 것`);
+    if (noBin.length) console.log(`  ★ bin 에 없는 아이템 ${noBin.length}개(등급 0 으로 처리): ${noBin.join(', ')}`);
     console.log(`  조합 재료 누락: ${brokenFrom}건`);
     const tagCount = {};
     Object.values(items).forEach(x => x.g2.forEach(t => tagCount[t] = (tagCount[t] || 0) + 1));
