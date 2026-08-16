@@ -2447,6 +2447,76 @@ function statScopeLabel(scope) {
 }
 
 // ============================================================
+//  박제된 패치 (2026-08-16 신설)
+//    은퇴한 패치의 집계는 DB 가 아니라 `public/stats_archive/<scope>.js` 에 있다.
+//    DB 에 두면 인덱스까지 패치당 3.32MB 인데 파일은 345KB(brotli 25KB)라
+//    1년 26패치면 Atlas 84MB 를 통째로 아낀다. 자세한 건 CLAUDE.md 참고.
+//
+//    ★ 서버는 `archived: true` 만 알려 준다 — "scope 목록에는 있는데 행이 없다" 가
+//      그 표식이고, `statscopes` 행은 DB 에 남아 있어 드롭다운과 분모는 그대로 온다.
+// ============================================================
+window.statsArchive = window.statsArchive || {};
+const statsArchivePromises = {};
+
+function loadStatsArchive(scope, version) {
+    if (window.statsArchive[scope]) return Promise.resolve(window.statsArchive[scope]);
+    if (statsArchivePromises[scope]) return statsArchivePromises[scope];
+
+    // p:16.16 -> /stats_archive/p_16.16.js  (콜론은 주소에 두기 나쁘다)
+    // ?v= 는 마지막 집계 시각이다. 박제본은 안 바뀌지만 다시 만들었을 때를 위해 붙인다.
+    const url = `/stats_archive/${scope.replace(/:/g, '_')}.js?v=${version || 0}`;
+    statsArchivePromises[scope] = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.async = false;
+        s.src = url;
+        s.onload = () => window.statsArchive[scope]
+            ? resolve(window.statsArchive[scope])
+            : reject(new Error('박제 파일에 ' + scope + ' 가 없습니다.'));
+        s.onerror = () => reject(new Error('박제된 통계를 받지 못했습니다: ' + url));
+        document.head.appendChild(s);
+    });
+    statsArchivePromises[scope].catch(() => { delete statsArchivePromises[scope]; });
+    return statsArchivePromises[scope];
+}
+
+// ★ 배열로 눕힌 걸 되돌린다. 자리 뜻은 build_stats_archive.js 주석과 **반드시 같아야 한다**
+//   — 순서를 바꾸면 양쪽을 같이 고칠 것.
+const ARCHIVE_KB = ['5-7', '8-10'];
+const ARCHIVE_TYPE = ['rune', 'keystone', 'spell', 'shard', 'all'];
+
+function expandStatsArchive(a) {
+    // champstats 행 — API 의 rows 와 **같은 모양**이라 renderStatsTable() 은 안 바뀐다
+    const rows = a.r.map(x => ({
+        kb: ARCHIVE_KB[x[0]], champ: x[1], pos: x[2],
+        games: x[3], wins: x[4], bans: x[5], banGames: x[6],
+        kills: x[7], deaths: x[8], assists: x[9]
+    }));
+
+    // champbuilds 행 — 챔피언별로 미리 갈라 둔다 (줄을 펼칠 때마다 1만 행을 훑지 않도록)
+    const builds = {};
+    a.b.forEach(x => {
+        const champ = x[0];
+        (builds[champ] || (builds[champ] = [])).push({
+            type: ARCHIVE_TYPE[x[1]], games: x[2], wins: x[3], key: x.slice(4)
+        });
+    });
+    return { rows, builds };
+}
+
+// 박제된 패치의 룬 빌드. API 를 안 부르고 이미 받아 둔 파일에서 꺼낸다.
+function archivedBuildsFor(scope, champ) {
+    const cache = window.statsArchiveExpanded?.[scope];
+    const list = cache?.builds[champ] || [];
+    const all = list.find(r => r.type === 'all');
+    return {
+        scope, champ,
+        total: all ? all.games : 0,
+        wins: all ? all.wins : 0,
+        rows: list.filter(r => r.type !== 'all')
+    };
+}
+
+// ============================================================
 //  룬 빌드 패널 (2026-08-16 신설)
 //    통계 탭에서 챔피언 줄을 누르면 아래로 펼쳐진다.
 //    서버의 /api/champion-builds 가 그 챔피언 것만 내려준다.
@@ -2637,6 +2707,26 @@ async function showStats() {
     } catch (e) {
         box.innerHTML = `<div class="stats-empty">통계를 불러오지 못했습니다.</div>`;
         return;
+    }
+
+    // ★ 박제된 패치면 행이 DB 가 아니라 정적 파일에 있다. 받아서 API 응답 모양으로
+    //   되돌려 끼우면 아래 코드는 어느 쪽인지 몰라도 된다.
+    if (data.archived) {
+        try {
+            const a = await loadStatsArchive(data.scope, data.updatedAt);
+            const ex = expandStatsArchive(a);
+            window.statsArchiveExpanded = window.statsArchiveExpanded || {};
+            window.statsArchiveExpanded[data.scope] = ex;
+            data.rows = ex.rows;
+            // 분모는 DB(statscopes)가 준 값을 그대로 쓴다. 파일에도 있지만 한 군데서 오는 게 낫다.
+            if (!Object.keys(data.totals || {}).length) {
+                data.totals = {};
+                a.t.forEach(t => { data.totals[ARCHIVE_KB[t[0]]] = t[1]; });
+            }
+        } catch (e) {
+            box.innerHTML = `<div class="stats-empty">이 패치의 통계를 불러오지 못했습니다.</div>`;
+            return;
+        }
     }
 
     if (!data.ready || !data.rows?.length) {
@@ -2838,9 +2928,14 @@ async function showStats() {
         try {
             await loadPerkData();
             if (!buildCache.has(cacheKey)) {
-                const res = await fetch(`/api/champion-builds?scope=${encodeURIComponent(data.scope)}&champ=${champ}`);
-                if (!res.ok) throw new Error('응답 오류');
-                buildCache.set(cacheKey, await res.json());
+                // ★ 박제된 패치는 표를 그릴 때 파일을 이미 받아 뒀다. API 를 안 부른다.
+                if (data.archived) {
+                    buildCache.set(cacheKey, archivedBuildsFor(data.scope, champ));
+                } else {
+                    const res = await fetch(`/api/champion-builds?scope=${encodeURIComponent(data.scope)}&champ=${champ}`);
+                    if (!res.ok) throw new Error('응답 오류');
+                    buildCache.set(cacheKey, await res.json());
+                }
             }
             // 불러오는 동안 사용자가 다시 눌러 닫았을 수 있다
             if (!row.isConnected) return;

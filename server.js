@@ -2138,6 +2138,17 @@ app.get('/api/champion-stats', async (req, res) => {
         // kb 별 총 경기 수. 화면에서 5-7 과 8-10 을 합쳐 볼 수 있게 둘 다 준다.
         const totals = {};
         totalRows.forEach(t => { totals[t.kb] = t.games; });
+        const updatedAt = Math.max(...totalRows.map(t => +t.updatedAt || 0));
+
+        // ★★ 박제된 패치 판별 — "scope 목록에는 있는데 집계 행이 없다" 가 그 표식이다.
+        //   은퇴한 패치의 집계는 `public/stats_archive/<scope>.js` 로 옮기고 DB 행을
+        //   지우는데, `statscopes` 행만은 남긴다(패치당 1~2행). 그래서 드롭다운과
+        //   픽률·밴률 분모는 여기서 그대로 나오고, 행만 화면이 파일에서 가져간다.
+        //   ★ 파일 크기가 DB 의 10분의 1이라(3.32MB -> 345KB, brotli 25KB)
+        //     1년 26패치면 Atlas 84MB 를 통째로 아낀다. 자세한 건 CLAUDE.md 참고.
+        if (!rows.length && totalRows.length) {
+            return res.json({ ready: true, archived: true, scope, scopes: scopeKeys, totals, rows: [], updatedAt });
+        }
 
         res.json({
             ready: true,
@@ -2145,7 +2156,7 @@ app.get('/api/champion-stats', async (req, res) => {
             scopes: scopeKeys,
             totals,
             rows,
-            updatedAt: Math.max(...totalRows.map(t => +t.updatedAt || 0))
+            updatedAt
         });
     } catch (e) {
         console.error('[API] 챔피언 통계 실패:', e.message);
@@ -2173,6 +2184,13 @@ app.get('/api/champion-builds', async (req, res) => {
         if (hit) return res.json(hit);
 
         const rows = await ChampBuild.find({ scope, champ }).select('-_id -__v -scope -champ').lean();
+
+        // ★ 박제된 패치면 행이 파일에 있다. 화면은 표를 그릴 때 이미 그 파일을 받아 뒀으므로
+        //   원래 여기까지 오지도 않는데, 옛 화면이 부를 수 있으니 표식을 돌려준다.
+        if (!rows.length && !(await ChampBuild.exists({ scope })) && await StatScope.exists({ scope })) {
+            return res.json({ archived: true, scope, champ, total: 0, wins: 0, rows: [] });
+        }
+
         // "all" 줄이 픽률의 분모다. 없으면 아직 집계 전이다.
         const totalRow = rows.find(r => r.type === 'all');
         const payload = {
