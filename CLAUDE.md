@@ -1130,6 +1130,18 @@ k=4    13판   k=3  21판   k=2  30판   k=1  27판   k=0  89판
 - 토큰은 `X-Collector-Token` 헤더 ↔ `process.env.COLLECTOR_TOKEN`.
   **양쪽을 sha256 으로 눌러 길이를 맞춘 뒤 `timingSafeEqual`** 로 본다
   (길이가 다르면 그 함수가 예외를 던진다)
+- **★★ 401 이 나면 `detail` 을 볼 것 — 원인이 셋인데 고칠 곳이 다 다르다:**
+
+  | `detail` | 뜻 | 고칠 곳 |
+  |---|---|---|
+  | `server_token_missing` | 서버에 `COLLECTOR_TOKEN` 이 없다 | **Railway 환경변수** |
+  | `header_missing` | 헤더가 안 왔다 (프록시가 지웠을 수도) | 수집기 설정 · 프록시 |
+  | `token_mismatch` | 값이 다르다 | 수집기의 `upload_token` |
+
+  처음엔 셋을 전부 `401` 로만 돌려줬더니 **프로덕션에서 401 이 났을 때 뭘 고쳐야 하는지
+  알 수가 없었다** (실제로 2026-08-16에 겪었고 `server_token_missing` 이었다 —
+  Railway 에 값을 넣고 Deploy 를 눌러야 프로세스에 들어간다).
+  토큰 값은 안 흘리고, 맞았는지 여부는 어차피 201/401 로 드러나므로 새는 정보가 없다
 
 ### ★★ 같은 날짜 중복은 조용히 덮어쓰지 않는다
 
