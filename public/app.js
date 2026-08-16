@@ -2600,15 +2600,53 @@ function loadCodexData() {
 // 아이템 등급. DD 의 `depth` 를 그대로 쓴다 — 조합 단계가 곧 등급이다.
 const CODEX_DEPTH = { 1: '기본', 2: '중급', 3: '완성' };
 
-// 왼쪽 목록 위 분류 버튼. 태그 하나로 못 가르는 것(신발·소모품)은 따로 뺀다.
-//   ★ 태그는 아이템 하나에 여러 개 붙으므로 **분류가 겹친다.** 합계가 254를 넘는 게 정상이다.
+// 왼쪽 목록 위 분류 버튼. **등급과 계열 두 줄이고 서로 AND 로 걸린다** (2026-08-16).
+//   ★ 소모품·장신구는 계열로 갈라 봐야 뜻이 없어서(스탯이 아니라 쓰는 물건이다)
+//     "소모품" 으로 따로 뺐다. 예전엔 "기타" 안에 장신구·와드와 섞여 있었다.
+//   ★ 태그는 아이템 하나에 여러 개 붙으므로 **계열 분류는 겹친다.**
+//     공격 + 방어에 같이 나오는 아이템이 있고 합계가 215를 넘는 게 정상이다.
+//     겹치지 않는 건 등급 쪽뿐이다 (depth 는 아이템당 하나다).
+const CODEX_DEPTH_CATS = [
+    { key: 'all', name: '전체', test: () => true },
+    { key: '1', name: '기본', test: it => it.dp === 1 },
+    { key: '2', name: '중급', test: it => it.dp === 2 },
+    { key: '3', name: '완성', test: it => it.dp === 3 }
+];
+
+// 소모품(물약·와드)과 장신구는 다른 계열 검사보다 **먼저** 걸러낸다 —
+// 체력 물약이 "방어"(HealthRegen)에, 와드가 "기타" 에 겹쳐 나오면 목록이 지저분해진다.
+//   ★ 둘을 나눠 뒀다. 장신구는 소모되는 물건이 아니라서 "소모품" 에 넣으면 말이 안 맞는다.
+//     소모품 9개(물약·영약·제어 와드·칼리스타의 창) / 장신구 4개(투명 와드·렌즈·허수아비).
+const isConsumable = it => it.g2.includes('Consumable');
+const isTrinket = it => it.g2.includes('Trinket');
+const isUtility = it => isConsumable(it) || isTrinket(it);
+
+// ★★ 신발 판정은 태그만으로 부족하다 — **`건메탈 군화`에 `Boots` 태그가 없다** (2026-08-16).
+//   광전사의 군화로 만드는 신발 업그레이드인데 라이엇 데이터에 태그가 빠져 있어서
+//   "공격"(AttackSpeed)에만 나오고 신발 분류에서 통째로 빠졌다.
+//   재료를 타고 올라가 신발이 섞였는지 보면 잡힌다. **전수로 확인했고 이 하나만 추가되며
+//   오탐은 0이다** (신발로 만드는 신발 아닌 아이템이 없다).
+const isBoots = (it, all) => {
+    if (it.g2.includes('Boots')) return true;
+    const seen = new Set();
+    const walk = (x) => (x.f || []).some(f => {
+        if (seen.has(f)) return false;
+        seen.add(f);
+        const p = all[f];
+        return p ? (p.g2.includes('Boots') || walk(p)) : false;
+    });
+    return walk(it);
+};
+
 const CODEX_ITEM_CATS = [
     { key: 'all', name: '전체', test: () => true },
-    { key: 'boots', name: '신발', test: it => it.g2.includes('Boots') },
-    { key: 'ad', name: '공격', test: it => it.g2.some(t => ['Damage', 'CriticalStrike', 'AttackSpeed', 'ArmorPenetration', 'LifeSteal', 'OnHit'].includes(t)) && !it.g2.includes('Boots') },
-    { key: 'ap', name: '주문', test: it => it.g2.some(t => ['SpellDamage', 'MagicPenetration', 'Mana', 'ManaRegen', 'SpellVamp'].includes(t)) && !it.g2.includes('Boots') },
-    { key: 'tank', name: '방어', test: it => it.g2.some(t => ['Health', 'Armor', 'SpellBlock', 'HealthRegen', 'Tenacity'].includes(t)) && !it.g2.includes('Boots') },
-    { key: 'etc', name: '기타', test: it => it.g2.some(t => ['Consumable', 'Trinket', 'Vision', 'Jungle', 'Lane', 'GoldPer', 'Aura', 'Active'].includes(t)) }
+    { key: 'ad', name: '공격', test: (it, all) => !isUtility(it) && !isBoots(it, all) && it.g2.some(t => ['Damage', 'CriticalStrike', 'AttackSpeed', 'ArmorPenetration', 'LifeSteal', 'OnHit'].includes(t)) },
+    { key: 'ap', name: '주문', test: (it, all) => !isUtility(it) && !isBoots(it, all) && it.g2.some(t => ['SpellDamage', 'MagicPenetration', 'Mana', 'ManaRegen', 'SpellVamp'].includes(t)) },
+    { key: 'tank', name: '방어', test: (it, all) => !isUtility(it) && !isBoots(it, all) && it.g2.some(t => ['Health', 'Armor', 'SpellBlock', 'HealthRegen', 'Tenacity'].includes(t)) },
+    { key: 'boots', name: '신발', test: (it, all) => isBoots(it, all) },
+    { key: 'consum', name: '소모품', test: isConsumable },
+    { key: 'trinket', name: '장신구', test: isTrinket },
+    { key: 'etc', name: '기타', test: (it, all) => !isUtility(it) && !isBoots(it, all) && it.g2.some(t => ['Vision', 'Jungle', 'Lane', 'GoldPer', 'Aura', 'Active'].includes(t)) }
 ];
 
 const CODEX_TABS = [
@@ -2641,7 +2679,9 @@ async function showCodex(target) {
     }
 
     let curTab = CODEX_TABS.some(t => t.key === target) ? target : 'item';
-    let curCat = 'all';
+    let curCat = 'all';     // 아이템 계열 (공격·주문·방어·신발·소모품·기타)
+    let curDepth = 'all';   // 아이템 등급 (기본·중급·완성)
+    let curStyle = 'all';   // 룬 계열 (정밀·지배·마법·영감·결의·파편)
     let query = '';
     let selected = null;      // 지금 고른 항목 id (탭마다 따로 기억한다)
     const lastPick = {};
@@ -2692,9 +2732,11 @@ async function showCodex(target) {
             });
             return list;
         }
+        // ★ 주문은 부제를 안 붙인다. 9개뿐이라 목록에서 고를 때 쿨타임이 필요 없고,
+        //   오른쪽 상세에 뱃지로 이미 크게 나온다.
         return Object.keys(D.spells).map(id => {
             const s = D.spells[id];
-            return { id, name: s.n, icon: codexSpellIcon(s.i), sub: `쿨 ${s.cd}초`, raw: s, sort: [Number(id), 0] };
+            return { id, name: s.n, icon: codexSpellIcon(s.i), sub: '', raw: s, sort: [Number(id), 0] };
         });
     }
 
@@ -2706,22 +2748,59 @@ async function showCodex(target) {
         return cands.some(c => hay.includes(c));
     }
 
+    // 룬 계열 버튼. 계열 id 순이 곧 인게임 순서다 (정밀 8000 · 지배 8100 · 마법 8200 ·
+    // 영감 8300 · 결의 8400). 스탯 파편은 계열이 없어서 맨 뒤에 따로 붙인다.
+    function runeStyleCats() {
+        return [
+            { key: 'all', name: '전체' },
+            ...Object.keys(D.styles).sort((a, b) => a - b).map(id => ({ key: id, name: D.styles[id].n })),
+            { key: 'shard', name: '파편' }
+        ];
+    }
+
+    // 줄 하나를 그린다. group 이 다르면 서로 독립이고 **AND 로 겹쳐서 걸린다.**
+    function catRowHtml(label, list, cur, group) {
+        return `
+        <div class="codex-cat-row">
+            <span class="codex-cat-label">${label}</span>
+            <div class="codex-cat-btns">
+                ${list.map(c => `<button class="codex-cat${c.key === cur ? ' active' : ''}" data-group="${group}" data-key="${c.key}">${c.name}</button>`).join('')}
+            </div>
+        </div>`;
+    }
+
     function renderCats() {
         const el = document.getElementById('codex-cats');
-        if (curTab !== 'item') { el.innerHTML = ''; el.style.display = 'none'; return; }
-        el.style.display = 'flex';
-        el.innerHTML = CODEX_ITEM_CATS.map(c =>
-            `<button class="codex-cat${c.key === curCat ? ' active' : ''}" data-cat="${c.key}">${c.name}</button>`).join('');
+        let html = '';
+        if (curTab === 'item') {
+            html = catRowHtml('등급', CODEX_DEPTH_CATS, curDepth, 'depth')
+                + catRowHtml('분류', CODEX_ITEM_CATS, curCat, 'cat');
+        } else if (curTab === 'rune') {
+            html = catRowHtml('계열', runeStyleCats(), curStyle, 'style');
+        }
+        el.innerHTML = html;                       // 주문 탭은 거를 게 없어서 빈 줄이다
+        el.style.display = html ? 'block' : 'none';
+
         el.querySelectorAll('.codex-cat').forEach(b => b.addEventListener('click', () => {
-            curCat = b.dataset.cat; renderCats(); renderList();
+            const g = b.dataset.group, k = b.dataset.key;
+            if (g === 'depth') curDepth = k;
+            else if (g === 'cat') curCat = k;
+            else curStyle = k;
+            renderCats(); renderList();
         }));
     }
 
     function visible() {
         const cands = query.trim() ? koCandidates(query.trim().toLowerCase()) : [];
         const cat = CODEX_ITEM_CATS.find(c => c.key === curCat) || CODEX_ITEM_CATS[0];
+        const dep = CODEX_DEPTH_CATS.find(c => c.key === curDepth) || CODEX_DEPTH_CATS[0];
         return entries()
-            .filter(e => curTab !== 'item' || cat.test(e.raw))
+            // 아이템은 등급 · 계열 두 조건을 AND 로 건다.
+            // 계열 검사는 재료를 되짚어야 해서(신발 판정) 아이템 표를 같이 넘긴다.
+            .filter(e => curTab !== 'item' || (dep.test(e.raw) && cat.test(e.raw, D.items)))
+            // 룬은 계열 하나. 'shard' 는 스탯 파편만 (계열이 없는 항목이다)
+            .filter(e => curTab !== 'rune' || curStyle === 'all'
+                || (curStyle === 'shard' ? !!e.shard : (!e.shard && String(e.raw.st) === curStyle)))
             .filter(e => matches(e, cands))
             .sort((a, b) => (a.sort[0] - b.sort[0]) || (a.sort[1] - b.sort[1]) || a.name.localeCompare(b.name, 'ko'));
     }
@@ -2749,7 +2828,7 @@ async function showCodex(target) {
                 <img class="codex-item-img" src="${e.icon}" alt="" loading="lazy">
                 <div class="codex-item-body">
                     <div class="codex-item-name">${e.name}</div>
-                    <div class="codex-item-sub">${e.sub}</div>
+                    ${e.sub ? `<div class="codex-item-sub">${e.sub}</div>` : ''}
                 </div>
             </div>`).join('');
 
@@ -2781,8 +2860,9 @@ async function showCodex(target) {
         el.querySelectorAll('.codex-recipe-item').forEach(b => b.addEventListener('click', () => {
             const id = b.dataset.id;
             if (!D.items[id]) return;
-            // 분류·검색 때문에 목록에 없을 수 있으니 풀어 준다
+            // 등급·분류·검색 때문에 목록에 없을 수 있으니 전부 풀어 준다
             curCat = 'all';
+            curDepth = 'all';
             query = '';
             document.getElementById('codex-search').value = '';
             selected = id;
@@ -2876,6 +2956,8 @@ async function showCodex(target) {
         b.classList.add('active');
         curTab = b.dataset.tab;
         curCat = 'all';
+        curDepth = 'all';
+        curStyle = 'all';
         query = '';
         document.getElementById('codex-search').value = '';
         selected = lastPick[curTab] || null;    // 탭으로 돌아오면 보던 걸 다시 연다

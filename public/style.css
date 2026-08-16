@@ -5820,11 +5820,34 @@ body::before {
 .codex-search:focus { border-color: rgba(167, 139, 250, 0.6); }
 .codex-search::placeholder { color: #6b7280; }
 
+/* 거르는 줄. 아이템은 등급 + 분류 두 줄, 룬은 계열 한 줄, 주문은 없다.
+   ★ 줄끼리는 서로 독립이고 AND 로 걸린다. */
 .codex-cats {
+    margin-bottom: 8px;
+}
+
+.codex-cat-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 5px;
+}
+
+/* ★ 라벨 폭을 못 박는다. 두 줄("등급"/"분류")의 버튼 시작 위치가 어긋나면
+   줄이 계단처럼 보인다. nowrap 이 없으면 "계열" 이 접힌다. */
+.codex-cat-label {
+    flex-shrink: 0;
+    width: 26px;
+    padding-top: 5px;
+    font-size: 11px;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.codex-cat-btns {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
-    margin-bottom: 8px;
 }
 
 .codex-cat {
@@ -5969,6 +5992,13 @@ body::before {
     font-size: 14px;
     line-height: 1.7;
     color: #ddd;
+}
+
+/* ★ 스탯이 없는 아이템(장신구·와드 등)은 <stats> 가 빈 채로 와서 **보라색 빈 상자**만
+   덩그러니 남는다. 여기서만 접는다 — TOOLTIP_STYLE_CSS 를 건드리면 챔피언 스킬 탭까지
+   같이 바뀌므로 도감 안으로 범위를 좁혔다. */
+.codex-desc stats:empty {
+    display: none;
 }
 
 .codex-recipe {
