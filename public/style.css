@@ -2425,6 +2425,267 @@ body::before {
     font-weight: 700;
 }
 
+/* ============================================================
+   룬 빌드 패널 (2026-08-16) — 통계 표에서 챔피언 줄을 누르면 펼쳐진다
+   ============================================================ */
+
+.stats-row {
+    cursor: pointer;
+}
+
+/* 펼침 표시. 줄에 마우스를 올리거나 열려 있을 때만 보인다 —
+   늘 보이면 챔피언 이름 옆이 지저분하다 */
+.stats-expand {
+    color: #6b7280;
+    font-size: 11px;
+    margin-left: 2px;
+    opacity: 0;
+    transition: opacity 0.15s, transform 0.15s;
+}
+
+.stats-table tbody tr:hover .stats-expand {
+    opacity: 1;
+}
+
+.stats-row.is-open .stats-expand {
+    opacity: 1;
+    transform: rotate(180deg);
+}
+
+.stats-row.is-open {
+    background: rgba(167, 139, 250, 0.08);
+}
+
+/* ★ 펼친 줄은 표본 미달 흐림(opacity 0.45)을 물려받으면 안 된다 —
+   .stats-build-row 는 별개 <tr> 이라 상속이 없지만, 줄 자체는 흐린 채로 두고
+   패널만 또렷하게 보여야 읽힌다. 그래서 패널을 형제 줄로 만든 것이다. */
+.stats-build-row td {
+    padding: 0 !important;
+    background: #14142a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.build-loading,
+.build-empty {
+    padding: 30px;
+    text-align: center;
+    color: #9aa4af;
+    font-size: 13px;
+}
+
+.build-panel {
+    padding: 18px 20px 20px;
+    text-align: left;
+}
+
+.build-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.build-title {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #a78bfa;
+    letter-spacing: 0.02em;
+}
+
+.build-total {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.build-thin {
+    color: #c9a227;
+    margin-left: 6px;
+}
+
+/* ── 핵심 룬 4개를 가로로. 지금 표본에서 믿을 수 있는 건 사실상 이 줄이다
+   (룬 페이지 전체는 조합이 많아 top 조합도 한 자릿수 %가 나온다) */
+.build-ks-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.build-ks {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 8px 10px;
+    min-width: 0;
+}
+
+.build-ks-img {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+}
+
+/* ★ min-width: 0 이 없으면 긴 룬 이름("정복자" 는 짧지만 "감전 후 폭발" 류)이
+   grid 칸을 밀어내 4칸이 안 맞는다 */
+.build-ks-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.build-ks-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.build-ks-name {
+    font-size: 12px;
+    color: #e2e8f0;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.build-ks-pick {
+    font-size: 12px;
+    color: #fff;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.build-ks-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    margin: 5px 0 4px;
+    overflow: hidden;
+}
+
+.build-ks-bar i {
+    display: block;
+    height: 100%;
+    background: #a78bfa;
+    border-radius: 2px;
+}
+
+.build-ks-sub {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+/* ── 아래 3단: 룬 페이지 / 소환사 주문 / 스탯 파편 */
+.build-cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px;
+}
+
+.build-col > .build-title {
+    margin-bottom: 9px;
+}
+
+.build-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 7px 10px;
+    margin-bottom: 6px;
+}
+
+.build-runes,
+.build-spells,
+.build-shards {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.build-style {
+    width: 18px;
+    height: 18px;
+    margin-right: 2px;
+}
+
+.build-perk {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* 키스톤만 크게. 룬 페이지에서 눈이 먼저 가야 하는 자리다 */
+.build-perk-key {
+    width: 30px;
+    height: 30px;
+}
+
+/* 주 룬과 보조 룬 사이 구분선 */
+.build-div {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.14);
+    margin: 0 5px;
+    flex-shrink: 0;
+}
+
+.build-spell {
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+}
+
+.build-shard {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.build-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-shrink: 0;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.build-pick {
+    color: #fff;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.build-games {
+    color: #6b7280;
+}
+
+.build-wr {
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.build-wr-up { color: #60a5fa; }
+.build-wr-down { color: #f87171; }
+/* 표본 5판 미만은 색을 안 준다 — 100% 나 0% 가 진하게 찍히면 오해를 부른다 */
+.build-wr-dim { color: #6b7280; font-weight: 600; }
+
+.build-none {
+    font-size: 12px;
+    color: #6b7280;
+    padding: 8px 2px;
+}
+
 /* 표본 미달 줄. 지우지 않고 흐리게만 둔다 — 없애면 "왜 이 챔피언이 없지" 가 된다 */
 .stats-row-low {
     opacity: 0.45;
@@ -3042,6 +3303,31 @@ body::before {
     .stats-table {
         /* 칸이 7개로 늘어서 640px 이 필요하다. 이 아래로 두면 챔피언 이름이 겹친다 */
         min-width: 640px;
+    }
+
+    /* ★ 룬 패널은 표 안(colspan=7)이라 칸 폭이 640px 로 잡힌다. 3단을 그대로 두면
+       가로 스크롤을 끝까지 밀어야 파편이 보이므로 세로로 쌓는다.
+       핵심 룬도 4칸 -> 1칸이다 (이름 + 34px 아이콘 + 비율이 한 줄에 들어가야 한다). */
+    .build-ks-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .build-cols {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    /* ★★ 세로로 쌓는 것만으로는 부족하다 — 칸이 640px 이라 승률이 화면 밖에 남는다.
+       sticky 로 스크롤 컨테이너 왼쪽에 붙이고 폭을 화면 폭으로 준다. 그러면 표를
+       좌우로 밀어도 패널은 제자리에 있고 내용이 전부 보인다.
+       (표 자체의 640px 최소 폭은 그대로 둔다 — 챔피언 이름이 겹치면 안 된다) */
+    .build-panel {
+        padding: 14px;
+        position: sticky;
+        left: 0;
+        width: calc(100vw - 2px);
+        box-sizing: border-box;
     }
 
     .stats-controls {

@@ -2446,6 +2446,181 @@ function statScopeLabel(scope) {
     return scope.startsWith('p:') ? `${scope.slice(2)} 패치` : `${scope.slice(2)}`;
 }
 
+// ============================================================
+//  룬 빌드 패널 (2026-08-16 신설)
+//    통계 탭에서 챔피언 줄을 누르면 아래로 펼쳐진다.
+//    서버의 /api/champion-builds 가 그 챔피언 것만 내려준다.
+// ============================================================
+
+// perk_data.js 지연 로드. 통계 탭을 열기만 한 사람에게는 안 받는다.
+//   챔피언 데이터(loadChampionData)와 따로 두는 이유: 저건 gzip 142KB 라 챔피언 탭에서
+//   한 번에 받는 게 맞지만, 이건 12KB 고 쓰이는 곳이 여기 하나뿐이다.
+let perkDataPromise = null;
+function loadPerkData() {
+    if (perkDataPromise) return perkDataPromise;
+    const tag = document.querySelector('script.lazy-perk-data[data-src]');
+    if (!tag) return Promise.reject(new Error('perk_data.js 태그가 없습니다.'));
+
+    perkDataPromise = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.async = false;
+        s.src = tag.dataset.src;      // ?v=mtime 은 server.js 가 이미 붙여 놨다
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('룬 데이터를 받지 못했습니다.'));
+        document.head.appendChild(s);
+    });
+    perkDataPromise.catch(() => { perkDataPromise = null; });
+    return perkDataPromise;
+}
+
+// 룬·계열은 한 표에서 같이 찾는다 (계열 id 도 그림이 있어야 해서다)
+const perkName = id => (perkData.perks[id] || perkData.styles[id] || [''])[0] || '';
+const perkIcon = id => {
+    const e = perkData.perks[id] || perkData.styles[id];
+    return e ? cdAssetUrl(e[1]) : '';      // 소문자 변환은 스킨 탭이 쓰던 그 함수가 한다
+};
+const spellName = id => (perkData.spells[id] || [''])[0] || '';
+const spellIcon = id => {
+    const e = perkData.spells[id];
+    return e ? `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${e[1]}` : '';
+};
+
+// ★ 집계 키의 보조 룬 2개는 **id 순으로 정렬돼 있다** — 라이엇이 주는 순서가 일정하지
+//   않아서 같은 룬 페이지가 두 조합으로 갈리기 때문이다 (server.js 의 buildOneBuildScope).
+//   그런데 id 순서와 슬롯 순서는 다르므로(어긋나는 쌍 139개) 그리기 전에 되돌린다.
+//   안 그러면 영감 룬이 "환급 → 삼중 물약" 처럼 인게임과 거꾸로 나온다.
+function perksBySlot(styleId, ids) {
+    const slots = perkData.slots[styleId] || [];
+    const at = id => {
+        const i = slots.findIndex(s => s.includes(id));
+        return i < 0 ? 99 : i;
+    };
+    return [...ids].sort((a, b) => at(a) - at(b));
+}
+
+// 표본이 이 아래면 흐리게 둔다. 표의 STAT_MIN_GAMES 와 같은 뜻이지만 여기는
+// 조합 하나의 판수라 훨씬 작을 수밖에 없어서 따로 잡는다.
+const BUILD_MIN_GAMES = 5;
+
+// laneNote — 라인 필터가 켜져 있을 때 넘어온다. 아래 "라인 무관" 안내에 쓴다.
+function renderBuildPanel(data, laneNote) {
+    if (!data.total) {
+        return `<div class="build-empty">이 챔피언은 아직 표본이 없습니다.</div>`;
+    }
+
+    const total = data.total;
+    const pct = g => (g / total * 100).toFixed(1);
+    const wr = (w, g) => (w / g * 100).toFixed(1);
+    // ★ 1판짜리 조합은 뺀다. 룬은 조합 가짓수가 커서 "누가 한 번 그렇게 갔다" 가 꼬리에
+    //   길게 붙는데, `감전 1.0% · 승률 0.0%` 같은 줄은 정보가 아니라 잡음이다.
+    //   다만 **전부 1판이면 그 한 줄은 남긴다** — 비워 두면 고장으로 보인다.
+    const top = (type, n) => {
+        const all = data.rows.filter(r => r.type === type).sort((a, b) => b.games - a.games);
+        const kept = all.filter(r => r.games >= 2);
+        return (kept.length ? kept : all.slice(0, 1)).slice(0, n);
+    };
+
+    // 승률에 색을 준다. 50% 를 기준으로 위는 파랑, 아래는 빨강 (전적 칸과 같은 규칙)
+    const wrClass = (w, g) => (g < BUILD_MIN_GAMES ? 'build-wr-dim' : (w / g >= 0.5 ? 'build-wr-up' : 'build-wr-down'));
+
+    const metaHtml = r => `
+        <div class="build-meta">
+            <span class="build-pick">${pct(r.games)}%</span>
+            <span class="build-games">${r.games}판</span>
+            <span class="build-wr ${wrClass(r.wins, r.games)}">${wr(r.wins, r.games)}%</span>
+        </div>`;
+
+    // ── 핵심 룬 (키스톤). 룬 페이지보다 조합이 훨씬 적어 표본이 두껍다.
+    //    지금 표본으로 믿을 수 있는 건 사실상 이 줄이라 맨 위에 크게 둔다.
+    const keystones = top('keystone', 4).map(r => {
+        const [style, ks] = r.key;
+        return `
+        <div class="build-ks">
+            <img class="build-ks-img" src="${perkIcon(ks)}" alt="" title="${perkName(ks)}">
+            <div class="build-ks-body">
+                <div class="build-ks-top">
+                    <span class="build-ks-name">${perkName(ks)}</span>
+                    <span class="build-ks-pick">${pct(r.games)}%</span>
+                </div>
+                <div class="build-ks-bar"><i style="width:${Math.max(2, pct(r.games))}%"></i></div>
+                <div class="build-ks-sub">
+                    ${r.games}판 · 승률 <span class="${wrClass(r.wins, r.games)}">${wr(r.wins, r.games)}%</span>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    // ── 룬 페이지 전체
+    const runes = top('rune', 3).map(r => {
+        const [ps, ks, m1, m2, m3, ss, s1, s2] = r.key;
+        const sec = perksBySlot(ss, [s1, s2]);
+        const img = (id, cls) => `<img class="build-perk ${cls || ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}">`;
+        return `
+        <div class="build-item">
+            <div class="build-runes">
+                <img class="build-style" src="${perkIcon(ps)}" alt="" title="${perkName(ps)}">
+                ${img(ks, 'build-perk-key')}
+                ${[m1, m2, m3].map(x => img(x)).join('')}
+                <span class="build-div"></span>
+                <img class="build-style" src="${perkIcon(ss)}" alt="" title="${perkName(ss)}">
+                ${sec.map(x => img(x)).join('')}
+            </div>
+            ${metaHtml(r)}
+        </div>`;
+    }).join('') || `<div class="build-none">표본 없음</div>`;
+
+    // ── 소환사 주문
+    const spells = top('spell', 3).map(r => `
+        <div class="build-item">
+            <div class="build-spells">
+                ${r.key.map(x => `<img class="build-spell" src="${spellIcon(x)}" alt="" title="${spellName(x)}">`).join('')}
+            </div>
+            ${metaHtml(r)}
+        </div>`).join('') || `<div class="build-none">표본 없음</div>`;
+
+    // ── 스탯 파편 (공격 / 유연 / 방어 순서는 저장된 그대로가 맞다)
+    const shards = top('shard', 3).map(r => `
+        <div class="build-item">
+            <div class="build-shards">
+                ${r.key.map(x => `<img class="build-shard" src="${perkIcon(x)}" alt="" title="${perkName(x)}">`).join('')}
+            </div>
+            ${metaHtml(r)}
+        </div>`).join('') || `<div class="build-none">표본 없음</div>`;
+
+    const thin = total < 30
+        ? `<span class="build-thin">표본이 적어 참고용입니다</span>` : '';
+
+    // ★ 룬 집계는 라인·인원 밴드로 안 쪼갠다 (server.js 의 champBuildSchema 주석 참고).
+    //   그래서 라인 필터를 켠 채로 펼치면 표의 표본과 여기 판수가 다르다 —
+    //   말을 안 해 두면 "숫자가 안 맞는다" 로 읽힌다.
+    const laneWarn = laneNote
+        ? `<span class="build-thin">${laneNote} 필터와 무관한 전체 라인 기준입니다</span>` : '';
+
+    return `
+    <div class="build-panel">
+        <div class="build-head">
+            <h4 class="build-title">핵심 룬</h4>
+            <span class="build-total">${total.toLocaleString()}판 기준 ${thin}${laneWarn}</span>
+        </div>
+        <div class="build-ks-row">${keystones}</div>
+
+        <div class="build-cols">
+            <div class="build-col build-col-wide">
+                <h4 class="build-title">룬 페이지</h4>
+                ${runes}
+            </div>
+            <div class="build-col">
+                <h4 class="build-title">소환사 주문</h4>
+                ${spells}
+            </div>
+            <div class="build-col">
+                <h4 class="build-title">스탯 파편</h4>
+                ${shards}
+            </div>
+        </div>
+    </div>`;
+}
+
 async function showStats() {
     if (window.location.pathname !== '/stats') window.history.pushState({ page: 'stats' }, '', '/stats');
     hideAllContainers();
@@ -2608,11 +2783,12 @@ async function showStats() {
             const low = c.games < STAT_MIN_GAMES;
             const laneKey = STAT_POS.find(p => p.code === c.lanePos)?.key;
             return `
-            <tr class="${low ? 'stats-row-low' : ''}">
+            <tr class="stats-row ${low ? 'stats-row-low' : ''}" data-champ="${c.champ}">
                 <td class="stats-champ-info">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${engId}.png"
                          onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
                     <span class="stats-champ-name">${c.name}</span>
+                    <span class="stats-expand">▾</span>
                 </td>
                 <td>${c.tier ? `<span class="stats-tier tier-${c.tier.toLowerCase()}">${c.tier}</span>` : `<span class="stats-tier-none">-</span>`}</td>
                 <td class="stats-lane">
@@ -2628,6 +2804,54 @@ async function showStats() {
     }
 
     renderStatsTable();
+
+    // ── 줄을 누르면 룬 빌드가 펼쳐진다 (2026-08-16)
+    //   ★ tbody 에 한 번만 붙인다. renderStatsTable() 은 tbody 를 통째로 갈아 끼우는 게
+    //     아니라 innerHTML 만 바꾸므로 이 리스너는 살아남는다.
+    //     (랭킹 표는 표를 매번 새로 그려서 리스너도 매번 붙였다 — 구조가 다르다)
+    //   ★ 정렬·필터를 누르면 펼친 줄이 닫힌다. innerHTML 을 새로 그리니 당연한데,
+    //     "닫히지 말아야 한다" 고 보기도 어렵다 — 줄 순서가 통째로 바뀌기 때문이다.
+    const buildCache = new Map();
+    document.getElementById('stats-tbody').addEventListener('click', async (e) => {
+        const tr = e.target.closest('.stats-row');
+        if (!tr) return;
+
+        // 이미 펼쳐져 있으면 접는다
+        const opened = tr.nextElementSibling;
+        if (opened && opened.classList.contains('stats-build-row')) {
+            opened.remove();
+            tr.classList.remove('is-open');
+            return;
+        }
+        // 다른 줄이 열려 있으면 닫는다 (한 번에 하나만)
+        document.querySelectorAll('.stats-build-row').forEach(r => r.remove());
+        document.querySelectorAll('.stats-row.is-open').forEach(r => r.classList.remove('is-open'));
+
+        const champ = Number(tr.dataset.champ);
+        tr.classList.add('is-open');
+        const row = document.createElement('tr');
+        row.className = 'stats-build-row';
+        row.innerHTML = `<td colspan="7"><div class="build-loading">룬 통계를 불러오는 중...</div></td>`;
+        tr.after(row);
+
+        const cacheKey = `${data.scope}|${champ}`;
+        try {
+            await loadPerkData();
+            if (!buildCache.has(cacheKey)) {
+                const res = await fetch(`/api/champion-builds?scope=${encodeURIComponent(data.scope)}&champ=${champ}`);
+                if (!res.ok) throw new Error('응답 오류');
+                buildCache.set(cacheKey, await res.json());
+            }
+            // 불러오는 동안 사용자가 다시 눌러 닫았을 수 있다
+            if (!row.isConnected) return;
+            const laneNote = curLane === 'all' ? '' : (STAT_POS.find(p => p.code === Number(curLane))?.name || '');
+            row.innerHTML = `<td colspan="7">${renderBuildPanel(buildCache.get(cacheKey), laneNote)}</td>`;
+        } catch (err) {
+            if (row.isConnected) {
+                row.innerHTML = `<td colspan="7"><div class="build-empty">룬 통계를 불러오지 못했습니다.</div></td>`;
+            }
+        }
+    });
 
     // ── 컨트롤
     document.getElementById('stats-scope').addEventListener('change', (e) => {

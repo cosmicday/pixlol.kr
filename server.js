@@ -112,6 +112,38 @@ const statScopeSchema = new mongoose.Schema({
 statScopeSchema.index({ scope: 1, kb: 1 }, { unique: true });
 const StatScope = mongoose.model('StatScope', statScopeSchema);
 
+// 챔피언별 룬·소환사 주문 빌드 (2026-08-16 신설)
+//   ★★ 이걸 만든 진짜 이유는 화면이 아니라 **원본 삭제 준비**다. 룬·주문은
+//     MatchStat.p 의 15~27번 칸에만 있어서, 지난 패치 원본을 지우면 그 패치의 룬 통계는
+//     영영 복구가 안 된다. 승률·픽률·밴률은 이미 champstats 에 집계돼 있어서 안전한데
+//     룬만 집계가 없었다. **원본을 지우기 전에 반드시 이 집계가 먼저 있어야 한다.**
+//
+//   ★ champstats 와 다른 점 세 가지 (일부러 다르게 했다):
+//     ① **kb 밴드로 안 쪼갠다.** 룬 선택이 마스터+ 인원 수에 따라 달라질 이유가 없고,
+//        표본이 지금도 얇아서 반으로 가르면 top 조합이 한두 판짜리가 된다
+//     ② **일별 scope 를 안 만든다.** 하루치 룬 조합은 거의 전부 1판짜리라 뜻이 없고,
+//        집계 비용만 두 배가 된다. 패치 scope 만 만든다
+//     ③ **라인별로 안 쪼갠다.** 럼블처럼 탑/미드를 오가는 챔피언은 룬이 갈리지만,
+//        지금 표본으로 라인까지 나누면 남는 게 없다. 표본이 쌓이면 그때 pos 를 더한다
+//
+//   key 의 자리 뜻은 type 마다 다르다 (참가자 배열 칸 번호는 toSlimMatch() 주석 참고):
+//     rune     [주계열, 키스톤, 주룬1, 주룬2, 주룬3, 보조계열, 보조룬1, 보조룬2]  (17~24번 칸)
+//     keystone [주계열, 키스톤]                                                  (17~18번 칸)
+//     spell    [주문A, 주문B]  — **작은 id 가 앞이다.** 안 그러면 점멸/점화와
+//                                점화/점멸이 다른 조합으로 갈려 표본이 반으로 쪼개진다
+//     shard    [공격 파편, 유연 파편, 방어 파편]                                 (25~27번 칸)
+//     all      []  — 이 챔피언의 총 판수. **픽률의 분모라 따로 담는다** (아래 참고)
+const champBuildSchema = new mongoose.Schema({
+    scope: { type: String, required: true },
+    champ: { type: Number, required: true },
+    type: { type: String, required: true },
+    key: { type: [Number], default: [] },
+    games: { type: Number, default: 0 },
+    wins: { type: Number, default: 0 }
+});
+champBuildSchema.index({ scope: 1, champ: 1 });
+const ChampBuild = mongoose.model('ChampBuild', champBuildSchema);
+
 const summonerCacheSchema = new mongoose.Schema({
     puuid: { type: String, required: true, unique: true },
     displayName: { type: String, required: true },   // 화면 표시용 원본 ("Faker#KR1")
@@ -840,6 +872,87 @@ async function buildOneScope(scopeKey, matchCond) {
     return f.totals.reduce((a, t) => a + t.games, 0);
 }
 
+// ★ 조합별로 top 몇 개까지 남길지. 룬 페이지는 조합 가짓수가 커서(주 4 x 3 x 3 x 3 x
+//   보조 계열 4 x 조합) 판당 새 조합이 나오다시피 한다 — 자르지 않으면 1판짜리 줄이
+//   컬렉션을 뒤덮는다. 화면은 어차피 top 3 만 쓰므로 12면 넉넉하다.
+const BUILD_TOP_N = 12;
+
+// 챔피언별 룬·주문 빌드 집계. **패치 scope 에만 부른다** (champBuildSchema 주석 참고)
+async function buildOneBuildScope(scopeKey, matchCond) {
+    const P = i => ({ $arrayElemAt: ['$p', i] });
+
+    // ★ $unwind 를 한 번만 하고 $facet 으로 네 갈래를 낸다. 갈래마다 따로 aggregate 를
+    //   돌리면 110만 행짜리 unwind 를 다섯 번 반복하게 된다 (M0 무료 티어라 뼈아프다).
+    const rows = await MatchStat.aggregate([
+        { $match: matchCond },
+        { $project: { p: 1 } },
+        { $unwind: '$p' },
+        {
+            $project: {
+                c: P(0), w: P(2),
+                // ★★ 보조 룬 2개(23·24번 칸)는 **반드시 정렬해야 한다** (2026-08-16).
+                //   라이엇이 주는 순서가 일정하지 않아서 **같은 룬 페이지가 두 조합으로
+                //   갈렸다** — 리 신의 "영감 · 우주적 통찰력 · 마법의 신발" 81판과
+                //   "영감 · 마법의 신발 · 우주적 통찰력" 62판이 실제로는 143판 한 조합이다.
+                //   전수로 재니 조합 가짓수가 3021 → 2559 로 **15% 가 중복**이었다.
+                //   ★ 주 룬 3개(19~21)는 정렬하면 안 되는 게 아니라 **할 필요가 없다** —
+                //     라이엇이 이미 슬롯 순서로 준다 (정렬 전후 가짓수가 3021 로 같았다).
+                //     그대로 두면 화면에서 인게임과 같은 순서로 그려진다.
+                //   ★ 정렬한 보조 2개는 **id 순서라 슬롯 순서와 다르다** (어긋나는 쌍 139개).
+                //     화면이 perk_data.js 의 slots 로 되돌려 그린다.
+                rune: {
+                    $concatArrays: [
+                        [P(17), P(18), P(19), P(20), P(21), P(22)],
+                        { $sortArray: { input: [P(23), P(24)], sortBy: 1 } }
+                    ]
+                },
+                keystone: [P(17), P(18)],
+                shard: [P(25), P(26), P(27)],
+                // 같은 이유로 주문도 작은 id 를 앞으로. 점멸/점화와 점화/점멸이 갈리면
+                // 표본이 반이 된다.
+                spell: { $cond: [{ $lt: [P(15), P(16)] }, [P(15), P(16)], [P(16), P(15)]] }
+            }
+        },
+        {
+            $facet: {
+                rune: [{ $group: { _id: { c: '$c', k: '$rune' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
+                keystone: [{ $group: { _id: { c: '$c', k: '$keystone' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
+                spell: [{ $group: { _id: { c: '$c', k: '$spell' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
+                shard: [{ $group: { _id: { c: '$c', k: '$shard' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
+                // ★ 챔피언 총 판수. top N 으로 자르고 나면 줄을 더해도 총합이 안 나오므로
+                //   분모를 따로 담아야 한다. champstats 에서 가져오면 될 것 같지만
+                //   거기는 kb 로 쪼개져 있고 화면의 밴드 필터에 따라 값이 달라진다.
+                all: [{ $group: { _id: { c: '$c', k: [] }, games: { $sum: 1 }, wins: { $sum: '$w' } } }]
+            }
+        }
+    ]).allowDiskUse(true);
+
+    const f = rows[0];
+    if (!f) return 0;
+
+    const docs = [];
+    for (const type of ['rune', 'keystone', 'spell', 'shard', 'all']) {
+        // 챔피언별로 모아서 많이 쓴 순으로 자른다
+        const byChamp = new Map();
+        (f[type] || []).forEach(r => {
+            const c = r._id.c;
+            if (c == null) return;
+            if (!byChamp.has(c)) byChamp.set(c, []);
+            byChamp.get(c).push({ scope: scopeKey, champ: c, type, key: r._id.k || [], games: r.games, wins: r.wins });
+        });
+        byChamp.forEach(list => {
+            list.sort((a, b) => b.games - a.games);
+            docs.push(...(type === 'all' ? list : list.slice(0, BUILD_TOP_N)));
+        });
+    }
+
+    // champstats 와 같은 이유로 통째로 갈아 끼운다 — $set 으로 덮으면 이번에 안 나온
+    // 조합이 옛 숫자를 들고 남는다.
+    await ChampBuild.deleteMany({ scope: scopeKey });
+    if (docs.length) await ChampBuild.insertMany(docs, { ordered: false });
+    return docs.length;
+}
+
 async function buildChampStats() {
     if (isBuildingStats) return;
     isBuildingStats = true;
@@ -861,7 +974,15 @@ async function buildChampStats() {
         }
 
         let total = 0;
-        for (const s of scopes) total += await buildOneScope(s.key, s.cond);
+        let builds = 0;
+        for (const s of scopes) {
+            total += await buildOneScope(s.key, s.cond);
+            // ★ 룬 빌드는 패치 scope 에만 만든다. 하루치 룬 조합은 거의 전부 1판짜리다.
+            if (s.key.startsWith('p:')) builds += await buildOneBuildScope(s.key, s.cond);
+        }
+
+        // 원본이 사라진 패치의 빌드 집계는 그대로 얼려 둔다 (champstats 와 같은 규칙).
+        // 여기서 지우는 건 일별 scope 뿐인데, 빌드는 애초에 일별을 안 만드니 할 일이 없다.
 
         // 기간이 지난 일별 집계는 지운다 (패치별은 남긴다).
         // ★ 한 객체에 같은 키를 두 번 쓰면 뒤엣것만 남으므로 연산자를 합쳐서 쓴다.
@@ -870,7 +991,7 @@ async function buildChampStats() {
         await StatScope.deleteMany({ scope: { $regex: '^d:', $nin: keep } });
 
         if (total > 0) {
-            console.log(`[Stat] 집계 완료: scope ${scopes.length}개 / 연인원 ${total}판 / ${((Date.now() - started) / 1000).toFixed(1)}초`);
+            console.log(`[Stat] 집계 완료: scope ${scopes.length}개 / 연인원 ${total}판 / 빌드 ${builds}행 / ${((Date.now() - started) / 1000).toFixed(1)}초`);
         }
     } catch (e) {
         console.error('[Stat] 집계 실패:', e.message);
@@ -901,6 +1022,7 @@ async function ensureStatIndexes() {
         { col: 'summonercaches', key: { namePartLower: 1, tierScore: -1 } },
         // 통계 수집·집계용
         { col: 'matchseens', key: { done: 1, cnt: -1 } },
+        { col: 'champbuilds', key: { scope: 1, champ: 1 } },
         { col: 'matchstats', key: { v: 1, k: 1 } },
         { col: 'matchstats', key: { t: 1 } },
         { col: 'champstats', key: { scope: 1, kb: 1, pos: 1 } },
@@ -951,6 +1073,16 @@ async function startJobs() {
     await updateVersion();
     await updateArenaAugments();
     await updateChallengerList();
+
+    // ★★ 로컬에서 화면만 확인할 때는 `READONLY_JOBS=1 node server.js` 로 띄운다.
+    //   로컬 서버가 **프로덕션과 같은 DB · 같은 API 키**를 쓰기 때문이다. 그냥 띄우면
+    //   순회·수집 잡이 Railway 쪽과 **같은 매치를 두 번 처리**하고 라이엇 호출도
+    //   두 배가 되어 429 를 부른다 (2026-08-15에 matchseens 가 실제로 섞였다).
+    //   여기서 멈추므로 조회 API 와 화면은 그대로 살아 있다.
+    if (process.env.READONLY_JOBS === '1') {
+        console.log('[System] READONLY_JOBS=1 — 백그라운드 잡을 띄우지 않는다 (조회만 가능)');
+        return;
+    }
 
     // 닉네임 변환은 오래 걸리므로 기다리지 않고 백그라운드로 던짐
     resolveNamesInBackground();
@@ -2018,6 +2150,43 @@ app.get('/api/champion-stats', async (req, res) => {
     } catch (e) {
         console.error('[API] 챔피언 통계 실패:', e.message);
         res.status(500).json({ error: '통계를 불러오지 못했습니다.' });
+    }
+});
+
+// ==========================================
+// 챔피언 룬·소환사 주문 빌드
+//   통계 탭에서 챔피언 줄을 펼칠 때 그 챔피언 것만 부른다.
+//   ★ 통계 응답에 미리 실어 보내지 않는 이유: 164챔피언 x 조합 40여 개면 응답이
+//     통째로 몇 배가 되는데, 실제로 펼쳐 보는 건 한두 챔피언이다.
+//   집계는 1시간마다 갱신되므로 캐시를 넉넉히 잡아도 안전하다.
+// ==========================================
+app.get('/api/champion-builds', async (req, res) => {
+    try {
+        const champ = Number(req.query.champ);
+        const scope = String(req.query.scope || '');
+        if (!Number.isFinite(champ) || !scope) {
+            return res.status(400).json({ error: '잘못된 요청입니다.' });
+        }
+
+        const cacheKey = `builds_${scope}_${champ}`;
+        const hit = myCache.get(cacheKey);
+        if (hit) return res.json(hit);
+
+        const rows = await ChampBuild.find({ scope, champ }).select('-_id -__v -scope -champ').lean();
+        // "all" 줄이 픽률의 분모다. 없으면 아직 집계 전이다.
+        const totalRow = rows.find(r => r.type === 'all');
+        const payload = {
+            scope,
+            champ,
+            total: totalRow ? totalRow.games : 0,
+            wins: totalRow ? totalRow.wins : 0,
+            rows: rows.filter(r => r.type !== 'all')
+        };
+        myCache.set(cacheKey, payload, 600);
+        res.json(payload);
+    } catch (e) {
+        console.error('[API] 룬 빌드 실패:', e.message);
+        res.status(500).json({ error: '룬 통계를 불러오지 못했습니다.' });
     }
 });
 
