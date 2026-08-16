@@ -749,8 +749,25 @@ async function scanMatchlists() {
 // ② 기준을 넘긴 매치만 detail 을 받아 슬림으로 저장한다 (오후에만 돈다)
 //   ★ 순회가 끝난 뒤에 도는 게 핵심이다. 순회 도중이면 등장 횟수가 아직 덜 세어져서
 //     기준(5)을 못 넘긴 판을 그냥 지나칠 수 있다.
+// ★★ 명단이 이만큼은 차 있어야 k 를 센다 (2026-08-16 사고로 추가).
+//   정상값은 11,000명(챌 300 + 그마 700 + 마스터 1만)이라 5,000이면 넉넉한 하한이다.
+const RANK_SET_MIN = 5000;
+
 async function fetchMatchStats() {
-    if (isFetchingStats || rankPuuidSet.size === 0) return;
+    // ★★ `size === 0` 만 보면 안 된다 — **명단이 "일부만" 찬 창이 실제로 있었다.**
+    //   2026-08-16 14시대에 저장된 586건 중 98건(16.7%)이 `cnt=9 인데 k=0` 으로 들어갔다.
+    //   재시작 직후 updateChallengerList 에서 일부 티어만 성공하면 rankListByTier 의
+    //   나머지가 빈 배열이라(첫 기동이라 물려받을 이전 명단도 없다) rankPuuidSet 이
+    //   수백 명짜리가 된다. size 는 0이 아니니 이 가드를 통과하고, 그 상태로 수집하면
+    //   **마스터 9명이 낀 판이 k=0 으로 기록된다.**
+    //   ★ k 는 원본을 안 남겨서 나중에 다시 셀 수 없다 (슬림 문서에 puuid 가 없다).
+    //     그래서 "틀리게 저장하느니 안 하는" 쪽이 맞다 — 잠깐 쉬면 다음 분에 다시 온다.
+    if (isFetchingStats || rankPuuidSet.size < RANK_SET_MIN) {
+        if (!isFetchingStats && rankPuuidSet.size > 0) {
+            console.warn(`[Stat] 명단이 ${rankPuuidSet.size}명뿐이라 수집을 건너뛴다 (최소 ${RANK_SET_MIN})`);
+        }
+        return;
+    }
     // ★ 순회가 남아 있으면 손대지 않는다. 등장 횟수가 아직 덜 세어져서
     //   기준(5)을 못 넘긴 판을 그냥 지나치게 된다.
     if (scanPending() > 0) return;
