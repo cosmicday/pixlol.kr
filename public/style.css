@@ -6262,10 +6262,30 @@ body::before {
     font-size: 12px;
 }
 
-.mshop-collected {
+/* 판매 기간 (구획 헤더 오른쪽 끝). 예전의 "수집 …" 자리다 —
+   우리가 언제 읽었나가 아니라 **언제까지 파는지**를 적는다 */
+.mshop-period {
     margin-left: auto;
-    color: #555;
+    color: #6b7280;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* 상품 하나의 남은 판매 시간 딱지. 추천처럼 상품마다 기한이 다른 구획에서 쓴다.
+   ★ 그림 위 오른쪽 구석에 얹는다 (`.mythic-item-img-box` 가 position:relative 다) */
+.mythic-item-timer {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #e2e8f0;
     font-size: 11px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    cursor: help;
+    pointer-events: auto;
 }
 
 /* ★ 격자다. 첫 화면 위젯은 4개 고정이라 flex 로 나눠도 됐지만, 여기는 구획마다

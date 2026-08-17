@@ -4356,6 +4356,78 @@ window.showTerms = function () {
 const ME_GEM_ICON = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/rarity-gem-icons/mythic.png";
 const MYTHIC_FALLBACK_IMG = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/hextech-images/chest.png";
 
+// ============================================================
+//  판매 기간 · 초기화 시각 (2026-08-17)
+//
+//    ★★ 날짜를 박아 두지 않는다. **기준 시각 하나 + 주기**로 계산한다 —
+//      박아 두면 다음 로테이션부터 조용히 틀린 값이 나간다.
+//    ★ 초기화는 전부 **한국시간 09:00 = 00:00 UTC** 다. 그래서 UTC 자정을 기준으로 세면 된다.
+//      (수집기 쪽 `SECTIONS` 도 같은 규칙이다)
+// ============================================================
+const KST_OFFSET = 9 * 3600000;
+
+const MYTHIC_RESET = {
+    daily: { step: 1, anchor: '2026-08-17', tip: '매일 09시 초기화' },
+    weekly: { step: 7, anchor: '2026-08-20', tip: '매주 목요일 09시 초기화' },   // 8/20 = 목요일
+    biweekly: { step: 14, anchor: '2026-08-19', tip: '격주 수요일 09시 초기화' }  // 8/19 = 수요일 (초기화 주)
+    // 추천은 없다 — 로테이션이 아니라 **상품마다 판매 종료가 다르다** (아래 MYTHIC_ITEM_END)
+};
+
+// 지금이 속한 판매 기간 [start, end)
+function mythicPeriod(section, now = Date.now()) {
+    const r = MYTHIC_RESET[section];
+    if (!r) return null;
+    const step = r.step * 86400000;
+    const anchor = Date.parse(r.anchor + 'T00:00:00Z');
+    // ★ floor 라 기준 시각보다 과거여도(음수) 맞게 나온다
+    const start = anchor + Math.floor((now - anchor) / step) * step;
+    return { start, end: start + step, tip: r.tip };
+}
+
+// "2026. 08. 17. 09:00" — 한국시간으로 찍는다
+function fmtKst(ms) {
+    const d = new Date(ms + KST_OFFSET);
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getUTCFullYear()}. ${p(d.getUTCMonth() + 1)}. ${p(d.getUTCDate())}. ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+}
+
+// "2026년 08월 27일 03:00"
+function fmtKstLong(ms) {
+    const d = new Date(ms + KST_OFFSET);
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getUTCFullYear()}년 ${p(d.getUTCMonth() + 1)}월 ${p(d.getUTCDate())}일 ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+}
+
+// "2일 03:04:05 뒤 초기화" / 하루 미만이면 "03:04:05 뒤 초기화"
+function remainText(until, suffix) {
+    const diff = Math.max(0, until - Date.now());
+    const p = n => String(n).padStart(2, '0');
+    const day = Math.floor(diff / 86400000);
+    const clock = `${p(Math.floor(diff / 3600000) % 24)}:${p(Math.floor(diff / 60000) % 60)}:${p(Math.floor(diff / 1000) % 60)}`;
+    return day > 0 ? `${day}일 ${clock} ${suffix}` : `${clock} ${suffix}`;
+}
+
+// ★★ 추천 상품은 상품마다 판매 종료가 다른데 **수집기가 그 값을 안 준다.**
+//   인게임 화면에는 남은 기간이 찍히므로 수집기가 읽어 보낼 수 있다 (SERVER_STATUS.md 에 요청해 뒀다).
+//   그때까지는 손으로 적는다. **모르는 상품은 딱지를 안 붙인다** — 틀린 기한을 붙이는 것보다 낫다.
+//   ★ 로테이션이 바뀌면 여기를 갈아야 한다. 안 갈면 딱지가 사라질 뿐 틀린 값이 나가지는 않는다.
+const MYTHIC_ITEM_END = {
+    'Together as 1': '2026-08-27 03:00',
+    '프레스티지 T1 제이스': '2026-08-27 03:00',
+    '프레스티지 T1 사일러스': '2026-08-27 03:00',
+    '행성 파괴자 다리우스': '2026-09-11 03:00',
+    '프레스티지 개선장군 다리우스': '2026-09-11 03:00',
+    '프레스티지 메카 삼국 가렌': '2026-09-11 03:00',
+    '프레스티지 개선장군 다리우스 (강렬)': '2026-09-11 03:00'
+};
+
+function mythicItemEnd(name) {
+    const s = MYTHIC_ITEM_END[name];
+    if (!s) return null;
+    const ms = Date.parse(s.replace(' ', 'T') + ':00+09:00');   // 적어 둔 값은 한국시간이다
+    return Number.isFinite(ms) ? ms : null;
+}
+
 function mythicDayLabel(date) {
     // "2026-08-16" → "8월 16일"
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date || '');
@@ -4557,9 +4629,18 @@ function mythicCardHtml(item) {
     // 스킨·크로마는 누르면 그 스킨 일러스트를 보러 간다. 아이콘·감정표현은 갈 곳이 없다.
     const goto = (item.type === 'skin' || item.type === 'chroma') && item.catalogId
         ? ` data-skin-id="${item.catalogId}" data-skin-type="${item.type}"` : '';
+    // 판매 종료를 아는 상품은 남은 시간 딱지를 붙인다 (지금은 추천 구획만 해당)
+    //   ★ 툴팁은 `data-tooltip` 이 아니라 `title` 이다 — 카드가 `overflow: hidden` 이라
+    //     CSS 툴팁(`::after`)이 카드 밖으로 못 나가고 잘린다. 네이티브는 안 잘린다.
+    const endMs = mythicItemEnd(item.name);
+    const timer = endMs
+        ? `<span class="mythic-item-timer js-shop-timer" data-until="${endMs}" data-suffix="남음"
+                 title="${fmtKstLong(endMs)} 판매종료"></span>`
+        : '';
+
     return `
         <div class="mythic-item-card ${fit}${goto ? ' is-link' : ''}"${goto}>
-            <div class="mythic-item-img-box">${media}</div>
+            <div class="mythic-item-img-box">${media}${timer}</div>
             <div class="mythic-item-info">
                 <span class="mythic-item-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
                 <div class="mythic-item-price"><img src="${ME_GEM_ICON}" style="width: 13px; height: 13px;"><span style="color: #facc15; font-size: 14px; font-weight: 700;">${item.price}</span></div>
@@ -4568,22 +4649,16 @@ function mythicCardHtml(item) {
     `;
 }
 
+// ★ `.js-shop-timer` 를 전부 훑는다 — 첫 화면 위젯 · 구획 헤더 · 추천 상품 딱지가
+//   같은 시계를 쓰고, 뒤 둘은 생겼다 없어지기 때문이다.
+//   ★★ 각자 목표 시각을 `data-until` 로 들고 있다. 없으면 **일일 초기화**로 본다 —
+//     첫 화면 위젯이 그 경우다 (예전 동작 그대로).
 window.updateShopTimer = function () {
-    const now = new Date();
-    const nextReset = new Date();
-    nextReset.setHours(9, 0, 0, 0);
-    if (now > nextReset) nextReset.setDate(nextReset.getDate() + 1);
-
-    const diff = nextReset - now;
-    const hours = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
-    const minutes = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
-    const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
-
-    // ★ id 하나가 아니라 `.js-shop-timer` 를 전부 훑는다. 첫 화면 위젯과 신화상점 탭
-    //   두 군데에 같은 카운트다운이 뜨고, 탭 쪽은 나중에 생겼다 없어지기 때문이다.
-    //   (예전엔 getElementById('shop-timer') 하나였는데 그 자리가 없으면 매초 예외가 났다)
-    const text = `${hours}:${minutes}:${seconds} 뒤 초기화`;
-    document.querySelectorAll('.js-shop-timer').forEach(el => { el.innerText = text; });
+    const dailyEnd = mythicPeriod('daily').end;
+    document.querySelectorAll('.js-shop-timer').forEach(el => {
+        const until = Number(el.dataset.until) || dailyEnd;
+        el.innerText = remainText(until, el.dataset.suffix || '뒤 초기화');
+    });
 };
 
 // ============================================================
@@ -4736,24 +4811,26 @@ async function renderMythicSection(key) {
         ? `<div class="mshop-grid${key === 'featured' ? ' is-featured' : ''}">${data.items.map(mythicCardHtml).join('')}</div>`
         : `<div class="mythic-empty">아직 오늘 로테이션을 수집하지 않았습니다.</div>`;
 
-    // ★ 일일만 카운트다운을 붙인다 — 그 타이머는 매일 오전 9시 초기화라 주간·격주와 무관하다.
-    //   대신 나머지 구획은 **며칠 전에 수집한 것인지**를 밝힌다 (서버의 ageDays·stale).
-    const meta = isDaily
-        ? `<span class="mshop-date">${mythicRotationLabel(data.date)}</span>
-           <span class="timer-text js-shop-timer" data-tooltip="매일 오전 9시 초기화"></span>`
-        : `<span class="mshop-date">${mythicDayLabel(data.date)} 기준${data.ageDays ? ` · ${data.ageDays}일 전` : ' · 오늘'}</span>`;
+    // ★★ 제목 옆은 **다음 초기화까지 남은 시간**, 오른쪽 끝은 **판매 기간**이다 (2026-08-17).
+    //   예전엔 "8월 17일 기준 · 오늘" 과 "수집 2026. 8. 17. 오후 2:23:11" 이 있었는데,
+    //   둘 다 **우리가 언제 읽었나**를 말할 뿐 **언제까지 파는지**를 안 알려줬다.
+    //   ★ 추천은 로테이션이 아니라 상품마다 기한이 달라서 둘 다 없다 (카드에 딱지가 붙는다).
+    const period = mythicPeriod(key);
+    const meta = period
+        ? `<span class="timer-text js-shop-timer" data-until="${period.end}" data-tooltip="${period.tip}"></span>`
+        : '';
 
     body.innerHTML = `
         <div class="mshop-section-head">
             <h2 class="mshop-section-title">${info.full}</h2>
             ${meta}
-            ${data.collectedAt ? `<span class="mshop-collected">수집 ${new Date(data.collectedAt).toLocaleString('ko-KR')}</span>` : ''}
+            ${period ? `<span class="mshop-period" data-tooltip="판매 기간 (한국시간)">${fmtKst(period.start)} - ${fmtKst(period.end)}</span>` : ''}
         </div>
         ${data.stale ? `<div class="mshop-stale">마지막 수집이 ${data.ageDays}일 전입니다. 그 사이 로테이션이 바뀌었을 수 있습니다.</div>` : ''}
         ${cards}`;
 
-    // 방금 만든 카운트다운 칸을 바로 채운다 (1초 뒤 타이머를 기다리면 빈 채로 깜빡인다)
-    if (isDaily) updateShopTimer();
+    // 방금 만든 카운트다운·딱지를 바로 채운다 (1초 뒤 타이머를 기다리면 빈 채로 깜빡인다)
+    updateShopTimer();
 }
 
 window.copyEmail = function () {
