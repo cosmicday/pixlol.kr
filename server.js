@@ -80,6 +80,29 @@ const rankSnapshotSchema = new mongoose.Schema({
 });
 const RankSnapshot = mongoose.model('RankSnapshot', rankSnapshotSchema);
 
+// ==========================================
+// 상위 티어 어긋남 눈금 (2026-08-17 신설)
+//   ★★ **라이엇이 티어를 언제 다시 계산하는지 알아내려고 둔 것이다.**
+//     라이엇은 챌린저/그마 소속을 연속으로 갱신하지 않고 하루 한 번쯤 몰아서 처리한다.
+//     그래서 갱신 직후에는 LP 순위와 소속이 정확히 맞고(1~300등이 전부 챌린저),
+//     시간이 갈수록 아래 티어가 LP 로 치고 올라와 어긋난다.
+//   → `c300`(1~300등 안의 챌린저 수)과 `g1000`(1~1000등 안의 그마 수)이
+//     **300 / 700 으로 되돌아가는 순간이 곧 갱신 시각**이다.
+//   ★ 라이엇 호출이 0 이다 — 이미 10분(밤에는 5분)마다 받는 명단을 세기만 한다.
+// ==========================================
+const apexDriftSchema = new mongoose.Schema({
+    t: { type: Date, required: true },
+    c300: { type: Number },      // 1~300등 안의 챌린저 수 (300 이면 안 어긋남)
+    g1000: { type: Number },     // 1~1000등 안의 그마 수 (700 이면 안 어긋남)
+    cMin: { type: Number },      // 챌린저 최저 LP
+    gMax: { type: Number },      // 그마 최고 LP  — cMin 보다 높으면 그만큼 흐른 것이다
+    gMin: { type: Number },      // 그마 최저 LP
+    mMax: { type: Number },      // 마스터 최고 LP
+    createdAt: { type: Date, expires: '7d', default: Date.now }
+});
+apexDriftSchema.index({ t: -1 });
+const ApexDrift = mongoose.model('ApexDrift', apexDriftSchema);
+
 // 통계용 슬림 경기. 원본 대신 이것만 남는다.
 const matchStatSchema = new mongoose.Schema({
     matchId: { type: String, required: true, unique: true },
@@ -465,6 +488,7 @@ async function updateChallengerList() {
             console.log(`[Task] 랭킹 명단 갱신 완료 (총 ${challengerList.length}명)`);
             // 오늘 명단을 사진 찍어 둔다 (내일 이 날짜 경기를 다룰 때 쓴다)
             saveRankSnapshot().catch(e => console.error('[Snapshot] 저장 실패:', e.message));
+            saveApexDrift().catch(e => console.error('[Apex] 기록 실패:', e.message));
         } else {
             console.error("[Task Error] 랭킹 명단이 비어 있어 갱신하지 않음");
         }
@@ -638,6 +662,33 @@ const kstDay = (ms) => new Date(ms + 9 * 3600000).toISOString().slice(0, 10);
 //   "오전 순회 / 오후 수집" 이 된다. 그런데 시각으로 하드코딩하면 재시작하거나
 //   429 로 밀렸을 때 **그날 순회를 통째로 건너뛴다.** 남은 인원으로 판단하면
 //   늦게 시작해도 알아서 따라잡는다.
+// 상위 티어가 LP 순위와 얼마나 어긋났나를 한 줄 남긴다.
+//   ★ 명단이 덜 찼으면 세지 않는다 — 마스터 조회만 실패해도 1~1000등이 통째로 달라져
+//     "갑자기 어긋남이 사라진 것" 처럼 보인다. 그게 바로 우리가 찾는 신호라 더 위험하다.
+async function saveApexDrift() {
+    if (challengerList.length < RANK_SET_MIN) return;
+
+    const lp = (t) => {
+        const v = challengerList.filter(p => p.tier === t).map(p => p.leaguePoints);
+        return v.length ? { max: Math.max(...v), min: Math.min(...v) } : null;
+    };
+    const c = lp('challengerleagues'), g = lp('grandmasterleagues'), m = lp('masterleagues');
+    if (!c || !g || !m) return;
+
+    // challengerList 는 이미 LP 내림차순이라 앞에서 잘라 세면 그게 등수다
+    const c300 = challengerList.slice(0, 300).filter(p => p.tier === 'challengerleagues').length;
+    const g1000 = challengerList.slice(0, 1000).filter(p => p.tier === 'grandmasterleagues').length;
+
+    await ApexDrift.create({
+        t: new Date(), c300, g1000,
+        cMin: c.min, gMax: g.max, gMin: g.min, mMax: m.max
+    });
+
+    // 0 으로 떨어지는 순간이 곧 티어 재계산 시각이다
+    console.log(`[Apex] 어긋남 챌린저 ${300 - c300}명 · 그마 ${700 - g1000}명` +
+        ` (챌 최저 ${c.min} / 그마 최고 ${g.max} / 마스터 최고 ${m.max})`);
+}
+
 // ★★ 스냅샷을 **합집합으로** 쌓는다 — "그날 명단에 한 번이라도 있던 사람" 이 맞다.
 //   명단은 10분마다 갈리므로 어느 한 순간을 찍으면 그날 낮에 강등된 사람이 빠진다.
 //   첫 저장만 1.1만 건이고 그 뒤로는 **새로 들어온 사람만** 더한다 (하루 400명 남짓).
@@ -1218,6 +1269,9 @@ async function ensureStatIndexes() {
         // 날짜별 명단 스냅샷 (2026-08-17). TTL 5일 — 필요한 건 어제 것뿐이고 넉넉히 남긴다.
         { col: 'ranksnapshots', key: { day: 1 }, unique: true },
         { col: 'ranksnapshots', key: { createdAt: 1 }, ttl: 5 * 86400 },
+        // 상위 티어 어긋남 눈금 (2026-08-17). 한 줄 60B 라 7일이면 100KB 도 안 된다
+        { col: 'apexdrifts', key: { t: -1 } },
+        { col: 'apexdrifts', key: { createdAt: 1 }, ttl: 7 * 86400 },
         { col: 'matchstats', key: { v: 1, k: 1 } },
         { col: 'matchstats', key: { t: 1 } },
         { col: 'champstats', key: { scope: 1, kb: 1, pos: 1 } },
@@ -1291,6 +1345,28 @@ async function ensureStatIndexes() {
     if (made || changed || dropped) console.log(`[Index] 보정 완료 (생성 ${made} / TTL 변경 ${changed} / 삭제 ${dropped})`);
 }
 
+// ★★ 명단 갱신 주기를 시간대로 나눈다 (2026-08-17).
+//   **밤 22시~새벽 02시(KST)는 5분, 나머지는 10분.** 티어 재계산이 그 근처로 짐작돼서
+//   그 창만 촘촘히 본다 (`ApexDrift` 가 0 으로 떨어지는 순간을 놓치지 않으려고).
+//   ★ 호출은 거의 안 는다 — 한 번에 3회(챌/그마/마스터)이고 하루 24회가 더해질 뿐이다
+//     (144 → 168회/일). 개발 키 한도가 분당 50회라 순간 최대도 3/5분 = 0.6회/분이다.
+//   ★ setInterval 이 아니라 **끝난 뒤 다시 예약**한다 — 조회가 느릴 때 겹쳐 도는 걸 막고,
+//     시간대가 바뀌면 다음 예약부터 새 주기가 자연히 적용된다.
+const RANK_REFRESH_NIGHT = 5 * 60 * 1000;
+const RANK_REFRESH_DAY = 10 * 60 * 1000;
+
+function rankRefreshMs() {
+    const h = new Date(Date.now() + 9 * 3600000).getUTCHours();   // 한국시간 시(時)
+    return (h >= 22 || h < 2) ? RANK_REFRESH_NIGHT : RANK_REFRESH_DAY;
+}
+
+function scheduleRankUpdate() {
+    setTimeout(async () => {
+        try { await updateChallengerList(); } catch (e) { console.error('[Task] 명단 갱신 실패:', e.message); }
+        scheduleRankUpdate();
+    }, rankRefreshMs());
+}
+
 async function startJobs() {
     await ensureStatIndexes();
     await loadResolvedNames();
@@ -1312,7 +1388,7 @@ async function startJobs() {
     // 닉네임 변환은 오래 걸리므로 기다리지 않고 백그라운드로 던짐
     resolveNamesInBackground();
 
-    setInterval(updateChallengerList, 600 * 1000);
+    scheduleRankUpdate();
     setInterval(resolveNamesInBackground, 60 * 1000);
 
     // ★ 숙련도 잡은 30초 어긋나게 띄운다. 닉네임 20회(24초) + 숙련도 10회(12초)를
