@@ -4630,17 +4630,19 @@ function mythicCardHtml(item) {
     const goto = (item.type === 'skin' || item.type === 'chroma') && item.catalogId
         ? ` data-skin-id="${item.catalogId}" data-skin-type="${item.type}"` : '';
     // 판매 종료를 아는 상품은 남은 시간 딱지를 붙인다 (지금은 추천 구획만 해당)
-    //   ★ 툴팁은 `data-tooltip` 이 아니라 `title` 이다 — 카드가 `overflow: hidden` 이라
-    //     CSS 툴팁(`::after`)이 카드 밖으로 못 나가고 잘린다. 네이티브는 안 잘린다.
+    //   ★★ 딱지는 **그림 칸 밖 · 카드 바로 아래**에 둔다. 그림 칸 안에 넣으면 그 칸이
+    //     모서리를 깎느라 `overflow: hidden` 이라 **툴팁이 잘린다** (처음엔 그것 때문에
+    //     네이티브 `title` 을 썼는데, 흰 배경이라 사이트 툴팁과 따로 놀았다).
     const endMs = mythicItemEnd(item.name);
     const timer = endMs
         ? `<span class="mythic-item-timer js-shop-timer" data-until="${endMs}" data-suffix="남음"
-                 title="${fmtKstLong(endMs)} 판매종료"></span>`
+                 data-tooltip="${fmtKstLong(endMs)} 판매종료"></span>`
         : '';
 
     return `
         <div class="mythic-item-card ${fit}${goto ? ' is-link' : ''}"${goto}>
-            <div class="mythic-item-img-box">${media}${timer}</div>
+            ${timer}
+            <div class="mythic-item-img-box">${media}</div>
             <div class="mythic-item-info">
                 <span class="mythic-item-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
                 <div class="mythic-item-price"><img src="${ME_GEM_ICON}" style="width: 13px; height: 13px;"><span style="color: #facc15; font-size: 14px; font-weight: 700;">${item.price}</span></div>
@@ -4727,10 +4729,6 @@ async function showMythicShop(target) {
     box.innerHTML = `
         <div class="mshop-header">
             <h1 class="ranking-title">신화급 상점</h1>
-            <p class="mshop-sub">
-                <img class="mshop-gem" src="${ME_GEM_ICON}" alt="">
-                신화 정수로 사는 상품 · 매일 오전 9시(00:00 UTC) 초기화
-            </p>
         </div>
         <div class="mshop-tabs">
             ${MYTHIC_TABS.map(t => `<button class="mshop-tab${t.key === curTab ? ' active' : ''}" data-tab="${t.key}">${t.name}</button>`).join('')}

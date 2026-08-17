@@ -6188,20 +6188,8 @@ body::before {
     margin-bottom: 10px;
 }
 
-.mshop-sub {
-    margin: 8px 0 0;
-    color: #9aa4af;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-
-.mshop-gem {
-    width: 16px;
-    height: 16px;
-}
+/* 제목 아래 부제(`신화 정수로 사는 상품 · 매일 오전 9시 초기화`)는 지웠다 (2026-08-17).
+   초기화 시각은 이제 구획마다 헤더에 남은 시간으로 나가므로 위에서 또 말할 이유가 없다. */
 
 .mshop-tabs {
     display: flex;
@@ -6271,12 +6259,35 @@ body::before {
     white-space: nowrap;
 }
 
+/* ★★ 딱지 툴팁이 잘리지 않게 카드의 `overflow: hidden` 을 푼다 (2026-08-17).
+   원래 그건 **그림의 위쪽 모서리를 카드 모양대로 깎으려고** 있던 것이라,
+   그 일을 그림 칸으로 옮기면 카드는 넘침을 열어 둬도 된다.
+   ★ 안 풀면 툴팁(`::after`, 요소 위쪽에 뜬다)이 카드 밖으로 못 나가 안 보인다 —
+     처음엔 그래서 네이티브 `title` 을 썼는데 흰 배경이라 사이트 툴팁과 따로 놀았다.
+   ★ 신화상점 격자 안으로 좁힌다. 첫 화면 위젯은 예전 그대로 둔다 */
+.mshop-grid .mythic-item-card {
+    position: relative;
+    overflow: visible;
+}
+
+.mshop-grid .mythic-item-img-box {
+    border-radius: 10px 10px 0 0;
+    overflow: hidden;
+}
+
+/* ★ 툴팁이 옆 카드에 가리지 않게 올려 준다. 카드가 `position: relative` 라 뒤쪽 카드가
+   위에 그려지는데, 딱지에 커서를 올렸다는 건 그 카드에도 올렸다는 뜻이라 이걸로 충분하다 */
+.mshop-grid .mythic-item-card:hover {
+    z-index: 5;
+}
+
 /* 상품 하나의 남은 판매 시간 딱지. 추천처럼 상품마다 기한이 다른 구획에서 쓴다.
-   ★ 그림 위 오른쪽 구석에 얹는다 (`.mythic-item-img-box` 가 position:relative 다) */
+   ★ 그림 칸이 아니라 **카드** 기준으로 얹는다 (그림 칸은 위에서 넘침을 닫았다) */
 .mythic-item-timer {
     position: absolute;
     top: 6px;
     right: 6px;
+    z-index: 2;
     padding: 3px 7px;
     border-radius: 6px;
     background: rgba(0, 0, 0, 0.72);
