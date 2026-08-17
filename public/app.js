@@ -2561,16 +2561,85 @@ const STAT_LANE_ICON = {
 //   ±18%p 라, 숫자를 진하게 찍으면 없느니만 못하다.
 const STAT_MIN_GAMES = 30;
 
-// 승률 백분위로 S~D 를 매긴다. 표본 미달은 순위 계산에서 아예 뺀다
-// (적은 표본의 극단값이 들어오면 전체 분포가 밀린다).
-function assignStatTiers(list) {
-    const ranked = list.filter(c => c.games >= STAT_MIN_GAMES)
-        .sort((a, b) => b.winRate - a.winRate);
-    ranked.forEach((c, i) => {
-        const p = (i + 0.5) / ranked.length;
-        c.tier = p < 0.10 ? 'S' : p < 0.25 ? 'A' : p < 0.50 ? 'B' : p < 0.75 ? 'C' : 'D';
+// ============================================================
+//  티어 계산 (2026-08-17 개편 — 승률만 보던 것을 승률·픽률·밴률로 바꿨다)
+//
+//    ★★ **라인별 pool 안에서만 비교한다.** 예전엔 전 챔피언을 한 줄로 세워 승률로 잘랐는데,
+//      서포터와 미드를 같은 잣대로 재는 게 뜻이 없다 (라인마다 평균 승률도 분포도 다르다).
+//      ALL 탭도 마찬가지라, 거기 찍히는 티어는 **그 챔피언의 주 라인에서 받은 티어**다.
+//
+//    점수 = 0.60·z(보정승률) + 0.25·z(log 밴률) + 0.15·z(log 픽률)  → 다시 z → 고정 컷
+//
+//    ★ 세 가지를 왜 이렇게 손보나:
+//      ① **보정 승률** — 30판 승률은 표준오차가 ±9%p 다. 그대로 z 를 내면 표본이 적은
+//         챔피언이 무조건 양 끝을 차지한다. 평균 쪽으로 당겨서(prior 100판) 눌러 둔다.
+//      ② **픽률·밴률에 log** — 분포가 심하게 쏠려 있다(대부분 1% 근처, 몇몇이 20%+).
+//         날 z 를 쓰면 상위 몇 개가 점수를 통째로 지배한다.
+//      ③ **밴률을 라인에 배분** — 밴은 라인 개념이 없어서 pos:-1 줄에만 있다. 그대로 쓰면
+//         럼블이 탑에서도 미드에서도 같은 밴률을 받는다. `밴률 x 그 라인 비율` 로 나눈다.
+//
+//    ★ 밴은 `banGames`(밴된 판 수)를 쓴다. 화면 표기는 `bans`(밴 슬롯)라 둘이 다르다 —
+//      슬롯은 양 팀이 같은 챔피언을 밴하면 2로 세어 100%를 넘을 수 있어서 점수에 안 맞는다.
+//    ★ 가중치·컷은 전부 위 상수다. 감이 안 맞으면 여기만 만지면 된다.
+// ============================================================
+const TIER_W = { win: 0.60, ban: 0.25, pick: 0.15 };
+// ★ 보정 강도 200판은 **표를 만들어서 골랐다** (2026-08-17, 표본 4,442판 기준).
+//   prior 를 50/100/200/400 으로 훑고 "라인 상위 5의 표본 중앙값" 을 봤다 —
+//   작을수록 표본이 적은 챔피언이 꼭대기에 앉는다는 뜻이다:
+//     바텀:  50 → 91판 · 100 → 91판 · **200 → 223판** · 400 → 319판
+//   200 에서 제이스(488판)가 뽀삐(49판 승률 71%) 위로 올라오고 티어 분포도 안 망가진다.
+//   400 은 과하다 — 서포터가 `C17 D3` 으로 찌그러진다 (센 챔피언까지 눌려서 가운데로 몰린다).
+const TIER_PRIOR = 200;     // 보정 승률의 사전 표본 (판)
+const TIER_CUTS = [['S', 1.30], ['A', 0.55], ['B', -0.35], ['C', -1.10]];
+
+function zScores(vals) {
+    const n = vals.length;
+    if (!n) return [];
+    const mean = vals.reduce((a, b) => a + b, 0) / n;
+    const sd = Math.sqrt(vals.reduce((a, b) => a + (b - mean) ** 2, 0) / n);
+    // ★ 표본이 다 똑같으면 sd 가 0 이라 나누면 NaN 이다. 그땐 전원 0점이 맞다.
+    return sd > 1e-9 ? vals.map(v => (v - mean) / sd) : vals.map(() => 0);
+}
+
+const tierFromScore = (z) => (TIER_CUTS.find(([, cut]) => z >= cut) || ['D'])[0];
+
+// list = collect() 결과 (champ|pos 행), total = scope 총 경기 수
+//   → Map("champ|pos" -> { tier, score })
+function computeLaneTiers(list, total) {
+    const banOf = {}, totalOf = {};
+    list.forEach(c => {
+        if (c.pos === -1) {
+            banOf[c.champ] = c.banGames || 0;
+            totalOf[c.champ] = c.games;
+        }
     });
-    list.forEach(c => { if (c.games < STAT_MIN_GAMES) c.tier = null; });
+
+    const out = new Map();
+    STAT_POS.forEach(({ code }) => {
+        const pool = list.filter(c => c.pos === code && c.games >= STAT_MIN_GAMES);
+        // 라인에 챔피언이 몇 개 없으면 z 가 뜻을 잃는다. 그땐 티어를 안 매긴다(화면엔 '-').
+        if (pool.length < 5) return;
+
+        // 라인 평균 승률 (판수 가중). 라인마다 다르므로 pool 안에서 구한다.
+        const sumG = pool.reduce((a, c) => a + c.games, 0);
+        const sumW = pool.reduce((a, c) => a + c.wins, 0);
+        const p0 = sumG ? sumW / sumG : 0.5;
+
+        const zWin = zScores(pool.map(c => (c.wins + TIER_PRIOR * p0) / (c.games + TIER_PRIOR)));
+        const zPick = zScores(pool.map(c => Math.log(1 + (total ? c.games / total * 100 : 0))));
+        const zBan = zScores(pool.map(c => {
+            const share = totalOf[c.champ] ? c.games / totalOf[c.champ] : 0;   // 그 라인 비율
+            const br = total ? (banOf[c.champ] || 0) / total * 100 : 0;
+            return Math.log(1 + br * share);
+        }));
+
+        const raw = pool.map((c, i) => TIER_W.win * zWin[i] + TIER_W.ban * zBan[i] + TIER_W.pick * zPick[i]);
+        // ★ 가중합은 SD 가 1 이 아니다(세 값이 서로 얽혀 있다). 컷을 고정값으로 두려면
+        //   여기서 한 번 더 정규화해야 컷의 뜻이 라인마다 같아진다.
+        const zr = zScores(raw);
+        pool.forEach((c, i) => out.set(`${c.champ}|${code}`, { tier: tierFromScore(zr[i]), score: zr[i] }));
+    });
+    return out;
 }
 
 function statScopeLabel(scope) {
@@ -3347,9 +3416,11 @@ async function showStats() {
             </table>
         </div>
         <p class="stats-note">
-            승률 기준 백분위로 티어를 매깁니다 (상위 10% S · 25% A · 50% B · 75% C).
+            티어는 <b>승률 60% · 밴률 25% · 픽률 15%</b> 를 합친 점수로 매기며,
+            <b>라인마다 따로</b> 계산합니다 (ALL 에서는 그 챔피언의 주 라인 기준).
+            승률은 표본이 적을수록 평균 쪽으로 보정하고, 밴률은 그 라인에서 뛴 비율만큼만 반영합니다.
             표본 ${STAT_MIN_GAMES}판 미만은 티어를 매기지 않고 흐리게 표시합니다.
-            밴률은 밴 슬롯 기준이라 같은 챔피언을 양 팀이 밴하면 2로 셉니다.
+            표의 밴률은 밴 슬롯 기준이라 같은 챔피언을 양 팀이 밴하면 2로 셉니다.
         </p>
     `;
 
@@ -3364,8 +3435,10 @@ async function showStats() {
         rows.forEach(r => {
             const k = `${r.champ}|${r.pos}`;
             let c = byKey.get(k);
-            if (!c) byKey.set(k, c = { champ: r.champ, pos: r.pos, games: 0, wins: 0, bans: 0, kills: 0, deaths: 0, assists: 0 });
+            if (!c) byKey.set(k, c = { champ: r.champ, pos: r.pos, games: 0, wins: 0, bans: 0, banGames: 0, kills: 0, deaths: 0, assists: 0 });
             c.games += r.games; c.wins += r.wins; c.bans += r.bans;
+            // ★ banGames(밴된 판 수)는 화면엔 안 쓰지만 티어 점수가 쓴다 — 위 computeLaneTiers 주석 참고
+            c.banGames += r.banGames || 0;
             c.kills += r.kills; c.deaths += r.deaths; c.assists += r.assists;
         });
         return { list: [...byKey.values()], total };
@@ -3402,18 +3475,24 @@ async function showStats() {
             }));
         }
 
+        // ★ 티어는 **라인 pool 안에서** 매긴다. ALL 탭 행의 lanePos 는 주 라인이라,
+        //   거기 찍히는 티어는 "그 챔피언이 주 라인에서 받은 티어" 가 된다.
+        const laneTiers = computeLaneTiers(list, total);
+
         rows.forEach(c => {
             c.winRate = c.games ? c.wins / c.games * 100 : 0;
             c.pickRate = total ? c.games / total * 100 : 0;
             c.banRate = total ? c.bans / total * 100 : 0;
             c.name = window.korChampMap[championIdMap[c.champ]] || '알 수 없음';
+            const t = laneTiers.get(`${c.champ}|${c.lanePos}`);
+            c.tier = t ? t.tier : null;
+            c.score = t ? t.score : null;
         });
-        assignStatTiers(rows);
 
-        const TIER_W = { S: 5, A: 4, B: 3, C: 2, D: 1 };
         rows.sort((a, b) => {
             let va, vb;
-            if (sortCol === 'tier') { va = TIER_W[a.tier] || 0; vb = TIER_W[b.tier] || 0; if (va === vb) { va = a.winRate; vb = b.winRate; } }
+            // 티어 정렬은 등급이 아니라 **점수**로 한다 — 같은 S 안에서도 순서가 생긴다
+            if (sortCol === 'tier') { va = a.score ?? -99; vb = b.score ?? -99; }
             else if (sortCol === 'name') { return sortDir === 'desc' ? b.name.localeCompare(a.name, 'ko') : a.name.localeCompare(b.name, 'ko'); }
             else { va = a[sortCol]; vb = b[sortCol]; }
             return sortDir === 'desc' ? vb - va : va - vb;
@@ -3427,7 +3506,10 @@ async function showStats() {
 
         tbody.innerHTML = rows.map(c => {
             const engId = championIdMap[c.champ] || '0';
-            const low = c.games < STAT_MIN_GAMES;
+            // ★ 흐림 기준을 "표본 미달" 에서 **"티어를 못 받았다"** 로 바꿨다 (2026-08-17).
+            //   ALL 탭에서는 총 표본이 많아도 주 라인이 30판을 못 넘기면 티어가 없는데,
+            //   그때 줄만 멀쩡히 진하면 "왜 이 챔피언만 '-' 지" 가 된다.
+            const low = !c.tier;
             const laneKey = STAT_POS.find(p => p.code === c.lanePos)?.key;
             return `
             <tr class="stats-row ${low ? 'stats-row-low' : ''}" data-champ="${c.champ}">
@@ -3437,7 +3519,9 @@ async function showStats() {
                     <span class="stats-champ-name">${c.name}</span>
                     <span class="stats-expand">▾</span>
                 </td>
-                <td>${c.tier ? `<span class="stats-tier tier-${c.tier.toLowerCase()}">${c.tier}</span>` : `<span class="stats-tier-none">-</span>`}</td>
+                <td>${c.tier
+                    ? `<span class="stats-tier tier-${c.tier.toLowerCase()}" title="점수 ${c.score >= 0 ? '+' : ''}${c.score.toFixed(2)}">${c.tier}</span>`
+                    : `<span class="stats-tier-none" title="표본 ${STAT_MIN_GAMES}판 미만">-</span>`}</td>
                 <td class="stats-lane">
                     ${laneKey ? `<img src="${STAT_LANE_ICON[laneKey]}" alt="">` : ''}
                     <div class="stats-lane-rate">${c.laneRate.toFixed(0)}%</div>
