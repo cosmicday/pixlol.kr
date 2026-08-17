@@ -4508,10 +4508,37 @@ function applyPendingChampView() {
     if (box && el) box.scrollTop = el.offsetTop - (box.clientHeight - el.clientHeight) / 2;
 }
 
+// ★★ 넥서스 마무리 효과는 수집기가 그림을 못 붙인다 (2026-08-17).
+//   `Together as 1`(T1 넥서스 효과)이 **`type: other · catalogId 없음 · score 0`** 으로 왔다 —
+//   수집기 카탈로그가 아이콘·감정표현·스킨만 알아서 이 종류를 통째로 못 알아본 것이다.
+//   ★ CD 에 따로 있다: **`v1/nexusfinishers.json`** — 게임 전체에 **6개뿐**이고
+//     아이콘(480x480) · 스플래시(1417x979) · **영상(webm)** 까지 들어 있다.
+//   ★ **이름으로 맞춘다.** `catalogId` 가 안 오므로 붙일 열쇠가 그것뿐이다
+//     (`translatedName` 이 클라 표기 그대로라 그대로 맞는다). 못 찾으면 예전처럼 상자 아이콘.
+//   ★ 스플래시가 더 잘 어울리지만 **1.15MB 라 안 쓴다** — 카드 한 장이 격주 탭 전체(1.1MB)와
+//     맞먹는다. 아이콘은 223KB 고 잔이 한가운데라 16:9 로 잘려도 멀쩡하다.
+let nexusFinisherMap = null;
+
+async function loadNexusFinishers() {
+    if (nexusFinisherMap) return nexusFinisherMap;
+    nexusFinisherMap = {};
+    try {
+        // 한국어판을 본다 — 다른 효과들은 이름이 번역돼 있다 (`여명의 쇄도` 등)
+        const res = await fetch(CD_ASSET_BASE.replace('/global/default/', '/global/ko_kr/') + 'v1/nexusfinishers.json');
+        const arr = await res.json();
+        (Array.isArray(arr) ? arr : Object.values(arr)).forEach(f => {
+            if (f.translatedName && f.iconPath) nexusFinisherMap[f.translatedName] = cdAssetUrl(f.iconPath);
+        });
+    } catch (e) { /* 못 받아도 그만 — 상자 아이콘으로 간다 */ }
+    return nexusFinisherMap;
+}
+
 function mythicCardHtml(item) {
-    const fit = item.image ? (MYTHIC_FIT[item.type] || '') : '';
+    // 수집기가 그림을 못 준 물건은 넥서스 효과인지 이름으로 되짚어 본다
+    const finisher = !item.image && nexusFinisherMap ? nexusFinisherMap[item.name] : null;
+    const fit = item.image ? (MYTHIC_FIT[item.type] || '') : (finisher ? 'is-art' : '');
     const wide = fit === 'is-art' ? mythicWideSplash(item.image) : null;
-    const src = wide || item.image || MYTHIC_FALLBACK_IMG;
+    const src = wide || item.image || finisher || MYTHIC_FALLBACK_IMG;
     // 스킨·크로마는 누르면 그 스킨 일러스트를 보러 간다. 아이콘·감정표현은 갈 곳이 없다.
     const goto = (item.type === 'skin' || item.type === 'chroma') && item.catalogId
         ? ` data-skin-id="${item.catalogId}" data-skin-type="${item.type}"` : '';
@@ -4669,6 +4696,9 @@ async function renderMythicSection(key) {
         body.innerHTML = `<div class="mythic-empty">신화 상점 정보를 불러오지 못했습니다.</div>`;
         return;
     }
+
+    // 그림이 안 붙은 물건이 있으면 넥서스 효과 목록을 받아 둔다 (6개짜리라 가볍다)
+    if ((data.items || []).some(i => !i.image)) await loadNexusFinishers();
 
     // ★ 아직 한 번도 안 들어온 구획. **빈 칸으로 두지 않는다** — 기본 탭이 추천이라
     //   들어오자마자 이 자리를 보게 되고, 아무 말도 없으면 고장으로 읽힌다.
