@@ -4416,12 +4416,78 @@ window.mythicImgError = function (img) {
     img.src = MYTHIC_FALLBACK_IMG;
 };
 
+// ============================================================
+//  신화상점 → 챔피언 스킨 탭 (2026-08-17)
+//
+//    ★★ **스킨마다 주소를 새로 박을 필요가 없다.** 수집기가 주는 `catalogId` 가
+//      **CD 스킨 id (= 챔피언숫자키 x 1000 + 스킨번호)** 라, 그 하나로 챔피언까지 역산된다:
+//        `98049` → `98` → championIdMap[98] = 'Shen' → /champions/Shen
+//      크로마도 같은 꼴이다 (`86042` → 86 → Garen).
+//    ★ 그래서 하는 일은 "id 를 들고 챔피언 페이지로 가서, 목록에서 그 id 를 찾아 고르기" 뿐이다.
+//      `fetchCdSkins()` 가 스킨·크로마의 `id` 를 남기게 한 것이 이걸 위해서다.
+//    ★ 주소에는 챔피언까지만 담긴다 (`/champions/Shen`). 스킨 번호까지 담으려면
+//      진입부 pathParts 분기와 popstate 두 곳을 같이 고쳐야 해서 지금은 안 했다.
+// ============================================================
+window.pendingSkin = null;
+
+async function openSkinFromMythic(catalogId, type) {
+    const id = Number(catalogId);
+    if (!id) return;
+    if (!Object.keys(championIdMap || {}).length) await fetchChampionMap();
+
+    const champId = championIdMap[Math.floor(id / 1000)];
+    if (!champId) return;      // 모르는 챔피언이면 아무 일도 안 한다 (엉뚱한 곳으로 보내지 않는다)
+
+    window.pendingSkin = { id, type };
+    showChampions(champId);
+}
+
+// 챔피언 페이지가 다 그려진 뒤에 불린다. 스킨 탭으로 옮기고 그 스킨(·크로마)을 고른다.
+function applyPendingSkin() {
+    const want = window.pendingSkin;
+    window.pendingSkin = null;          // ★ 한 번 쓰고 반드시 버린다 — 안 그러면 다음 챔피언에도 따라붙는다
+    if (!want) return;
+
+    const list = window.currentSkinList || [];
+    let idx = -1, chromaIdx = -1;
+
+    if (want.type === 'chroma') {
+        // 크로마는 "그 크로마를 가진 스킨" 을 찾아 고른 뒤 색점까지 눌러 준다
+        list.forEach((s, i) => {
+            const ci = (s.chromas || []).findIndex(c => c.id === want.id);
+            if (ci >= 0) { idx = i; chromaIdx = ci; }
+        });
+    } else {
+        idx = list.findIndex(s => s.id === want.id);
+    }
+
+    // ★ 탭은 옮긴다 — 스킨을 못 찾아도(목록이 DD 폴백이라 id 가 없을 때) 스킨 탭까지는 가는 게 맞다.
+    //   switchChampTab 은 event.currentTarget 만 보므로 흉내 낸 객체로 부를 수 있다.
+    const btn = [...document.querySelectorAll('.champ-tab-btn')].find(b => b.textContent.trim() === '스킨');
+    if (btn) switchChampTab({ currentTarget: btn }, 'skins');
+
+    if (idx < 0) return;
+    selectSkin(idx);
+    if (chromaIdx >= 0) selectChroma(chromaIdx);
+
+    // 목록이 길면 고른 스킨이 화면 밖에 있다 (미스 포츈은 24개다).
+    //   ★★ `scrollIntoView` 를 쓰면 안 된다 — 목록만이 아니라 **페이지까지 같이 끌어내려서**
+    //     챔피언 탭 줄이 화면 위로 잘려 나간다 (실제로 그렇게 났다).
+    //     목록은 자기 스크롤을 가지므로 그 `scrollTop` 만 직접 옮긴다.
+    const box = document.querySelector('.skin-list');
+    const el = document.querySelector('.skin-item.active');
+    if (box && el) box.scrollTop = el.offsetTop - (box.clientHeight - el.clientHeight) / 2;
+}
+
 function mythicCardHtml(item) {
     const fit = item.image ? (MYTHIC_FIT[item.type] || '') : '';
     const wide = fit === 'is-art' ? mythicWideSplash(item.image) : null;
     const src = wide || item.image || MYTHIC_FALLBACK_IMG;
+    // 스킨·크로마는 누르면 그 스킨 일러스트를 보러 간다. 아이콘·감정표현은 갈 곳이 없다.
+    const goto = (item.type === 'skin' || item.type === 'chroma') && item.catalogId
+        ? ` data-skin-id="${item.catalogId}" data-skin-type="${item.type}"` : '';
     return `
-        <div class="mythic-item-card ${fit}">
+        <div class="mythic-item-card ${fit}${goto ? ' is-link' : ''}"${goto}>
             <div class="mythic-item-img-box">
                 <img src="${src}" alt="" loading="lazy"
                      data-fallback="${item.image || MYTHIC_FALLBACK_IMG}"
@@ -4549,7 +4615,10 @@ async function showMythicShop(target) {
     // 위임으로 한 번만 붙인다.
     document.getElementById('mshop-body').addEventListener('click', (ev) => {
         const go = ev.target.closest('[data-goto]');
-        if (go) selectTab(go.dataset.goto);
+        if (go) { selectTab(go.dataset.goto); return; }
+        // 스킨·크로마 카드 → 그 스킨 일러스트 보는 곳으로
+        const card = ev.target.closest('[data-skin-id]');
+        if (card) openSkinFromMythic(card.dataset.skinId, card.dataset.skinType);
     });
 }
 
@@ -6042,6 +6111,8 @@ ${TOOLTIP_STYLE_CSS}        </style>
         playSkill(0);
         selectSkin(0);
         renderChampStats(champ.id);
+        // 신화상점에서 "이 스킨 보러 가기" 로 넘어왔으면 그 스킨을 열어 준다
+        applyPendingSkin();
     } catch (error) { detailArea.innerHTML = `<div style="color:#f87171;">데이터를 불러오지 못했습니다.</div>`; }
 };
 
@@ -6832,6 +6903,9 @@ async function fetchCdSkins(champKey) {
         if (!Array.isArray(data.skins) || data.skins.length === 0) return null;
 
         return data.skins.map(s => ({
+            // ★ id 를 남긴다 (2026-08-17). 신화상점에서 넘어올 때 `catalogId` 와 맞춰 볼 열쇠다 —
+            //   스킨 id = 챔피언숫자키 x 1000 + 스킨번호 라 상점이 주는 값과 그대로 맞는다.
+            id: s.id,
             name: s.isBase ? '기본 스킨' : s.name,
             thumb: cdAssetUrl(s.splashPath),
             // 원본이 없는 스킨이 있을 수 있으니 얼굴 중심 판본으로 물러난다
@@ -6843,6 +6917,7 @@ async function fetchCdSkins(champKey) {
             //   그림(`chromaPath`)은 270x303 투명 배경 **3D 모델 렌더**다.
             //   장당 82KB 라 카직스(25개)면 2MB — **눌렀을 때만 받는다**
             chromas: (s.chromas || []).map(c => ({
+                id: c.id,               // 신화상점 크로마 상품의 catalogId 와 맞춰 본다
                 name: c.name || '',
                 img: cdAssetUrl(c.chromaPath),
                 colors: Array.isArray(c.colors) ? c.colors : [],

@@ -6311,6 +6311,11 @@ body::before {
     border-radius: 0;
 }
 
+/* 누르면 그 스킨 일러스트로 가는 카드 (스킨·크로마). 아이콘·감정표현은 갈 곳이 없어서 안 붙는다 */
+.mshop-grid .mythic-item-card.is-link {
+    cursor: pointer;
+}
+
 /* 크로마 — 270x303 **투명 배경 3D 모델 렌더**라 자르면 머리·발이 날아간다.
    높이만 채우고 폭은 비율대로 둔다 (배경이 투명해서 칸이 남아도 어색하지 않다). */
 .mshop-grid .mythic-item-card.is-render .mythic-item-img-box img {
