@@ -6295,6 +6295,31 @@ body::before {
     max-width: 300px;
 }
 
+/* ★★ 그림 칸 높이를 **한 값으로 못 박는다** (2026-08-17). 카드가 253px 이라 16:9 가 142px 다.
+   종류별로 높이를 다르게 주면 추천 탭처럼 스킨·크로마·아이콘이 섞인 줄에서
+   이름·가격 줄이 제각각 높이에 걸려 들쭉날쭉해진다. **높이는 같게 두고 채우는 법만 바꾼다.** */
+.mshop-grid .mythic-item-img-box {
+    height: 142px;
+}
+
+/* 스킨 — 가로 일러스트(1280x720)가 16:9 라 `cover` 로 깔아도 잘리는 데가 없다.
+   ★ 모서리 둥글리기를 지운다. 카드가 `overflow:hidden` 이라 위쪽 두 모서리는 카드가 깎아 준다. */
+.mshop-grid .mythic-item-card.is-art .mythic-item-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+}
+
+/* 크로마 — 270x303 **투명 배경 3D 모델 렌더**라 자르면 머리·발이 날아간다.
+   높이만 채우고 폭은 비율대로 둔다 (배경이 투명해서 칸이 남아도 어색하지 않다). */
+.mshop-grid .mythic-item-card.is-render .mythic-item-img-box img {
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 0;
+}
+
 /* 마지막 수집이 오래된 구획. 주간(7일)·격주(14일) 주기를 넘겼을 때 서버가 stale 로 알려준다.
    ★ 지우고 "없음" 으로 두지 않는다 — 있는 정보는 보여주되 낡았다고 말하는 편이 낫다. */
 .mshop-stale {
@@ -6361,6 +6386,8 @@ body::before {
        천장(300px)도 푼다 — 폰에서는 두 칸이 화면을 나눠 갖는 게 맞다 */
     .mshop-grid { gap: 10px; }
     .mshop-grid .mythic-item-card { flex-basis: 120px; max-width: none; }
+    /* 카드가 165px 이라 16:9 면 93px 이다. 데스크톱 값(142)을 그대로 두면 그림만 뚱뚱해진다 */
+    .mshop-grid .mythic-item-img-box { height: 95px; }
 
     /* 수집 시각은 오른쪽 끝으로 밀면 줄이 넘치므로 흐름대로 둔다 */
     .mshop-collected { margin-left: 0; }

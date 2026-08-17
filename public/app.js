@@ -4388,12 +4388,44 @@ window.loadMythicShop = async function () {
 //   두 벌로 두면 한쪽만 고쳤을 때 같은 상품이 화면마다 다르게 보인다.
 //   ★ image 는 서버가 raw.communitydragon.org 로 시작하는지 이미 검증한 값이다
 //     (validateMythicBody). 그래서 그대로 src 에 넣는다. 이름만 이스케이프한다.
+// ★★ 그림 성격이 종류마다 달라서 채우는 법도 다르다 (2026-08-17 실측):
+//   · 스킨   `<챔프>_splash_tile_<N>.jpg` **380x380 정사각 타일** → 칸을 꽉 채운다(잘라서)
+//   · 크로마 `v1/champion-chroma-images/…` **270x303 투명 배경 3D 모델 렌더** →
+//            **자르면 안 된다.** 인물이라 위아래가 잘리면 머리·발이 날아간다. 키우기만 한다
+//   · 아이콘·감정표현 300x300 정사각 / `other` 는 이미지가 아예 없다(폴백 상자 아이콘)
+//     → 예전처럼 가운데 작게. 폴백 아이콘을 늘리면 상자 그림만 커진다
+//   ★ 이미지가 없으면 무조건 손대지 않는다 — 폴백을 채우면 우스워진다
+const MYTHIC_FIT = { skin: 'is-art', chroma: 'is-render' };
+
+// ★★ 스킨은 **수집기가 준 타일(380 정사각) 대신 가로 일러스트를 쓴다** (2026-08-17).
+//   타일을 16:9 칸에 채우면 위아래가 41% 잘려 나가는데, 같은 자리에 가로 일러스트가 있다:
+//     `<챔프>_splash_tile_<N>.jpg` → `<챔프>_splash_centered_<N>.jpg` (1280x720, 66~129KB)
+//   **지금 상점의 스킨 17개 전부로 확인했다 — 17/17 성공.** 카드가 253px 이라 16:9 로 깔면
+//   **잘리는 데가 하나도 없다.**
+//   ★ "이미지 URL 은 수집기가 만든다" 는 규칙(감정표현은 경로가 제각각이라)에서 **스킨만
+//     예외로 둔 것이다.** 안전한 이유는 세 가지다 — ① 스킨 경로는 규칙적이다
+//     ② 못 찾으면 아래 onerror 가 **수집기가 준 타일로 되돌아간다** ③ 그것마저 실패하면 상자 아이콘.
+const mythicWideSplash = (url) =>
+    (url && url.includes('_splash_tile_')) ? url.replace('_splash_tile_', '_splash_centered_') : null;
+
+// 유도한 일러스트 → (실패) 수집기가 준 원본 → (실패) 상자 아이콘. 두 단계로 물러난다.
+window.mythicImgError = function (img) {
+    const fb = img.dataset.fallback;
+    if (fb && img.src !== fb) { img.src = fb; return; }
+    img.onerror = null;
+    img.src = MYTHIC_FALLBACK_IMG;
+};
+
 function mythicCardHtml(item) {
+    const fit = item.image ? (MYTHIC_FIT[item.type] || '') : '';
+    const wide = fit === 'is-art' ? mythicWideSplash(item.image) : null;
+    const src = wide || item.image || MYTHIC_FALLBACK_IMG;
     return `
-        <div class="mythic-item-card">
+        <div class="mythic-item-card ${fit}">
             <div class="mythic-item-img-box">
-                <img src="${item.image || MYTHIC_FALLBACK_IMG}" alt=""
-                     onerror="this.src='${MYTHIC_FALLBACK_IMG}'">
+                <img src="${src}" alt="" loading="lazy"
+                     data-fallback="${item.image || MYTHIC_FALLBACK_IMG}"
+                     onerror="mythicImgError(this)">
             </div>
             <div class="mythic-item-info">
                 <span class="mythic-item-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
