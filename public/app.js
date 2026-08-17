@@ -337,10 +337,13 @@ document.addEventListener('DOMContentLoaded', () => {
         showTerms();
     } else if (pathParts[1] === 'champions-classic') {
         const requestedChamp = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
+        window.pendingChampView = { tab: pathParts[3] || null, skin: pathParts[4] || null };
         showChampions(requestedChamp, true);
         setActiveNav('nav-champions-classic');
     } else if (pathParts[1] === 'champions') {
+        // /champions/<id>/<탭>/<스킨번호> — 뒤 두 조각은 있을 때만 쓴다
         const requestedChamp = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
+        window.pendingChampView = { tab: pathParts[3] || null, skin: pathParts[4] || null };
         showChampions(requestedChamp);
         setActiveNav('nav-champions');
     } else {
@@ -400,11 +403,14 @@ window.addEventListener('popstate', (event) => {
         // '/champions'보다 먼저 검사해야 한다. startsWith라 순서가 뒤바뀌면 이쪽으로 안 온다.
         const pathParts = currentPath.split('/');
         const champId = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
+        window.pendingChampView = { tab: pathParts[3] || null, skin: pathParts[4] || null };
         showChampions(champId, true);
         setActiveNav('nav-champions-classic');
     } else if (currentPath.startsWith('/champions')) {
+        // ★ 진입부(pathParts 분기)와 **여기 두 곳을 항상 같이 고친다**
         const pathParts = currentPath.split('/');
         const champId = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
+        window.pendingChampView = { tab: pathParts[3] || null, skin: pathParts[4] || null };
         showChampions(champId);
         setActiveNav('nav-champions');
     } else if (currentPath.startsWith('/masters')) {
@@ -3051,6 +3057,10 @@ async function showCodex(target) {
 
     // ── 컨트롤
     document.querySelectorAll('.codex-tab').forEach(b => b.addEventListener('click', () => {
+        // ★ 탭을 옮기면 주소도 따라간다 — 다만 **이력은 안 쌓는다** (2026-08-17).
+        //   `/codex/rune` 을 복사해 보내면 그 탭이 열리고, 뒤로가기는 한 번에 이전 페이지다.
+        const want = `/codex/${b.dataset.tab}`;
+        if (window.location.pathname !== want) window.history.replaceState({ page: 'codex' }, '', want);
         document.querySelectorAll('.codex-tab').forEach(x => x.classList.remove('active'));
         b.classList.add('active');
         curTab = b.dataset.tab;
@@ -4442,29 +4452,48 @@ async function openSkinFromMythic(catalogId, type) {
     showChampions(champId);
 }
 
-// 챔피언 페이지가 다 그려진 뒤에 불린다. 스킨 탭으로 옮기고 그 스킨(·크로마)을 고른다.
-function applyPendingSkin() {
-    const want = window.pendingSkin;
-    window.pendingSkin = null;          // ★ 한 번 쓰고 반드시 버린다 — 안 그러면 다음 챔피언에도 따라붙는다
-    if (!want) return;
+// 탭을 코드로 옮긴다. switchChampTab 은 `event.currentTarget` 만 보므로 흉내 낸 객체면 된다.
+//   ★ 버튼은 글자가 아니라 `data-tab` 으로 찾는다 — 이름이 바뀌어도 안 깨진다.
+function goChampTab(tab) {
+    const btn = document.querySelector(`.champ-tab-btn[data-tab="${tab}"]`);
+    if (btn) switchChampTab({ currentTarget: btn }, tab);
+}
+
+// 챔피언 페이지가 다 그려진 뒤에 불린다. 들어온 요청대로 탭·스킨을 맞춰 준다.
+//   요청은 두 갈래인데 하는 일은 같다:
+//     · `pendingSkin`      — 신화상점 카드에서 넘어옴 (CD 스킨/크로마 id)
+//     · `pendingChampView` — 주소로 들어옴 (`/champions/Shen/skins/49`)
+function applyPendingChampView() {
+    const fromShop = window.pendingSkin;
+    const fromUrl = window.pendingChampView;
+    // ★ 한 번 쓰고 반드시 버린다 — 안 그러면 다음에 여는 챔피언에도 따라붙는다
+    window.pendingSkin = null;
+    window.pendingChampView = null;
+    if (!fromShop && !fromUrl) return;
 
     const list = window.currentSkinList || [];
-    let idx = -1, chromaIdx = -1;
+    let tab = 'skins', idx = -1, chromaIdx = -1;
 
-    if (want.type === 'chroma') {
-        // 크로마는 "그 크로마를 가진 스킨" 을 찾아 고른 뒤 색점까지 눌러 준다
-        list.forEach((s, i) => {
-            const ci = (s.chromas || []).findIndex(c => c.id === want.id);
-            if (ci >= 0) { idx = i; chromaIdx = ci; }
-        });
+    if (fromShop) {
+        if (fromShop.type === 'chroma') {
+            // 크로마는 "그 크로마를 가진 스킨" 을 찾아 고른 뒤 색점까지 눌러 준다
+            list.forEach((s, i) => {
+                const ci = (s.chromas || []).findIndex(c => c.id === fromShop.id);
+                if (ci >= 0) { idx = i; chromaIdx = ci; }
+            });
+        } else {
+            idx = list.findIndex(s => s.id === fromShop.id);
+        }
     } else {
-        idx = list.findIndex(s => s.id === want.id);
+        tab = CHAMP_TABS.includes(fromUrl.tab) ? fromUrl.tab : 'skills';
+        if (tab === 'skins' && fromUrl.skin != null && fromUrl.skin !== '') {
+            // ★ 배열 자리가 아니라 **스킨 번호**로 찾는다 (가렌은 11 다음이 13 이다)
+            idx = list.findIndex(s => s.num === Number(fromUrl.skin));
+        }
     }
 
-    // ★ 탭은 옮긴다 — 스킨을 못 찾아도(목록이 DD 폴백이라 id 가 없을 때) 스킨 탭까지는 가는 게 맞다.
-    //   switchChampTab 은 event.currentTarget 만 보므로 흉내 낸 객체로 부를 수 있다.
-    const btn = [...document.querySelectorAll('.champ-tab-btn')].find(b => b.textContent.trim() === '스킨');
-    if (btn) switchChampTab({ currentTarget: btn }, 'skins');
+    // ★ 탭은 옮긴다 — 스킨을 못 찾아도(목록이 DD 폴백이면 번호가 없을 수 있다) 그 탭까지는 가는 게 맞다
+    if (tab !== 'skills') goChampTab(tab);
 
     if (idx < 0) return;
     selectSkin(idx);
@@ -4600,8 +4629,11 @@ async function showMythicShop(target) {
         curTab = key;
         document.querySelectorAll('.mshop-tab').forEach(x => x.classList.toggle('active', x.dataset.tab === key));
         // 소메뉴도 주소에 담는다 (`/mythic/daily`). 새로고침·링크 공유가 그대로 산다.
+        // ★ 구획을 옮겨도 **이력은 안 쌓는다** (2026-08-17). 네 구획을 훑어본 사람이
+        //   페이지를 벗어나려고 뒤로가기를 네 번 누르게 되는 걸 막는다.
+        //   주소는 그대로 바뀌므로 복사해서 보내는 건 똑같이 된다.
         const want = `/mythic/${key}`;
-        if (window.location.pathname !== want) window.history.pushState({ page: 'mythic' }, '', want);
+        if (window.location.pathname !== want) window.history.replaceState({ page: 'mythic' }, '', want);
         renderMythicSection(key);
     }
 
@@ -5501,6 +5533,40 @@ window.filterChampList = function () {
     if (empty) empty.style.display = shown ? 'none' : 'block';
 };
 
+// ============================================================
+//  챔피언 페이지 주소 (2026-08-17)
+//    `/champions/<id>[/<탭>[/<스킨번호>]]` — 예: `/champions/Shen/skins/49`
+//
+//    ★★ **탭·스킨·챔피언 바꾸기는 전부 `replaceState` 다. 이력을 쌓지 않는다.**
+//      쌓으면 탭 네 개를 훑어본 사람이 목록으로 돌아가려고 **뒤로가기를 네 번** 눌러야 한다.
+//      주소는 그대로 바뀌므로 **복사해서 보내면 그 자리가 열리는 건 똑같다.**
+//    ★ 이력을 쌓는 건 **메뉴로 들어오는 첫 걸음 하나뿐**이다 (showChampions 의 pushState).
+//      그것까지 replace 로 바꾸면 `전적검색 → 챔피언` 하고 뒤로가기를 눌렀을 때
+//      **사이트를 통째로 벗어난다.**
+//    ★ 기본 탭(스킬)은 주소에 안 붙인다 — `/champions/Shen` 이 예전 그대로 남는다.
+//      (옛 링크가 그대로 살아 있어야 한다)
+// ============================================================
+const CHAMP_TABS = ['skills', 'stats', 'skins', 'lore', 'quotes'];
+let champViewId = '';
+let champViewTab = 'skills';
+let champViewSkin = -1;     // 스킨 탭에서 고른 스킨 번호 (기본 스킨이 0 이라 -1 이 "없음")
+
+function champViewUrl() {
+    const base = currentChampMode === 'classic' ? '/champions-classic' : '/champions';
+    if (!champViewId) return base;
+    let u = `${base}/${champViewId}`;
+    if (champViewTab !== 'skills') u += `/${champViewTab}`;
+    if (champViewTab === 'skins' && champViewSkin >= 0) u += `/${champViewSkin}`;
+    return u;
+}
+
+function syncChampUrl() {
+    const u = champViewUrl();
+    if (window.location.pathname !== u) {
+        window.history.replaceState({ page: 'champions', champ: champViewId }, '', u);
+    }
+}
+
 async function showChampions(requestedChampId = null, classicMode = false) {
     currentChampMode = classicMode ? 'classic' : 'normal';
     if (!window.location.pathname.startsWith('/champions')) {
@@ -5612,25 +5678,25 @@ async function showChampions(requestedChampId = null, classicMode = false) {
 
         if (requestedChampId) {
             const target = champList.find(c => c.id.toLowerCase() === requestedChampId.toLowerCase());
-            if (target) selectChampion(target.id, target.name, true);
-            else selectChampion(champList[0].id, champList[0].name, true);
+            if (target) selectChampion(target.id, target.name);
+            else selectChampion(champList[0].id, champList[0].name);
         } else {
-            selectChampion(champList[0].id, champList[0].name, true);
+            selectChampion(champList[0].id, champList[0].name);
         }
 
     } catch (e) { champsContainer.innerHTML = `<div style='text-align:center; padding:50px; color:#f87171;'>데이터를 불러오지 못했습니다.</div>`; }
 }
 
-window.selectChampion = async function (champId, champName, isReplace = false) {
-    const basePath = currentChampMode === 'classic' ? '/champions-classic' : '/champions';
-    const newUrl = `${basePath}/${champId}`;
-    if (window.location.pathname !== newUrl) {
-        if (isReplace) {
-            window.history.replaceState({ page: 'champions', champ: champId }, '', newUrl);
-        } else {
-            window.history.pushState({ page: 'champions', champ: champId }, '', newUrl);
-        }
-    }
+window.selectChampion = async function (champId, champName) {
+    // ★ 챔피언을 바꿔도 **이력을 쌓지 않는다** (2026-08-17). 예전엔 목록에서 고를 때마다
+    //   한 칸씩 쌓여서, 몇 명 훑어보고 나면 뒤로가기를 그만큼 눌러야 페이지를 벗어났다.
+    //   주소는 그대로 바뀌므로 복사해서 보내는 건 똑같이 된다.
+    //   ★ 탭·스킨은 새 챔피언에서 처음부터다 — 단, 주소로 들어온 요청(pendingChampView)이
+    //     있으면 그건 아래 applyPendingChampView 가 다시 세운다.
+    champViewId = champId;
+    champViewTab = 'skills';
+    champViewSkin = -1;
+    syncChampUrl();
 
     document.querySelectorAll('.champ-sidebar-item').forEach(el => {
         el.classList.remove('active');
@@ -6050,7 +6116,8 @@ ${TOOLTIP_STYLE_CSS}        </style>
         const cdSkins = await fetchCdSkins(champ.key);
         const skinList = cdSkins || champ.skins.map(s => {
             const url = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champId}_${s.num}.jpg`;
-            return { name: s.name === 'default' ? '기본 스킨' : s.name, thumb: url, full: url, desc: '' };
+            // num 은 폴백 목록에도 담는다 — 주소(`/skins/49`)가 이 값으로 스킨을 찾는다
+            return { num: Number(s.num), name: s.name === 'default' ? '기본 스킨' : s.name, thumb: url, full: url, desc: '' };
         });
         window.currentSkinList = skinList;
 
@@ -6086,16 +6153,16 @@ ${TOOLTIP_STYLE_CSS}        </style>
         detailArea.innerHTML = `
             <div class="champ-detail-inner">
                 <div class="champ-tab-bar">
-                    <button class="champ-tab-btn active" onclick="switchChampTab(event, 'skills')" style="padding: 15px 20px; background: transparent; border: none; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; border-bottom: 3px solid #a78bfa;">스킬</button>
-                    <button class="champ-tab-btn" onclick="switchChampTab(event, 'stats')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스탯</button>
-                    <button class="champ-tab-btn" onclick="switchChampTab(event, 'skins')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스킨</button>
-                    <button class="champ-tab-btn" onclick="switchChampTab(event, 'lore')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">배경</button>
+                    <button class="champ-tab-btn active" data-tab="skills" onclick="switchChampTab(event, 'skills')" style="padding: 15px 20px; background: transparent; border: none; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; border-bottom: 3px solid #a78bfa;">스킬</button>
+                    <button class="champ-tab-btn" data-tab="stats" onclick="switchChampTab(event, 'stats')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스탯</button>
+                    <button class="champ-tab-btn" data-tab="skins" onclick="switchChampTab(event, 'skins')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스킨</button>
+                    <button class="champ-tab-btn" data-tab="lore" onclick="switchChampTab(event, 'lore')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">배경</button>
                     <!-- ▼▼ 비공개 처리 (대사 탭) ▼▼
                          되살릴 때: 이 주석 한 줄만 풀면 된다. 탭 내용(quotesHtml)·renderChampQuotes·
                          champion_quotes.js 는 그대로라 바로 살아난다.
                          가린 이유: 라이엇이 공개하는 음성이 픽·밴 둘뿐이라 채울 게 대표 대사
                          한 줄밖에 없다. 자세한 건 CLAUDE.md "인게임 대사" 절 참고.
-                    <button class="champ-tab-btn" onclick="switchChampTab(event, 'quotes')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">대사</button>
+                    <button class="champ-tab-btn" data-tab="quotes" onclick="switchChampTab(event, 'quotes')" style="padding: 15px 20px; background: transparent; border: none; color: #9aa4af; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">대사</button>
                          ▲▲ 비공개 처리 끝 ▲▲ -->
                 </div>
                 <div class="champ-tab-scroll">
@@ -6111,8 +6178,8 @@ ${TOOLTIP_STYLE_CSS}        </style>
         playSkill(0);
         selectSkin(0);
         renderChampStats(champ.id);
-        // 신화상점에서 "이 스킨 보러 가기" 로 넘어왔으면 그 스킨을 열어 준다
-        applyPendingSkin();
+        // 주소로 들어왔거나 신화상점에서 넘어왔으면 그 탭·스킨을 열어 준다
+        applyPendingChampView();
     } catch (error) { detailArea.innerHTML = `<div style="color:#f87171;">데이터를 불러오지 못했습니다.</div>`; }
 };
 
@@ -6576,6 +6643,10 @@ window.switchChampTab = function (event, tabName) {
     const targetTab = document.getElementById(`champ-tab-${tabName}`);
     if (targetTab) targetTab.style.display = 'block';
 
+    // 주소를 탭에 맞춘다 (이력은 안 쌓는다 — champViewUrl 주석 참고)
+    champViewTab = CHAMP_TABS.includes(tabName) ? tabName : 'skills';
+    syncChampUrl();
+
     // 배경·대사는 열 때 채운다 (배경은 960KB 라 미리 받지 않는다)
     if (tabName === 'lore') renderChampLore();
     if (tabName === 'quotes') renderChampQuotes();
@@ -6906,6 +6977,7 @@ async function fetchCdSkins(champKey) {
             // ★ id 를 남긴다 (2026-08-17). 신화상점에서 넘어올 때 `catalogId` 와 맞춰 볼 열쇠다 —
             //   스킨 id = 챔피언숫자키 x 1000 + 스킨번호 라 상점이 주는 값과 그대로 맞는다.
             id: s.id,
+            num: s.id % 1000,       // 주소에 담는 스킨 번호 (`/champions/Shen/skins/49`)
             name: s.isBase ? '기본 스킨' : s.name,
             thumb: cdAssetUrl(s.splashPath),
             // 원본이 없는 스킨이 있을 수 있으니 얼굴 중심 판본으로 물러난다
@@ -6981,6 +7053,14 @@ window.selectSkin = function (index) {
 
     window.currentSkinIndex = index;
     window.currentChromaIndex = -1;      // 스킨을 바꾸면 크로마 선택도 푼다
+
+    // 주소에 스킨 번호를 담는다 (`/champions/Shen/skins/49`). 이력은 안 쌓는다.
+    //   ★ 번호는 배열 자리가 아니라 **스킨 번호**다 — 가렌은 86011 다음이 86013 이라
+    //     자리를 담으면 목록이 바뀔 때 엉뚱한 스킨이 열린다.
+    if (champViewTab === 'skins') {
+        champViewSkin = Number.isInteger(list[index].num) ? list[index].num : -1;
+        syncChampUrl();
+    }
     document.querySelectorAll('.skin-item').forEach(el => {
         el.classList.toggle('active', Number(el.dataset.i) === index);
     });
