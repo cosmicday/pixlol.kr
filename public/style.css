@@ -6304,11 +6304,56 @@ body::before {
 
 /* 스킨 — 가로 일러스트(1280x720)가 16:9 라 `cover` 로 깔아도 잘리는 데가 없다.
    ★ 모서리 둥글리기를 지운다. 카드가 `overflow:hidden` 이라 위쪽 두 모서리는 카드가 깎아 준다. */
-.mshop-grid .mythic-item-card.is-art .mythic-item-img-box img {
+.mshop-grid .mythic-item-card.is-art .mythic-item-img-box img,
+.mshop-grid .mythic-item-card.is-art .mythic-item-img-box video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 0;
+}
+
+/* ★★ 추천 구획만 배치가 다르다 (2026-08-17) — 인게임 상점처럼 첫 상품을 크게 건다.
+     ┌───────────────┬───────┐
+     │               │  2번   │   1번: 가로세로 두 배 (가로 절반)
+     │      1번       ├───────┤   2·3번: 가로로 길게 (1번 오른쪽에 위아래)
+     │               │  3번   │   나머지: 아래 한 줄에 넷
+     ├───┬───┬───┬───┴───────┤
+     │ 4 │ 5 │ 6 │ 7          │
+     └───┴───┴───┴────────────┘
+   ★ **자리 기준이다** (`nth-child`). 상품 이름으로 짜면 로테이션이 바뀌는 순간 깨진다.
+   ★ 여기만 flex 가 아니라 **격자**다 — "2칸을 차지한다" 는 flex 로는 못 시킨다.
+     그래서 `.mythic-item-card` 의 flex 규칙(`flex:1 1 220px` · `max-width:300px`)을
+     여기서 풀어야 한다. 격자 항목이 되면 flex 값은 무시되지만 **max-width 는 살아남아**
+     큰 칸이 300px 에서 멈춰 버린다. */
+.mshop-grid.is-featured {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    /* 카드 한 칸 높이 = 그림 142 + 이름·가격 62. 두 칸짜리는 이 값 x2 + gap 이 된다 */
+    grid-auto-rows: 204px;
+    gap: 15px;
+}
+
+.mshop-grid.is-featured .mythic-item-card {
+    max-width: none;
+    /* 그림 칸이 카드 높이를 따라가야 한다 — 큰 칸은 그림도 커져야 하므로 */
+    display: flex;
+    flex-direction: column;
+}
+
+.mshop-grid.is-featured .mythic-item-img-box {
+    height: auto;
+    flex: 1;            /* 142px 고정을 풀고 남는 높이를 전부 그림에 준다 */
+    min-height: 0;
+}
+
+.mshop-grid.is-featured .mythic-item-card:nth-child(1) {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.mshop-grid.is-featured .mythic-item-card:nth-child(2),
+.mshop-grid.is-featured .mythic-item-card:nth-child(3) {
+    grid-column: span 2;
 }
 
 /* 누르면 그 스킨 일러스트로 가는 카드 (스킨·크로마). 아이콘·감정표현은 갈 곳이 없어서 안 붙는다 */
@@ -6318,7 +6363,8 @@ body::before {
 
 /* 크로마 — 270x303 **투명 배경 3D 모델 렌더**라 자르면 머리·발이 날아간다.
    높이만 채우고 폭은 비율대로 둔다 (배경이 투명해서 칸이 남아도 어색하지 않다). */
-.mshop-grid .mythic-item-card.is-render .mythic-item-img-box img {
+.mshop-grid .mythic-item-card.is-render .mythic-item-img-box img,
+.mshop-grid .mythic-item-card.is-render .mythic-item-img-box video {
     width: auto;
     height: 100%;
     object-fit: contain;
@@ -6393,6 +6439,12 @@ body::before {
     .mshop-grid .mythic-item-card { flex-basis: 120px; max-width: none; }
     /* 카드가 165px 이라 16:9 면 93px 이다. 데스크톱 값(142)을 그대로 두면 그림만 뚱뚱해진다 */
     .mshop-grid .mythic-item-img-box { height: 95px; }
+
+    /* ★ 추천 배치(1번 크게 + 2·3번 가로로)는 폰에서 되돌린다. 390px 을 넷으로 나누면
+       한 칸이 84px 이라 큰 칸이라 해봐야 183px 이고, 나머지 넷은 이름이 통째로 잘린다.
+       flex 로 되돌리면 span 규칙은 저절로 무시된다 (격자 항목이 아니게 되므로). */
+    .mshop-grid.is-featured { display: flex; }
+    .mshop-grid.is-featured .mythic-item-img-box { height: 95px; flex: none; }
 
     /* 수집 시각은 오른쪽 끝으로 밀면 줄이 넘치므로 흐름대로 둔다 */
     .mshop-collected { margin-left: 0; }

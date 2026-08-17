@@ -4527,7 +4527,13 @@ async function loadNexusFinishers() {
         const res = await fetch(CD_ASSET_BASE.replace('/global/default/', '/global/ko_kr/') + 'v1/nexusfinishers.json');
         const arr = await res.json();
         (Array.isArray(arr) ? arr : Object.values(arr)).forEach(f => {
-            if (f.translatedName && f.iconPath) nexusFinisherMap[f.translatedName] = cdAssetUrl(f.iconPath);
+            if (!f.translatedName || !f.iconPath) return;
+            nexusFinisherMap[f.translatedName] = {
+                icon: cdAssetUrl(f.iconPath),
+                // ★ 영상이 진짜 물건이다 — 480x480 · 4.96초 · 소리 없음 (실측).
+                //   아이콘·스플래시는 **정지 PNG 다** (APNG 도 아니다. 청크에 `acTL` 이 없다)
+                video: cdAssetUrl(f.videoPath)
+            };
         });
     } catch (e) { /* 못 받아도 그만 — 상자 아이콘으로 간다 */ }
     return nexusFinisherMap;
@@ -4538,17 +4544,22 @@ function mythicCardHtml(item) {
     const finisher = !item.image && nexusFinisherMap ? nexusFinisherMap[item.name] : null;
     const fit = item.image ? (MYTHIC_FIT[item.type] || '') : (finisher ? 'is-art' : '');
     const wide = fit === 'is-art' ? mythicWideSplash(item.image) : null;
-    const src = wide || item.image || finisher || MYTHIC_FALLBACK_IMG;
+    const src = wide || item.image || finisher?.icon || MYTHIC_FALLBACK_IMG;
+
+    // ★ 넥서스 효과는 **움직이는 게 본체다.** 정지 그림을 `poster` 로 깔아 두고 그 위에
+    //   영상을 틀어서, 못 받아도 아이콘이 그대로 남게 한다 (소리 없는 5초짜리 반복).
+    //   `muted` 가 없으면 브라우저가 자동재생을 막는다 — 빼지 말 것.
+    const media = finisher?.video
+        ? `<video src="${finisher.video}" poster="${finisher.icon}" autoplay loop muted playsinline></video>`
+        : `<img src="${src}" alt="" loading="lazy"
+                 data-fallback="${item.image || MYTHIC_FALLBACK_IMG}"
+                 onerror="mythicImgError(this)">`;
     // 스킨·크로마는 누르면 그 스킨 일러스트를 보러 간다. 아이콘·감정표현은 갈 곳이 없다.
     const goto = (item.type === 'skin' || item.type === 'chroma') && item.catalogId
         ? ` data-skin-id="${item.catalogId}" data-skin-type="${item.type}"` : '';
     return `
         <div class="mythic-item-card ${fit}${goto ? ' is-link' : ''}"${goto}>
-            <div class="mythic-item-img-box">
-                <img src="${src}" alt="" loading="lazy"
-                     data-fallback="${item.image || MYTHIC_FALLBACK_IMG}"
-                     onerror="mythicImgError(this)">
-            </div>
+            <div class="mythic-item-img-box">${media}</div>
             <div class="mythic-item-info">
                 <span class="mythic-item-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
                 <div class="mythic-item-price"><img src="${ME_GEM_ICON}" style="width: 13px; height: 13px;"><span style="color: #facc15; font-size: 14px; font-weight: 700;">${item.price}</span></div>
@@ -4718,8 +4729,11 @@ async function renderMythicSection(key) {
     // ★ 일일은 **오늘 수집 전이면 비워 두고 이유를 적는다.** 수집이 반자동(사용자가 상점
     //   화면을 열고 단축키를 눌러야 한다)이라 빈 날이 일상이고, 어제 것을 대신 보여주면
     //   거짓말이 된다. 서버가 404 가 아니라 200 + items:null 로 주는 이유가 이것이다.
+    // ★ 추천 구획만 배치가 다르다 — 인게임 상점처럼 첫 상품을 크게 건다.
+    //   **자리 기준이다**(1번 크게 / 2·3번 가로로 길게 / 나머지 한 줄). 상품 이름으로 짜면
+    //   로테이션이 바뀌는 순간 깨진다. 자세한 건 style.css 의 `.is-featured` 주석.
     const cards = (data.items && data.items.length)
-        ? `<div class="mshop-grid">${data.items.map(mythicCardHtml).join('')}</div>`
+        ? `<div class="mshop-grid${key === 'featured' ? ' is-featured' : ''}">${data.items.map(mythicCardHtml).join('')}</div>`
         : `<div class="mythic-empty">아직 오늘 로테이션을 수집하지 않았습니다.</div>`;
 
     // ★ 일일만 카운트다운을 붙인다 — 그 타이머는 매일 오전 9시 초기화라 주간·격주와 무관하다.
