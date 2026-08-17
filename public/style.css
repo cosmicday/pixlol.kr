@@ -3147,12 +3147,26 @@ body::before {
         justify-content: space-between;
     }
 
+    /* ★★ 메뉴가 6개(신화상점 추가)가 되면서 390px 에서 줄이 넘어갔다 (2026-08-17 실측).
+       그냥 넘어간 게 아니라 **글자 중간에서 쪼개져** "전적검 / 색", "신화상 / 점" 이 됐다
+       (항목 높이 17px → 34px 로 드러난다). 세 가지를 같이 건다:
+         ① nowrap — 낱말이 쪼개지는 것부터 막는다
+         ② gap 12 → 8 · 글자 13 → 12px — 이걸로 **390px 에서는 한 줄에 들어간다**
+         ③ 그래도 모자라는 좁은 폰(360px 이하)에서는 가로로 밀어 보게 둔다.
+            스크롤바는 숨긴다 — 65px 짜리 헤더에 막대가 뜨면 그게 더 흉하다.
+       ★ 메뉴를 하나 더 늘리면 여기부터 다시 잴 것. 430px 기준 여유가 이제 얼마 없다. */
     .nav-menu {
-        gap: 12px;
+        gap: 8px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
     }
 
+    .nav-menu::-webkit-scrollbar { display: none; }
+
     .nav-item {
-        font-size: 13px;
+        font-size: 12px;
+        white-space: nowrap;
     }
 
     /* 메인 검색 및 신화상점 */
@@ -6150,4 +6164,199 @@ body::before {
 
     .codex-tabs { padding: 0; }
     .codex-tab { flex: 1; padding: 9px 6px; }
+}
+
+/* ============================================================
+   신화상점 탭 — 추천 · 격주 · 주간 · 일일 (2026-08-17 신설)
+   탭 줄 생김새는 도감(.codex-tab)과 같은 값이다. 클래스를 나눈 건 도감을 손볼 때
+   이쪽이 같이 움직이면 안 되기 때문 — 두 페이지는 폰 규칙이 서로 다르다.
+   상품 카드(.mythic-item-card)는 첫 화면 위젯 것을 그대로 쓴다.
+   ============================================================ */
+
+#mythic-container {
+    display: none;
+    max-width: 1100px;
+    margin: 40px auto;
+    padding-bottom: 50px;
+    animation: fadeIn 0.6s ease;
+    min-height: 100vh;
+}
+
+.mshop-header {
+    text-align: center;
+    padding: 20px;
+    margin-bottom: 10px;
+}
+
+.mshop-sub {
+    margin: 8px 0 0;
+    color: #9aa4af;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.mshop-gem {
+    width: 16px;
+    height: 16px;
+}
+
+.mshop-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 0 4px;
+}
+
+.mshop-tab {
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #9aa4af;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.mshop-tab:hover { color: #e2e8f0; }
+
+.mshop-tab.active {
+    background: #2b1a52;
+    border-color: rgba(167, 139, 250, 0.5);
+    color: #a78bfa;
+}
+
+.mshop-body {
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    /* ★ 최소 높이를 잡아 둔다. 준비 중인 탭(짧은 안내)과 일일 탭(카드 줄) 사이를
+       오갈 때 상자가 확 줄었다 늘어나면 탭 줄이 위아래로 튄다. */
+    min-height: 260px;
+}
+
+.mshop-section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mshop-section-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.mshop-date {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.mshop-collected {
+    margin-left: auto;
+    color: #555;
+    font-size: 11px;
+}
+
+/* ★ 격자다. 첫 화면 위젯은 4개 고정이라 flex 로 나눠도 됐지만, 여기는 구획마다
+   개수가 다르고(최대 12개) 상품 종류도 늘어날 예정이라 줄바꿈이 필요하다.
+   카드의 flex:1 은 격자 안에서는 무시된다 — 폭은 이 규칙이 정한다. */
+/* ★ auto-fill 이 아니라 **auto-fit** 이다. auto-fill 은 상품이 4개여도 빈 칸을 6개
+   만들어 놓고 오른쪽을 비워 둔다 — 지금 일일 로테이션(4개)이 첫 화면 위젯보다
+   작고 왼쪽으로 몰려 보였다. auto-fit 은 빈 칸을 접어서 있는 만큼 꽉 채운다. */
+/* ★★ 격자가 아니라 **flex 줄바꿈**이다. 두 가지를 동시에 만족시켜야 하는데 격자로는 안 된다 —
+   ① 상품이 4개(일일)면 한 줄을 꽉 채운다  ② 2개뿐인 구획에서 카드가 600px 로 벌어지지 않는다.
+   `grid + minmax(160px, 260px)` 로 ②를 잡으려다 **①이 깨졌다** (일일 4개가 3+1 로 갈렸다) —
+   auto-fit 은 칸 수를 **최소폭이 아니라 최대폭으로 센다**: floor(1035/275)=3 이라 3칸이 된다.
+   flex 는 `basis 160 + grow` 로 남는 폭을 나눠 갖고 `max-width` 에서 멈추므로 둘 다 된다. */
+.mshop-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.mshop-grid .mythic-item-card {
+    flex: 1 1 160px;
+    max-width: 300px;
+}
+
+/* 마지막 수집이 오래된 구획. 주간(7일)·격주(14일) 주기를 넘겼을 때 서버가 stale 로 알려준다.
+   ★ 지우고 "없음" 으로 두지 않는다 — 있는 정보는 보여주되 낡았다고 말하는 편이 낫다. */
+.mshop-stale {
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(250, 204, 21, 0.08);
+    border: 1px solid rgba(250, 204, 21, 0.25);
+    color: #facc15;
+    font-size: 12px;
+}
+
+/* 아직 데이터가 없는 구획. **빈 화면으로 두지 않는다** — 기본 탭이 추천이라
+   들어오자마자 이 자리를 보게 되고, 아무 말도 없으면 고장으로 읽힌다. */
+.mshop-soon {
+    text-align: center;
+    padding: 50px 20px;
+    color: #9aa4af;
+}
+
+.mshop-soon-title {
+    color: #e2e8f0;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.mshop-soon-desc {
+    margin: 0 0 20px;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.mshop-goto {
+    background: #2b1a52;
+    border: 1px solid rgba(167, 139, 250, 0.5);
+    color: #a78bfa;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.mshop-goto:hover {
+    background: #3a2470;
+    color: #c4b5fd;
+}
+
+@media (max-width: 768px) {
+    #mythic-container {
+        margin: 20px auto;
+        padding: 0 10px 40px;
+    }
+
+    /* 탭 4개가 한 줄에 들어가야 한다 — 도감과 같은 처리다 */
+    .mshop-tabs { padding: 0; }
+    .mshop-tab { flex: 1; padding: 9px 6px; }
+
+    .mshop-body { padding: 14px; }
+
+    /* 390px 에서 두 칸. 160px 기준폭 그대로 두면 한 칸만 들어가 세로로 길어진다.
+       천장(300px)도 푼다 — 폰에서는 두 칸이 화면을 나눠 갖는 게 맞다 */
+    .mshop-grid { gap: 10px; }
+    .mshop-grid .mythic-item-card { flex-basis: 120px; max-width: none; }
+
+    /* 수집 시각은 오른쪽 끝으로 밀면 줄이 넘치므로 흐름대로 둔다 */
+    .mshop-collected { margin-left: 0; }
 }

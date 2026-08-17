@@ -326,6 +326,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('codex-container').style.display = "block";
         showCodex(pathParts[2] ? decodeURIComponent(pathParts[2]) : null);
         setActiveNav('nav-codex');
+    } else if (pathParts[1] === 'mythic') {
+        // /mythic 또는 /mythic/daily 처럼 소메뉴를 주소에 담을 수 있다 (도감과 같은 모양)
+        document.getElementById('mythic-container').style.display = "block";
+        showMythicShop(pathParts[2] ? decodeURIComponent(pathParts[2]) : null);
+        setActiveNav('nav-mythic');
     } else if (pathParts[1] === 'privacy') {
         showPrivacyPolicy();
     } else if (pathParts[1] === 'terms') {
@@ -386,6 +391,11 @@ window.addEventListener('popstate', (event) => {
         const seg = currentPath.split('/');
         showCodex(seg[2] ? decodeURIComponent(seg[2]) : null);
         setActiveNav('nav-codex');
+    } else if (currentPath.startsWith('/mythic')) {
+        // ★ 여기와 진입부(pathParts 분기)는 항상 같이 고친다 — 위 도감과 같은 이유다.
+        const seg = currentPath.split('/');
+        showMythicShop(seg[2] ? decodeURIComponent(seg[2]) : null);
+        setActiveNav('nav-mythic');
     } else if (currentPath.startsWith('/champions-classic')) {
         // '/champions'보다 먼저 검사해야 한다. startsWith라 순서가 뒤바뀌면 이쪽으로 안 온다.
         const pathParts = currentPath.split('/');
@@ -4252,10 +4262,16 @@ window.showTerms = function () {
 const ME_GEM_ICON = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/rarity-gem-icons/mythic.png";
 const MYTHIC_FALLBACK_IMG = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/hextech-images/chest.png";
 
+function mythicDayLabel(date) {
+    // "2026-08-16" → "8월 16일"
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date || '');
+    return m ? `${Number(m[2])}월 ${Number(m[3])}일` : '';
+}
+
 function mythicRotationLabel(date) {
     // "2026-08-16" → "8월 16일 로테이션"
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date || '');
-    return m ? `${Number(m[2])}월 ${Number(m[3])}일 로테이션` : '';
+    const d = mythicDayLabel(date);
+    return d ? `${d} 로테이션` : '';
 }
 
 window.loadMythicShop = async function () {
@@ -4281,7 +4297,15 @@ window.loadMythicShop = async function () {
         return;
     }
 
-    box.innerHTML = data.items.map(item => `
+    box.innerHTML = data.items.map(mythicCardHtml).join('');
+};
+
+// 상품 카드 한 장. 첫 화면 위젯과 신화상점 탭이 **같은 것을 쓴다** —
+//   두 벌로 두면 한쪽만 고쳤을 때 같은 상품이 화면마다 다르게 보인다.
+//   ★ image 는 서버가 raw.communitydragon.org 로 시작하는지 이미 검증한 값이다
+//     (validateMythicBody). 그래서 그대로 src 에 넣는다. 이름만 이스케이프한다.
+function mythicCardHtml(item) {
+    return `
         <div class="mythic-item-card">
             <div class="mythic-item-img-box">
                 <img src="${item.image || MYTHIC_FALLBACK_IMG}" alt=""
@@ -4292,8 +4316,8 @@ window.loadMythicShop = async function () {
                 <div class="mythic-item-price"><img src="${ME_GEM_ICON}" style="width: 13px; height: 13px;"><span style="color: #facc15; font-size: 14px; font-weight: 700;">${item.price}</span></div>
             </div>
         </div>
-    `).join('');
-};
+    `;
+}
 
 window.updateShopTimer = function () {
     const now = new Date();
@@ -4306,8 +4330,170 @@ window.updateShopTimer = function () {
     const minutes = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
     const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
 
-    document.getElementById('shop-timer').innerText = `${hours}:${minutes}:${seconds} 뒤 초기화`;
+    // ★ id 하나가 아니라 `.js-shop-timer` 를 전부 훑는다. 첫 화면 위젯과 신화상점 탭
+    //   두 군데에 같은 카운트다운이 뜨고, 탭 쪽은 나중에 생겼다 없어지기 때문이다.
+    //   (예전엔 getElementById('shop-timer') 하나였는데 그 자리가 없으면 매초 예외가 났다)
+    const text = `${hours}:${minutes}:${seconds} 뒤 초기화`;
+    document.querySelectorAll('.js-shop-timer').forEach(el => { el.innerText = text; });
 };
+
+// ============================================================
+//  신화상점 탭 (2026-08-17 신설)
+//    메뉴는 도감 오른쪽. 소메뉴 4개는 **인게임 상점의 구획을 그대로 따랐다** —
+//    추천 / 격주 / 주간 / 일일.
+//
+//    ★★ 지금 데이터가 있는 건 **일일 하나뿐이다.** 나머지 셋은 수집기가 아직 안 보내고,
+//      **보내도 지금 서버가 거절한다** — validateMythicBody(server.js) 가 type 을
+//      `icon|emote` 로, price 를 `5|25` 로 못 박고 있어서 스킨·크로마·와드가 오면 400 이다.
+//      게다가 `date` 가 unique 라 한 날짜에 문서가 하나뿐이다. 네 구획을 담으려면
+//      `section` 같은 칸이 필요한데, **형식은 수집기 쪽 SERVER_SPEC.md 가 정본**이라
+//      거기 정해지면 그때 서버를 고친다. 화면은 그때 renderMythicSection 만 채우면 된다.
+//
+//    ★ 기본 탭은 `추천` 이다(인게임 순서). 그래서 **들어오자마자 "준비 중" 이 보이는 게
+//      정상이다** — 고장으로 안 읽히게 안내 문구에 이유를 적고 일일로 가는 버튼을 둔다.
+//
+//    ★ 주소는 `/mythic/<탭키>` 다. 새 주소를 만들었으니 app.js 진입부의 pathParts 분기와
+//      popstate **두 곳을 같이 고쳤다** — 한쪽만 고치면 뒤로가기로 들어왔을 때 다르게 동작한다.
+// ============================================================
+const MYTHIC_TABS = [
+    { key: 'featured', name: '추천', full: '추천 상품' },
+    { key: 'biweekly', name: '격주', full: '격주 로테이션' },
+    { key: 'weekly', name: '주간', full: '주간 로테이션' },
+    { key: 'daily', name: '일일', full: '일일 로테이션' }
+];
+
+// 오늘 로테이션 응답을 잠깐 물고 있는다. 탭을 오갈 때마다 다시 부를 이유가 없다.
+//   서버도 60초 캐시(myCache)라 그보다 길게 잡으면 수집 직후 옛 값이 남는다.
+let mythicTodayCache = null;
+async function fetchMythicToday() {
+    if (mythicTodayCache && Date.now() - mythicTodayCache.at < 60000) return mythicTodayCache.data;
+    const res = await fetch('/api/mythic-shop/today');
+    const data = await res.json();
+    if (!data.ok) throw new Error('not ok');
+    mythicTodayCache = { at: Date.now(), data };
+    return data;
+}
+
+// ★★ 일일 밖의 세 구획은 `/today` 가 아니라 `/section/<키>` 다 — **"오늘 것" 이 아니라
+//   "마지막으로 수집한 것"** 을 받는다. 주간·격주는 며칠씩 그대로라 오늘 날짜로 찾으면
+//   수집한 날이 아닌 이상 늘 빈손이 된다. 대신 서버가 `ageDays`·`stale` 을 같이 준다.
+const mythicSectionCache = {};
+async function fetchMythicSection(section) {
+    const c = mythicSectionCache[section];
+    if (c && Date.now() - c.at < 60000) return c.data;
+    const res = await fetch(`/api/mythic-shop/section/${section}`);
+    const data = await res.json();
+    if (!data.ok) throw new Error('not ok');
+    mythicSectionCache[section] = { at: Date.now(), data };
+    return data;
+}
+
+async function showMythicShop(target) {
+    // ★ 도감과 같은 규칙: 이미 /mythic 안에 있으면 밀어 넣지 않는다.
+    //   popstate 로 들어왔을 때 또 push 하면 뒤로가기가 앞으로 되돌아간다.
+    if (!window.location.pathname.startsWith('/mythic')) {
+        window.history.pushState({ page: 'mythic' }, '', '/mythic');
+    }
+    hideAllContainers();
+    const box = document.getElementById('mythic-container');
+    box.style.display = 'block';
+
+    let curTab = MYTHIC_TABS.some(t => t.key === target) ? target : 'featured';
+
+    box.innerHTML = `
+        <div class="mshop-header">
+            <h1 class="ranking-title">신화급 상점</h1>
+            <p class="mshop-sub">
+                <img class="mshop-gem" src="${ME_GEM_ICON}" alt="">
+                신화 정수로 사는 상품 · 매일 오전 9시(00:00 UTC) 초기화
+            </p>
+        </div>
+        <div class="mshop-tabs">
+            ${MYTHIC_TABS.map(t => `<button class="mshop-tab${t.key === curTab ? ' active' : ''}" data-tab="${t.key}">${t.name}</button>`).join('')}
+        </div>
+        <div class="mshop-body" id="mshop-body"></div>
+    `;
+
+    function selectTab(key) {
+        curTab = key;
+        document.querySelectorAll('.mshop-tab').forEach(x => x.classList.toggle('active', x.dataset.tab === key));
+        // 소메뉴도 주소에 담는다 (`/mythic/daily`). 새로고침·링크 공유가 그대로 산다.
+        const want = `/mythic/${key}`;
+        if (window.location.pathname !== want) window.history.pushState({ page: 'mythic' }, '', want);
+        renderMythicSection(key);
+    }
+
+    document.querySelectorAll('.mshop-tab').forEach(b =>
+        b.addEventListener('click', () => selectTab(b.dataset.tab)));
+
+    // 첫 그리기는 주소를 안 건드린다 — /mythic 으로 들어온 사람을 굳이 밀지 않는다.
+    renderMythicSection(curTab);
+
+    // "일일 로테이션 보기" 버튼처럼 본문 안에서 탭을 옮기는 자리. 본문을 매번 새로 그리므로
+    // 위임으로 한 번만 붙인다.
+    document.getElementById('mshop-body').addEventListener('click', (ev) => {
+        const go = ev.target.closest('[data-goto]');
+        if (go) selectTab(go.dataset.goto);
+    });
+}
+
+async function renderMythicSection(key) {
+    const body = document.getElementById('mshop-body');
+    if (!body) return;
+    const info = MYTHIC_TABS.find(t => t.key === key);
+    const isDaily = key === 'daily';
+
+    body.innerHTML = `<div class="mythic-empty">${info.full}을 불러오는 중입니다...</div>`;
+
+    let data;
+    try {
+        data = isDaily ? await fetchMythicToday() : await fetchMythicSection(key);
+    } catch (e) {
+        body.innerHTML = `<div class="mythic-empty">신화 상점 정보를 불러오지 못했습니다.</div>`;
+        return;
+    }
+
+    // ★ 아직 한 번도 안 들어온 구획. **빈 칸으로 두지 않는다** — 기본 탭이 추천이라
+    //   들어오자마자 이 자리를 보게 되고, 아무 말도 없으면 고장으로 읽힌다.
+    //   여기까지 오면 화면은 이미 완성돼 있다 — 수집기가 보내기 시작하면 저절로 켜진다.
+    if (!isDaily && (!data.items || !data.items.length)) {
+        body.innerHTML = `
+            <div class="mshop-soon">
+                <div class="mshop-soon-title">${info.full}은 아직 수집 전입니다</div>
+                <p class="mshop-soon-desc">
+                    이 구획은 아직 들어온 데이터가 없습니다. 수집이 시작되면 여기에 그대로 나옵니다.
+                </p>
+                <button class="mshop-goto" data-goto="daily">일일 로테이션 보기</button>
+            </div>`;
+        return;
+    }
+
+    // ★ 일일은 **오늘 수집 전이면 비워 두고 이유를 적는다.** 수집이 반자동(사용자가 상점
+    //   화면을 열고 단축키를 눌러야 한다)이라 빈 날이 일상이고, 어제 것을 대신 보여주면
+    //   거짓말이 된다. 서버가 404 가 아니라 200 + items:null 로 주는 이유가 이것이다.
+    const cards = (data.items && data.items.length)
+        ? `<div class="mshop-grid">${data.items.map(mythicCardHtml).join('')}</div>`
+        : `<div class="mythic-empty">아직 오늘 로테이션을 수집하지 않았습니다.</div>`;
+
+    // ★ 일일만 카운트다운을 붙인다 — 그 타이머는 매일 오전 9시 초기화라 주간·격주와 무관하다.
+    //   대신 나머지 구획은 **며칠 전에 수집한 것인지**를 밝힌다 (서버의 ageDays·stale).
+    const meta = isDaily
+        ? `<span class="mshop-date">${mythicRotationLabel(data.date)}</span>
+           <span class="timer-text js-shop-timer" data-tooltip="매일 오전 9시 초기화"></span>`
+        : `<span class="mshop-date">${mythicDayLabel(data.date)} 기준${data.ageDays ? ` · ${data.ageDays}일 전` : ' · 오늘'}</span>`;
+
+    body.innerHTML = `
+        <div class="mshop-section-head">
+            <h2 class="mshop-section-title">${info.full}</h2>
+            ${meta}
+            ${data.collectedAt ? `<span class="mshop-collected">수집 ${new Date(data.collectedAt).toLocaleString('ko-KR')}</span>` : ''}
+        </div>
+        ${data.stale ? `<div class="mshop-stale">마지막 수집이 ${data.ageDays}일 전입니다. 그 사이 로테이션이 바뀌었을 수 있습니다.</div>` : ''}
+        ${cards}`;
+
+    // 방금 만든 카운트다운 칸을 바로 채운다 (1초 뒤 타이머를 기다리면 빈 채로 깜빡인다)
+    if (isDaily) updateShopTimer();
+}
 
 window.copyEmail = function () {
     navigator.clipboard.writeText("00.y4no@gmail.com").then(() => {

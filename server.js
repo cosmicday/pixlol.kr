@@ -192,13 +192,19 @@ const SummonerCache = mongoose.model('SummonerCache', summonerCacheSchema);
 //     그 날짜가 곧 로테이션 ID 다. 한국 날짜와 다를 수 있으니 화면에서 조심할 것.
 // ==========================================
 const mythicShopSchema = new mongoose.Schema({
-    date: { type: String, required: true, unique: true },   // "2026-08-16" (UTC)
+    date: { type: String, required: true },                 // "2026-08-16" (UTC)
+    // ★★ 구획 (2026-08-17 추가). 인게임 상점 탭 그대로 — featured/biweekly/weekly/daily.
+    //   **없으면 'daily' 다** — 구획이 생기기 전 수집기가 보내던 것이 전부 일일이었고,
+    //   그 수집기를 안 고쳐도 계속 동작해야 하기 때문이다 (기존 문서도 시작할 때 메워 둔다).
+    section: { type: String, required: true, default: 'daily' },
     collectedAt: { type: Date, required: true },            // 수집 시각 (표시용)
     items: [{
         _id: false,
         name: { type: String, required: true },    // 정식 명칭 (수집기가 CD 로 대조해 보낸다)
-        type: { type: String, required: true },    // 'icon' | 'emote'
-        price: { type: Number, required: true },   // 5 | 25
+        // 'icon' | 'emote' | 'skin' | 'chroma' | 'ward' | 'border' | 'bundle' | 'other'
+        //   ★ 일일 구획은 예전처럼 icon/emote 만 받는다 (아래 validateMythicBody)
+        type: { type: String, required: true },
+        price: { type: Number, required: true },   // 신화 정수. 일일은 5|25 고정
         catalogId: { type: String },               // CommunityDragon id
         // ★ 이미지 URL 은 **수집기가 만들어 보낸다. 서버·프론트가 만들지 말 것.**
         //   아이콘은 id 로 경로를 만들 수 있지만 감정표현은 경로가 제각각이라 유추가 안 된다.
@@ -208,7 +214,12 @@ const mythicShopSchema = new mongoose.Schema({
     collectorVersion: { type: String },
     createdAt: { type: Date, default: Date.now }
 });
+// ★★ unique 가 `date` 단독이 아니라 `date + section` 이다 (2026-08-17).
+//   같은 날짜에 일일과 주간이 따로 들어와야 하는데, 단독 unique 로 두면 **두 번째가
+//   11000 으로 막힌다.** 옛 `date_1` 인덱스는 ensureStatIndexes 가 지운다.
+mythicShopSchema.index({ date: 1, section: 1 }, { unique: true });
 mythicShopSchema.index({ 'items.catalogId': 1, date: -1 });   // "마지막 등장일" 조회용
+mythicShopSchema.index({ section: 1, date: -1 });             // 구획별 최신 조회용
 const MythicShop = mongoose.model('MythicShop', mythicShopSchema);
 
 // ==========================================
@@ -1077,16 +1088,49 @@ async function ensureStatIndexes() {
         //     **실제로 안 만들어졌다** (2026-08-16 실측: `_id_` 와 아래 복합 인덱스뿐이었다).
         //     이게 없으면 같은 날짜가 동시에 두 번 들어올 때 문서가 둘 생기고
         //     POST 의 11000 처리도 영영 안 탄다 — 하루 한 번짜리라 드물지만 막을 수 있는 건 막는다.
-        { col: 'mythicshops', key: { date: 1 }, unique: true },
+        //     ★ 2026-08-17에 `date` 단독에서 `date + section` 으로 바뀌었다 — 같은 날짜에
+        //       일일과 주간이 따로 들어와야 하기 때문이다. 옛 인덱스는 아래 legacy 가 지운다.
+        { col: 'mythicshops', key: { date: 1, section: 1 }, unique: true },
         { col: 'mythicshops', key: { 'items.catalogId': 1, date: -1 } },   // "마지막 등장일" 조회용
+        { col: 'mythicshops', key: { section: 1, date: -1 } },             // 구획별 최신 조회용
         { col: 'matchstats', key: { v: 1, k: 1 } },
         { col: 'matchstats', key: { t: 1 } },
         { col: 'champstats', key: { scope: 1, kb: 1, pos: 1 } },
         { col: 'statscopes', key: { scope: 1, kb: 1 }, unique: true }
     ];
 
+    // ★★ 못 쓰게 된 옛 인덱스. **지우기 전에 새 걸 만들면 안 된다** — `date` 단독 unique 가
+    //   살아 있는 동안은 같은 날짜의 두 번째 구획이 11000 으로 막힌다.
+    const legacy = [
+        { col: 'mythicshops', name: 'date_1' }   // 2026-08-17: date + section 으로 대체
+    ];
+
     const db = mongoose.connection.db;
-    let made = 0, changed = 0;
+    let made = 0, changed = 0, dropped = 0;
+
+    // ★ 새 인덱스보다 먼저 돈다. 순서가 뒤바뀌면 위 이유로 막힌다.
+    for (const l of legacy) {
+        try {
+            const existing = await db.collection(l.col).indexes().catch(() => []);
+            if (existing.some(i => i.name === l.name)) {
+                await db.collection(l.col).dropIndex(l.name);
+                console.log(`[Index] 옛 인덱스 삭제 ${l.col} ${l.name}`);
+                dropped++;
+            }
+        } catch (e) {
+            console.error(`[Index] ${l.col} ${l.name} 삭제 실패: ${e.message}`);
+        }
+    }
+
+    // ★★ `section` 이 없는 옛 신화상점 문서를 메운다. **복합 unique 를 만들기 전에** 해야 한다 —
+    //   빠진 필드는 인덱스에서 null 로 잡혀서, 같은 날짜에 section:'daily' 문서가 새로 들어오면
+    //   막히지 않고 **문서가 둘 생긴다.** 구획이 생기기 전 것은 전부 일일이었다.
+    try {
+        const r = await MythicShop.updateMany({ section: { $exists: false } }, { $set: { section: 'daily' } });
+        if (r.modifiedCount) console.log(`[Index] 신화상점 section 메움: ${r.modifiedCount}건 → daily`);
+    } catch (e) {
+        console.error(`[Index] 신화상점 section 메우기 실패: ${e.message}`);
+    }
 
     for (const w of want) {
         try {
@@ -1119,7 +1163,7 @@ async function ensureStatIndexes() {
             console.error(`[Index] ${w.col} ${JSON.stringify(w.key)} 실패: ${e.message}`);
         }
     }
-    if (made || changed) console.log(`[Index] 보정 완료 (생성 ${made} / TTL 변경 ${changed})`);
+    if (made || changed || dropped) console.log(`[Index] 보정 완료 (생성 ${made} / TTL 변경 ${changed} / 삭제 ${dropped})`);
 }
 
 async function startJobs() {
@@ -2297,6 +2341,23 @@ function checkCollectorToken(req) {
 const MYTHIC_PRICE = { icon: 5, emote: 25 };
 const MYTHIC_IMAGE_PREFIX = 'https://raw.communitydragon.org/';
 
+// ★★ 구획 4개 (2026-08-17). 인게임 상점 탭 그대로다.
+//   `daily` 만 규칙이 다르다 — 아래 검증과 SECTION_PERIOD 참고.
+const MYTHIC_SECTIONS = ['featured', 'biweekly', 'weekly', 'daily'];
+
+// 그 구획이 몇 일마다 갈리나. **"마지막 수집이 오래됐다" 를 판정하는 데만 쓴다** —
+//   일일은 오늘 것이 아니면 곧바로 낡은 것이고, 주간은 7일까지는 그대로다.
+const MYTHIC_SECTION_PERIOD = { featured: 14, biweekly: 14, weekly: 7, daily: 0 };
+
+// 일일 밖에서 파는 것들. **일일 구획에는 여전히 icon/emote 만 받는다** —
+//   그 규칙이 지금까지 오독을 잡아 왔고, 일일에 스킨이 뜨는 일은 없다.
+const MYTHIC_TYPES = ['icon', 'emote', 'skin', 'chroma', 'ward', 'border', 'bundle', 'other'];
+
+// 신화 정수 가격 상한. 프레스티지 125 · 신화 스킨 150 · 크로마 40 근처라 넉넉하다.
+//   ★ 이 상한은 **RP 가격을 잘못 읽어 오는 것**을 잡으려고 둔 것이다 (1350 같은 값).
+//     정상인데 막히는 게 나오면 여기부터 올릴 것.
+const MYTHIC_PRICE_MAX = 1000;
+
 function validateMythicBody(body) {
     if (!body || typeof body !== 'object') return '본문이 없습니다.';
 
@@ -2307,9 +2368,18 @@ function validateMythicBody(body) {
     // 미래 날짜 금지. 수집기 시계가 틀어졌거나 장난이다.
     if (date > utcDay()) return `date 가 미래입니다 (오늘 UTC ${utcDay()}).`;
 
+    // ★ 안 보내면 daily 다. 구획이 생기기 전 수집기가 그대로 동작해야 한다.
+    const section = body.section == null || body.section === '' ? 'daily' : body.section;
+    if (!MYTHIC_SECTIONS.includes(section)) {
+        return `section 은 ${MYTHIC_SECTIONS.join(' / ')} 중 하나여야 합니다 (받은 값: ${String(section).slice(0, 40)}).`;
+    }
+    const isDaily = section === 'daily';
+
+    // 일일은 예전대로 12개까지. 나머지 구획은 스킨·크로마가 섞여 더 길 수 있다.
+    const maxItems = isDaily ? 12 : 30;
     const items = body.items;
-    if (!Array.isArray(items) || items.length < 1 || items.length > 12) {
-        return 'items 는 1개 이상 12개 이하의 배열이어야 합니다.';
+    if (!Array.isArray(items) || items.length < 1 || items.length > maxItems) {
+        return `items 는 1개 이상 ${maxItems}개 이하의 배열이어야 합니다 (${section}).`;
     }
 
     for (let i = 0; i < items.length; i++) {
@@ -2320,15 +2390,30 @@ function validateMythicBody(body) {
         if (typeof it.name !== 'string' || !it.name.trim() || it.name.length > 200) {
             return `${at}.name 은 1~200자 문자열이어야 합니다.`;
         }
-        if (it.type !== 'icon' && it.type !== 'emote') {
-            return `${at}.type 은 icon 또는 emote 여야 합니다.`;
-        }
-        if (it.price !== 5 && it.price !== 25) {
-            return `${at}.price 는 5 또는 25 여야 합니다.`;
-        }
-        // 타입과 가격이 어긋나면 화면을 잘못 읽은 것이다 (아이콘 5 / 감정표현 25 고정)
-        if (MYTHIC_PRICE[it.type] !== it.price) {
-            return `${at} 는 ${it.type} 인데 가격이 ${it.price} 입니다 (${MYTHIC_PRICE[it.type]} 이어야 함).`;
+
+        if (isDaily) {
+            // ── 일일: 예전 규칙 그대로. 타입 2종 + 가격 고정 + 둘의 짝까지 본다.
+            if (it.type !== 'icon' && it.type !== 'emote') {
+                return `${at}.type 은 icon 또는 emote 여야 합니다 (일일 구획).`;
+            }
+            if (it.price !== 5 && it.price !== 25) {
+                return `${at}.price 는 5 또는 25 여야 합니다 (일일 구획).`;
+            }
+            // 타입과 가격이 어긋나면 화면을 잘못 읽은 것이다 (아이콘 5 / 감정표현 25 고정)
+            if (MYTHIC_PRICE[it.type] !== it.price) {
+                return `${at} 는 ${it.type} 인데 가격이 ${it.price} 입니다 (${MYTHIC_PRICE[it.type]} 이어야 함).`;
+            }
+        } else {
+            // ── 나머지 구획: 값이 제각각이라 짝은 못 본다. 대신 범위와 정수 여부를 본다.
+            //   ★ 타입을 모르겠으면 'other' 로 보내면 통과한다. **막아서 그날 데이터를
+            //     통째로 잃는 것보다 받아 두고 나중에 고치는 게 낫다** — 수집이 반자동이라
+            //     한 번 거절당하면 사람이 다시 상점을 열어야 한다. 서버가 경고를 찍는다.
+            if (typeof it.type !== 'string' || !MYTHIC_TYPES.includes(it.type)) {
+                return `${at}.type 은 ${MYTHIC_TYPES.join(' / ')} 중 하나여야 합니다 (받은 값: ${String(it.type).slice(0, 40)}).`;
+            }
+            if (!Number.isInteger(it.price) || it.price < 1 || it.price > MYTHIC_PRICE_MAX) {
+                return `${at}.price 는 1~${MYTHIC_PRICE_MAX} 사이 정수여야 합니다 (신화 정수 가격, 받은 값: ${it.price}).`;
+            }
         }
         // ★ 이미지 출처를 고정한다. 토큰이 샜을 때 임의의 URL 을 프론트에 심는 걸 막는다 —
         //   이 값은 그대로 <img src> 로 들어간다.
@@ -2393,51 +2478,61 @@ app.post('/api/mythic-shop', collectorLimiter, express.json({ limit: '64kb' }), 
     }
 
     const date = req.body.date;
+    // ★ 안 보내면 daily 다 (구획이 생기기 전 수집기와 그대로 호환된다)
+    const section = req.body.section == null || req.body.section === '' ? 'daily' : req.body.section;
     const items = toMythicItems(req.body.items);
     const collectedAt = req.body.collected_at ? new Date(req.body.collected_at) : new Date();
     const force = req.query.force === '1';
 
+    // 'other' 로 온 건 통과시키되 흔적을 남긴다. 쌓이면 MYTHIC_TYPES 에 진짜 이름을 더한다.
+    const unknown = items.filter(i => i.type === 'other');
+    if (unknown.length) {
+        console.warn(`[Mythic] ${date}/${section} type=other ${unknown.length}건: ${unknown.map(i => i.name).join(', ')}`);
+    }
+
     try {
-        const existing = await MythicShop.findOne({ date }).lean();
+        const existing = await MythicShop.findOne({ date, section }).lean();
 
         if (!existing) {
             await MythicShop.create({
-                date, collectedAt: isNaN(+collectedAt) ? new Date() : collectedAt,
+                date, section, collectedAt: isNaN(+collectedAt) ? new Date() : collectedAt,
                 items, collectorVersion: req.body.collector_version
             });
             clearMythicCache(date);
-            console.log(`[Mythic] ${date} 저장 (${items.length}개)`);
-            return res.status(201).json({ ok: true, created: true, date, count: items.length });
+            console.log(`[Mythic] ${date}/${section} 저장 (${items.length}개)`);
+            return res.status(201).json({ ok: true, created: true, date, section, count: items.length });
         }
 
-        // ★★ 조용히 덮어쓰지 않는다. 같은 날짜에 다른 내용이 온다는 건 둘 중 하나가
+        // ★★ 조용히 덮어쓰지 않는다. 같은 날짜·같은 구획에 다른 내용이 온다는 건 둘 중 하나가
         //   틀렸다는 뜻이라 사람이 봐야 한다. 수집기는 409 를 받으면 재시도하지 않는다.
+        //   ★ 주간·격주는 며칠 동안 내용이 같으므로 **날짜가 다르면 충돌이 아니다** —
+        //     같은 내용이 날짜별로 하나씩 쌓인다 (한 건 200B 라 그대로 둔다).
         if (mythicFingerprint(existing.items) === mythicFingerprint(items)) {
-            return res.json({ ok: true, created: false, date, count: items.length });
+            return res.json({ ok: true, created: false, date, section, count: items.length });
         }
 
         if (!force) {
-            console.warn(`[Mythic] ${date} 충돌 — 기존 ${existing.items.length}개 vs 새 ${items.length}개`);
+            console.warn(`[Mythic] ${date}/${section} 충돌 — 기존 ${existing.items.length}개 vs 새 ${items.length}개`);
             return res.status(409).json({
-                ok: false, reason: 'conflict', date,
+                ok: false, reason: 'conflict', date, section,
                 existing: existing.items, incoming: items
             });
         }
 
-        await MythicShop.updateOne({ date }, {
+        await MythicShop.updateOne({ date, section }, {
             $set: {
                 collectedAt: isNaN(+collectedAt) ? new Date() : collectedAt,
                 items, collectorVersion: req.body.collector_version
             }
         });
         clearMythicCache(date);
-        console.log(`[Mythic] ${date} 강제 덮어쓰기 (${items.length}개)`);
-        return res.json({ ok: true, created: false, overwritten: true, date, count: items.length });
+        console.log(`[Mythic] ${date}/${section} 강제 덮어쓰기 (${items.length}개)`);
+        return res.json({ ok: true, created: false, overwritten: true, date, section, count: items.length });
 
     } catch (e) {
         // unique 인덱스 충돌 — 같은 순간에 두 번 들어온 경우다
         if (e.code === 11000) {
-            return res.status(409).json({ ok: false, reason: 'conflict', date });
+            return res.status(409).json({ ok: false, reason: 'conflict', date, section });
         }
         console.error('[Mythic] 저장 실패:', e.message);
         return res.status(500).json({ ok: false, reason: 'server_error' });
@@ -2453,10 +2548,12 @@ app.get('/api/mythic-shop/today', async (req, res) => {
         if (hit) return res.json(hit);
 
         const date = utcDay();
-        const doc = await MythicShop.findOne({ date }).select('-_id -__v -createdAt').lean();
+        // ★ 일일 구획만 본다. 2026-08-17에 구획이 넷으로 늘어서, 안 걸면 같은 날짜의
+        //   주간 문서가 걸려 **첫 화면 위젯에 스킨이 뜬다.**
+        const doc = await MythicShop.findOne({ date, section: 'daily' }).select('-_id -__v -createdAt').lean();
         const payload = doc
-            ? { ok: true, date, collectedAt: doc.collectedAt, items: doc.items }
-            : { ok: true, date, collectedAt: null, items: null };
+            ? { ok: true, date, section: 'daily', collectedAt: doc.collectedAt, items: doc.items }
+            : { ok: true, date, section: 'daily', collectedAt: null, items: null };
 
         // 하루 한 번 바뀌는 데이터지만 갱신 직후 옛 값이 남으면 안 되니 짧게 둔다.
         // (POST 가 성공하면 clearMythicCache 가 어차피 지운다)
@@ -2464,6 +2561,48 @@ app.get('/api/mythic-shop/today', async (req, res) => {
         res.json(payload);
     } catch (e) {
         console.error('[Mythic] today 실패:', e.message);
+        res.status(500).json({ ok: false, reason: 'server_error' });
+    }
+});
+
+// ── 구획 하나의 **가장 최근** 로테이션 (2026-08-17 신설)
+//   ★★ "오늘 것" 이 아니라 "마지막으로 수집한 것" 이다. 주간·격주·추천은 며칠씩 그대로라
+//     오늘 날짜로 찾으면 수집한 날이 아닌 이상 늘 빈손이 된다.
+//   ★ 대신 **얼마나 묵었는지(ageDays)와 낡았는지(stale)를 같이 준다.** 화면이 "어제 것을
+//     오늘 것처럼" 보여주지 않으려면 이 값이 있어야 한다 — 일일은 오늘이 아니면 곧바로
+//     stale 이고, 주간은 7일, 격주·추천은 14일이 지나면 stale 이다.
+//   ★ /api/mythic-shop 보다 **먼저** 선언해야 한다 (아래 history 와 같은 이유).
+app.get('/api/mythic-shop/section/:section', async (req, res) => {
+    try {
+        const section = String(req.params.section || '');
+        if (!MYTHIC_SECTIONS.includes(section)) {
+            return res.status(400).json({ ok: false, reason: 'invalid_section' });
+        }
+
+        const key = `mythic_sec_${section}`;
+        const hit = myCache.get(key);
+        if (hit) return res.json(hit);
+
+        const today = utcDay();
+        // 미래 날짜는 검증에서 막히지만, 혹시 들어와도 오늘 것으로 보이지 않게 잘라 둔다.
+        const doc = await MythicShop.findOne({ section, date: { $lte: today } })
+            .select('-_id -__v -createdAt').sort({ date: -1 }).lean();
+
+        let payload;
+        if (!doc) {
+            payload = { ok: true, section, date: null, collectedAt: null, ageDays: null, stale: false, items: null };
+        } else {
+            const ageDays = Math.round((Date.parse(today) - Date.parse(doc.date)) / 86400000);
+            payload = {
+                ok: true, section, date: doc.date, collectedAt: doc.collectedAt,
+                ageDays, stale: ageDays > MYTHIC_SECTION_PERIOD[section], items: doc.items
+            };
+        }
+
+        myCache.set(key, payload, 60);
+        res.json(payload);
+    } catch (e) {
+        console.error('[Mythic] section 실패:', e.message);
         res.status(500).json({ ok: false, reason: 'server_error' });
     }
 });
@@ -2480,15 +2619,19 @@ app.get('/api/mythic-shop/history/:catalogId', async (req, res) => {
         if (hit) return res.json(hit);
 
         const docs = await MythicShop.find({ 'items.catalogId': catalogId })
-            .select('date items').sort({ date: -1 }).limit(400).lean();
+            .select('date section items').sort({ date: -1 }).limit(400).lean();
 
         const dates = docs.map(d => d.date);
+        // ★ 어느 구획에서 나왔는지도 같이 준다 (2026-08-17). 같은 아이템이 일일에도
+        //   주간에도 나올 수 있어서, 날짜만으로는 "어디서 봤나" 를 못 밝힌다.
+        //   `dates` 는 그대로 둔다 — 이미 쓰는 쪽이 있으면 깨지면 안 된다.
+        const entries = docs.map(d => ({ date: d.date, section: d.section || 'daily' }));
         // 이름은 가장 최근 것으로 (이름이 바뀌었어도 최신 표기를 보여 준다)
         const name = docs.length
             ? (docs[0].items.find(i => i.catalogId === catalogId)?.name || null)
             : null;
 
-        const payload = { ok: true, catalogId, name, dates };
+        const payload = { ok: true, catalogId, name, dates, entries };
         myCache.set(key, payload, 300);
         res.json(payload);
     } catch (e) {
@@ -2508,8 +2651,16 @@ app.get('/api/mythic-shop', async (req, res) => {
             if (isDate(req.query.from)) q.date.$gte = req.query.from;
             if (isDate(req.query.to)) q.date.$lte = req.query.to;
         }
+        // ★ 구획 필터 (2026-08-17). 안 주면 전 구획이 섞여 나온다 —
+        //   일일만 보려던 화면이 주간 문서를 같이 받으면 날짜가 겹쳐 보인다.
+        if (req.query.section) {
+            if (!MYTHIC_SECTIONS.includes(req.query.section)) {
+                return res.status(400).json({ ok: false, reason: 'invalid_section' });
+            }
+            q.section = req.query.section;
+        }
 
-        const key = `mythic_range_${req.query.from || ''}_${req.query.to || ''}_${limit}`;
+        const key = `mythic_range_${req.query.from || ''}_${req.query.to || ''}_${req.query.section || ''}_${limit}`;
         const hit = myCache.get(key);
         if (hit) return res.json(hit);
 

@@ -69,6 +69,10 @@
             <!-- 도감: 아이템·룬·소환사 주문 (2026-08-16 신설). 챔피언 다음에 둔다 — 둘 다
                  "찾아보는 자료" 라서 전적검색·랭킹·통계 같은 조회 기능과 성격이 다르다. -->
             <a class="nav-item" id="nav-codex" onclick="showCodex(); setActiveNav('nav-codex')">도감</a>
+            <!-- 신화상점: 인게임 신화급 상점의 네 구획(추천·격주·주간·일일)을 그대로 따른다
+                 (2026-08-17 신설). 지금 데이터가 있는 건 일일 하나뿐이고 나머지 셋은
+                 수집기가 보내기 시작하면 채워진다 — app.js 의 MYTHIC_TABS 주석 참고. -->
+            <a class="nav-item" id="nav-mythic" onclick="showMythicShop(); setActiveNav('nav-mythic')">신화상점</a>
             <!-- ▼▼ 비공개 처리 (장인랭킹) ▼▼
                  하드코딩된 샘플 데이터라 아직 숨김. 되살릴 때: 이 주석 두 줄을 풀고
                  app.js 의 HIDE_UNFINISHED_PAGES 를 false 로.
@@ -121,7 +125,9 @@
                          값은 app.js 의 loadMythicShop 이 /api/mythic-shop/today 응답으로 채운다. -->
                     <span id="mythic-rotation" class="mythic-rotation"></span>
                     <h2>
-                        <span id="shop-timer" class="timer-text" data-tooltip="매일 오전 9시 초기화">00:00:00 뒤 초기화</span>
+                        <!-- ★ 초기화 카운트다운은 신화상점 탭에도 같은 게 뜬다. updateShopTimer 가
+                             id 가 아니라 `.js-shop-timer` 를 전부 훑으므로 클래스를 빼면 멈춘다. -->
+                        <span id="shop-timer" class="timer-text js-shop-timer" data-tooltip="매일 오전 9시 초기화">00:00:00 뒤 초기화</span>
                     </h2>
                 </div>
                 <div id="mythic-items" class="mythic-items-grid"></div>
@@ -173,6 +179,7 @@
 
         <div id="stats-container" class="page-container"></div>
         <div id="codex-container" class="page-container"></div>
+        <div id="mythic-container" class="page-container"></div>
         <div id="masters-container" class="page-container"></div>
         <div id="candidates-container" class="page-container"></div>
 
