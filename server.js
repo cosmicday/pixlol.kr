@@ -58,6 +58,28 @@ const matchSeenSchema = new mongoose.Schema({
 matchSeenSchema.index({ done: 1, cnt: -1 });
 const MatchSeen = mongoose.model('MatchSeen', matchSeenSchema);
 
+// ==========================================
+// 날짜별 명단 스냅샷 (2026-08-17 신설)
+//   ★★ "지금 명단" 으로 **어제 경기**를 다루면 두 군데서 샌다:
+//     ① 순회 — 어제 마스터로 게임을 했는데 오늘 아침 명단에서 빠진 사람에게는
+//        "어제 뭐 했어?" 를 **아예 안 물어본다.** 그 사람 몫의 등장 횟수가 통째로 빠지고,
+//        경계에 걸린 판(5명)은 4로 내려가 **detail 을 안 받아 통계에서 사라진다.**
+//        실측(2026-08-17): 8/15 명단에 있다가 8/16 에 빠진 사람이 **437명(3.8%)**.
+//        5명 중 최소 한 명이 빠질 확률이 약 18% 라 경계 판이 그만큼 샜다.
+//     ② k 계산 — 아침에 5명이던 판이 저녁에 4명으로 세어졌다. 실측 140건(전체 3.5%)이고
+//        전부 `cnt` 가 5~7 인 경계 판이었다 (cnt>=8 은 0건).
+//   → 그래서 **그날 명단을 사진 찍어 두고, 어제 경기는 어제 명단으로 처리한다.**
+//   ★ 하루 한 문서에 puuid 를 통째로 담는다 (1.1만 x 78B ≒ 0.9MB/일, TTL 5일 = 4.5MB).
+//     16MB 문서 한도의 6%라 여유가 크다.
+// ==========================================
+const rankSnapshotSchema = new mongoose.Schema({
+    day: { type: String, required: true, unique: true },   // KST "2026-08-17"
+    n: { type: Number, default: 0 },
+    puuids: { type: [String], default: [] },
+    createdAt: { type: Date, expires: '5d', default: Date.now }
+});
+const RankSnapshot = mongoose.model('RankSnapshot', rankSnapshotSchema);
+
 // 통계용 슬림 경기. 원본 대신 이것만 남는다.
 const matchStatSchema = new mongoose.Schema({
     matchId: { type: String, required: true, unique: true },
@@ -441,6 +463,8 @@ async function updateChallengerList() {
             rankUpdatedAt = Date.now();
             myCache.del('challenger_ranking_data');   // 새 명단이 왔으면 옛 응답을 버린다
             console.log(`[Task] 랭킹 명단 갱신 완료 (총 ${challengerList.length}명)`);
+            // 오늘 명단을 사진 찍어 둔다 (내일 이 날짜 경기를 다룰 때 쓴다)
+            saveRankSnapshot().catch(e => console.error('[Snapshot] 저장 실패:', e.message));
         } else {
             console.error("[Task Error] 랭킹 명단이 비어 있어 갱신하지 않음");
         }
@@ -614,10 +638,63 @@ const kstDay = (ms) => new Date(ms + 9 * 3600000).toISOString().slice(0, 10);
 //   "오전 순회 / 오후 수집" 이 된다. 그런데 시각으로 하드코딩하면 재시작하거나
 //   429 로 밀렸을 때 **그날 순회를 통째로 건너뛴다.** 남은 인원으로 판단하면
 //   늦게 시작해도 알아서 따라잡는다.
-const scanPending = () => {
+// ★★ 스냅샷을 **합집합으로** 쌓는다 — "그날 명단에 한 번이라도 있던 사람" 이 맞다.
+//   명단은 10분마다 갈리므로 어느 한 순간을 찍으면 그날 낮에 강등된 사람이 빠진다.
+//   첫 저장만 1.1만 건이고 그 뒤로는 **새로 들어온 사람만** 더한다 (하루 400명 남짓).
+let rankSnapshotDay = null;
+let rankSnapshotSet = new Set();
+
+async function saveRankSnapshot() {
+    if (rankPuuidSet.size === 0) return;
+    const day = kstDay(Date.now());
+
+    // 날짜가 넘어갔거나 방금 재시작했으면 그날 문서를 먼저 읽어 온다.
+    // ★ 안 읽으면 재시작할 때마다 1.1만 건을 통째로 다시 밀어 넣는다 ($addToSet 이라
+    //   결과는 같지만 쓸데없이 큰 쓰기가 배포마다 한 번씩 생긴다).
+    if (rankSnapshotDay !== day) {
+        const doc = await RankSnapshot.findOne({ day }).select('puuids').lean().catch(() => null);
+        rankSnapshotSet = new Set(doc?.puuids || []);
+        rankSnapshotDay = day;
+    }
+
+    const fresh = [...rankPuuidSet].filter(id => !rankSnapshotSet.has(id));
+    if (fresh.length === 0) return;
+
+    const size = rankSnapshotSet.size + fresh.length;
+    await RankSnapshot.updateOne(
+        { day },
+        { $addToSet: { puuids: { $each: fresh } }, $set: { n: size }, $setOnInsert: { createdAt: new Date() } },
+        { upsert: true }
+    );
+    fresh.forEach(id => rankSnapshotSet.add(id));
+    console.log(`[Snapshot] ${day} 명단 ${size}명 (새로 ${fresh.length}명)`);
+}
+
+// ★★ 순회 대상 = **오늘 명단 ∪ 대상일(어제) 명단** (2026-08-17).
+//   어제 마스터였다가 오늘 빠진 사람에게도 물어봐야 그 사람 몫의 등장 횟수가 안 샌다.
+//   ★ 대상일 스냅샷이 없으면(도입 첫날·재시작 직후) 지금 명단만 쓴다 — 예전과 같은 동작이라
+//     안전한 쪽으로 물러나는 것이다. 없다고 순회를 멈추면 그날이 통째로 빈다.
+let scanExtraDay = null;
+let scanExtraSet = new Set();
+
+async function loadScanExtra() {
     const day = scanTargetDay();
-    return challengerList.filter(p => matchScanDay[p.puuid] !== day).length;
+    if (scanExtraDay === day) return;
+    const doc = await RankSnapshot.findOne({ day }).select('puuids').lean().catch(() => null);
+    scanExtraSet = new Set(doc?.puuids || []);
+    scanExtraDay = day;
+    console.log(`[Snapshot] 순회 대상일 ${day} 명단 ${scanExtraSet.size}명을 물려받았다`);
+}
+
+// ★ scanPending 과 scanMatchlists 가 **같은 목록**을 봐야 한다.
+//   여기가 어긋나면 순회가 영원히 안 끝나 수집 단계로 못 넘어간다 (단계 전환 조건이 이 값이다).
+const scanTargets = (day) => {
+    const all = new Set(rankPuuidSet);
+    scanExtraSet.forEach(id => all.add(id));
+    return [...all].filter(puuid => matchScanDay[puuid] !== day);
 };
+
+const scanPending = () => scanTargets(scanTargetDay()).length;
 
 // ★★ 수집 대상은 **어제 하루 전체**다 ("최근 24시간" 이 아니다).
 //   예전엔 각자 "훑는 시점 기준 24시간" 을 봤는데, 순회가 반나절에 걸쳐 있어서
@@ -657,7 +734,10 @@ function perkValues(p) {
 //   17 주 룬계열   18~21 주 룬 4개
 //   22 보조 룬계열   23~24 보조 룬 2개
 //   25 공격 파편   26 유연 파편   27 방어 파편
-function toSlimMatch(detail) {
+//   ★ rankSet 은 **그 경기 날짜의 명단**이다 (2026-08-17). 예전엔 전역 rankPuuidSet
+//     ("지금 명단")을 직접 봤는데, 수집이 경기 다음 날 저녁이라 그 사이 강등된 사람이
+//     안 세어져 5명짜리가 4명으로 찍혔다. 부르는 쪽에서 날짜에 맞는 집합을 넘긴다.
+function toSlimMatch(detail, rankSet) {
     const info = detail?.info;
     const meta = detail?.metadata;
     if (!info || !meta || info.queueId !== STAT_QUEUE) return null;
@@ -670,7 +750,7 @@ function toSlimMatch(detail) {
     if (info.participants.some(p => p.gameEndedInEarlySurrender)) return null;
 
     // ★ 정확한 k 는 여기서 나온다. matchlist 등장 횟수는 하한일 뿐이다.
-    const k = (meta.participants || []).filter(id => rankPuuidSet.has(id)).length;
+    const k = (meta.participants || []).filter(id => rankSet.has(id)).length;
 
     return {
         matchId: meta.matchId,
@@ -705,10 +785,12 @@ async function scanMatchlists() {
         const from = Math.floor(Date.parse(`${day}T00:00:00+09:00`) / 1000);
         const to = from + 86400;
 
+        // ★ 대상일 명단을 물려받는다 (하루 한 번만 읽는다)
+        await loadScanExtra();
+
         // 이 날짜를 아직 안 훑은 사람만. 다 훑었으면 쉰다 (그때부터 수집 단계다).
-        const targets = challengerList
-            .filter(p => matchScanDay[p.puuid] !== day)
-            .slice(0, SCAN_PER_CYCLE);
+        //   ★ 오늘 명단 + 대상일 명단이다. 오늘 빠진 사람도 어제 게임은 했다.
+        const targets = scanTargets(day).slice(0, SCAN_PER_CYCLE).map(puuid => ({ puuid }));
         if (targets.length === 0) { isScanningMatches = false; return; }
 
         for (const p of targets) {
@@ -764,6 +846,38 @@ async function scanMatchlists() {
 //   정상값은 11,000명(챌 300 + 그마 700 + 마스터 1만)이라 5,000이면 넉넉한 하한이다.
 const RANK_SET_MIN = 5000;
 
+// k 를 셀 때 쓸 집합. **대상일 스냅샷이 있으면 그것**, 없으면 지금 명단이다.
+//   하루에 한 번만 읽는다 (분마다 0.9MB 를 읽을 이유가 없다).
+let statRankDay = null;
+let statRankCache = null;
+let statRankWarnedDay = null;
+
+async function statRankSet() {
+    const day = scanTargetDay();
+    if (statRankDay === day && statRankCache) return statRankCache;
+
+    const doc = await RankSnapshot.findOne({ day }).select('puuids').lean().catch(() => null);
+    const snap = new Set(doc?.puuids || []);
+
+    if (snap.size >= RANK_SET_MIN) {
+        console.log(`[Stat] k 판정에 ${day} 명단 ${snap.size}명을 쓴다`);
+        statRankCache = snap;
+        statRankDay = day;
+        return statRankCache;
+    }
+
+    // ── 도입 첫날이거나 스냅샷이 덜 찬 경우. 예전 동작(지금 명단)으로 물러난다.
+    //   ★★ 이 경로는 **캐시하지 않는다.** 두 가지 이유가 다 중요하다:
+    //     ① `rankPuuidSet` 은 10분마다 **새 Set 으로 갈아 끼워진다.** 참조를 캐시해 두면
+    //        그 시점 명단에 하루 종일 묶여 옛 명단으로 k 를 세게 된다.
+    //     ② 스냅샷이 조금 뒤에 채워질 수도 있다. 캐시를 안 하면 다음 사이클에 알아서 갈아탄다.
+    if (statRankWarnedDay !== day) {
+        console.warn(`[Stat] ${day} 스냅샷이 ${snap.size}명뿐이라 지금 명단(${rankPuuidSet.size}명)으로 k 를 센다`);
+        statRankWarnedDay = day;   // 분마다 찍히면 로그가 묻힌다
+    }
+    return rankPuuidSet;
+}
+
 async function fetchMatchStats() {
     // ★★ `size === 0` 만 보면 안 된다 — **명단이 "일부만" 찬 창이 실제로 있었다.**
     //   2026-08-16 14시대에 저장된 586건 중 98건(16.7%)이 `cnt=9 인데 k=0` 으로 들어갔다.
@@ -781,10 +895,18 @@ async function fetchMatchStats() {
     }
     // ★ 순회가 남아 있으면 손대지 않는다. 등장 횟수가 아직 덜 세어져서
     //   기준(5)을 못 넘긴 판을 그냥 지나치게 된다.
+    //   ★ 대상일 명단을 여기서도 먼저 물려받는다 — 안 그러면 재시작 직후 첫 1분에
+    //     **대상일 명단 몫(437명)을 뺀 채로** pending 을 세어 0 으로 보고 수집을 시작한다.
+    await loadScanExtra();
     if (scanPending() > 0) return;
     isFetchingStats = true;
 
     try {
+        // ★★ k 는 **그 경기 날짜의 명단**으로 센다 (2026-08-17). 수집이 경기 다음 날
+        //   저녁이라 "지금 명단" 으로 세면 그 사이 강등된 사람이 빠져 5명짜리가 4명이 된다.
+        //   ★ 스냅샷이 없거나 너무 작으면 지금 명단으로 물러난다 — 예전과 같은 동작이다.
+        //     여기서 멈추면 그날 수집이 통째로 날아가므로, 조금 틀리더라도 도는 편이 낫다.
+        const rankSet = await statRankSet();
         // ★ 지금 순회를 마친 날짜만 처리한다. 이전 날짜가 섞이면 안 되는데,
         //   서버를 늦은 시각에 처음 띄우면 그날은 순회를 다 못 채우고 자정에 대상이
         //   넘어간다. 그 **부분만 모인 날짜**를 그대로 집계하면 일별 통계가 왜곡된다.
@@ -801,7 +923,7 @@ async function fetchMatchStats() {
                 const { data } = await riotApi.get(
                     `https://asia.api.riotgames.com/lol/match/v5/matches/${t.matchId}`
                 );
-                const slim = toSlimMatch(data);
+                const slim = toSlimMatch(data, rankSet);
 
                 if (slim) {
                     await MatchStat.updateOne({ matchId: slim.matchId }, { $set: slim }, { upsert: true });
@@ -1093,6 +1215,9 @@ async function ensureStatIndexes() {
         { col: 'mythicshops', key: { date: 1, section: 1 }, unique: true },
         { col: 'mythicshops', key: { 'items.catalogId': 1, date: -1 } },   // "마지막 등장일" 조회용
         { col: 'mythicshops', key: { section: 1, date: -1 } },             // 구획별 최신 조회용
+        // 날짜별 명단 스냅샷 (2026-08-17). TTL 5일 — 필요한 건 어제 것뿐이고 넉넉히 남긴다.
+        { col: 'ranksnapshots', key: { day: 1 }, unique: true },
+        { col: 'ranksnapshots', key: { createdAt: 1 }, ttl: 5 * 86400 },
         { col: 'matchstats', key: { v: 1, k: 1 } },
         { col: 'matchstats', key: { t: 1 } },
         { col: 'champstats', key: { scope: 1, kb: 1, pos: 1 } },
