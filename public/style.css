@@ -164,11 +164,21 @@ body.bg-solid::before {
     animation: fadeIn 0.6s ease;
 }
 
-.main-logo-img {
-    height: 360px;
-    margin-bottom: 0px;
-    object-fit: contain;
-    filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.3));
+/* ★ 텍스트 워드마크 (2026-08-18, 그림 로고를 대체). 폰트는 index.html 의
+   Chakra Petch 700. .KR 만 브랜드 보라 — dogu.gg 로 넘어갈 때 글자만 갈면 된다 */
+.main-logo-text {
+    font-family: 'Chakra Petch', 'Malgun Gothic', sans-serif;
+    font-weight: 700;
+    font-size: 82px;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: 2px;
+    margin: 120px 0 65px;
+    text-shadow: 0 0 32px rgba(167, 139, 250, 0.45);
+}
+
+.main-logo-text .logo-tld {
+    color: #a78bfa;
 }
 
 .search-box-wrapper {
@@ -3243,8 +3253,11 @@ body.bg-solid::before {
     }
 
     /* 메인 검색 및 신화상점 */
-    .main-logo-img {
-        height: 220px;
+    .main-logo-text {
+        /* 82px 이면 글자 폭이 460px 쯤이라 390px 화면을 넘는다 */
+        font-size: 42px;
+        letter-spacing: 1px;
+        margin: 70px 0 45px;
     }
 
     /* 검색창이 화면 끝에서 끝까지 닿았다. .search-box-wrapper 가 width:100% 인데

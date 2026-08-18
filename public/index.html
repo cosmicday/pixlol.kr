@@ -11,6 +11,9 @@
     
     <link rel="stylesheet" href="/style.css">
     <link rel="icon" href="/favicon.ico">
+    <!-- 워드마크(PIXLOL.KR) 폰트. 라틴 subset 만 받아서 작다 -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap">
     
     <!-- defer: 파싱을 막지 않는다. defer 끼리는 문서 순서대로 실행되므로
          chart.js 가 app.js 보다 항상 먼저 돈다. 둘 다 DOMContentLoaded 전에 끝난다. -->
@@ -90,7 +93,10 @@
 
     <main>
         <div class="main-search-section page-container" id="search-section">
-            <img src="/logo.webp" alt="pixlol.kr logo" class="main-logo-img">
+            <!-- ★ 그림 로고 → 텍스트 워드마크 (2026-08-18). 나중에 dogu.gg 하위로
+                 들어갈 예정이라 임시 브랜드에 그림 자산을 안 키우기로 했다.
+                 폰트는 Chakra Petch 700 (OFL · 무료 상업 가능). 헤더의 나비 미니 로고는 그대로다. -->
+            <h1 class="main-logo-text">PIXLOL<span class="logo-tld">.KR</span></h1>
 
             <div class="search-box-wrapper" style="position: relative;">
                 <div class="search-box">
