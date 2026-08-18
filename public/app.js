@@ -310,6 +310,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('result-container').style.display = "block";
         document.getElementById('game-list').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:#9aa4af;'>랭킹 데이터를 불러오는 중입니다...</div>";
         showRanking(getQueryPage());
+        // ★ 이 줄이 빠져 있어서 /ranking 을 새로고침하면 메뉴 불이 "전적검색" 에 켜졌다.
+        //   index.html 에서 nav-search 가 기본 active 라, 아무도 안 바꾸면 그게 그대로 남는다.
+        //   다른 분기(stats·codex·mythic·champions·masters)에는 다 있었다.
+        setActiveNav('nav-ranking');
     } else if (pathParts[1] === 'masters') {
         document.getElementById('masters-container').style.display = "block";
         document.getElementById('masters-container').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:#9aa4af;'>장인 데이터를 불러오는 중입니다...</div>";
