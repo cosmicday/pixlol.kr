@@ -1306,7 +1306,10 @@ function renderMatches(matches, append = false) {
             return `
                 <table class="detail-table arena-detail-table">
                     <colgroup>
-                        <col style="width: 150px;"> <col style="width: 55px;"> <col style="width: 30px;"> <col style="width: 90px;"> <col style="width: 45px;"> <col style="width: 105px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 55px;"> </colgroup>
+                        <!-- ★ 첫 칸(소환사)만 폭을 안 정한다 (2026-08-18). 나머지 아홉 칸 합이
+                             585px 이고, 남거나 모자란 폭을 이 칸이 흡수해 표가 상세 상자와 정확히 맞는다.
+                             예전엔 열 칸이 다 고정이라 합이 735px 로 **상자보다 6px 넓었다.** -->
+                        <col> <col style="width: 55px;"> <col style="width: 30px;"> <col style="width: 90px;"> <col style="width: 45px;"> <col style="width: 105px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 55px;"> </colgroup>
                     <thead>
                         <tr class="arena-col-header">
                             <th style="text-align:left; padding-left:15px;">소환사</th>
@@ -1419,7 +1422,8 @@ function renderMatches(matches, append = false) {
                 ${isArena ? renderArenaDetail() : `
                 <table class="detail-table">
                     <colgroup>
-                        <col style="width: 150px;"> <col style="width: 55px;"> <col style="width: 30px;"> <col style="width: 90px;"> <col style="width: 45px;"> <col style="width: 90px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 70px;"> </colgroup>
+                        <!-- ★ 첫 칸(소환사)만 폭을 안 정한다 — 위 아레나 표와 같은 이유다 -->
+                        <col> <col style="width: 55px;"> <col style="width: 30px;"> <col style="width: 90px;"> <col style="width: 45px;"> <col style="width: 90px;"> <col style="width: 65px;"> <col style="width: 70px;"> <col style="width: 70px;"> <col style="width: 70px;"> </colgroup>
                     <thead>
                         <tr class="${blueHeaderClass}">
                             <th style="text-align:left; padding-left:15px;">${blueWon ? '승리' : '패배'} (블루팀)</th>

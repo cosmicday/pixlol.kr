@@ -1855,10 +1855,19 @@ body::before {
     animation: fadeIn 0.3s ease;
 }
 
+/* ★★ 폭은 첫 칸(소환사)이 조절한다 — app.js 의 <colgroup> 을 같이 볼 것.
+   나머지 아홉 칸이 585px 고정이고 첫 칸만 auto 라, 표가 상세 상자 폭에 정확히 맞는다.
+   ★ min-width 가 필요한 이유: 창이 좁아지면 상세 상자도 같이 좁아지는데(1000px 창에서
+     630px) 그때 첫 칸이 45px 까지 찌그러져 닉네임을 못 읽는다.
+   ★★ 이 값을 예전 폭 합(735px)으로 두면 안 된다 — 넓은 창의 상자가 729px 라
+     **min-width 가 width:100% 를 이겨서 늘 6px 넘치는 예전 상태 그대로가 된다.**
+     585 + 첫 칸 하한 120 = 705px 로 잡는다.
+   ★ 폰 블록에 있던 min-width: 650px 을 여기로 올렸다. 두 곳에 두면 어긋난다. */
 .detail-table {
     border-collapse: collapse !important;
     border-spacing: 0 !important;
     width: 100%;
+    min-width: 705px;
     table-layout: fixed !important;
 }
 
@@ -3337,9 +3346,6 @@ body::before {
         overflow-x: auto;
     }
 
-    .detail-table {
-        min-width: 650px;
-    }
 
     /* 통계 및 장인랭킹 페이지 */
     .stats-table-wrapper,
