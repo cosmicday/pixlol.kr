@@ -512,6 +512,10 @@ function hideAllContainers() {
         container.style.display = "none";
     });
 
+    // 홈(히어로)이 아닌 화면은 배경 일러스트를 더 눌러 바닥을 단색에 가깝게 한다.
+    // 홈으로 돌아오는 goLobby() 가 다시 벗긴다
+    document.body.classList.add('bg-solid');
+
     // 랭킹 탭에서만 통을 넓혔던 것을 되돌린다 (안 벗기면 전적검색 화면까지 넓어진다)
     const resultBox = document.getElementById('result-container');
     if (resultBox) resultBox.classList.remove('is-ranking');
@@ -524,6 +528,7 @@ function goLobby() {
     if (window.location.pathname !== '/') window.history.pushState(null, '', '/');
     hideAllContainers();
     document.getElementById('search-section').style.display = "flex";
+    document.body.classList.remove('bg-solid');
     document.getElementById('summoner-input').value = "";
     hideAutocomplete();
     setActiveNav('nav-search');

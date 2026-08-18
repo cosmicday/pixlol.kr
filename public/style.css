@@ -35,6 +35,13 @@ body::before {
     background-color: rgba(11, 11, 20, 0.8);
     backdrop-filter: blur(5px);
     z-index: -1;
+    transition: background-color 0.3s;
+}
+
+/* 데이터 페이지(홈 이외 전부)는 배경 일러스트를 기척만 남기고 누른다.
+   app.js 의 hideAllContainers()/goLobby() 가 클래스를 토글한다 (2026-08-18) */
+body.bg-solid::before {
+    background-color: rgba(11, 11, 20, 0.93);
 }
 
 @keyframes fadeIn {
