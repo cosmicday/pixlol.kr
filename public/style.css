@@ -23,6 +23,17 @@ body {
     background-size: cover;
     min-height: 100vh;
     overflow-x: hidden;
+    /* ★ 푸터를 화면 바닥에 붙이기 위한 뼈대 (2026-08-18). body(세로 flex) 안에서
+       main 이 남는 높이를 다 차지하고, footer 의 margin-top:auto 가 바닥으로 민다.
+       내용이 화면보다 길면 auto 가 0 이 되어 예전과 똑같이 흐른다 */
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 body::before {
@@ -363,7 +374,7 @@ body.bg-solid::before {
    4. 신화 상점 영역
    ========================================= */
 .mythic-shop-container {
-    margin-top: 80px;
+    margin-top: 110px;   /* 80 → 110 (2026-08-18): 검색창과 위젯 사이를 벌렸다 */
     width: 100%;
     max-width: 1000px;
     padding: 0 20px;

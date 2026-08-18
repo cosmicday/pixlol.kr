@@ -195,7 +195,7 @@
         </div>
 
         <div id="privacy-container" class="page-container" 
-            style="display: none; max-width: 800px; margin: 40px auto; padding: 40px 30px; line-height: 1.8; color: #ddd; background: #1a1a2e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; animation: fadeIn 0.6s ease; min-height: 60vh;">
+            style="display: none; max-width: 800px; margin: 40px auto; padding: 40px 30px; line-height: 1.8; color: var(--text-bright); background: #1a1a2e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; animation: fadeIn 0.6s ease; min-height: 60vh;">
             
             <h2 style="color: #fff; margin-bottom: 20px; text-align: center; font-size: 28px;">개인정보 처리방침</h2>
             <p style="margin-bottom: 15px;"><b>pixlol.kr</b>(이하 '본 사이트')는 이용자의 개인정보를 중요시하며, 안전하게 보호하기 위해 최선을 다하고 있습니다.</p>
@@ -205,27 +205,30 @@
             <ul style="margin-bottom: 15px; padding-left: 20px; line-height: 1.9;">
                 <li>소환사명 및 태그, 프로필 아이콘, 소환사 레벨</li>
                 <li>랭크 티어, 승급 등급, 리그 포인트(LP)</li>
+                <li>챔피언 숙련도(상위 챔피언의 숙련도 점수 및 레벨)</li>
                 <li>경기 기록(매치 데이터) 및 해당 경기 참가자의 소환사명</li>
             </ul>
             <p style="margin-bottom: 15px;">본 사이트는 회원가입 절차가 없으며, 이메일·연락처·결제 정보 등 <b>라이엇 API에서 제공되지 않는 개인 식별 정보는 일절 수집하지 않습니다.</b></p>
 
             <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">2. 개인정보의 처리 목적 및 보관 기간</h3>
             <p style="margin-bottom: 15px;">수집된 게임 데이터는 전적 검색 결과 제공, 소환사명 자동완성, 랭킹 및 통계 표시, 그리고 라이엇 API 호출량을 줄이기 위한 캐시(임시 저장) 용도로만 사용됩니다.</p>
-            <p style="margin-bottom: 15px;">경기 기록은 저장 시점으로부터 <b>14일이 지나면 자동으로 삭제</b>되며, 소환사명 정보는 검색 편의를 위해 보관하되 주기적으로 최신 정보로 갱신됩니다. 저장된 정보의 삭제를 원하시는 경우 아래 5항의 이메일로 요청해 주시기 바랍니다.</p>
+            <p style="margin-bottom: 15px;">경기 기록 원본은 저장 시점으로부터 <b>7일이 지나면 자동으로 삭제</b>되며, 소환사명 정보는 검색 편의를 위해 보관하되 주기적으로 최신 정보로 갱신됩니다. 통계 산출에 쓰인 경기 데이터는 <b>개인을 식별할 수 없는 형태</b>(챔피언·승패 등 집계 수치)로만 보관됩니다. 저장된 정보의 삭제를 원하시는 경우 아래 5항의 이메일로 요청해 주시기 바랍니다.</p>
 
             <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">3. 제3자 제공 및 위탁</h3>
-            <p style="margin-bottom: 15px;">본 사이트는 사용자의 어떠한 개인정보도 영리 목적을 위해 제3자에게 제공하거나 외부에 위탁하지 않습니다.</p>
+            <p style="margin-bottom: 15px;">본 사이트는 사용자의 어떠한 개인정보도 영리 목적을 위해 제3자에게 제공하지 않습니다. 다만 서비스 운영을 위해 클라우드 인프라(호스팅·데이터베이스·CDN)를 이용하며, 수집된 게임 데이터는 해당 인프라에 저장되거나 이를 경유하여 전송됩니다.</p>
 
             <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">4. 쿠키(Cookie) 및 로컬 저장소 운용</h3>
-            <p style="margin-bottom: 15px;">본 사이트는 사용자의 편의(다크 모드 유지, 최근 검색어 등)를 위해 최소한의 브라우저 로컬 저장소(Local Storage)를 사용할 수 있으나, 이는 개인을 식별할 수 있는 정보가 아니며 언제든지 브라우저 설정을 통해 삭제할 수 있습니다.</p>
+            <p style="margin-bottom: 15px;">본 사이트는 사용자의 편의(즐겨찾기, 최근 검색 기록 등)를 위해 최소한의 브라우저 로컬 저장소(Local Storage)를 사용할 수 있으나, 이는 사용자의 브라우저에만 저장되며 언제든지 브라우저 설정을 통해 삭제할 수 있습니다.</p>
 
             <h3 style="color: #a78bfa; margin-top: 25px; margin-bottom: 10px; font-size: 18px;">5. 문의 및 피드백</h3>
             <p style="margin-bottom: 15px;">서비스 이용 중 발생하는 건의사항, 버그 리포트 또는 개인정보 처리방침과 관련된 문의는 아래의 이메일 채널을 통해 연락해 주시기 바랍니다.<br>
-            ▶ 이메일: <a href="mailto:00.y4no@gmail.com" style="color: #60a5fa; text-decoration: none; font-weight: bold;">00.y4no@gmail.com</a></p>
+            ▶ 이메일: <a href="mailto:00.y4no@gmail.com" style="color: #a78bfa; text-decoration: none; font-weight: bold;">00.y4no@gmail.com</a></p>
+
+            <p style="margin-top: 30px; color: var(--text-faint); font-size: 13px;">본 개인정보 처리방침은 2026년 8월 18일부터 적용됩니다.</p>
         </div>
 
         <div id="terms-container" class="page-container" 
-            style="display: none; max-width: 800px; margin: 40px auto; padding: 40px 30px; line-height: 1.8; color: #ddd; background: #1a1a2e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; animation: fadeIn 0.6s ease; min-height: 60vh;">
+            style="display: none; max-width: 800px; margin: 40px auto; padding: 40px 30px; line-height: 1.8; color: var(--text-bright); background: #1a1a2e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; animation: fadeIn 0.6s ease; min-height: 60vh;">
             
             <h2 style="color: #fff; margin-bottom: 20px; text-align: center; font-size: 28px;">이용약관</h2>
 
@@ -245,13 +248,15 @@
             <p style="margin-bottom: 15px;">본 사이트에서 제공하는 데이터는 라이엇 API를 바탕으로 자동 처리되므로 데이터의 완벽한 정확성을 보증하지 않으며, 이를 바탕으로 한 이용자의 게임 내 의사결정에 대한 책임은 본인에게 있습니다.</p>
         </div>
 
-        <footer style="text-align: center; padding: 40px 20px; margin-top: 50px; border-top: 1px solid rgba(255, 255, 255, 0.1); color: #777; font-size: 12px; line-height: 1.6;">
+        <!-- margin-top: auto — main(세로 flex)의 남는 높이를 다 밀어내 화면 바닥에 붙는다.
+             내용이 화면보다 길면 auto 가 0 이 되므로 위쪽 간격은 padding 40px 이 담당한다. -->
+        <footer style="text-align: center; padding: 40px 20px; margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-faint); font-size: 12px; line-height: 1.6;">
             <div style="margin-bottom: 20px; display: flex; justify-content: center; gap: 20px;">
                 <a onclick="showTerms()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">이용약관</a>
-                <span style="color: #444;">|</span>
+                <span style="color: var(--text-dim);">|</span>
                 <a onclick="showPrivacyPolicy()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">개인정보 처리방침</a>
-                <span style="color: #444;">|</span>
-                <a onclick="copyEmail()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">버그제보 및 피드백</a>
+                <span style="color: var(--text-dim);">|</span>
+                <a href="mailto:00.y4no@gmail.com" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">버그제보 및 피드백</a>
             </div>
 
             <div style="color: rgba(255, 255, 255, 0.3); font-size: 11px; margin-top: 15px; word-break: keep-all;">
@@ -259,7 +264,7 @@
             </div>
 
             <div style="margin-top: 10px; font-size: 11px;">
-                Contact: <a href="mailto:00.y4no@gmail.com" style="color: #777; text-decoration: none;">00.y4no@gmail.com</a>
+                Contact: <a href="mailto:00.y4no@gmail.com" style="color: var(--text-faint); text-decoration: none;">00.y4no@gmail.com</a>
             </div>
         </footer>
     </main>
