@@ -4859,7 +4859,190 @@ body::before {
     border-color: #a78bfa;
 }
 
+/* -----------------------------------------
+   랭킹 표(왼쪽) + 컷라인 그래프(오른쪽) 2단 배치 (2026-08-18)
+   ★ 통을 1089 → 1400px 로 넓히는 것은 **랭킹 탭에서만** 이다. 안 넓히면 오른쪽에
+     300px 를 내주느라 표가 눌려 숙련도 칸이 들어갈 자리가 없다.
+     클래스는 showRanking 이 붙이고 hideAllContainers 가 벗긴다.
+   ★★ `.rank-main` 의 `min-width: 0` 이 없으면 안 된다 — 표가 `min-width: 600px` 이라
+     flex 항목이 안 줄어들고, 오른쪽 칸을 밀어내며 페이지가 통째로 가로로 넘친다.
+     (스킨 탭에서 겪은 것과 같은 함정이다)
+   ----------------------------------------- */
+#result-container.is-ranking {
+    max-width: 1400px;
+}
+
+/* ★ 제목·검색창은 **표 칸 기준**으로 가운데 둔다. 통만 넓히면 제목이 통 한가운데,
+   곧 표보다 160px 오른쪽에 앉아 그래프 칸 쪽으로 치우쳐 보인다.
+   320px = 그래프 칸 300 + gap 20. */
+#result-container.is-ranking > #user-profile {
+    padding-right: 320px;
+}
+
+.rank-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.rank-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.rank-side {
+    width: 300px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cutoff-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: #1a1a2e;
+    padding: 14px 16px 10px;
+}
+
+.cutoff-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.cutoff-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #9aa4af;
+    white-space: nowrap;
+}
+
+.cutoff-swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* 지금 컷. 그래프에서 제일 자주 볼 숫자라 크게 둔다 */
+.cutoff-now {
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+}
+
+/* ★ 오른쪽 42px 은 y 라벨 자리다. 그래프 안에 겹쳐 쓰면 선과 부딪힌다 */
+.cutoff-plot {
+    position: relative;
+    height: 120px;
+    margin: 0 42px 8px 0;
+}
+
+.cutoff-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+}
+
+/* ★ vector-effect 가 없으면 viewBox 를 가로로 늘린 만큼 선이 굵어졌다 얇아졌다 한다 */
+.cutoff-line {
+    fill: none;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.cutoff-dot {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 카드에 overflow 를 걸지 않았으므로 말풍선이 밖으로 나가도 잘리지 않는다
+   (신화상점 상품 딱지가 잘렸던 것과 반대 경우다) */
+.cutoff-dot::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 50%;
+    bottom: 13px;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: #e5e7eb;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s;
+    z-index: 5;
+}
+
+.cutoff-dot:hover::after {
+    opacity: 1;
+}
+
+.cutoff-y {
+    position: absolute;
+    right: -40px;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.cutoff-axis {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    margin-right: 42px;
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.cutoff-axis-mid {
+    color: #4b5563;
+}
+
+/* ★ 첫날에는 점이 하나도 없다. 비워 두면 고장으로 읽히므로 언제 쌓이는지 적는다 */
+.cutoff-empty {
+    padding: 30px 6px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #6b7280;
+}
+
+.cutoff-empty b {
+    color: #9aa4af;
+}
+
 @media (max-width: 768px) {
+    /* ★ 폰에서는 위아래로 쌓는다. 390px 에서 오른쪽에 300px 를 세우면 표가 90px 만 남는다 */
+    .rank-layout {
+        flex-direction: column;
+    }
+
+    .rank-side {
+        width: 100%;
+    }
+
+    .cutoff-plot {
+        height: 100px;
+    }
+
     /* 600px 제한을 풀고 칸을 좁혀 390px 안에 4열을 다 넣는다.
        순위 36 + LP 46 + 승률 52 = 134px, 남는 폭이 전부 닉네임으로 간다. */
     .rank-table {

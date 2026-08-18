@@ -93,6 +93,11 @@ const RankSnapshot = mongoose.model('RankSnapshot', rankSnapshotSchema);
 const apexDriftSchema = new mongoose.Schema({
     t: { type: Date, required: true },
     c300: { type: Number },      // 1~300등 안의 챌린저 수 (300 이면 안 어긋남)
+    // ★ 1~1000등 안의 챌린저 수 (2026-08-18 추가). **정상값은 300 이다** — 챌린저 전원이
+    //   1000등 안에 있어야 맞다. c300 은 "위쪽 경계가 얼마나 흐렸나" 를 보고,
+    //   이 값은 "챌린저가 얼마나 멀리 밀려났나" 를 본다. 한 명이 1000등 밖까지
+    //   밀리는 일은 정상 상태에서는 없어야 한다.
+    c1000: { type: Number },
     g1000: { type: Number },     // 1~1000등 안의 그마 수 (700 이면 안 어긋남)
     cMin: { type: Number },      // 챌린저 최저 LP
     gMax: { type: Number },      // 그마 최고 LP  — cMin 보다 높으면 그만큼 흐른 것이다
@@ -102,6 +107,21 @@ const apexDriftSchema = new mongoose.Schema({
 });
 apexDriftSchema.index({ t: -1 });
 const ApexDrift = mongoose.model('ApexDrift', apexDriftSchema);
+
+// ==========================================
+// 컷라인 그래프용 — 하루 한 줄 (2026-08-18 신설). 랭킹 탭 오른쪽 그래프가 읽는다.
+//   ★ TTL 이 없다. 하루 한 줄 x 100B 라 1년 모아도 36KB 다.
+//   ★ `lp300` = 300등 LP(챌린저 컷) · `lp1000` = 1000등 LP(그랜드마스터 컷).
+//     **apexdrifts 의 `c300`/`g1000` 은 인원 수라 이름만 비슷하고 뜻이 다르다** —
+//     그래서 여기서는 `lp` 를 앞에 붙였다.
+// ==========================================
+const rankCutoffSchema = new mongoose.Schema({
+    day: { type: String, required: true, unique: true },   // 한국시간 날짜 (YYYY-MM-DD)
+    t: { type: Date, default: Date.now },
+    lp300: { type: Number },     // 300등 LP  = 챌린저 컷
+    lp1000: { type: Number }     // 1000등 LP = 그랜드마스터 컷
+});
+const RankCutoff = mongoose.model('RankCutoff', rankCutoffSchema);
 
 // 통계용 슬림 경기. 원본 대신 이것만 남는다.
 const matchStatSchema = new mongoose.Schema({
@@ -676,17 +696,63 @@ async function saveApexDrift() {
     if (!c || !g || !m) return;
 
     // challengerList 는 이미 LP 내림차순이라 앞에서 잘라 세면 그게 등수다
+    const top1000 = challengerList.slice(0, 1000);
     const c300 = challengerList.slice(0, 300).filter(p => p.tier === 'challengerleagues').length;
-    const g1000 = challengerList.slice(0, 1000).filter(p => p.tier === 'grandmasterleagues').length;
+    const c1000 = top1000.filter(p => p.tier === 'challengerleagues').length;
+    const g1000 = top1000.filter(p => p.tier === 'grandmasterleagues').length;
 
     await ApexDrift.create({
-        t: new Date(), c300, g1000,
+        t: new Date(), c300, c1000, g1000,
         cMin: c.min, gMax: g.max, gMin: g.min, mMax: m.max
     });
 
     // 0 으로 떨어지는 순간이 곧 티어 재계산 시각이다
-    console.log(`[Apex] 어긋남 챌린저 ${300 - c300}명 · 그마 ${700 - g1000}명` +
+    console.log(`[Apex] 어긋남 챌린저 ${300 - c300}명(300등) · ${300 - c1000}명(1000등)` +
+        ` · 그마 ${700 - g1000}명` +
         ` (챌 최저 ${c.min} / 그마 최고 ${g.max} / 마스터 최고 ${m.max})`);
+
+    await saveRankCutoff().catch(e => console.error('[Cutoff] 저장 실패:', e.message));
+}
+
+// ==========================================
+// ★★ 컷라인 그래프용 — 매일 23:45(KST) 한 번만 찍는다 (2026-08-18 신설)
+//   `apexdrifts` 와 목적이 다르다. 저쪽은 **어긋남을 분 단위로** 보려는 것이라 TTL 7일이고,
+//   이쪽은 **날짜별 컷 추이를 길게** 보려는 것이라 TTL 이 없다 (하루 한 줄 x 100B).
+//   ★ 왜 23:45 인가 — 티어 재계산 직전이라 **그날 하루가 온전히 반영된 값**이다.
+//     재계산 뒤에 재면 승격·강등이 섞여 전날과 이어 붙일 기준이 달라진다.
+//   ★ 창을 23:45~23:55 로 잡은 이유: 갱신 주기가 5분이라 23:45 에 정확히 도는 게
+//     정상이지만, 조회가 밀리거나 재시작 직후면 한두 번 건너뛸 수 있다. 창 안의
+//     **첫 성공 한 번만** 저장한다 (`$setOnInsert` 라 두 번째부터는 아무 일도 안 한다).
+//   ★★ 명단이 덜 찼으면 안 찍는다 — 마스터 조회만 실패해도 1000등 LP 가 통째로 달라져
+//     그래프에 없는 골짜기가 생긴다. `apexdrifts` 와 같은 이유다.
+// ==========================================
+const CUTOFF_FROM = 23 * 60 + 45;   // 23:45
+const CUTOFF_TO = 23 * 60 + 55;     // 23:55 (이 시각은 포함하지 않는다)
+let cutoffSavedDay = null;          // 같은 날 두 번 부르지 않으려는 메모리 표식
+
+async function saveRankCutoff() {
+    if (challengerList.length < RANK_SET_MIN) return;
+
+    const k = new Date(Date.now() + 9 * 3600000);
+    const min = k.getUTCHours() * 60 + k.getUTCMinutes();
+    if (min < CUTOFF_FROM || min >= CUTOFF_TO) return;
+
+    const day = kstDay(Date.now());
+    if (cutoffSavedDay === day) return;
+
+    // challengerList 는 LP 내림차순이라 자리가 곧 등수다 (0-based)
+    const lp300 = challengerList[299]?.leaguePoints;
+    const lp1000 = challengerList[999]?.leaguePoints;
+    if (lp300 === undefined || lp1000 === undefined) return;
+
+    // ★ $setOnInsert 라 그날 첫 줄만 남는다. 재시작해서 메모리 표식이 날아가도 안전하다.
+    const r = await RankCutoff.updateOne(
+        { day },
+        { $setOnInsert: { day, t: new Date(), lp300, lp1000 } },
+        { upsert: true }
+    );
+    cutoffSavedDay = day;
+    if (r.upsertedCount) console.log(`[Cutoff] ${day} 챌린저컷(300등) ${lp300} / 그마컷(1000등) ${lp1000}`);
 }
 
 // ★★ 스냅샷을 **합집합으로** 쌓는다 — "그날 명단에 한 번이라도 있던 사람" 이 맞다.
@@ -1272,6 +1338,9 @@ async function ensureStatIndexes() {
         // 상위 티어 어긋남 눈금 (2026-08-17). 한 줄 60B 라 7일이면 100KB 도 안 된다
         { col: 'apexdrifts', key: { t: -1 } },
         { col: 'apexdrifts', key: { createdAt: 1 }, ttl: 7 * 86400 },
+        // 컷라인 그래프 (2026-08-18). **TTL 없음** — 하루 한 줄이라 1년에 36KB 다.
+        //   unique 는 스키마 선언만으로는 안 만들어지므로 여기 적는다 (위 mythicshops 와 같은 함정).
+        { col: 'rankcutoffs', key: { day: 1 }, unique: true },
         { col: 'matchstats', key: { v: 1, k: 1 } },
         { col: 'matchstats', key: { t: 1 } },
         { col: 'champstats', key: { scope: 1, kb: 1, pos: 1 } },
@@ -1355,16 +1424,53 @@ async function ensureStatIndexes() {
 const RANK_REFRESH_NIGHT = 5 * 60 * 1000;
 const RANK_REFRESH_DAY = 10 * 60 * 1000;
 
+// ==========================================
+// ★★ 임시 계측 — 23:30~00:30(KST) 만 1분 주기 (2026-08-18 추가)
+//   **하루이틀 관찰하고 지울 것.** 아래 세 상수와 rankRefreshMs 안의 `← 임시` 두 줄만
+//   지우면 원래대로 돌아간다.
+//   왜: 8/17 실측에서 티어 재계산이 **23:52~23:57 사이**에 잡혔는데 5분 주기라 창이 넓다.
+//   1분으로 좁혀 정확한 시각과 **티어별 순서**를 본다 — 그때 그마·마스터가 먼저 움직이고
+//   챌린저가 5분 뒤에 따라왔는데, 라이엇이 나눠 처리한 건지 우리 조회 주기 탓인지
+//   5분 해상도로는 못 가른다.
+//   ★ 호출: 그 60분이 12사이클 → 60사이클이 되어 하루 **504 → 648회**(+144).
+//     순간 최대 3회/분이고, 같은 시간대에 도는 수집 잡(10회/분)을 더해도 14회/분이라
+//     개발 키 한도(50회/분)의 28% 다. 하루 예산으로는 0.9%.
+//   ★ `apexdrifts` 도 1분마다 한 줄씩 는다 — 하루 60줄 x 60B 라 무시할 수준이다.
+// ==========================================
+const RANK_REFRESH_PEAK = 60 * 1000;
+const RANK_PEAK_FROM = 23 * 60 + 30;   // 23:30 (분으로 환산)
+const RANK_PEAK_TO = 0 * 60 + 30;      // 00:30 — 이 시각은 포함하지 않는다
+
 function rankRefreshMs() {
-    const h = new Date(Date.now() + 9 * 3600000).getUTCHours();   // 한국시간 시(時)
+    const k = new Date(Date.now() + 9 * 3600000);                 // 한국시간
+    const min = k.getUTCHours() * 60 + k.getUTCMinutes();                        // ← 임시
+    if (min >= RANK_PEAK_FROM || min < RANK_PEAK_TO) return RANK_REFRESH_PEAK;   // ← 임시
+    const h = k.getUTCHours();
     return (h >= 22 || h < 2) ? RANK_REFRESH_NIGHT : RANK_REFRESH_DAY;
+}
+
+// ★★ 다음 실행을 **정각 격자에 맞춘다** (2026-08-18).
+//   예전엔 `끝난 시각 + 주기` 라 23:23 · 23:28 · 23:33 처럼 어중간한 분에 돌았다.
+//   조회에 걸린 시간만큼 매번 밀려서 시각이 계속 떠내려간다.
+//   지금은 **한국시간 자정부터 주기 간격으로 놓인 격자**의 다음 칸을 겨냥한다 —
+//   1분이면 매분 00초, 5분이면 :00 :05 :10 …, 10분이면 :00 :10 :20 … 이다.
+//   ★ 주기가 바뀌는 경계도 저절로 맞는다: 23:25 에 돌면 5분 격자로 23:30 을 잡고,
+//     거기서 깨면 그때 rankRefreshMs 가 1분을 주므로 이후 23:31 · 23:32 … 로 이어진다.
+//   ★ 조회가 느려 격자를 넘겨 버려도 `%` 계산이 **다음 칸**을 자연히 가리킨다.
+//     남은 시간이 너무 짧으면(5초 미만) 한 칸 건너뛴다 — 끝나자마자 또 도는 걸 막는다.
+function nextRankDelay() {
+    const step = rankRefreshMs();
+    const kstNow = Date.now() + 9 * 3600000;
+    let wait = step - (kstNow % step);
+    if (wait < 5000) wait += step;
+    return wait;
 }
 
 function scheduleRankUpdate() {
     setTimeout(async () => {
         try { await updateChallengerList(); } catch (e) { console.error('[Task] 명단 갱신 실패:', e.message); }
         scheduleRankUpdate();
-    }, rankRefreshMs());
+    }, nextRankDelay());
 }
 
 async function startJobs() {
@@ -2873,6 +2979,26 @@ app.get('/api/mythic-shop', async (req, res) => {
         res.json(payload);
     } catch (e) {
         console.error('[Mythic] 기간 조회 실패:', e.message);
+        res.status(500).json({ ok: false, reason: 'server_error' });
+    }
+});
+
+// ★ 컷라인 그래프 데이터 (2026-08-18). 하루 한 줄이라 통째로 내려보내도 가볍다.
+//   `days` 로 최근 며칠만 자를 수 있다 (기본 90일, 최대 365).
+app.get('/api/rank-cutoffs', async (req, res) => {
+    const days = Math.min(Math.max(parseInt(req.query.days, 10) || 90, 1), 365);
+    const key = `rank_cutoffs_${days}`;
+    const hit = myCache.get(key);
+    if (hit) return res.json(hit);
+    try {
+        const rows = await RankCutoff.find({}, { _id: 0, day: 1, lp300: 1, lp1000: 1 })
+            .sort({ day: -1 }).limit(days).lean();
+        rows.reverse();   // 화면은 옛날 → 최근 순으로 그린다
+        const payload = { ok: true, count: rows.length, days: rows };
+        myCache.set(key, payload, 300);
+        res.json(payload);
+    } catch (e) {
+        console.error('[Cutoff] 조회 실패:', e.message);
         res.status(500).json({ ok: false, reason: 'server_error' });
     }
 });

@@ -366,7 +366,13 @@ window.addEventListener('popstate', (event) => {
 
         if (fullRankingData.length > 0) {
             hideAllContainers();
-            document.getElementById('result-container').style.display = "block";
+            const resultBox = document.getElementById('result-container');
+            resultBox.style.display = "block";
+            resultBox.classList.add('is-ranking');   // ★ showRanking 과 같이 고칠 것
+            loadRankCutoffs().then(() => {
+                const side = document.querySelector('.rank-side');
+                if (side) side.outerHTML = rankCutoffSideHtml();
+            });
 
             const sidebarArea = document.getElementById('sidebar-area');
             const filterArea = document.getElementById('filter-area');
@@ -501,6 +507,10 @@ function hideAllContainers() {
     document.querySelectorAll('.page-container').forEach(container => {
         container.style.display = "none";
     });
+
+    // 랭킹 탭에서만 통을 넓혔던 것을 되돌린다 (안 벗기면 전적검색 화면까지 넓어진다)
+    const resultBox = document.getElementById('result-container');
+    if (resultBox) resultBox.classList.remove('is-ranking');
 
     clearSearchError();
     if (window.refreshTimerInterval) clearInterval(window.refreshTimerInterval);
@@ -3806,6 +3816,99 @@ let fullRankingData = [];
 let currentRankingPage = 1;
 let rankingQuery = '';        // 닉네임 필터 (원문 그대로 들고 있다가 화면에 되돌려 준다)
 let rankingUpdatedAt = 0;     // 서버가 명단을 받아온 시각
+
+// ==========================================
+// 컷라인 그래프 (2026-08-18)
+//   서버가 **매일 23:45(KST)** 에 300등 LP(챌린저 컷)와 1000등 LP(그마 컷)를 한 줄씩 남긴다.
+//   ★ 한 번 받으면 들고 있는다 — 하루 한 줄이라 페이지를 넘길 때마다 다시 받을 이유가 없다.
+//   ★ null 은 "아직 안 받았다", 빈 배열은 "받았는데 기록이 없다" 로 뜻이 다르다.
+//     빈 배열을 "아직" 으로 보여주면 첫날에 영영 로딩 중처럼 보인다.
+// ==========================================
+let rankCutoffData = null;
+
+async function loadRankCutoffs() {
+    if (rankCutoffData) return rankCutoffData;
+    try {
+        const res = await fetch('/api/rank-cutoffs?days=90');
+        const data = await res.json();
+        rankCutoffData = data.ok ? (data.days || []) : [];
+    } catch (e) {
+        rankCutoffData = [];
+    }
+    return rankCutoffData;
+}
+
+// ★★ SVG 는 **선만** 그리고 점·글자는 HTML 절대배치다.
+//   폭을 카드에 맞추려면 viewBox 를 늘려야 하는데(preserveAspectRatio="none"),
+//   그러면 그 안의 글자와 원이 **가로로 찌그러진다**. 스탯 탭 그래프에서 겪은 것과 같은
+//   함정이라 같은 방식으로 푼다. 선 굵기는 vector-effect 로 지킨다.
+function cutoffChartHtml(rows, key, opts) {
+    const pts = (rows || []).map(r => ({ day: r.day, v: r[key] }))
+        .filter(p => typeof p.v === 'number' && p.day);
+
+    const head = `<div class="cutoff-head">
+            <span class="cutoff-title"><i class="cutoff-swatch" style="background:${opts.color}"></i>${opts.title}</span>
+            ${pts.length ? `<span class="cutoff-now">${pts[pts.length - 1].v.toLocaleString()} LP</span>` : ''}
+        </div>`;
+
+    if (rows === null) {
+        return `<div class="cutoff-card">${head}<div class="cutoff-empty">불러오는 중…</div></div>`;
+    }
+    if (!pts.length) {
+        return `<div class="cutoff-card">${head}
+            <div class="cutoff-empty">아직 기록이 없습니다.<br><b>매일 밤 23:45</b> 에 한 점씩 쌓입니다.</div></div>`;
+    }
+
+    const vals = pts.map(p => p.v);
+    const vMax = Math.max(...vals), vMin = Math.min(...vals);
+    // ★ 위아래 여백. 값이 하나뿐이거나 전부 같으면 폭이 0 이라 나눗셈이 NaN 이 된다.
+    const span = vMax - vMin;
+    const pad = span > 0 ? span * 0.25 : Math.max(10, Math.round(vMax * 0.01));
+    const lo = vMin - pad, hi = vMax + pad;
+
+    const n = pts.length;
+    const X = (i) => n === 1 ? 50 : (i / (n - 1)) * 100;
+    const Y = (v) => 100 - ((v - lo) / (hi - lo)) * 100;
+
+    const line = n > 1
+        ? `<polyline class="cutoff-line" style="stroke:${opts.color}" points="${pts.map((pt, i) => X(i).toFixed(2) + ',' + Y(pt.v).toFixed(2)).join(' ')}" />`
+        : '';
+
+    // ★ 점이 많아지면 서로 붙어 알아볼 수 없다. 30개를 넘으면 선만 그린다
+    const dots = n <= 30 ? pts.map((pt, i) =>
+        `<span class="cutoff-dot" style="left:${X(i).toFixed(2)}%; top:${Y(pt.v).toFixed(2)}%; background:${opts.color}"
+               data-tip="${fmtCutoffDay(pt.day)} · ${pt.v.toLocaleString()} LP"></span>`).join('') : '';
+
+    // y 라벨은 최대·최소 **그 점의 높이**에 붙인다 (여백을 준 축 끝이 아니다)
+    const yLabels = span > 0
+        ? `<span class="cutoff-y" style="top:${Y(vMax).toFixed(2)}%">${vMax.toLocaleString()}</span>
+           <span class="cutoff-y" style="top:${Y(vMin).toFixed(2)}%">${vMin.toLocaleString()}</span>`
+        : `<span class="cutoff-y" style="top:${Y(vMax).toFixed(2)}%">${vMax.toLocaleString()}</span>`;
+
+    return `<div class="cutoff-card">
+        ${head}
+        <div class="cutoff-plot">
+            <svg class="cutoff-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${line}</svg>
+            ${dots}
+            ${yLabels}
+        </div>
+        <div class="cutoff-axis">
+            <span>${fmtCutoffDay(pts[0].day)}</span>
+            <span class="cutoff-axis-mid">${n}일치 · 매일 23:45 기준</span>
+            <span>${fmtCutoffDay(pts[n - 1].day)}</span>
+        </div>
+    </div>`;
+}
+
+const fmtCutoffDay = (d) => String(d).slice(5).replace('-', '.');
+
+// 랭킹 표 오른쪽에 세로로 쌓이는 두 장
+function rankCutoffSideHtml() {
+    return `<aside class="rank-side">
+        ${cutoffChartHtml(rankCutoffData, 'lp300', { title: '챌린저 컷 (300등)', color: '#eab308' })}
+        ${cutoffChartHtml(rankCutoffData, 'lp1000', { title: '그랜드마스터 컷 (1000등)', color: '#f0576f' })}
+    </aside>`;
+}
 const RANKING_ITEMS_PER_PAGE = 50;
 
 // ★ 티어는 서버가 한 글자로 보내 준다 (server.js 의 TIER_CODE).
@@ -3913,8 +4016,20 @@ async function showRanking(targetPage = 1) {
     rankingQuery = '';
 
     hideAllContainers();
-    document.getElementById('result-container').style.display = "block";
+    const resultBox = document.getElementById('result-container');
+    resultBox.style.display = "block";
+    // ★ 랭킹 탭만 통을 넓힌다 (1089 → 1400px). 오른쪽 그래프 칸(300px)을 넣으면
+    //   1089px 에서는 표가 눌려 숙련도 칸이 들어갈 자리가 없다. 다른 탭은 그대로다 —
+    //   이 클래스는 hideAllContainers 가 벗긴다.
+    resultBox.classList.add('is-ranking');
     const listDiv = document.getElementById('game-list');
+
+    // ★ 컷라인은 랭킹 명단과 **따로** 받는다. 기다렸다 같이 그리면 표가 늦게 뜬다 —
+    //   먼저 "불러오는 중" 으로 자리만 잡아 두고, 도착하면 그 자리만 다시 그린다.
+    loadRankCutoffs().then(() => {
+        const side = document.querySelector('.rank-side');
+        if (side) side.outerHTML = rankCutoffSideHtml();
+    });
 
     const filterArea = document.getElementById('filter-area');
     const sidebarArea = document.getElementById('sidebar-area');
@@ -4103,7 +4218,14 @@ function renderRankingPage(page, opts = {}) {
             </table>
         </div>`;
 
-    listDiv.innerHTML = countHtml + tableHtml + rankPagerHtml(page, totalPages);
+    // ★ 표를 왼쪽 칸에 담고 오른쪽에 컷라인 그래프를 세로로 쌓는다 (2026-08-18).
+    //   `.rank-main` 에 **min-width: 0 이 반드시 있어야 한다** — 표가 min-width: 600px
+    //   이라 flex 항목이 안 줄어들면 오른쪽 칸을 밀어내고 가로로 넘친다.
+    listDiv.innerHTML =
+        `<div class="rank-layout">
+            <div class="rank-main">${countHtml}${tableHtml}${rankPagerHtml(page, totalPages)}</div>
+            ${rankCutoffSideHtml()}
+        </div>`;
 
     // 표를 매번 새로 그리므로 위임 리스너도 매번 붙인다 (tbody 하나에만 붙는다)
     const body = listDiv.querySelector('.ranking-body');
