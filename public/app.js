@@ -3846,9 +3846,13 @@ function cutoffChartHtml(rows, key, opts) {
     const pts = (rows || []).map(r => ({ day: r.day, v: r[key] }))
         .filter(p => typeof p.v === 'number' && p.day);
 
+    // ★★ 오른쪽 숫자는 그래프의 마지막 점(어젯밤 23:45)이 아니라 **지금 명단의 컷**이다.
+    //   제목이 "현재 … 커트라인" 이므로 지금 값이어야 맞고, 그래야 **기록이 아직 하나도
+    //   없는 첫날에도** 숫자가 뜬다. 그래프는 그 값의 과거 추이를 보여주는 것이다.
+    const nowText = typeof opts.nowLp === 'number' ? opts.nowLp.toLocaleString() + ' LP' : '';
     const head = `<div class="cutoff-head">
             <span class="cutoff-title"><i class="cutoff-swatch" style="background:${opts.color}"></i>${opts.title}</span>
-            ${pts.length ? `<span class="cutoff-now">${pts[pts.length - 1].v.toLocaleString()} LP</span>` : ''}
+            ${nowText ? `<span class="cutoff-now">${nowText}</span>` : ''}
         </div>`;
 
     if (rows === null) {
@@ -3903,10 +3907,13 @@ function cutoffChartHtml(rows, key, opts) {
 const fmtCutoffDay = (d) => String(d).slice(5).replace('-', '.');
 
 // 랭킹 표 오른쪽에 세로로 쌓이는 두 장
+//   ★ 지금 컷은 이미 받아 둔 명단에서 바로 센다 — 명단이 LP 내림차순이라 N등은 N-1 번째다.
+//     추가 요청이 0 이고, 서버가 하루 한 번 남기는 기록보다 늘 최신이다.
 function rankCutoffSideHtml() {
+    const lpAt = (n) => fullRankingData.length >= n ? fullRankingData[n - 1].leaguePoints : null;
     return `<aside class="rank-side">
-        ${cutoffChartHtml(rankCutoffData, 'lp300', { title: '챌린저 컷 (300등)', color: '#eab308' })}
-        ${cutoffChartHtml(rankCutoffData, 'lp1000', { title: '그랜드마스터 컷 (1000등)', color: '#f0576f' })}
+        ${cutoffChartHtml(rankCutoffData, 'lp300', { title: '현재 챌린저 커트라인', color: '#eab308', nowLp: lpAt(300) })}
+        ${cutoffChartHtml(rankCutoffData, 'lp1000', { title: '현재 그랜드마스터 커트라인', color: '#f0576f', nowLp: lpAt(1000) })}
     </aside>`;
 }
 const RANKING_ITEMS_PER_PAGE = 50;

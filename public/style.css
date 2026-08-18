@@ -4644,7 +4644,13 @@ body::before {
 }
 
 /* 숙련도 TOP5 — 폭을 안 정한다. 닉네임·승률에서 비운 자리를 여기가 받는다 */
+/* ★ 폭을 못 박는다 (2026-08-18). 아이콘 24px x 5 + 사이 여백 3px x 4 = 132px 이고
+   칸 좌우 padding 이 12px 씩이라 156px 이면 딱 맞는다. 168px 로 두어 여유를 조금 준다.
+   ★ 예전엔 이 칸만 폭이 없어서 **남는 폭을 전부 받았다**(1400px 에서 292px).
+   이제 다섯 칸이 모두 고정이라 남는 폭은 표가 비례로 나눠 가진다 — 실질적으로
+   닉네임 칸이 넓어져 긴 닉네임이 덜 잘린다. */
 .rank-table .rank-mastery {
+    width: 168px;
     text-align: center;
     white-space: nowrap;
 }
@@ -4872,12 +4878,6 @@ body::before {
     max-width: 1400px;
 }
 
-/* ★ 제목·검색창은 **표 칸 기준**으로 가운데 둔다. 통만 넓히면 제목이 통 한가운데,
-   곧 표보다 160px 오른쪽에 앉아 그래프 칸 쪽으로 치우쳐 보인다.
-   320px = 그래프 칸 300 + gap 20. */
-#result-container.is-ranking > #user-profile {
-    padding-right: 320px;
-}
 
 .rank-layout {
     display: flex;
@@ -4890,9 +4890,13 @@ body::before {
     min-width: 0;
 }
 
+/* ★ 표 위에는 "전체 11,000명" 줄(.rank-count)이 있어서 표 상자가 25px 아래에서
+   시작한다. 그래프 카드도 같은 만큼 내려야 위 모서리가 나란해진다.
+   (.rank-count 는 글자 14px + margin-bottom 8px + 여백이라 실측 25px 이다) */
 .rank-side {
     width: 300px;
     flex-shrink: 0;
+    margin-top: 25px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -5037,6 +5041,7 @@ body::before {
 
     .rank-side {
         width: 100%;
+        margin-top: 0;   /* 위아래로 쌓이면 표와 나란히 둘 이유가 없다 */
     }
 
     .cutoff-plot {
