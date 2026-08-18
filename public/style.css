@@ -4607,10 +4607,28 @@ body::before {
    **긴 닉네임이 덜 잘리는 쪽으로 남는 폭이 간다.**
    ★ 닉네임과 승률을 **둘 다** auto 로 두면 안 된다. 2026-08-14 에 그 상태였고
      둘이 남는 폭을 나눠 먹어 숙련도 칸이 들어갈 자리가 없었다. */
+/* ★ `max-width` 를 같이 걸어야 한다. `width` 만 두면 안쪽 span 이 nowrap 이라
+   칸의 최소 내용 폭이 그 텍스트 폭으로 잡혀 285 지정인데 301px 이 됐다
+   (그만큼 순위·티어·LP 칸이 밀려 좁아진다). max-width 는 auto 배치에서도 지켜진다. */
 .rank-table .rank-name {
     width: 285px;
+    max-width: 285px;
     text-align: left;
     padding-left: 30px;
+}
+
+/* ★★ 칸을 넘기는 닉네임은 말줄임한다 (2026-08-18).
+   ★ `td` 에 걸면 안 먹는다 — `display: table-cell` 이라 overflow 가 무시된다.
+     안쪽 `<span>` 을 block 으로 만들어 거기에 걸어야 한다.
+   ★ 잘려도 마우스를 올리면 전체 이름이 뜬다 (span 의 title 속성).
+   ★ 폰에서는 이 규칙을 푼다 — 칸이 좁아 대부분이 잘려 누구인지 못 읽게 된다.
+     거기서는 예전처럼 줄바꿈으로 넘긴다. */
+.rank-table td.rank-name > span {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .rank-table td.rank-name {
@@ -5118,17 +5136,26 @@ body::before {
         word-break: break-all;
     }
 
+    /* ★ 데스크톱의 말줄임을 푼다. 폰은 칸이 200px 남짓이라 자르면 대부분 못 읽는다 */
+    .rank-table td.rank-name > span {
+        display: inline;
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
+    }
+
     /* ★ 폰에서는 숙련도 칸을 숨긴다. 아이콘 5개가 120px 을 먹는데 390px 안에서는
        그만큼 닉네임을 깎아야 해서 누구인지 못 읽게 된다 */
     .rank-table .rank-mastery {
         display: none;
     }
 
-    /* 데스크톱에서 못 박은 폭(343/173/100)을 푼다. 그대로 두면 390px 를 넘긴다 */
+    /* 데스크톱에서 못 박은 폭을 푼다. 그대로 두면 390px 를 넘긴다 */
     .rank-table .rank-name,
     .rank-table .rank-wr,
     .rank-table .rank-lp {
         width: auto;
+        max-width: none;
     }
 
     .rank-table td.rank-wr {
