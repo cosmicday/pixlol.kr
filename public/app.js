@@ -5001,6 +5001,14 @@ async function renderMythicSection(key) {
     updateShopTimer();
 }
 
+window.copyEmail = function () {
+    navigator.clipboard.writeText("00.y4no@gmail.com").then(() => {
+        showErrorToast("이메일 주소(00.y4no@gmail.com)가 클립보드에 복사되었습니다.");
+    }).catch(err => {
+        showErrorToast("이메일 복사에 실패했습니다. 직접 복사해주세요: 00.y4no@gmail.com");
+    });
+};
+
 window.switchDetailTab = async function (event, matchId, tabName) {
     const wrapper = event.target.closest('.match-detail');
 

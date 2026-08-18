@@ -248,26 +248,29 @@
             <p style="margin-bottom: 15px;">본 사이트에서 제공하는 데이터는 라이엇 API를 바탕으로 자동 처리되므로 데이터의 완벽한 정확성을 보증하지 않으며, 이를 바탕으로 한 이용자의 게임 내 의사결정에 대한 책임은 본인에게 있습니다.</p>
         </div>
 
-        <!-- margin-top: auto — main(세로 flex)의 남는 높이를 다 밀어내 화면 바닥에 붙는다.
-             내용이 화면보다 길면 auto 가 0 이 되므로 위쪽 간격은 padding 40px 이 담당한다. -->
-        <footer style="text-align: center; padding: 40px 20px; margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-faint); font-size: 12px; line-height: 1.6;">
-            <div style="margin-bottom: 20px; display: flex; justify-content: center; gap: 20px;">
-                <a onclick="showTerms()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">이용약관</a>
-                <span style="color: var(--text-dim);">|</span>
-                <a onclick="showPrivacyPolicy()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">개인정보 처리방침</a>
-                <span style="color: var(--text-dim);">|</span>
-                <a href="mailto:00.y4no@gmail.com" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">버그제보 및 피드백</a>
-            </div>
-
-            <div style="color: rgba(255, 255, 255, 0.3); font-size: 11px; margin-top: 15px; word-break: keep-all;">
-                pixlol.kr isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
-            </div>
-
-            <div style="margin-top: 10px; font-size: 11px;">
-                Contact: <a href="mailto:00.y4no@gmail.com" style="color: var(--text-faint); text-decoration: none;">00.y4no@gmail.com</a>
-            </div>
-        </footer>
     </main>
+
+    <!-- ★ 푸터는 main 바깥(body 직속)이다 (2026-08-18). body 가 세로 flex 고
+         main 이 flex:1 로 남는 높이를 차지해서, 홈처럼 짧은 페이지에선 푸터가
+         화면 바닥에 붙고 긴 페이지에선 예전처럼 내용 뒤에 흐른다.
+         main 안에 두고 main 을 flex 로 만들면 margin:auto 상자들이 쪼그라든다 — style.css 의 main 주석 참고 -->
+    <footer style="text-align: center; padding: 40px 20px; margin-top: 50px; border-top: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-faint); font-size: 12px; line-height: 1.6;">
+        <div style="margin-bottom: 20px; display: flex; justify-content: center; gap: 20px;">
+            <a onclick="showTerms()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">이용약관</a>
+            <span style="color: var(--text-dim);">|</span>
+            <a onclick="showPrivacyPolicy()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">개인정보 처리방침</a>
+            <span style="color: var(--text-dim);">|</span>
+            <a onclick="copyEmail()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">버그제보 및 피드백</a>
+        </div>
+
+        <div style="color: rgba(255, 255, 255, 0.3); font-size: 11px; margin-top: 15px; word-break: keep-all;">
+            pixlol.kr isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+        </div>
+
+        <div style="margin-top: 10px; font-size: 11px;">
+            Contact: <a onclick="copyEmail()" style="color: var(--text-faint); text-decoration: none; cursor: pointer;">00.y4no@gmail.com</a>
+        </div>
+    </footer>
 
     <!-- ▼▼ 비공개 처리 (장인랭킹 데이터) ▼▼
          mastersData.js 하나가 gzip 200KB 다. 첫 로드 용량의 절반이 여기였다.
