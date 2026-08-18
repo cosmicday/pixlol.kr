@@ -3938,15 +3938,11 @@ function rankTierInfo(code) {
 }
 
 // "3분 전 갱신". 서버가 0 을 주면(아직 한 번도 안 받았으면) 예전 문구로 물러난다.
+// ★ 주기만 적는다. "N분 전 갱신" 은 마우스를 올렸을 때 정확한 시각으로 보여준다
+//   (아래 rankUpdatedTitle). 어림수를 앞에 붙이면 줄만 길어지고 정확하지도 않았다.
 function rankUpdatedText() {
     const per = Math.max(1, Math.round(rankingRefreshMs / 60000));
-    if (!rankingUpdatedAt) return `${per}분마다 갱신됩니다.`;
-
-    const mins = Math.floor((Date.now() - rankingUpdatedAt) / 60000);
-    const when = mins < 1 ? '방금 갱신됨'
-        : mins < 60 ? `${mins}분 전 갱신`
-        : `${Math.floor(mins / 60)}시간 전 갱신`;
-    return `${when} · ${per}분마다 갱신`;
+    return `${per}분마다 갱신`;
 }
 
 // 마우스를 올리면 정확한 시각을 보여준다. 문구 쪽은 "3분 전" 처럼 뭉뚱그리므로
