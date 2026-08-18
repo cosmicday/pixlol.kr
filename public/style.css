@@ -135,15 +135,21 @@ body.bg-solid::before {
     font-weight: 500;
     cursor: pointer;
     transition: color 0.2s;
+    padding: 4px 0;
+    /* 선택 표시가 밑줄이라 자리부터 잡아 둔다 — 없으면 선택할 때 1px 뛴다 */
+    border-bottom: 2px solid transparent;
 }
 
 .nav-item:hover {
     color: #a78bfa;
 }
 
+/* ★ 선택 표시는 볼드가 아니라 흰 글자 + 보라 밑줄이다 (2026-08-18).
+   볼드는 맑은 고딕의 다른 판본이라 자형이 달라 보였고("글씨체가 다르냐"는 지적),
+   글자 폭이 변해서 메뉴를 옮길 때마다 옆 항목들이 1~2px 밀렸다 */
 .nav-item.active {
     color: #ffffff;
-    font-weight: bold;
+    border-bottom-color: #a78bfa;
 }
 
 /* =========================================
@@ -210,6 +216,10 @@ body.bg-solid::before {
     color: white;
     border: none;
     font-weight: bold;
+    /* ★ <button> 은 페이지 글자 크기를 상속하지 않는다 — 안 적으면 브라우저 기본
+       13px 로 나가서 버튼 덩치에 비해 글자만 작아 보였다 */
+    font-size: 17px;
+    letter-spacing: 0.5px;
     cursor: pointer;
     transition: filter 0.2s;
 }
