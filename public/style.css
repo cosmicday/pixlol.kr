@@ -2520,6 +2520,18 @@ body::before {
     color: #6b7280;
 }
 
+/* 어느 라인 기준인지 (2026-08-18). 룬 집계가 라인별로 갈리면서 붙었다 */
+.build-lane {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 1px 7px;
+    border-radius: 4px;
+    background: #2b1a52;
+    color: #a78bfa;
+    font-size: 11px;
+    font-weight: bold;
+}
+
 .build-thin {
     color: #c9a227;
     margin-left: 6px;

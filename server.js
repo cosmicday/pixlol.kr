@@ -202,6 +202,13 @@ const StatScope = mongoose.model('StatScope', statScopeSchema);
 const champBuildSchema = new mongoose.Schema({
     scope: { type: String, required: true },
     champ: { type: Number, required: true },
+    // ★★ 라인 (2026-08-18 추가). `0~4` 는 라인별, **`-1` 은 라인 무관 전체**다.
+    //   champstats 의 `pos` 와 같은 뜻이고 같은 함정이 있다 —
+    //   **라인 판정이 실패한 참가자(원본 pos = -1)는 전체에만 담고 라인별에는 안 담는다.**
+    //   양쪽에 다 담으면 이중 계산이다.
+    //   ★ 수집은 바꾼 게 없다. 라인은 슬림 문서 참가자 1번 칸에 처음부터 있었고,
+    //     여기서 그걸 group 키에 넣기만 한 것이라 **지난 원본도 소급해서 다시 세어진다.**
+    pos: { type: Number, default: -1 },
     type: { type: String, required: true },
     key: { type: [Number], default: [] },
     games: { type: Number, default: 0 },
@@ -1189,6 +1196,9 @@ async function buildOneBuildScope(scopeKey, matchCond) {
         {
             $project: {
                 c: P(0), w: P(2),
+                // ★ 라인은 슬림 문서 1번 칸에 **처음부터 들어 있었다** (2026-08-18).
+                //   수집을 바꾼 게 아니라 세는 키에 넣기만 한 것이라 지난 원본도 소급된다.
+                pos: P(1),
                 // ★★ 보조 룬 2개(23·24번 칸)는 **반드시 정렬해야 한다** (2026-08-16).
                 //   라이엇이 주는 순서가 일정하지 않아서 **같은 룬 페이지가 두 조합으로
                 //   갈렸다** — 리 신의 "영감 · 우주적 통찰력 · 마법의 신발" 81판과
@@ -1214,14 +1224,14 @@ async function buildOneBuildScope(scopeKey, matchCond) {
         },
         {
             $facet: {
-                rune: [{ $group: { _id: { c: '$c', k: '$rune' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
-                keystone: [{ $group: { _id: { c: '$c', k: '$keystone' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
-                spell: [{ $group: { _id: { c: '$c', k: '$spell' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
-                shard: [{ $group: { _id: { c: '$c', k: '$shard' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
+                rune: [{ $group: { _id: { c: '$c', pos: '$pos', k: '$rune' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
+                keystone: [{ $group: { _id: { c: '$c', pos: '$pos', k: '$keystone' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
+                spell: [{ $group: { _id: { c: '$c', pos: '$pos', k: '$spell' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
+                shard: [{ $group: { _id: { c: '$c', pos: '$pos', k: '$shard' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
                 // ★ 챔피언 총 판수. top N 으로 자르고 나면 줄을 더해도 총합이 안 나오므로
                 //   분모를 따로 담아야 한다. champstats 에서 가져오면 될 것 같지만
                 //   거기는 kb 로 쪼개져 있고 화면의 밴드 필터에 따라 값이 달라진다.
-                all: [{ $group: { _id: { c: '$c', k: [] }, games: { $sum: 1 }, wins: { $sum: '$w' } } }]
+                all: [{ $group: { _id: { c: '$c', pos: '$pos', k: [] }, games: { $sum: 1 }, wins: { $sum: '$w' } } }]
             }
         }
     ]).allowDiskUse(true);
@@ -1231,16 +1241,29 @@ async function buildOneBuildScope(scopeKey, matchCond) {
 
     const docs = [];
     for (const type of ['rune', 'keystone', 'spell', 'shard', 'all']) {
-        // 챔피언별로 모아서 많이 쓴 순으로 자른다
-        const byChamp = new Map();
+        // ★ (챔피언 x 라인) 칸과 (챔피언 x 전체) 칸을 같이 만든다.
+        //   top N 은 **칸마다 따로** 잘라야 한다 — 전체에서 자른 뒤 라인으로 나누면
+        //   그 라인에서만 많이 쓰는 룬이 통째로 빠진다.
+        const cells = new Map();          // `챔피언|라인` → Map(조합 → 줄)
+        const put = (c, pos, key, games, wins) => {
+            const ck = c + '|' + pos;
+            if (!cells.has(ck)) cells.set(ck, new Map());
+            const bucket = cells.get(ck);
+            const kk = key.join(',');
+            const cur = bucket.get(kk);
+            if (cur) { cur.games += games; cur.wins += wins; }
+            else bucket.set(kk, { scope: scopeKey, champ: c, pos, type, key, games, wins });
+        };
         (f[type] || []).forEach(r => {
             const c = r._id.c;
             if (c == null) return;
-            if (!byChamp.has(c)) byChamp.set(c, []);
-            byChamp.get(c).push({ scope: scopeKey, champ: c, type, key: r._id.k || [], games: r.games, wins: r.wins });
+            const pos = (r._id.pos == null || r._id.pos < 0) ? -1 : r._id.pos;
+            const key = r._id.k || [];
+            if (pos >= 0) put(c, pos, key, r.games, r.wins);   // 라인별 (판정 실패는 제외)
+            put(c, -1, key, r.games, r.wins);                  // 라인 무관 전체 (전원)
         });
-        byChamp.forEach(list => {
-            list.sort((a, b) => b.games - a.games);
+        cells.forEach(bucket => {
+            const list = [...bucket.values()].sort((a, b) => b.games - a.games);
             docs.push(...(type === 'all' ? list : list.slice(0, BUILD_TOP_N)));
         });
     }
@@ -1475,6 +1498,17 @@ function scheduleRankUpdate() {
 
 async function startJobs() {
     await ensureStatIndexes();
+
+    // ★ `REBUILD_STATS=1 node server.js` — 집계만 한 번 돌리고 끝낸다 (2026-08-18).
+    //   집계 규칙을 바꿨을 때 **다음 정시를 기다리지 않고 바로 반영**하려는 것이다.
+    //   ★★ 반드시 배포 뒤에 돌릴 것. 먼저 돌리면 아직 옛 화면인 프로덕션이
+    //     새 형식 데이터를 읽어 잠깐 이상하게 나온다 (matchseens 때와 같은 순서 규칙).
+    //   라이엇 호출은 0 이다 — DB 안에서만 돈다.
+    if (process.env.REBUILD_STATS === '1') {
+        console.log('[System] REBUILD_STATS=1 — 집계만 한 번 돌리고 끝낸다');
+        await buildChampStats();
+        process.exit(0);
+    }
     await loadResolvedNames();
     await backfillSearchFields();
     await updateVersion();
@@ -2599,12 +2633,21 @@ app.get('/api/champion-builds', async (req, res) => {
         }
 
         // "all" 줄이 픽률의 분모다. 없으면 아직 집계 전이다.
-        const totalRow = rows.find(r => r.type === 'all');
+        //   ★ 라인마다 따로 있다 (`-1` 이 라인 무관 전체). 화면이 켜 둔 라인에 맞춰 고른다.
+        //   ★ `total`/`wins` 는 전체(-1) 값을 그대로 둔다 — 옛 화면이 그 이름을 읽는다.
+        const totals = {}, totalWins = {};
+        rows.filter(r => r.type === 'all').forEach(r => {
+            const pos = r.pos == null ? -1 : r.pos;
+            totals[pos] = r.games;
+            totalWins[pos] = r.wins;
+        });
         const payload = {
             scope,
             champ,
-            total: totalRow ? totalRow.games : 0,
-            wins: totalRow ? totalRow.wins : 0,
+            total: totals[-1] || 0,
+            wins: totalWins[-1] || 0,
+            totals,
+            totalWins,
             rows: rows.filter(r => r.type !== 'all')
         };
         myCache.set(cacheKey, payload, 600);

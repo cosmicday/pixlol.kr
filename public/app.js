@@ -3147,7 +3147,7 @@ function expandStatsArchive(a) {
     a.b.forEach(x => {
         const champ = x[0];
         (builds[champ] || (builds[champ] = [])).push({
-            type: ARCHIVE_TYPE[x[1]], games: x[2], wins: x[3], key: x.slice(4)
+            pos: x[1], type: ARCHIVE_TYPE[x[2]], games: x[3], wins: x[4], key: x.slice(5)
         });
     });
     return { rows, builds };
@@ -3157,11 +3157,18 @@ function expandStatsArchive(a) {
 function archivedBuildsFor(scope, champ) {
     const cache = window.statsArchiveExpanded?.[scope];
     const list = cache?.builds[champ] || [];
-    const all = list.find(r => r.type === 'all');
+    // 분모도 라인별이다 (API 응답과 같은 모양이라 renderBuildPanel 은 안 바뀐다)
+    const totals = {}, totalWins = {};
+    list.filter(r => r.type === 'all').forEach(r => {
+        const pos = r.pos == null ? -1 : r.pos;
+        totals[pos] = r.games;
+        totalWins[pos] = r.wins;
+    });
     return {
         scope, champ,
-        total: all ? all.games : 0,
-        wins: all ? all.wins : 0,
+        total: totals[-1] || 0,
+        wins: totalWins[-1] || 0,
+        totals, totalWins,
         rows: list.filter(r => r.type !== 'all')
     };
 }
@@ -3223,19 +3230,32 @@ function perksBySlot(styleId, ids) {
 const BUILD_MIN_GAMES = 5;
 
 // laneNote — 라인 필터가 켜져 있을 때 넘어온다. 아래 "라인 무관" 안내에 쓴다.
-function renderBuildPanel(data, laneNote) {
-    if (!data.total) {
-        return `<div class="build-empty">이 챔피언은 아직 표본이 없습니다.</div>`;
+// ★★ 두 번째 인자는 표에서 켜 둔 라인이다 ('all' 또는 '0'~'4').
+//   2026-08-18부터 룬 집계가 라인별로 갈려서, 표의 라인 필터와 패널이 같은 것을 본다.
+//   (예전에는 라인 무관 합산 하나뿐이라 "필터와 무관합니다" 라고 변명하고 있었다)
+function renderBuildPanel(data, lane) {
+    const pos = (lane == null || lane === 'all') ? -1 : Number(lane);
+    const laneName = pos < 0 ? '' : (STAT_POS.find(p => p.code === pos)?.name || '');
+
+    // 옛 응답(라인 없음)이면 totals 가 없다 — 그때는 전체 값 하나로 물러난다
+    const totals = data.totals || { '-1': data.total || 0 };
+    const total = totals[pos] != null ? totals[pos] : 0;
+
+    if (!total) {
+        return `<div class="build-empty">${laneName
+            ? laneName + ' 표본이 없습니다. 라인 필터를 전체로 바꿔 보세요.'
+            : '이 챔피언은 아직 표본이 없습니다.'}</div>`;
     }
 
-    const total = data.total;
     const pct = g => (g / total * 100).toFixed(1);
     const wr = (w, g) => (w / g * 100).toFixed(1);
     // ★ 1판짜리 조합은 뺀다. 룬은 조합 가짓수가 커서 "누가 한 번 그렇게 갔다" 가 꼬리에
     //   길게 붙는데, `감전 1.0% · 승률 0.0%` 같은 줄은 정보가 아니라 잡음이다.
     //   다만 **전부 1판이면 그 한 줄은 남긴다** — 비워 두면 고장으로 보인다.
     const top = (type, n) => {
-        const all = data.rows.filter(r => r.type === type).sort((a, b) => b.games - a.games);
+        const all = data.rows
+            .filter(r => r.type === type && (r.pos == null ? -1 : r.pos) === pos)
+            .sort((a, b) => b.games - a.games);
         const kept = all.filter(r => r.games >= 2);
         return (kept.length ? kept : all.slice(0, 1)).slice(0, n);
     };
@@ -3310,17 +3330,15 @@ function renderBuildPanel(data, laneNote) {
     const thin = total < 30
         ? `<span class="build-thin">표본이 적어 참고용입니다</span>` : '';
 
-    // ★ 룬 집계는 라인·인원 밴드로 안 쪼갠다 (server.js 의 champBuildSchema 주석 참고).
-    //   그래서 라인 필터를 켠 채로 펼치면 표의 표본과 여기 판수가 다르다 —
-    //   말을 안 해 두면 "숫자가 안 맞는다" 로 읽힌다.
-    const laneWarn = laneNote
-        ? `<span class="build-thin">${laneNote} 필터와 무관한 전체 라인 기준입니다</span>` : '';
+    // ★ 라인별로 갈리므로 어느 라인 기준인지 적는다. 인원 밴드(5-7 / 8-10)로는
+    //   여전히 안 쪼개므로 표의 표본과는 다를 수 있다.
+    const laneTag = laneName ? `<span class="build-lane">${laneName}</span>` : '';
 
     return `
     <div class="build-panel">
         <div class="build-head">
             <h4 class="build-title">핵심 룬</h4>
-            <span class="build-total">${total.toLocaleString()}판 기준 ${thin}${laneWarn}</span>
+            <span class="build-total">${laneTag}${total.toLocaleString()}판 기준 ${thin}</span>
         </div>
         <div class="build-ks-row">${keystones}</div>
 
@@ -3604,8 +3622,7 @@ async function showStats() {
             }
             // 불러오는 동안 사용자가 다시 눌러 닫았을 수 있다
             if (!row.isConnected) return;
-            const laneNote = curLane === 'all' ? '' : (STAT_POS.find(p => p.code === Number(curLane))?.name || '');
-            row.innerHTML = `<td colspan="7">${renderBuildPanel(buildCache.get(cacheKey), laneNote)}</td>`;
+            row.innerHTML = `<td colspan="7">${renderBuildPanel(buildCache.get(cacheKey), curLane)}</td>`;
         } catch (err) {
             if (row.isConnected) {
                 row.innerHTML = `<td colspan="7"><div class="build-empty">룬 통계를 불러오지 못했습니다.</div></td>`;

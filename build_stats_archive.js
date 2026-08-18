@@ -92,8 +92,10 @@ const KB = (b) => (b / 1024).toFixed(1) + 'KB';
         t: scopes.map(s => [kbIdx(s.kb), s.games]),
         // [kb, champ, pos, games, wins, bans, banGames, kills, deaths, assists]
         r: cs.map(x => [kbIdx(x.kb), x.champ, x.pos, x.games, x.wins, x.bans, x.banGames, x.kills, x.deaths, x.assists]),
-        // [champ, type, games, wins, ...key]  — key 길이가 type 마다 다르므로 뒤에 붙인다
-        b: cb.map(x => [x.champ, TYPE_LIST.indexOf(x.type), x.games, x.wins, ...x.key])
+        // [champ, pos, type, games, wins, ...key]  — key 길이가 type 마다 다르므로 뒤에 붙인다
+        //   ★ pos 는 2026-08-18에 끼워 넣었다. app.js 의 expandStatsArchive() 와 자리가
+        //     같아야 하므로 **둘을 같이 고칠 것** (아직 박제한 패치가 없어서 안전하게 넣었다).
+        b: cb.map(x => [x.champ, x.pos == null ? -1 : x.pos, TYPE_LIST.indexOf(x.type), x.games, x.wins, ...x.key])
     };
 
     const body = JSON.stringify(archive);
