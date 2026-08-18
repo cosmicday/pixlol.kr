@@ -120,15 +120,16 @@
                 <div class="shop-title-container">
                     <img src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/rarity-gem-icons/mythic.png" style="width: 22px; height: 22px;">
                     <h3>오늘의 신화 상점</h3>
-                    <!-- ★ 로테이션 날짜는 UTC 기준이라 한국 날짜와 하루 어긋날 수 있다.
-                         "오늘" 이라고만 쓰면 오전 9시 전에 헷갈리므로 날짜를 같이 적는다.
-                         값은 app.js 의 loadMythicShop 이 /api/mythic-shop/today 응답으로 채운다. -->
-                    <span id="mythic-rotation" class="mythic-rotation"></span>
                     <h2>
                         <!-- ★ 초기화 카운트다운은 신화상점 탭에도 같은 게 뜬다. updateShopTimer 가
                              id 가 아니라 `.js-shop-timer` 를 전부 훑으므로 클래스를 빼면 멈춘다. -->
                         <span id="shop-timer" class="timer-text js-shop-timer" data-tooltip="매일 오전 9시 초기화">00:00:00 뒤 초기화</span>
                     </h2>
+                    <!-- ★ 로테이션 날짜는 UTC 기준이라 한국 날짜와 하루 어긋날 수 있다.
+                         "오늘" 이라고만 쓰면 오전 9시 전에 헷갈리므로 날짜를 같이 적는다.
+                         값은 app.js 의 loadMythicShop 이 /api/mythic-shop/today 응답으로 채운다.
+                         신화상점 탭 헤더(판매 기간이 오른쪽 끝)와 같은 배치라 맨 뒤 + margin-left:auto 다. -->
+                    <span id="mythic-rotation" class="mythic-rotation"></span>
                 </div>
                 <div id="mythic-items" class="mythic-items-grid"></div>
             </div>

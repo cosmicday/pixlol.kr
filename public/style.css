@@ -391,6 +391,7 @@ body.bg-solid::before {
 .mythic-rotation {
     color: var(--text-faint);
     font-size: 12px;
+    margin-left: auto;   /* 신화상점 탭의 판매 기간처럼 오른쪽 끝에 붙인다 (2026-08-18) */
 }
 
 /* ★ 아직 오늘 수집 전이거나 불러오기 실패했을 때. 수집이 반자동이라 빈 날이 생기는데
