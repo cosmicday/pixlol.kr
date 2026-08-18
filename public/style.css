@@ -7,6 +7,15 @@
     box-sizing: border-box;
 }
 
+/* 글자 회색 팔레트 (2026-08-18 통일). 바탕(#1a1a2e)이 보라 기운이라 회색도 보라를 끼웠다.
+   대비율은 #1a1a2e 기준. 교체 전 원래 색은 루트의 색상정리_20260818.md 참고 */
+:root {
+    --text-bright: #d9d5e3;   /* 11.8:1 — 옛 #ddd·#eee·#e2e8f0·#cbd5e1 자리 */
+    --text-muted:  #a79fbd;   /*  6.8:1 — 옛 #9aa4af·#8a8a9a 자리 */
+    --text-faint:  #8b84a0;   /*  4.8:1 — 옛 #555·#666·#777·#6b7280 자리 */
+    --text-dim:    #78718e;   /*  3.7:1 — 옛 #5f666e·#4b5563 자리 (축 라벨·placeholder 전용) */
+}
+
 body {
     font-family: 'Malgun Gothic', sans-serif;
     color: #ffffff;
@@ -219,7 +228,7 @@ body::before {
 }
 
 .dropdown-tab {
-    color: #9aa4af;
+    color: var(--text-muted);
     cursor: pointer;
     transition: color 0.2s;
     user-select: none;
@@ -248,7 +257,7 @@ body::before {
 /* index.html 의 인라인 style 을 옮긴 것. 값은 같다 (폰에서 숨기려고 클래스가 필요했다) */
 .dropdown-hint {
     font-size: 11px;
-    color: #777;
+    color: var(--text-faint);
     font-weight: normal;
     cursor: default;
 }
@@ -278,7 +287,7 @@ body::before {
 }
 
 .favorite-del-btn {
-    color: #9aa4af;
+    color: var(--text-muted);
     background: none;
     border: none;
     cursor: pointer;
@@ -294,7 +303,7 @@ body::before {
 .empty-favorite {
     padding: 25px;
     text-align: center;
-    color: #777;
+    color: var(--text-faint);
     font-size: 13px;
 }
 
@@ -348,7 +357,7 @@ body::before {
 
 /* 로테이션 날짜 (UTC 기준). 제목 옆에 작게. */
 .mythic-rotation {
-    color: #6b7280;
+    color: var(--text-faint);
     font-size: 12px;
 }
 
@@ -361,7 +370,7 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #6b7280;
+    color: var(--text-faint);
     font-size: 13px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px dashed rgba(255, 255, 255, 0.08);
@@ -408,7 +417,7 @@ body::before {
     display: block;
     font-size: 12px;
     font-weight: 500;
-    color: #eee;
+    color: var(--text-bright);
     margin-bottom: 6px;
     white-space: nowrap;
     overflow: hidden;
@@ -575,7 +584,7 @@ body::before {
 }
 
 .profile-level {
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 13px;
 }
 
@@ -593,7 +602,7 @@ body::before {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(167, 139, 250, 0.5);
     border-radius: 12px;
-    color: #cbd5e1;
+    color: var(--text-bright);
     font-size: 12px;
     line-height: 1.2;
     cursor: pointer;
@@ -628,7 +637,7 @@ body::before {
     background: rgba(107, 70, 193, 0.18);
     border: 1px solid rgba(167, 139, 250, 0.6);
     border-radius: 20px;
-    color: #ddd;
+    color: var(--text-bright);
     cursor: pointer;
     font-size: 13px;
     transition: all 0.2s;
@@ -697,7 +706,7 @@ body::before {
 
 .cf-title {
     font-size: 11px;
-    color: #9aa4af;
+    color: var(--text-muted);
     margin-bottom: 6px;
     font-weight: bold;
 }
@@ -710,7 +719,7 @@ body::before {
     background: rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 6px;
-    color: #eee;
+    color: var(--text-bright);
     font-size: 12px;
     outline: none;
 }
@@ -720,7 +729,7 @@ body::before {
 }
 
 .cf-search::placeholder {
-    color: #666;
+    color: var(--text-faint);
 }
 
 /* 목록: 챔피언 5개 높이 (34px * 5) */
@@ -771,7 +780,7 @@ body::before {
 
 .cf-name {
     font-size: 12px;
-    color: #eee;
+    color: var(--text-bright);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -780,13 +789,13 @@ body::before {
 .cf-sub {
     margin-left: auto;
     font-size: 11px;
-    color: #9aa4af;
+    color: var(--text-muted);
     flex-shrink: 0;
 }
 
 .cf-empty {
     font-size: 12px;
-    color: #666;
+    color: var(--text-faint);
     padding: 8px 4px;
 }
 
@@ -916,7 +925,7 @@ body::before {
 }
 
 .ts-obj-val {
-    color: #eee;
+    color: var(--text-bright);
     min-width: 8px;
     font-weight: bold;
 }
@@ -1186,18 +1195,18 @@ body::before {
 }
 
 .live-name-main {
-    color: #eee;
+    color: var(--text-bright);
     font-weight: bold;
 }
 
 .live-name-tag {
-    color: #777;
+    color: var(--text-faint);
     font-size: 11px;
 }
 
 /* Riot ID를 비공개한 사용자 */
 .live-name-main.anon {
-    color: #8a8a9a;
+    color: var(--text-muted);
     font-weight: normal;
     font-style: italic;
 }
@@ -1234,7 +1243,7 @@ body::before {
     text-align: center;
     font-size: 12px;
     font-weight: bold;
-    color: #9aa4af;
+    color: var(--text-muted);
 }
 
 .live-arena-no.place-1 { color: #facc15; }
@@ -1280,7 +1289,7 @@ body::before {
 
 .live-arena-name {
     font-size: 12px;
-    color: #eee;
+    color: var(--text-bright);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1290,13 +1299,13 @@ body::before {
 
 .live-arena-tag {
     font-size: 11px;
-    color: #777;
+    color: var(--text-faint);
     flex-shrink: 0;
     white-space: nowrap;
 }
 
 .live-arena-player.anon .live-arena-name {
-    color: #8a8a9a;
+    color: var(--text-muted);
     font-style: italic;
 }
 
@@ -1322,7 +1331,7 @@ body::before {
 }
 
 .live-map {
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 11px;
 }
 
@@ -1406,7 +1415,7 @@ body::before {
     display: flex;
     align-items: center;
     font-size: 12px;
-    color: #9aa4af;
+    color: var(--text-muted);
     height: 96px;
     position: relative;
     padding-right: 35px;
@@ -1553,7 +1562,7 @@ body::before {
 }
 
 .pix-stats .kp {
-    color: #9aa4af;
+    color: var(--text-muted);
     font-weight: bold;
 }
 
@@ -1685,7 +1694,7 @@ body::before {
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 11px;
-    color: #9aa4af;
+    color: var(--text-muted);
 }
 
 .pix-player:hover span {
@@ -1701,7 +1710,7 @@ body::before {
     height: 100%;
     background: rgba(0, 0, 0, 0.15);
     border: none;
-    color: #9aa4af;
+    color: var(--text-muted);
     cursor: pointer;
     transition: 0.2s;
     display: flex;
@@ -1764,12 +1773,12 @@ body::before {
 }
 
 .share-btn.copied {
-    color: #7ee787;
+    color: #10b981;
 }
 
 .share-btn.copied::after {
     content: '주소 복사됨';
-    color: #7ee787;
+    color: #10b981;
 }
 
 .share-btn.copy-failed::after {
@@ -2181,7 +2190,7 @@ body::before {
 
 .skill-table th {
     background: rgba(0, 0, 0, 0.3);
-    color: #9aa4af;
+    color: var(--text-muted);
     font-weight: normal;
 }
 
@@ -2255,11 +2264,11 @@ body::before {
 
 .build-item-time {
     font-size: 11px;
-    color: #9aa4af;
+    color: var(--text-muted);
 }
 
 .build-item-arrow {
-    color: #555;
+    color: var(--text-faint);
     font-size: 12px;
     display: flex;
     align-items: center;
@@ -2355,7 +2364,7 @@ body::before {
     font-weight: 800;
 }
 
-.tier-s { color: #dc2626; }
+.tier-s { color: #f87171; }
 .tier-a { color: #3b82f6; }
 .tier-b { color: #10b981; }
 .tier-c { color: #f59e0b; }
@@ -2371,14 +2380,14 @@ body::before {
 
 .stats-lane-rate {
     font-size: 11px;
-    color: #9aa4af;
+    color: var(--text-muted);
     margin-top: 2px;
 }
 
 /* ===== 통계 탭 (2026-08-15 실제 집계로 교체하면서 추가) ===== */
 
 .stats-sub {
-    color: #9aa4af;
+    color: var(--text-muted);
     margin-top: 8px;
     font-size: 13px;
 }
@@ -2394,7 +2403,7 @@ body::before {
 
 .stats-select {
     background: #1a1a2e;
-    color: #e2e8f0;
+    color: var(--text-bright);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 8px;
     padding: 7px 12px;
@@ -2418,7 +2427,7 @@ body::before {
 
 .stats-band-btn {
     background: transparent;
-    color: #9aa4af;
+    color: var(--text-muted);
     border: none;
     border-radius: 6px;
     padding: 5px 12px;
@@ -2428,7 +2437,7 @@ body::before {
 }
 
 .stats-band-btn:hover {
-    color: #e2e8f0;
+    color: var(--text-bright);
 }
 
 .stats-band-btn.active {
@@ -2443,16 +2452,16 @@ body::before {
 }
 
 .stats-num {
-    color: #e2e8f0;
+    color: var(--text-bright);
 }
 
 .stats-games {
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 12px;
 }
 
 .stats-tier-none {
-    color: #4b5563;
+    color: var(--text-dim);
     font-weight: 700;
 }
 
@@ -2467,7 +2476,7 @@ body::before {
 /* 펼침 표시. 줄에 마우스를 올리거나 열려 있을 때만 보인다 —
    늘 보이면 챔피언 이름 옆이 지저분하다 */
 .stats-expand {
-    color: #6b7280;
+    color: var(--text-faint);
     font-size: 11px;
     margin-left: 2px;
     opacity: 0;
@@ -2500,7 +2509,7 @@ body::before {
 .build-empty {
     padding: 30px;
     text-align: center;
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 13px;
 }
 
@@ -2526,7 +2535,7 @@ body::before {
 
 .build-total {
     font-size: 11px;
-    color: #6b7280;
+    color: var(--text-faint);
 }
 
 /* 어느 라인 기준인지 (2026-08-18). 룬 집계가 라인별로 갈리면서 붙었다 */
@@ -2588,7 +2597,7 @@ body::before {
 
 .build-ks-name {
     font-size: 12px;
-    color: #e2e8f0;
+    color: var(--text-bright);
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -2619,7 +2628,7 @@ body::before {
 
 .build-ks-sub {
     font-size: 11px;
-    color: #6b7280;
+    color: var(--text-faint);
 }
 
 /* ── 아래 3단: 룬 페이지 / 소환사 주문 / 스탯 파편 */
@@ -2710,7 +2719,7 @@ body::before {
 }
 
 .build-games {
-    color: #6b7280;
+    color: var(--text-faint);
 }
 
 .build-wr {
@@ -2721,11 +2730,11 @@ body::before {
 .build-wr-up { color: #60a5fa; }
 .build-wr-down { color: #f87171; }
 /* 표본 5판 미만은 색을 안 준다 — 100% 나 0% 가 진하게 찍히면 오해를 부른다 */
-.build-wr-dim { color: #6b7280; font-weight: 600; }
+.build-wr-dim { color: var(--text-faint); font-weight: 600; }
 
 .build-none {
     font-size: 12px;
-    color: #6b7280;
+    color: var(--text-faint);
     padding: 8px 2px;
 }
 
@@ -2735,27 +2744,27 @@ body::before {
 }
 
 .stats-row-low .stats-win {
-    color: #6b7280;
+    color: var(--text-faint);
     font-weight: normal;
 }
 
 .stats-empty {
     text-align: center;
     padding: 60px 20px;
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 13px;
     line-height: 1.7;
 }
 
 .stats-empty-row {
     padding: 40px !important;
-    color: #9aa4af;
+    color: var(--text-muted);
     text-align: center;
 }
 
 .stats-note {
     margin: 14px 4px 40px;
-    color: #6b7280;
+    color: var(--text-faint);
     font-size: 12px;
     line-height: 1.7;
     text-align: center;
@@ -3471,14 +3480,14 @@ body::before {
 }
 
 .ac-name .ac-tag {
-    color: #9aa4af;
+    color: var(--text-muted);
     font-weight: normal;
     margin-left: 4px;
 }
 
 .ac-sub {
     font-size: 11px;
-    color: #9aa4af;
+    color: var(--text-muted);
     margin-top: 2px;
 }
 
@@ -3494,7 +3503,7 @@ body::before {
 }
 
 .cand-count {
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 14px;
     margin: 0 0 14px 4px;
 }
@@ -3553,7 +3562,7 @@ body::before {
 
 .cand-name {
     flex: 1;
-    color: #ddd;
+    color: var(--text-bright);
     font-size: 14px;
     font-weight: bold;
     white-space: nowrap;
@@ -3562,12 +3571,12 @@ body::before {
 }
 
 .cand-name .ac-tag {
-    color: #9aa4af;
+    color: var(--text-muted);
     font-weight: normal;
 }
 
 .cand-lp {
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 12px;
     flex-shrink: 0;
 }
@@ -3600,7 +3609,7 @@ body::before {
 }
 
 .load-more-btn:disabled {
-    color: #777;
+    color: var(--text-faint);
     border-color: rgba(255, 255, 255, 0.08);
     cursor: default;
 }
@@ -3608,7 +3617,7 @@ body::before {
 .load-more-end {
     text-align: center;
     padding: 18px 0;
-    color: #666;
+    color: var(--text-faint);
     font-size: 13px;
 }
 /* ================================
@@ -3702,7 +3711,7 @@ body::before {
     font-weight: bold;
     width: 14px;
     text-align: center;
-    color: #9aa4af;
+    color: var(--text-muted);
     flex-shrink: 0;
 }
 
@@ -3757,7 +3766,7 @@ body::before {
     flex-shrink: 0;
     font-size: 11px;
     font-weight: bold;
-    color: #9aa4af;
+    color: var(--text-muted);
 }
 
 /* 폰에서 표 폭이 모자라면 아이콘이 다음 줄로 넘어가게 둔다 */
@@ -3774,7 +3783,7 @@ body::before {
     padding: 2px 10px;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.08);
-    color: #ddd;
+    color: var(--text-bright);
 }
 
 .arena-rank-badge.place-1 { background: rgba(250, 204, 21, 0.2); color: #facc15; }
@@ -3916,7 +3925,7 @@ body::before {
 }
 
 .skill-btn-key {
-    color: #9aa4af;
+    color: var(--text-muted);
     font-weight: bold;
     width: 24px;
     font-size: 16px;
@@ -3992,7 +4001,7 @@ body::before {
 .skin-item-name {
     margin-top: 6px;
     font-size: 12px;
-    color: #ddd;
+    color: var(--text-bright);
     text-align: center;
     word-break: keep-all;
     line-height: 1.35;
@@ -4141,7 +4150,7 @@ body::before {
 .skin-chroma-name {
     font-size: 14px;
     font-weight: normal;
-    color: #6b7280;
+    color: var(--text-faint);
 }
 
 /* 색은 라이엇이 준 값(colors)이라 app.js 가 인라인으로 찍는다 */
@@ -4197,7 +4206,7 @@ body::before {
     margin: 10px auto 0 auto;
     max-width: 640px;
     font-size: 13.5px;
-    color: #9aa4af;
+    color: var(--text-muted);
     /* ★ 1.7 이 맞다. 한때 1.5 로 조였는데 **불필요한 조임이었다** (2026-08-13).
        크로마 줄이 2단(59px)이던 시절의 계산이었고, 한 줄(30px)로 합치면서 이미 여유가
        생겨 있었다. 640px 에서도 1.5 든 1.7 이든 넘치는 스킨 수가 12개로 같다 —
@@ -4214,7 +4223,7 @@ body::before {
 .champ-lore-text {
     font-size: 15px;
     line-height: 1.9;
-    color: #ddd;
+    color: var(--text-bright);
     word-break: keep-all;
     padding: 10px;
     max-width: 780px;
@@ -4258,7 +4267,7 @@ body::before {
 .champ-quote-author {
     margin-top: 12px;
     font-size: 13px;
-    color: #9aa4af;
+    color: var(--text-muted);
     text-align: right;
 }
 
@@ -4298,7 +4307,7 @@ body::before {
 .champ-voice-note {
     margin-top: 16px;
     font-size: 12px;
-    color: #6b7280;
+    color: var(--text-faint);
     line-height: 1.6;
 }
 
@@ -4615,7 +4624,7 @@ body::before {
 }
 
 .rank-table td.rank-num {
-    color: #777;
+    color: var(--text-faint);
 }
 
 /* ★★ 남는 폭을 받는 칸은 **닉네임 하나** 다 (2026-08-18에 숙련도에서 넘겨받았다).
@@ -4651,7 +4660,7 @@ body::before {
 
 .rank-table td.rank-name {
     font-weight: bold;
-    color: #ddd;
+    color: var(--text-bright);
 }
 
 .rank-table .rank-lp {
@@ -4730,7 +4739,7 @@ body::before {
 
 .rank-wl {
     font-size: 11px;
-    color: #555;
+    color: var(--text-faint);
     margin-left: 8px;
 }
 
@@ -4741,7 +4750,7 @@ body::before {
      서버가 내려주는 실제 소속을 쓰므로, 예전처럼 순위 번호로 짐작하지 않는다.
    ----------------------------------------- */
 .rank-updated {
-    color: #9aa4af;
+    color: var(--text-muted);
     margin-top: 10px;
     font-size: 14px;
 }
@@ -4769,14 +4778,14 @@ body::before {
     background: #12121f;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
-    color: #ddd;
+    color: var(--text-bright);
     font-size: 14px;
     outline: none;
     transition: border-color 0.2s;
 }
 
 .rank-search::placeholder {
-    color: #6b7280;
+    color: var(--text-faint);
 }
 
 .rank-search:focus {
@@ -4793,7 +4802,7 @@ body::before {
     padding: 0;
     background: none;
     border: none;
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
@@ -4805,13 +4814,13 @@ body::before {
 }
 
 .rank-count {
-    color: #6b7280;
+    color: var(--text-faint);
     font-size: 12px;
     margin: 0 0 8px 4px;
 }
 
 .rank-count b {
-    color: #9aa4af;
+    color: var(--text-muted);
 }
 
 /* 티어 칸: 메달 + 이름. 폰에서는 짧은 이름으로 바뀐다 */
@@ -4846,7 +4855,7 @@ body::before {
 
 /* 아직 닉네임을 못 받아온 사람. 눌러도 검색이 안 되니 링크처럼 안 보이게 둔다 */
 .rank-unresolved {
-    color: #555;
+    color: var(--text-faint);
     font-weight: normal;
     font-style: italic;
     cursor: default;
@@ -4854,7 +4863,7 @@ body::before {
 
 .rank-empty {
     text-align: center;
-    color: #6b7280;
+    color: var(--text-faint);
     padding: 50px 12px !important;
 }
 
@@ -4871,7 +4880,7 @@ body::before {
 .rank-pg {
     padding: 8px 14px;
     background: #1a1a2e;
-    color: #9aa4af;
+    color: var(--text-muted);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 4px;
     cursor: pointer;
@@ -4903,7 +4912,7 @@ body::before {
     align-items: center;
     gap: 6px;
     margin-left: 8px;
-    color: #6b7280;
+    color: var(--text-faint);
     font-size: 13px;
 }
 
@@ -4913,7 +4922,7 @@ body::before {
     background: #12121f;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 4px;
-    color: #ddd;
+    color: var(--text-bright);
     font-size: 13px;
     text-align: center;
     outline: none;
@@ -4986,7 +4995,7 @@ body::before {
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: #9aa4af;
+    color: var(--text-muted);
     white-space: nowrap;
 }
 
@@ -5067,7 +5076,7 @@ body::before {
     right: -40px;
     transform: translateY(-50%);
     font-size: 11px;
-    color: #6b7280;
+    color: var(--text-faint);
     white-space: nowrap;
 }
 
@@ -5077,11 +5086,11 @@ body::before {
     gap: 6px;
     margin-right: 42px;
     font-size: 11px;
-    color: #6b7280;
+    color: var(--text-faint);
 }
 
 .cutoff-axis-mid {
-    color: #4b5563;
+    color: var(--text-dim);
 }
 
 /* ★ 첫날에는 점이 하나도 없다. 비워 두면 고장으로 읽히므로 언제 쌓이는지 적는다 */
@@ -5090,11 +5099,11 @@ body::before {
     text-align: center;
     font-size: 12px;
     line-height: 1.7;
-    color: #6b7280;
+    color: var(--text-faint);
 }
 
 .cutoff-empty b {
-    color: #9aa4af;
+    color: var(--text-muted);
 }
 
 @media (max-width: 768px) {
@@ -5267,7 +5276,7 @@ body::before {
 .stat-table thead th {
     padding: 0 6px 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 12px;
     font-weight: bold;
     text-align: right;
@@ -5288,7 +5297,7 @@ body::before {
 
 .stat-trow td {
     text-align: right;
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 14px;
 }
 
@@ -5307,7 +5316,7 @@ body::before {
     padding: 0;
     background: none;
     border: none;
-    color: #ddd;
+    color: var(--text-bright);
     font-size: 13px;
     text-align: left;
     cursor: pointer;
@@ -5371,7 +5380,7 @@ body::before {
 /* 버튼은 제목 줄에 같이 둔다. 이 줄은 높이가 **항상 같아서** 아래 그래프가 안 흔들린다 */
 .savg-title {
     margin-left: 8px;
-    color: #5f666e;
+    color: var(--text-dim);
     font-size: 11px;
     white-space: nowrap;
 }
@@ -5437,7 +5446,7 @@ body::before {
     display: flex;
     align-items: center;
     gap: 5px;
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 11px;
     line-height: 1.25;
     white-space: nowrap;
@@ -5462,7 +5471,7 @@ body::before {
 }
 
 .savg-item em {
-    color: #5f666e;
+    color: var(--text-dim);
     font-style: normal;
 }
 
@@ -5475,7 +5484,7 @@ body::before {
 .stat-graph-head {
     position: relative;
     padding: 0 10px 34px;
-    color: #ddd;
+    color: var(--text-bright);
     font-size: 13px;
 }
 
@@ -5487,7 +5496,7 @@ body::before {
 }
 
 .sgh-row span {
-    color: #5f666e;
+    color: var(--text-dim);
     font-size: 11px;
 }
 
@@ -5534,7 +5543,7 @@ body::before {
     top: 100%;
     margin-top: 5px;
     transform: translateX(-50%);
-    color: #5f666e;
+    color: var(--text-dim);
     font-size: 10px;
 }
 
@@ -5550,7 +5559,7 @@ body::before {
 .g-end {
     position: absolute;
     margin-bottom: 8px;
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 10px;
     white-space: nowrap;
 }
@@ -5695,7 +5704,7 @@ body::before {
     padding: 5px 7px;
     border: 1px solid transparent;
     border-radius: 7px;
-    color: #ddd;
+    color: var(--text-bright);
     font-size: 12px;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
@@ -5734,7 +5743,7 @@ body::before {
 .stat-foot {
     margin-top: 14px;
     padding: 0 6px;
-    color: #5f666e;
+    color: var(--text-dim);
     font-size: 11px;
     line-height: 1.6;
 }
@@ -5851,7 +5860,7 @@ body::before {
 }
 
 .champ-search::placeholder {
-    color: #5f666e;
+    color: var(--text-dim);
 }
 
 /* --- 검색 상자 안 X 버튼 (2026-08-12) ---
@@ -6014,7 +6023,7 @@ body::before {
     grid-column: 1 / -1;
     padding: 30px 10px;
     text-align: center;
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 13px;
 }
 
@@ -6050,7 +6059,7 @@ body::before {
 
 .codex-sub {
     margin: 8px 0 0;
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 13px;
 }
 
@@ -6064,7 +6073,7 @@ body::before {
 .codex-tab {
     background: #1a1a2e;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #9aa4af;
+    color: var(--text-muted);
     padding: 9px 18px;
     border-radius: 8px;
     font-size: 13px;
@@ -6073,7 +6082,7 @@ body::before {
     transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.codex-tab:hover { color: #e2e8f0; }
+.codex-tab:hover { color: var(--text-bright); }
 
 .codex-tab.active {
     background: #2b1a52;
@@ -6111,7 +6120,7 @@ body::before {
     background: #14142a;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
-    color: #e2e8f0;
+    color: var(--text-bright);
     padding: 9px 12px;
     font-size: 13px;
     outline: none;
@@ -6119,7 +6128,7 @@ body::before {
 }
 
 .codex-search:focus { border-color: rgba(167, 139, 250, 0.6); }
-.codex-search::placeholder { color: #6b7280; }
+.codex-search::placeholder { color: var(--text-faint); }
 
 /* 거르는 줄. 아이템은 등급 + 분류 두 줄, 룬은 계열 한 줄, 주문은 없다.
    ★ 줄끼리는 서로 독립이고 AND 로 걸린다. */
@@ -6141,7 +6150,7 @@ body::before {
     width: 26px;
     padding-top: 5px;
     font-size: 11px;
-    color: #6b7280;
+    color: var(--text-faint);
     white-space: nowrap;
 }
 
@@ -6154,14 +6163,14 @@ body::before {
 .codex-cat {
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #9aa4af;
+    color: var(--text-muted);
     padding: 4px 10px;
     border-radius: 6px;
     font-size: 11px;
     cursor: pointer;
 }
 
-.codex-cat:hover { color: #e2e8f0; }
+.codex-cat:hover { color: var(--text-bright); }
 
 .codex-cat.active {
     background: rgba(167, 139, 250, 0.15);
@@ -6223,7 +6232,7 @@ body::before {
 
 .codex-item-name {
     font-size: 13px;
-    color: #e2e8f0;
+    color: var(--text-bright);
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -6234,7 +6243,7 @@ body::before {
 
 .codex-item-sub {
     font-size: 11px;
-    color: #6b7280;
+    color: var(--text-faint);
 }
 
 .codex-detail {
@@ -6280,12 +6289,12 @@ body::before {
     flex-wrap: wrap;
     gap: 8px;
     font-size: 12px;
-    color: #9aa4af;
+    color: var(--text-muted);
 }
 
 .codex-style-icon { width: 16px; height: 16px; }
 .codex-gold { color: #f0e6d2; font-weight: 700; }
-.codex-dim { color: #6b7280; }
+.codex-dim { color: var(--text-faint); }
 
 .codex-badge {
     background: rgba(167, 139, 250, 0.12);
@@ -6299,7 +6308,7 @@ body::before {
 .codex-plain {
     margin-top: 8px;
     font-size: 12px;
-    color: #9aa4af;
+    color: var(--text-muted);
     line-height: 1.5;
 }
 
@@ -6307,7 +6316,7 @@ body::before {
 .codex-desc {
     font-size: 14px;
     line-height: 1.7;
-    color: #ddd;
+    color: var(--text-bright);
 }
 
 /* ★ 스탯이 없는 아이템(장신구·와드 등)은 <stats> 가 빈 채로 와서 **보라색 빈 상자**만
@@ -6370,7 +6379,7 @@ body::before {
 
 .codex-recipe-item span {
     font-size: 12px;
-    color: #e2e8f0;
+    color: var(--text-bright);
     white-space: nowrap;
 }
 
@@ -6378,7 +6387,7 @@ body::before {
 .codex-none {
     text-align: center;
     padding: 40px 20px;
-    color: #9aa4af;
+    color: var(--text-muted);
     font-size: 13px;
     /* ★ 목록이 두 칸 격자라 이 줄은 두 칸을 통째로 써야 한다 — 안 그러면 왼쪽 절반에만 쓰인다 */
     grid-column: 1 / -1;
@@ -6462,7 +6471,7 @@ body::before {
 .mshop-tab {
     background: #1a1a2e;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #9aa4af;
+    color: var(--text-muted);
     padding: 9px 18px;
     border-radius: 8px;
     font-size: 13px;
@@ -6471,7 +6480,7 @@ body::before {
     transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.mshop-tab:hover { color: #e2e8f0; }
+.mshop-tab:hover { color: var(--text-bright); }
 
 .mshop-tab.active {
     background: #2b1a52;
@@ -6507,7 +6516,7 @@ body::before {
 }
 
 .mshop-date {
-    color: #6b7280;
+    color: var(--text-faint);
     font-size: 12px;
 }
 
@@ -6515,7 +6524,7 @@ body::before {
    우리가 언제 읽었나가 아니라 **언제까지 파는지**를 적는다 */
 .mshop-period {
     margin-left: auto;
-    color: #6b7280;
+    color: var(--text-faint);
     font-size: 12px;
     white-space: nowrap;
 }
@@ -6552,7 +6561,7 @@ body::before {
     padding: 3px 7px;
     border-radius: 6px;
     background: rgba(0, 0, 0, 0.72);
-    color: #e2e8f0;
+    color: var(--text-bright);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: -0.2px;
@@ -6680,11 +6689,11 @@ body::before {
 .mshop-soon {
     text-align: center;
     padding: 50px 20px;
-    color: #9aa4af;
+    color: var(--text-muted);
 }
 
 .mshop-soon-title {
-    color: #e2e8f0;
+    color: var(--text-bright);
     font-size: 15px;
     font-weight: 600;
     margin-bottom: 10px;
