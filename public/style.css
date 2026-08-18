@@ -92,7 +92,15 @@ body.bg-solid::before {
 .header {
     display: flex;
     align-items: center;
-    background-color: rgba(45, 20, 60, 0.9);
+    /* 프로스트 유리 (2026-08-18). 홈에선 일러스트가 뭉개져 비치고,
+       데이터 페이지는 뒤가 0.93 오버레이라 그냥 어두운 바로 보인다.
+       sticky 라 스크롤하면 콘텐츠가 유리 밑으로 지나간다 */
+    position: sticky;
+    top: 0;
+    z-index: 500;
+    background-color: rgba(45, 20, 60, 0.6);
+    backdrop-filter: blur(12px) saturate(1.3);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3);
     padding: 0 5px;
     height: 65px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -169,6 +177,7 @@ body.bg-solid::before {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     border-radius: 30px;
     overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .search-box.error-shake {
@@ -182,15 +191,31 @@ body.bg-solid::before {
     border: none;
     outline: none;
     font-size: 16px;
+    /* 유리 입력창 (2026-08-18). 사이트에서 혼자 순백색이던 상자를 어두운 유리로 */
+    background: rgba(20, 15, 35, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
 }
 
 .search-btn {
     padding: 0 35px;
-    background: #6b3f8e;
+    /* 주 행동 버튼이라 유리로 안 하고 브랜드 보라 램프(#8b5cf6→#6b46c1)로 또렷하게.
+       옛 색 #6b3f8e 는 램프 밖의 탁한 자주색이었다 */
+    background: linear-gradient(135deg, #8b5cf6, #6b46c1);
     color: white;
     border: none;
     font-weight: bold;
     cursor: pointer;
+    transition: filter 0.2s;
+}
+
+.search-btn:hover {
+    filter: brightness(1.15);
 }
 
 .search-error-msg {
