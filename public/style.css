@@ -3107,6 +3107,15 @@ body.bg-solid::before {
     visibility: visible !important;
 }
 
+/* ★ 터치 기기에서는 hover 툴팁을 아예 안 그린다 (2026-08-18).
+   visibility:hidden 이어도 absolute 상자가 자리를 차지해서, 오른쪽 끝 요소의
+   긴 툴팁이 scrollWidth 를 늘려 모바일 첫 로드가 살짝 축소(zoom-out)됐다 —
+   신화상점 +18px · 전적검색 +6px 실측. 터치에는 hover 가 없어 잃는 것도 없다.
+   기본 규칙이 !important 라 여기도 !important 가 필요하다 */
+@media (hover: none) {
+    [data-tooltip]::after { display: none !important; }
+}
+
 #error-toast {
     position: fixed;
     top: 20px;
@@ -3242,6 +3251,20 @@ body.bg-solid::before {
     .header {
         padding: 0 15px;
         justify-content: space-between;
+    }
+
+    /* ★ 홈 신화상점 위젯 헤더 (2026-08-18 실측). 한 줄 강제였을 때 폭이 모자라
+       "오늘의 신/화 상점" · "8월 18일 로/테이션" 처럼 **낱말 중간에서** 꺾였다.
+       조각마다 nowrap 을 걸어 낱말 쪼개짐을 막고, 줄이 모자라면 flex-wrap 이
+       조각 단위로 내린다 — 제목+타이머 첫 줄, 로테이션 날짜가 둘째 줄 오른쪽 끝 */
+    .shop-title-container {
+        flex-wrap: wrap;
+        row-gap: 4px;
+    }
+    .shop-title-container h3,
+    .shop-title-container .timer-text,
+    .mythic-rotation {
+        white-space: nowrap;
     }
 
     /* ★★ 메뉴가 6개(신화상점 추가)가 되면서 390px 에서 줄이 넘어갔다 (2026-08-17 실측).
