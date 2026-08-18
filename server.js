@@ -3021,7 +3021,18 @@ app.get('/api/ranking', async (req, res) => {
         mastery: resolvedMastery[p.puuid]?.top || []
     }));
 
-    const finalRankingData = { tier: "CHALLENGER", updatedAt: rankUpdatedAt, players: processedPlayers };
+    // ★ 갱신 주기를 같이 실어 보낸다 (2026-08-18). 시간대마다 10분/5분/1분이라
+    //   화면에 "10분마다" 로 박아 두면 밤에 틀린 말이 된다.
+    //   ★★ 규칙을 화면 쪽에 복제하지 않는 게 핵심이다 — 두 벌이 되면 주기를 바꿀 때
+    //     한쪽만 고쳐 어긋난다. 여기 한 곳(rankRefreshMs)만이 정본이다.
+    //   ★ 이 응답은 10분 캐시지만 명단이 갱신될 때마다 캐시를 버리므로(myCache.del)
+    //     시간대가 바뀌면 다음 갱신에서 곧바로 새 값이 나간다.
+    const finalRankingData = {
+        tier: "CHALLENGER",
+        updatedAt: rankUpdatedAt,
+        refreshMs: rankRefreshMs(),
+        players: processedPlayers
+    };
     myCache.set('challenger_ranking_data', finalRankingData, 600);
     res.json(finalRankingData);
 });

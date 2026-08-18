@@ -4728,6 +4728,15 @@ body::before {
     font-size: 14px;
 }
 
+/* ★ 이 툴팁만 글자 **아래**로 띄운다. 공용 [data-tooltip] 은 위(bottom:130%)에 뜨는데,
+   이 줄은 제목 바로 밑이라 말풍선이 "한국서버 솔로랭크 랭킹" 을 덮어 버린다.
+   공용 규칙이 !important 라 이기려면 여기도 !important 가 필요하다
+   (선택자가 더 구체적이라 같은 !important 끼리는 이쪽이 이긴다). */
+.rank-updated [data-tooltip]::after {
+    bottom: auto !important;
+    top: 150% !important;
+}
+
 .rank-search-box {
     position: relative;
     width: 320px;

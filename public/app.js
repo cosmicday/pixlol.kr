@@ -3816,6 +3816,10 @@ let fullRankingData = [];
 let currentRankingPage = 1;
 let rankingQuery = '';        // 닉네임 필터 (원문 그대로 들고 있다가 화면에 되돌려 준다)
 let rankingUpdatedAt = 0;     // 서버가 명단을 받아온 시각
+// ★ 갱신 주기는 **서버가 알려준다** (/api/ranking 의 refreshMs). 시간대마다 10분/5분/1분이라
+//   화면에 규칙을 복제해 두면 서버에서 주기를 바꿀 때 한쪽만 고쳐 어긋난다.
+//   응답에 없으면(옛 서버) 예전 문구대로 10분으로 본다.
+let rankingRefreshMs = 10 * 60 * 1000;
 
 // ==========================================
 // 컷라인 그래프 (2026-08-18)
@@ -3935,11 +3939,21 @@ function rankTierInfo(code) {
 
 // "3분 전 갱신". 서버가 0 을 주면(아직 한 번도 안 받았으면) 예전 문구로 물러난다.
 function rankUpdatedText() {
-    if (!rankingUpdatedAt) return '약 10분마다 갱신됩니다.';
+    const per = Math.max(1, Math.round(rankingRefreshMs / 60000));
+    if (!rankingUpdatedAt) return `${per}분마다 갱신됩니다.`;
+
     const mins = Math.floor((Date.now() - rankingUpdatedAt) / 60000);
-    if (mins < 1) return '방금 갱신됨 · 약 10분마다 갱신';
-    if (mins < 60) return `${mins}분 전 갱신 · 약 10분마다 갱신`;
-    return `${Math.floor(mins / 60)}시간 전 갱신 · 약 10분마다 갱신`;
+    const when = mins < 1 ? '방금 갱신됨'
+        : mins < 60 ? `${mins}분 전 갱신`
+        : `${Math.floor(mins / 60)}시간 전 갱신`;
+    return `${when} · ${per}분마다 갱신`;
+}
+
+// 마우스를 올리면 정확한 시각을 보여준다. 문구 쪽은 "3분 전" 처럼 뭉뚱그리므로
+// 언제 받아온 값인지 정확히 알고 싶을 때가 있다.
+function rankUpdatedTitle() {
+    if (!rankingUpdatedAt) return '';
+    return '최근 갱신 시각: ' + new Date(rankingUpdatedAt).toLocaleString('ko-KR');
 }
 
 // ★ 헤더는 showRanking 과 popstate 두 곳에서 그린다. 예전엔 같은 HTML 이 양쪽에
@@ -3952,7 +3966,7 @@ function renderRankingHeader() {
                 <img src="https://opgg-static.akamaized.net/images/medals_new/challenger.png" style="position: absolute; right: 100%; margin-right: 12px; top: 50%; transform: translateY(-50%); width: 60px; height: 60px;">
                 한국서버 솔로랭크 랭킹
             </h1>
-            <p class="rank-updated" id="rank-updated">${rankUpdatedText()}</p>
+            <p class="rank-updated" id="rank-updated"><span${rankUpdatedTitle() ? ` data-tooltip="${escapeHtml(rankUpdatedTitle())}"` : ''}>${rankUpdatedText()}</span></p>
             <div class="rank-search-box">
                 <input type="text" id="rank-search" class="rank-search" autocomplete="off"
                        placeholder="닉네임/태그 검색"
@@ -4070,6 +4084,7 @@ async function showRanking(targetPage = 1) {
         //   화면에서 세면 "1위" 부터 다시 시작해 버린다.
         //   검색용 소문자·초성도 같이 만들어 둔다 — 타이핑할 때마다 1.1만 번 만들 이유가 없다.
         rankingUpdatedAt = data.updatedAt || 0;
+        if (data.refreshMs > 0) rankingRefreshMs = data.refreshMs;
         fullRankingData = data.players.map((p, i) => {
             const lc = String(p.displayName || '').toLowerCase();
             return { ...p, rank: i + 1, _lc: lc, _cho: getChosung(lc) };
