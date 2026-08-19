@@ -7,6 +7,9 @@
          확대를 막고 있었고, iOS 사파리는 이 지시를 원래 무시해서 안드로이드에서만
          못 늘어나 동작도 갈렸다. 확대는 열어 두는 게 맞다. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 모바일 브라우저 주소창(상태바) 색. 없으면 브라우저가 반투명 헤더 뒤 배경을
+         제멋대로 밝게 잡는다 — 사이트 바탕(#1a1a2e 계열)과 같은 어두운 색으로 못 박는다 -->
+    <meta name="theme-color" content="#16112a">
     <title>pixlol.kr - 전적검색</title>
     
     <link rel="stylesheet" href="/style.css">
@@ -60,9 +63,16 @@
 
 <body>
     <header class="header">
+        <!-- ★ 그림 로고 → 텍스트 워드마크 (2026-08-19). 홈 화면의 .main-logo-text 와
+             같은 Chakra Petch 700 이고, .KR 만 브랜드 보라다. -->
         <a class="logo-top" onclick="goLobby(); setActiveNav('nav-search')">
-            <img src="/logo.webp" alt="pixlol.kr" class="nav-logo-img">
+            <span class="logo-top-text">PIXLOL<span class="logo-tld">.KR</span></span>
         </a>
+        <!-- 모바일 전용 햄버거 버튼 (2026-08-19). 데스크톱에서는 CSS 로 숨긴다.
+             누르면 header 에 .menu-open 이 붙고 nav-menu 가 드롭다운으로 펼쳐진다 (app.js toggleMobileMenu) -->
+        <button type="button" class="nav-toggle" id="nav-toggle" aria-label="메뉴 열기" onclick="toggleMobileMenu(event)">
+            <span></span><span></span><span></span>
+        </button>
         <nav class="nav-menu">
             <a class="nav-item active" id="nav-search" onclick="goLobby(); setActiveNav('nav-search')">전적검색</a>
             <a class="nav-item" id="nav-ranking" onclick="showRanking(); setActiveNav('nav-ranking')">랭킹</a>
@@ -138,6 +148,37 @@
                     <span id="mythic-rotation" class="mythic-rotation"></span>
                 </div>
                 <div id="mythic-items" class="mythic-items-grid"></div>
+            </div>
+
+            <!-- ▼▼ 패치노트 영역 (2026-08-19 신설) ▼▼
+                 왼쪽: 한국 롤 공식 홈페이지 패치노트 최신 5개 (서버 /api/patch-notes 가
+                 공식 페이지를 30분 캐시로 긁어 온다).
+                 오른쪽: PBE(매튜 렁 X) 칸 — ★ X 는 로그인 장벽 때문에 자동 수집이 안 된다
+                 (syndication 우회로도 몇 달 묵은 스냅샷만 나온다. CLAUDE.md 참고).
+                 낡은 글을 최신인 척 보여줄 수는 없어서, 칸은 잡아 두고 프로필 바로가기만 둔다. -->
+            <div class="patch-note-container">
+                <div class="patch-note-col">
+                    <div class="patch-note-head">
+                        <h3>패치노트</h3>
+                        <a class="patch-note-more" href="https://www.leagueoflegends.com/ko-kr/news/tags/patch-notes/" target="_blank" rel="noopener">전체 보기 ›</a>
+                    </div>
+                    <div id="patch-note-list" class="patch-note-list">
+                        <div class="patch-note-empty">불러오는 중...</div>
+                    </div>
+                </div>
+                <div class="patch-note-col">
+                    <div class="patch-note-head">
+                        <h3>PBE 패치 프리뷰</h3>
+                        <a class="patch-note-more" href="https://x.com/RiotPhroxzon" target="_blank" rel="noopener">@RiotPhroxzon ›</a>
+                    </div>
+                    <div id="pbe-note-list" class="patch-note-list">
+                        <div class="patch-note-empty">
+                            라이엇 밸런스 담당자 매튜 렁(@RiotPhroxzon)이 X 에 올리는<br>
+                            <b>Patch Preview</b> 글은 X 로그인 장벽 때문에 자동으로 가져올 수 없습니다.<br>
+                            <a href="https://x.com/RiotPhroxzon" target="_blank" rel="noopener" class="patch-note-x-link">X 에서 바로 보기 →</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

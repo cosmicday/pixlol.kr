@@ -121,20 +121,58 @@ body.bg-solid::before {
 }
 
 .logo-top {
-    font-size: 26px;
-    font-weight: 900;
-    color: #ffffff;
     cursor: pointer;
     text-decoration: none;
+    /* 그림 로고 시절 이미지가 벌려 주던 좌우 간격을 텍스트가 이어받는다 */
+    margin: 0 28px 0 12px;
 }
 
-.nav-logo-img {
-    height: 60px;
-    object-fit: contain;
-    vertical-align: middle;
-    filter: drop-shadow(0 0 5px rgba(167, 139, 250, 0.4));
-    margin-top: 8px;
+/* ★ 헤더 로고도 텍스트 워드마크다 (2026-08-19). 홈 화면 .main-logo-text 와 같은
+   Chakra Petch 700 · .KR 만 브랜드 보라 — 크기만 헤더에 맞게 줄였다.
+   (logo.webp 는 이제 안 쓴다) */
+.logo-top-text {
+    font-family: 'Chakra Petch', 'Malgun Gothic', sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: #fff;
+    text-shadow: 0 0 12px rgba(167, 139, 250, 0.4);
+    white-space: nowrap;
 }
+
+.logo-top-text .logo-tld {
+    color: #a78bfa;
+}
+
+/* 모바일 햄버거 버튼. 데스크톱에서는 숨긴다 (@media 블록에서 켠다) */
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.nav-toggle span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 1px;
+    background: #fff;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+/* 열려 있는 동안 세 줄이 X 로 바뀐다 — 같은 버튼이 닫기임을 보여준다 */
+.header.menu-open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.header.menu-open .nav-toggle span:nth-child(2) { opacity: 0; }
+.header.menu-open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 .nav-menu {
     display: flex;
@@ -496,6 +534,121 @@ body.bg-solid::before {
     justify-content: center;
     align-items: center;
     gap: 4px;
+}
+
+/* =========================================
+   4-1. 홈 패치노트 영역 (2026-08-19 신설)
+   왼쪽: 공식 패치노트 5개 (/api/patch-notes) · 오른쪽: PBE 안내(정적)
+   ========================================= */
+.patch-note-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+    padding: 0 20px;
+    margin-top: 40px;
+    /* 홈이 짧을 때 푸터가 바짝 붙지 않게 아래 여백을 준다 */
+    margin-bottom: 20px;
+}
+
+.patch-note-col {
+    flex: 1;
+    min-width: 0;
+    background: rgba(20, 20, 35, 0.9);
+    border: 1px solid rgba(167, 139, 250, 0.15);
+    border-radius: 10px;
+    padding: 16px 18px;
+}
+
+.patch-note-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.patch-note-head h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.patch-note-more {
+    font-size: 12px;
+    color: var(--text-faint);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.patch-note-more:hover {
+    color: #a78bfa;
+}
+
+.patch-note-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.patch-note-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 6px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.patch-note-item:hover {
+    background: rgba(167, 139, 250, 0.08);
+}
+
+.patch-note-title {
+    color: var(--text-bright);
+    font-size: 13px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.patch-note-item:hover .patch-note-title {
+    color: #fff;
+}
+
+.patch-note-date {
+    color: var(--text-faint);
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.patch-note-empty {
+    padding: 24px 10px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.patch-note-empty b {
+    color: var(--text-muted);
+}
+
+.patch-note-x-link {
+    display: inline-block;
+    margin-top: 6px;
+    color: #a78bfa;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.patch-note-x-link:hover {
+    text-decoration: underline;
 }
 
 /* =========================================
@@ -2401,16 +2554,27 @@ body.bg-solid::before {
     vertical-align: middle;
 }
 
-.stats-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.03);
+/* 줄 hover 도 마우스 기기에서만 — 폰에서는 탭 자국이 남는다 (아래 sortable-th 주석 참고) */
+@media (hover: hover) {
+    .stats-table tbody tr:hover {
+        background: rgba(167, 139, 250, 0.06);
+    }
 }
 
+/* ★★ td 에 display:flex 를 주면 안 된다 (2026-08-19 수정).
+   td 가 flex 가 되는 순간 table-cell 이 아니게 되어 셀 높이·테두리 계산이 옆 칸과
+   따로 놀았다 — 행 아래 가로선이 챔피언 칸과 티어 칸 사이에서 1px 어긋나 보이고,
+   폰(가로 스크롤 + 축소 렌더)에서는 선 색까지 달라 보인 원인이 이것이다.
+   td 는 평범한 셀로 두고 flex 는 안쪽 .stats-champ-flex 가 맡는다 (app.js 표 마크업 참조). */
 .stats-champ-info {
+    text-align: left;
+    padding-left: 20px !important;
+}
+
+.stats-champ-flex {
     display: flex;
     align-items: center;
     gap: 12px;
-    text-align: left;
-    padding-left: 20px !important;
 }
 
 .stats-champ-info img {
@@ -2438,11 +2602,12 @@ body.bg-solid::before {
 .tier-d { color: #a1a1aa; }
 .tier-e { color: #cd7f32; }
 
+/* ★ invert(1) 을 뺐다 (2026-08-19). op.gg 흑백 아이콘을 뒤집어 희게 만들던 것인데,
+   지금은 CD 공식 아이콘(금색 #c8aa6e)이라 그대로 두는 게 맞다 */
 .stats-lane img {
     width: 20px;
     height: 20px;
-    filter: invert(1);
-    opacity: 0.7;
+    opacity: 0.9;
 }
 
 .stats-lane-rate {
@@ -2550,8 +2715,10 @@ body.bg-solid::before {
     transition: opacity 0.15s, transform 0.15s;
 }
 
-.stats-table tbody tr:hover .stats-expand {
-    opacity: 1;
+@media (hover: hover) {
+    .stats-table tbody tr:hover .stats-expand {
+        opacity: 1;
+    }
 }
 
 .stats-row.is-open .stats-expand {
@@ -2867,11 +3034,11 @@ body.bg-solid::before {
     box-shadow: 0 0 10px rgba(167, 139, 250, 0.3);
 }
 
+/* invert(1) 을 뺐다 — CD 금색 아이콘을 그대로 쓴다 (위 .stats-lane img 와 같은 이유) */
 .stats-filter-btn img {
     width: 22px;
     height: 22px;
-    filter: invert(1);
-    opacity: 0.5;
+    opacity: 0.55;
     transition: opacity 0.2s;
 }
 
@@ -2899,9 +3066,16 @@ body.bg-solid::before {
     transition: background 0.2s, color 0.2s;
 }
 
-.sortable-th:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
+/* ★ hover 규칙은 **마우스가 있는 기기에서만** 건다 (2026-08-19).
+   폰에서는 탭한 순간 :hover 가 걸리고 다른 곳을 누를 때까지 안 풀려서
+   "누른 버튼에 회색이 눌어붙는" 것처럼 보였다 — @media (hover:hover) 로 감싸면
+   터치 기기는 아예 안 탄다 (버튼 색은 .active 가 담당하므로 잃는 게 없다).
+   색도 회색(rgba 흰색)에서 헤더 보라(#2b1a52)에 어울리는 보라 톤으로 바꿨다. */
+@media (hover: hover) {
+    .sortable-th:hover {
+        color: #ffffff;
+        background: rgba(167, 139, 250, 0.18);
+    }
 }
 
 .sortable-th.active {
@@ -3249,8 +3423,16 @@ body.bg-solid::before {
 @media (max-width: 768px) {
     /* 헤더 메뉴 */
     .header {
-        padding: 0 15px;
+        padding: 0 8px 0 15px;
         justify-content: space-between;
+        /* ★ 폰에서는 반투명(0.6)을 거의 불투명으로 올린다 (2026-08-19).
+           일부 모바일 브라우저가 backdrop-filter 를 무시해서 밝은 배경 일러스트가
+           그대로 비쳤고, 주소창 주변이 허옇게 떠 보였다 (theme-color 메타와 한 쌍이다) */
+        background-color: rgba(22, 17, 42, 0.94);
+    }
+
+    .logo-top {
+        margin: 0;
     }
 
     /* ★ 홈 신화상점 위젯 헤더 (2026-08-18 실측). 한 줄 강제였을 때 폭이 모자라
@@ -3267,26 +3449,51 @@ body.bg-solid::before {
         white-space: nowrap;
     }
 
-    /* ★★ 메뉴가 6개(신화상점 추가)가 되면서 390px 에서 줄이 넘어갔다 (2026-08-17 실측).
-       그냥 넘어간 게 아니라 **글자 중간에서 쪼개져** "전적검 / 색", "신화상 / 점" 이 됐다
-       (항목 높이 17px → 34px 로 드러난다). 세 가지를 같이 건다:
-         ① nowrap — 낱말이 쪼개지는 것부터 막는다
-         ② gap 12 → 8 · 글자 13 → 12px — 이걸로 **390px 에서는 한 줄에 들어간다**
-         ③ 그래도 모자라는 좁은 폰(360px 이하)에서는 가로로 밀어 보게 둔다.
-            스크롤바는 숨긴다 — 65px 짜리 헤더에 막대가 뜨면 그게 더 흉하다.
-       ★ 메뉴를 하나 더 늘리면 여기부터 다시 잴 것. 430px 기준 여유가 이제 얼마 없다. */
-    .nav-menu {
-        gap: 8px;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        scrollbar-width: none;
+    /* ★ 폰에서는 "00:00:00 뒤 초기화" 카운트다운을 뺀다 (2026-08-19 요청).
+       h2 안에 그것뿐이라 통째로 접는다 — 초기화 시각은 신화상점 탭 헤더에 그대로 있다 */
+    .shop-title-container h2 {
+        display: none;
     }
 
-    .nav-menu::-webkit-scrollbar { display: none; }
+    /* ★★ 폰 메뉴는 햄버거 드롭다운이다 (2026-08-19 개편). 예전엔 6개를 헤더에 눕히고
+       글자를 12px 로 줄여 가로 스크롤로 버텼는데, 로고만 남기고 전부 접었다.
+       버튼(.nav-toggle)을 누르면 header 에 .menu-open 이 붙는다 (app.js toggleMobileMenu).
+       메뉴 항목을 누르면 hideAllContainers() 가 닫고, 밖을 눌러도 닫힌다. */
+    .nav-toggle {
+        display: flex;
+    }
 
-    .nav-item {
-        font-size: 12px;
+    .nav-menu {
+        display: none;
+    }
+
+    .header.menu-open .nav-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        position: absolute;
+        top: 65px;
+        right: 0;
+        width: 190px;
+        background: rgba(22, 17, 42, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        padding: 6px 0 10px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .header.menu-open .nav-item {
+        font-size: 14px;
+        padding: 12px 22px;
+        border-bottom: none;
         white-space: nowrap;
+    }
+
+    /* 밑줄 대신 왼쪽 보라 띠 + 옅은 배경으로 선택을 표시한다 (세로 목록이라 밑줄이 안 어울린다) */
+    .header.menu-open .nav-item.active {
+        background: rgba(167, 139, 250, 0.12);
+        box-shadow: inset 3px 0 0 #a78bfa;
     }
 
     /* 메인 검색 및 신화상점 */
@@ -3327,6 +3534,14 @@ body.bg-solid::before {
 
     .mythic-item-card {
         min-width: 45%;
+    }
+
+    /* 패치노트 영역: 폰에서는 위아래로 쌓는다 */
+    .patch-note-container {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 28px;
+        padding: 0 20px;
     }
 
     /* 전적검색 결과 메인 레이아웃 */
@@ -3396,17 +3611,62 @@ body.bg-solid::before {
         align-items: center;
     }
 
+    /* ★★ 폰 경기 카드 상단줄 — OP.GG 모바일 배치를 따라 다시 짰다 (2026-08-19).
+       예전엔 [큐 · 날짜 · 결과 · 시간] 네 조각이 space-between 으로 뿔뿔이 흩어져
+       읽는 순서가 없었다. 지금은 **[승리(색) 큐이름] ...... [23분 40초 · 3일 전]** 이다.
+       HTML 은 안 건드리고 flex order 로만 재배열한다 — 클래스가 없는 두 칸은
+       자리(nth-child)로 잡는다: 2번째가 날짜, 5번째가 게임 시간이다. */
     .pix-info {
         width: 100%;
         flex-direction: row;
-        justify-content: space-between;
+        align-items: baseline;
+        justify-content: flex-start;
+        gap: 8px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         padding-bottom: 8px;
         margin-bottom: 5px;
     }
 
+    .pix-info .win-text {
+        order: 1;
+        font-size: 14px;
+    }
+
+    .pix-info .queue {
+        order: 2;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .pix-info > div:nth-child(5) {   /* 게임 시간 */
+        order: 3;
+        margin-left: auto;
+        font-size: 11px;
+        color: var(--text-faint);
+    }
+
+    .pix-info > div:nth-child(2) {   /* n일 전 */
+        order: 4;
+        font-size: 11px;
+        color: var(--text-faint);
+    }
+
+    .pix-info > div:nth-child(2)::before {
+        content: "·";
+        margin-right: 6px;
+        color: var(--text-dim);
+    }
+
     .pix-info .bar {
         display: none;
+    }
+
+    /* 왼쪽 결과 띠는 폰에서 6px 이 두껍다 */
+    .pix-game.win,
+    .pix-game.lose,
+    .pix-game.remake {
+        border-left-width: 4px;
     }
 
     /* 고정폭을 풀어 내용 크기로 줄인다. 챔프 약 104px(아이콘48+스펠22+룬22) +
@@ -3418,9 +3678,36 @@ body.bg-solid::before {
         margin-left: 0;
     }
 
+    /* KDA 를 카드의 주인공으로 — OP.GG 모바일처럼 크게, 데스는 빨강 */
+    .pix-kda {
+        align-items: flex-start;
+    }
+
+    .pix-kda-score {
+        font-size: 16px;
+    }
+
+    .pix-kda-score .d {
+        color: #e84057;
+    }
+
+    .pix-kda-ratio {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
     .pix-stats {
         padding-left: 0;
         text-align: right;
+        align-items: flex-end;
+        font-size: 11px;
+    }
+
+    /* 아이템은 한 단계 키운다 (22 → 24px). 터치 대상이기도 하다 */
+    .pix-items img,
+    .pix-items .empty {
+        width: 24px;
+        height: 24px;
     }
 
     .pix-players,
@@ -3456,9 +3743,67 @@ body.bg-solid::before {
         display: block;
     }
 
+    /* ★★ 폰 통계 표는 가로 스크롤 없이 한 화면에 다 넣는다 (2026-08-19 개편).
+       예전엔 min-width 640px + 가로 스크롤이었는데, 표본 칸을 접고 나머지를 조이면
+       390px 안에 6칸이 들어간다. 챔피언 칸은 "아우렐리온 솔" 이 한 줄에 들어가는
+       폭이고, 그보다 긴 이름(레나타 글라스크·트위스티드 페이트)만 두 줄로 꺾인다. */
     .stats-table {
-        /* 칸이 7개로 늘어서 640px 이 필요하다. 이 아래로 두면 챔피언 이름이 겹친다 */
-        min-width: 640px;
+        min-width: 0;
+        font-size: 12px;
+    }
+
+    /* 표본 칸은 폰에서 접는다 — 줄을 펼치면 패널에 판수가 나오므로 잃는 정보가 아니다 */
+    .stats-table th:nth-child(7),
+    .stats-table td:nth-child(7) {
+        display: none;
+    }
+
+    /* 남은 6칸 폭 (합 100%). 데스크톱 nth-child 규칙을 여기서 덮는다 */
+    .stats-table th:nth-child(1) { width: 37%; }
+    .stats-table th:nth-child(2) { width: 11%; }
+    .stats-table th:nth-child(3) { width: 12%; }
+    .stats-table th:nth-child(4) { width: 14%; }
+    .stats-table th:nth-child(5) { width: 13%; }
+    .stats-table th:nth-child(6) { width: 13%; }
+
+    .stats-table th {
+        padding: 12px 2px;
+        font-size: 11px;
+    }
+
+    .stats-table td {
+        padding: 8px 3px;
+    }
+
+    .stats-champ-info {
+        padding-left: 8px !important;
+    }
+
+    .stats-champ-flex {
+        gap: 7px;
+    }
+
+    .stats-champ-info img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .stats-champ-name {
+        font-size: 12px;
+    }
+
+    /* 펼침 화살표(▾)는 hover 에서만 보이던 것이라 폰에서는 자리만 차지한다 */
+    .stats-expand {
+        display: none;
+    }
+
+    .stats-lane img {
+        width: 16px;
+        height: 16px;
+    }
+
+    .stats-tier {
+        font-size: 14px;
     }
 
     /* ★ 룬 패널은 표 안(colspan=7)이라 칸 폭이 640px 로 잡힌다. 3단을 그대로 두면
@@ -3508,20 +3853,12 @@ body.bg-solid::before {
         grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
     }
 
-    /* 랭킹 타이틀 정렬 */
+    /* 랭킹 타이틀 정렬 (제목 왼쪽 메달 그림은 2026-08-19에 지워서 img 규칙도 같이 뺐다) */
     .ranking-title {
         font-size: 20px;
         text-align: center;
         display: flex;
         flex-direction: column;
-    }
-
-    .ranking-title img {
-        position: static !important;
-        width: 40px !important;
-        height: 40px !important;
-        transform: none !important;
-        margin: 0 auto 10px auto !important;
     }
 }
 /* ================================
@@ -3951,6 +4288,13 @@ body.bg-solid::before {
     align-items: center;
     justify-content: center;
     flex-direction: column;
+}
+
+/* 챔피언 상세 로딩 문구. 데스크톱은 칸(75vh)이 flex 가운데 정렬이라 이대로 충분하고,
+   폰 전용 최소 높이는 아래 @media 블록에 있다 (칸이 auto 라 한 줄로 쪼그라들던 것) */
+.champ-loading {
+    color: var(--text-muted);
+    font-size: 18px;
 }
 
 .champ-detail-inner {
@@ -4529,6 +4873,18 @@ body.bg-solid::before {
         height: auto;
     }
 
+    /* ★ 로딩 중에도 상자 크기를 PC 처럼 유지한다 (2026-08-19). 칸이 auto 라
+       "OO 상세 정보를 불러오는 중..." 한 줄 높이로 쪼그라들었다가 로딩이 끝나는 순간
+       확 늘어나는 게 이질감의 원인이었다. 본문과 비슷한 높이를 미리 잡아 둔다. */
+    .champ-loading {
+        min-height: 65vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        text-align: center;
+    }
+
     .champ-tab-content {
         height: auto !important;
     }
@@ -4906,6 +5262,14 @@ body.bg-solid::before {
     color: #fff;
 }
 
+/* 표 위 한 줄: 왼쪽 "전체 N명" + (폰에서만) 오른쪽 커트라인 (2026-08-19) */
+.rank-topline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
 .rank-count {
     color: var(--text-faint);
     font-size: 12px;
@@ -4915,6 +5279,20 @@ body.bg-solid::before {
 .rank-count b {
     color: var(--text-muted);
 }
+
+/* ★ 현재 커트라인 (폰 전용). 데스크톱은 오른쪽 컷라인 그래프 카드가 같은 값을
+   보여주므로 숨긴다. 색은 그 그래프와 같은 챌(#eab308)/그마(#f0576f) 색이다 */
+.rank-cutline {
+    display: none;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--text-faint);
+    margin: 0 4px 8px 0;
+    white-space: nowrap;
+}
+
+.rank-cutline-c { color: #eab308; }
+.rank-cutline-g { color: #f0576f; }
 
 /* 티어 칸: 메달 + 이름. 폰에서는 짧은 이름으로 바뀐다 */
 .rank-table .rank-tier {
@@ -5210,15 +5588,23 @@ body.bg-solid::before {
         margin-top: 0;   /* 위아래로 쌓이면 표와 나란히 둘 이유가 없다 */
     }
 
+    /* 폰에서는 표 우상단에 현재 커트라인을 글자로 보여준다 (그래프 카드는 표 아래로 밀리므로) */
+    .rank-cutline {
+        display: block;
+    }
+
     .cutoff-plot {
         height: 100px;
     }
 
-    /* 600px 제한을 풀고 칸을 좁혀 390px 안에 4열을 다 넣는다.
-       순위 36 + LP 46 + 승률 52 = 134px, 남는 폭이 전부 닉네임으로 간다. */
+    /* 600px 제한을 풀고 칸을 좁혀 390px 안에 5열을 다 넣는다.
+       ★ table-layout: fixed 가 필요하다 (2026-08-19). 자동 배치에서는 닉네임 span 이
+       nowrap 이라 칸이 글자 폭만큼 벌어져 말줄임이 아예 안 걸린다 — 고정 배치면
+       지정 폭 밖 남는 폭만 닉네임이 받고, 넘친 글자는 span 의 ellipsis 로 잘린다. */
     .rank-table {
         min-width: 0;
         font-size: 13px;
+        table-layout: fixed;
     }
 
     .rank-table th {
@@ -5233,11 +5619,12 @@ body.bg-solid::before {
         width: 36px;
     }
 
-    /* 티어 칸은 전체 이름 대신 챌/그마/마 로 줄인다.
-       메달 16 + 글자 22 = 52px 라 순위 36 + LP 46 + 승률 52 와 합쳐도 186px,
-       390px 안에서 닉네임 몫이 200px 넘게 남는다 */
+    /* 티어 칸은 줄임말(챌린저/그마/마스터)이 **온전히** 보이는 폭이다 (2026-08-19).
+       예전엔 한 글자(챌/마)에 52px 였는데, 메달 16 + 여백 3 + 세 글자 33px = 52px 라
+       칸 안쪽 여백까지 64px 로 잡는다. 그만큼 닉네임 칸이 줄어드는데 그게 요청이다 —
+       닉네임은 말줄임으로 자른다 (아래) */
     .rank-table .rank-tier {
-        width: 52px;
+        width: 64px;
     }
 
     .rank-tier-medal {
@@ -5259,18 +5646,12 @@ body.bg-solid::before {
         padding: 7px 11px;
     }
 
+    /* ★ 폰도 긴 닉네임은 말줄임이다 (2026-08-19 요청 — 예전 "줄바꿈으로 넘긴다" 를 뒤집었다).
+       두 줄로 늘어나 행 높이가 들쭉날쭉하던 게 사라진다. 잘린 이름은 span 의 title 로 보인다.
+       데스크톱의 span 말줄임 규칙(display:block + ellipsis)을 그대로 물려받으므로
+       여기서 풀지 않는 것으로 충분하다. */
     .rank-table .rank-name {
         padding-left: 8px;
-        /* 긴 닉네임은 줄바꿈으로 넘긴다. 말줄임으로 자르면 누구인지 알 수 없다 */
-        word-break: break-all;
-    }
-
-    /* ★ 데스크톱의 말줄임을 푼다. 폰은 칸이 200px 남짓이라 자르면 대부분 못 읽는다 */
-    .rank-table td.rank-name > span {
-        display: inline;
-        overflow: visible;
-        text-overflow: clip;
-        white-space: normal;
     }
 
     /* ★ 폰에서는 숙련도 칸을 숨긴다. 아이콘 5개가 120px 을 먹는데 390px 안에서는
@@ -5279,11 +5660,22 @@ body.bg-solid::before {
         display: none;
     }
 
-    /* 데스크톱에서 못 박은 폭을 푼다. 그대로 두면 390px 를 넘긴다 */
-    .rank-table .rank-name,
-    .rank-table .rank-wr,
-    .rank-table .rank-lp {
+    /* 데스크톱 고정폭을 폰 값으로 다시 잡는다 (2026-08-19).
+       순위 36 + 티어 64 + LP 56 + 승률 64 = 220px → 390px 폰에서 닉네임 몫이 약 160px 다
+       (예전 200px 에서 20% 줄인 것. 남는 폭으로 LP·승률을 예전보다 10%쯤 넓혔다).
+       닉네임은 width 를 안 정해 남는 폭을 전부 받고, 넘치면 말줄임된다. */
+    .rank-table .rank-name {
         width: auto;
+        max-width: none;
+    }
+
+    .rank-table .rank-lp {
+        width: 56px;
+        max-width: none;
+    }
+
+    .rank-table .rank-wr {
+        width: 64px;
         max-width: none;
     }
 
@@ -6834,11 +7226,43 @@ body.bg-solid::before {
     /* 카드가 165px 이라 16:9 면 93px 이다. 데스크톱 값(142)을 그대로 두면 그림만 뚱뚱해진다 */
     .mshop-grid .mythic-item-img-box { height: 95px; }
 
-    /* ★ 추천 배치(1번 크게 + 2·3번 가로로)는 폰에서 되돌린다. 390px 을 넷으로 나누면
+    /* ★ 추천 배치(1번 크게 + 2·3번 가로로)는 폰에서 푼다. 390px 을 넷으로 나누면
        한 칸이 84px 이라 큰 칸이라 해봐야 183px 이고, 나머지 넷은 이름이 통째로 잘린다.
-       flex 로 되돌리면 span 규칙은 저절로 무시된다 (격자 항목이 아니게 되므로). */
-    .mshop-grid.is-featured { display: flex; }
+       ★★ flex 가 아니라 **2칸 격자**다 (2026-08-19). flex 는 맨 아랫줄에 상품이
+       하나 남으면 그 카드가 두 칸 폭으로 늘어났다 (다리우스 크로마가 그 꼴이었다) —
+       격자면 홀수여도 옆 칸이 그냥 빈 채로 남는다. */
+    .mshop-grid.is-featured {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: auto;
+        gap: 10px;
+    }
+
+    /* 데스크톱의 자리 규칙(span)을 전부 되돌린다 */
+    .mshop-grid.is-featured .mythic-item-card:nth-child(1),
+    .mshop-grid.is-featured .mythic-item-card:nth-child(2),
+    .mshop-grid.is-featured .mythic-item-card:nth-child(3) {
+        grid-column: auto;
+        grid-row: auto;
+    }
+
     .mshop-grid.is-featured .mythic-item-img-box { height: 95px; flex: none; }
+
+    /* ★ 넥서스 효과(영상 카드)만 맨 위에서 두 칸을 가로로 쓴다 (2026-08-19 요청).
+       is-finisher 는 mythicCardHtml 이 영상이 붙는 카드에만 단다.
+       order 는 격자 자동 배치 순서에도 그대로 먹는다 — 몇 번째 상품이든 맨 위로 온다. */
+    .mshop-grid.is-featured .mythic-item-card.is-finisher {
+        grid-column: 1 / -1;
+        order: -1;
+    }
+
+    .mshop-grid.is-featured .mythic-item-card.is-finisher .mythic-item-img-box {
+        height: 150px;
+    }
+
+    /* (판매종료 딱지 툴팁의 폰 넘침은 공용 규칙이 이미 막는다 —
+       style.css 의 `@media (hover: none) [data-tooltip]::after` 참고.
+       헤드리스로 잴 때 +18px 로 보이는 건 에뮬레이션이 hover 미디어를 안 바꿔서다) */
 
     /* 수집 시각은 오른쪽 끝으로 밀면 줄이 넘치므로 흐름대로 둔다 */
     .mshop-collected { margin-left: 0; }

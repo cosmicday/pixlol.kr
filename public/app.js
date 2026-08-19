@@ -234,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     loadMythicShop();
+    loadPatchNotes();
     updateShopTimer();
     setInterval(updateShopTimer, 1000);
 
@@ -522,7 +523,36 @@ function hideAllContainers() {
 
     clearSearchError();
     if (window.refreshTimerInterval) clearInterval(window.refreshTimerInterval);
+
+    // 모바일 햄버거 메뉴가 열려 있으면 닫는다 (메뉴를 골랐다는 뜻이므로)
+    closeMobileMenu();
+
+    // ★ 메뉴를 옮기면 스크롤을 맨 위로 되돌린다 (2026-08-19).
+    //   랭킹 탭만 renderRankingPage 가 알아서 올려 주고 나머지는 스크롤이 내려간 채
+    //   새 화면이 나왔다. 페이지를 갈아 끼우는 유일한 길목이 여기라 여기서 한 번에 처리한다.
+    window.scrollTo(0, 0);
 }
+
+// ==========================================
+// 모바일 햄버거 메뉴 (2026-08-19)
+//   폰에서는 헤더에 메뉴 6개를 눕히는 대신 오른쪽 햄버거 버튼으로 접는다.
+//   header 에 .menu-open 을 토글하면 CSS 가 .nav-menu 를 드롭다운으로 펼친다.
+// ==========================================
+function toggleMobileMenu(e) {
+    if (e) e.stopPropagation();
+    document.querySelector('.header').classList.toggle('menu-open');
+}
+
+function closeMobileMenu() {
+    const h = document.querySelector('.header');
+    if (h) h.classList.remove('menu-open');
+}
+
+// 메뉴 밖(페이지 아무 데나)을 누르면 닫는다. 메뉴 항목 클릭은 hideAllContainers 가 닫는다.
+document.addEventListener('click', (e) => {
+    const h = document.querySelector('.header');
+    if (h && h.classList.contains('menu-open') && !e.target.closest('.header')) closeMobileMenu();
+});
 
 function goLobby() {
     if (window.location.pathname !== '/') window.history.pushState(null, '', '/');
@@ -2298,7 +2328,19 @@ function positionFootnote(fn) {
     const box = fn.querySelector('.custom-footnote-content');
     if (!box) return;
     const r = fn.getBoundingClientRect();
-    box.style.left = (r.left + r.width / 2) + 'px';
+    let cx = r.left + r.width / 2;
+
+    // ★ 폰에서만 화면 안으로 밀어 넣는다 (2026-08-19). 데스크톱은 "침범해서라도 그대로
+    //   보여준다" 를 유지하지만, 폰은 화면이 좁아 밖으로 나간 부분을 볼 방법이 아예 없다.
+    //   상자가 visibility:hidden(display 아님)이라 offsetWidth 는 숨어 있어도 정확하다.
+    //   left 는 상자의 **중심**이다 (CSS 의 translate(-50%, …) 기준).
+    if (window.innerWidth <= 768) {
+        const half = box.offsetWidth / 2;
+        const margin = 8;
+        cx = Math.min(Math.max(cx, margin + half), window.innerWidth - margin - half);
+    }
+
+    box.style.left = cx + 'px';
     box.style.top = r.bottom + 'px';
 }
 
@@ -2578,12 +2620,17 @@ const STAT_POS = [
     { code: 3, key: 'adc', name: '바텀' },
     { code: 4, key: 'support', name: '서포터' }
 ];
+// ★ 라인 아이콘을 op.gg CDN → 라이엇 공식(CommunityDragon) 으로 바꿨다 (2026-08-19).
+//   남의 사이트 정적 자산을 핫링크하면 그쪽이 리퍼러 차단·경로 변경만 해도 아이콘이
+//   전부 깨지고, 우리 심사(라이엇 프로덕션 키)에도 좋을 게 없다.
+//   CD 아이콘은 금색(#c8aa6e) 클라이언트 원본이라 invert 필터 없이 그대로 쓴다 —
+//   style.css 의 .stats-lane img / .stats-filter-btn img 에서 invert(1) 을 뺐다.
 const STAT_LANE_ICON = {
-    top: 'https://s-lol-web.op.gg/images/icon/icon-position-top.svg',
-    jungle: 'https://s-lol-web.op.gg/images/icon/icon-position-jungle.svg',
-    mid: 'https://s-lol-web.op.gg/images/icon/icon-position-mid.svg',
-    adc: 'https://s-lol-web.op.gg/images/icon/icon-position-adc.svg',
-    support: 'https://s-lol-web.op.gg/images/icon/icon-position-support.svg'
+    top: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-top.svg',
+    jungle: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-jungle.svg',
+    mid: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-middle.svg',
+    adc: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-bottom.svg',
+    support: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-utility.svg'
 };
 
 // ★ 이 아래는 티어를 안 매기고 회색으로 둔다. 30판이면 승률 95% 신뢰구간이
@@ -3468,10 +3515,10 @@ async function showStats() {
         </div>
         <p class="stats-note">
             티어는 <b>승률 60% · 밴률 25% · 픽률 15%</b> 를 합친 점수로 매기며,
-            <b>라인마다 따로</b> 계산합니다 (ALL 에서는 그 챔피언의 주 라인 기준).
+            <b>라인마다 따로</b> 계산합니다. 같은 챔피언이라도 라인이 다르면 별도의 줄로 나옵니다
+            (표본 ${STAT_MIN_GAMES}판 이상인 라인만).
             승률은 표본이 적을수록 평균 쪽으로 보정하고, 밴률은 그 라인에서 뛴 비율만큼만 반영합니다.
-            표본 ${STAT_MIN_GAMES}판 미만은 티어를 매기지 않고 흐리게 표시합니다.
-            표의 밴률은 밴 슬롯 기준이라 같은 챔피언을 양 팀이 밴하면 2로 셉니다.
+            표의 밴률은 챔피언 전체 기준(밴 슬롯)이라 같은 챔피언을 양 팀이 밴하면 2로 셉니다.
         </p>
     `;
 
@@ -3507,18 +3554,40 @@ async function showStats() {
         const totalOf = {};
         list.forEach(c => { if (c.pos === -1) totalOf[c.champ] = c.games; });
 
+        // ★★ ALL 도 챔피언 통짜가 아니라 **챔피언 x 라인** 줄이다 (2026-08-19 개편).
+        //   예전엔 주 라인 하나로 합쳐 보여줘서 "미드 빅토르" 줄에 바텀 빅토르 표본까지
+        //   섞여 들어갔다. 지금은 라인이 다르면 줄도 다르다 — 승률·픽률·표본 전부 그 라인 값이다.
+        //   · 30판을 넘는 라인만 줄로 세운다 (미달 라인까지 다 깔면 챔피언마다 1~2판짜리
+        //     꼬리가 줄줄이 붙는다). 어느 라인도 못 넘는 챔피언은 "왜 없지" 가 되지 않게
+        //     주 라인 한 줄을 흐리게 남긴다.
+        //   · 밴률은 라인 개념이 없으므로(pos:-1 에만 있다) 어느 줄이든 챔피언 전체 값이다.
         let rows;
         if (curLane === 'all') {
-            rows = list.filter(c => c.pos === -1).map(c => {
-                // 주 라인 = 라인별 중 가장 많이 뛴 곳
+            rows = [];
+            const covered = new Set();   // 30판 이상 라인 줄이 하나라도 있는 챔피언
+            list.forEach(c => {
+                if (c.pos < 0 || c.games < STAT_MIN_GAMES) return;
+                covered.add(c.champ);
+                rows.push({
+                    ...c,
+                    bans: banOf[c.champ] || 0,
+                    lanePos: c.pos,
+                    laneRate: totalOf[c.champ] ? c.games / totalOf[c.champ] * 100 : 0
+                });
+            });
+            list.forEach(c => {
+                if (c.pos !== -1 || covered.has(c.champ)) return;
                 let best = null;
                 list.forEach(x => {
                     if (x.champ === c.champ && x.pos >= 0 && (!best || x.games > best.games)) best = x;
                 });
-                return { ...c, lanePos: best ? best.pos : -1, laneRate: best && c.games ? best.games / c.games * 100 : 0 };
+                rows.push({ ...c, lanePos: best ? best.pos : -1, laneRate: best && c.games ? best.games / c.games * 100 : 0 });
             });
         } else {
-            rows = list.filter(c => c.pos === Number(curLane)).map(c => ({
+            // ★ 라인 필터에서는 그 라인 표본이 30판 미만인 줄을 **아예 뺀다** (2026-08-19).
+            //   흐리게 남겨 두니 "다른 포지션 챔피언이 왜 여기 있냐" 로 읽혔다 —
+            //   몇 판 억지로 간 기록까지 그 라인 챔피언처럼 깔리는 게 문제였다.
+            rows = list.filter(c => c.pos === Number(curLane) && c.games >= STAT_MIN_GAMES).map(c => ({
                 ...c,
                 bans: banOf[c.champ] || 0,
                 lanePos: c.pos,
@@ -3563,13 +3632,16 @@ async function showStats() {
             const low = !c.tier;
             const laneKey = STAT_POS.find(p => p.code === c.lanePos)?.key;
             return `
-            <tr class="stats-row ${low ? 'stats-row-low' : ''}" data-champ="${c.champ}">
-                <td class="stats-champ-info">
+            <tr class="stats-row ${low ? 'stats-row-low' : ''}" data-champ="${c.champ}" data-lane="${c.lanePos}">
+                <!-- ★ td 자체를 flex 로 만들면 안 된다 (2026-08-19). display:flex 가 되는 순간
+                     table-cell 이 아니게 되어 그 칸의 border-bottom 이 옆 칸과 1px 어긋나게
+                     그려졌다. flex 는 안쪽 div 가 맡는다 — style.css .stats-champ-flex 참고 -->
+                <td class="stats-champ-info"><div class="stats-champ-flex">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${engId}.png"
                          onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
                     <span class="stats-champ-name">${c.name}</span>
                     <span class="stats-expand">▾</span>
-                </td>
+                </div></td>
                 <td>${c.tier
                     ? `<span class="stats-tier tier-${c.tier.toLowerCase()}" title="점수 ${c.score >= 0 ? '+' : ''}${c.score.toFixed(2)}">${c.tier}</span>`
                     : `<span class="stats-tier-none" title="표본 ${STAT_MIN_GAMES}판 미만">-</span>`}</td>
@@ -3631,7 +3703,10 @@ async function showStats() {
             }
             // 불러오는 동안 사용자가 다시 눌러 닫았을 수 있다
             if (!row.isConnected) return;
-            row.innerHTML = `<td colspan="7">${renderBuildPanel(buildCache.get(cacheKey), curLane)}</td>`;
+            // ★ ALL 탭도 줄이 라인별이 되면서(2026-08-19) 패널은 **그 줄의 라인**을 따른다.
+            //   라인 필터가 켜져 있으면 어차피 둘이 같은 값이다.
+            const rowLane = tr.dataset.lane != null && Number(tr.dataset.lane) >= 0 ? tr.dataset.lane : 'all';
+            row.innerHTML = `<td colspan="7">${renderBuildPanel(buildCache.get(cacheKey), rowLane)}</td>`;
         } catch (err) {
             if (row.isConnected) {
                 row.innerHTML = `<td colspan="7"><div class="build-empty">룬 통계를 불러오지 못했습니다.</div></td>`;
@@ -3957,11 +4032,16 @@ const RANKING_ITEMS_PER_PAGE = 50;
 // ★ color 는 2026-08-15부터 안 쓴다 — 티어 이름·LP·승률을 전부 흰색으로 통일했고,
 //   티어 구분은 왼쪽 메달 그림이 한다. 색을 되돌리고 싶으면 이 값을
 //   style="color: ${t.color}" 로 다시 실으면 되니까 표에는 남겨 둔다.
+// ★ short 는 폰에서 쓴다. 2026-08-19에 한 글자(챌/마)에서 온전한 줄임말로 늘렸다 —
+//   "챌린저/그마/마스터" 세 글자가 다 보이게 폰 티어 칸 폭도 같이 넓혔다 (style.css).
 const RANK_TIER_INFO = {
-    C: { name: '챌린저', short: '챌', color: '#ca8a04', icon: 'challenger' },
+    C: { name: '챌린저', short: '챌린저', color: '#ca8a04', icon: 'challenger' },
     G: { name: '그랜드마스터', short: '그마', color: '#d33148', icon: 'grandmaster' },
-    M: { name: '마스터', short: '마', color: '#8b5cf6', icon: 'master' }
+    M: { name: '마스터', short: '마스터', color: '#8b5cf6', icon: 'master' }
 };
+
+// 랭킹 표 왼쪽 메달. op.gg CDN 대신 라이엇 공식(CommunityDragon) 미니 문장을 쓴다 (2026-08-19)
+const RANK_MEDAL_BASE = 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/';
 
 function rankTierInfo(code) {
     return RANK_TIER_INFO[code] || RANK_TIER_INFO.M;
@@ -3988,10 +4068,8 @@ function renderRankingHeader() {
     const profileDiv = document.getElementById('user-profile');
     profileDiv.innerHTML = `
         <div class="stats-header">
-            <h1 class="ranking-title">
-                <img src="https://opgg-static.akamaized.net/images/medals_new/challenger.png" style="position: absolute; right: 100%; margin-right: 12px; top: 50%; transform: translateY(-50%); width: 60px; height: 60px;">
-                한국서버 솔로랭크 랭킹
-            </h1>
+            <!-- 제목 왼쪽 챌린저 메달은 뺐다 (2026-08-19 요청). op.gg 핫링크이기도 했다 -->
+            <h1 class="ranking-title">한국서버 솔로랭크 랭킹</h1>
             <p class="rank-updated" id="rank-updated"><span${rankUpdatedTitle() ? ` data-tooltip="${escapeHtml(rankUpdatedTitle())}"` : ''}>${rankUpdatedText()}</span></p>
             <div class="rank-search-box">
                 <input type="text" id="rank-search" class="rank-search" autocomplete="off"
@@ -4228,7 +4306,7 @@ function renderRankingPage(page, opts = {}) {
                 <td class="rank-num">${player.rank}</td>
                 <td class="rank-name">${nameCell}</td>
                 <td class="rank-tier">
-                    <img class="rank-tier-medal" src="https://opgg-static.akamaized.net/images/medals_new/${t.icon}.png" alt="" loading="lazy">
+                    <img class="rank-tier-medal" src="${RANK_MEDAL_BASE}${t.icon}.png" alt="" loading="lazy">
                     <span class="rank-tier-name">${t.name}</span>
                     <span class="rank-tier-short">${t.short}</span>
                 </td>
@@ -4244,6 +4322,15 @@ function renderRankingPage(page, opts = {}) {
     const countHtml = rankingQuery.trim()
         ? `<div class="rank-count">검색 결과 <b>${data.length.toLocaleString()}</b>명 · 전체 ${fullRankingData.length.toLocaleString()}명</div>`
         : `<div class="rank-count">전체 <b>${fullRankingData.length.toLocaleString()}</b>명</div>`;
+
+    // ★ 폰 전용: 표 우상단에 현재 커트라인 (2026-08-19). 데스크톱은 오른쪽 그래프 카드가
+    //   같은 값을 보여주므로 CSS 로 숨긴다. 색은 컷라인 그래프와 같은 챌/그마 색이다.
+    //   컷은 이미 받아 둔 명단에서 바로 센다 — 명단이 LP 내림차순이라 N등은 N-1 번째다.
+    const lpOf = (n) => fullRankingData.length >= n ? fullRankingData[n - 1].leaguePoints : null;
+    const cutC = lpOf(300), cutG = lpOf(1000);
+    const cutlineHtml = (cutC !== null && cutG !== null)
+        ? `<div class="rank-cutline"><span class="rank-cutline-c">C: ${cutC.toLocaleString()}LP</span> / <span class="rank-cutline-g">GM: ${cutG.toLocaleString()}LP</span></div>`
+        : '';
 
     const tableHtml = `
         <!-- ★ 인라인 style 을 클래스로 뺐다 (2026-08-11). min-width:600px 이 인라인이라
@@ -4271,7 +4358,7 @@ function renderRankingPage(page, opts = {}) {
     //   이라 flex 항목이 안 줄어들면 오른쪽 칸을 밀어내고 가로로 넘친다.
     listDiv.innerHTML =
         `<div class="rank-layout">
-            <div class="rank-main">${countHtml}${tableHtml}${rankPagerHtml(page, totalPages)}</div>
+            <div class="rank-main"><div class="rank-topline">${countHtml}${cutlineHtml}</div>${tableHtml}${rankPagerHtml(page, totalPages)}</div>
             ${rankCutoffSideHtml()}
         </div>`;
 
@@ -4610,6 +4697,41 @@ function mythicRotationLabel(date) {
     return d ? `${d} 로테이션` : '';
 }
 
+// 아직 수집 전(또는 초기화가 지났는데 새 상품이 안 들어옴)일 때의 안내 문구 (2026-08-19 통일).
+//   "아직 오늘 로테이션을 수집하지 않았습니다" 는 우리 사정을 말하는 문장이라 바꿨다.
+function mythicCollectingMsg(key) {
+    if (key === 'featured') return '추천 상품을 수집 중입니다!';
+    const info = MYTHIC_TABS.find(t => t.key === key);
+    return `${info ? info.name : '일일'} 로테이션 상품을 수집 중입니다!`;
+}
+
+// ============================================================
+//  홈 패치노트 영역 (2026-08-19)
+//    왼쪽 목록만 서버(/api/patch-notes)에서 온다 — 공식 홈페이지 목록을 30분 캐시로
+//    긁은 것이다. 오른쪽 PBE 칸은 X 자동 수집이 안 돼서 index.html 에 정적 안내다.
+// ============================================================
+async function loadPatchNotes() {
+    const box = document.getElementById('patch-note-list');
+    if (!box) return;
+    try {
+        const res = await fetch('/api/patch-notes');
+        const data = await res.json();
+        if (!data.ok || !Array.isArray(data.official) || !data.official.length) throw new Error('empty');
+        box.innerHTML = data.official.slice(0, 5).map(n => {
+            const d = n.date ? new Date(n.date) : null;
+            const p = x => String(x).padStart(2, '0');
+            const dateText = d && !isNaN(d) ? `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}` : '';
+            return `<a class="patch-note-item" href="${escapeHtml(n.url)}" target="_blank" rel="noopener">
+                <span class="patch-note-title">${escapeHtml(n.title)}</span>
+                <span class="patch-note-date">${dateText}</span>
+            </a>`;
+        }).join('');
+    } catch (e) {
+        box.innerHTML = `<div class="patch-note-empty">패치노트를 불러오지 못했습니다.<br>
+            <a class="patch-note-x-link" href="https://www.leagueoflegends.com/ko-kr/news/tags/patch-notes/" target="_blank" rel="noopener">공식 홈페이지에서 보기 →</a></div>`;
+    }
+}
+
 window.loadMythicShop = async function () {
     const box = document.getElementById('mythic-items');
     if (!box) return;
@@ -4629,7 +4751,7 @@ window.loadMythicShop = async function () {
 
     // ★ 아직 오늘 수집 전. 어제 것을 대신 보여주면 거짓말이 되므로 비워 두고 말한다.
     if (!data.items || !data.items.length) {
-        box.innerHTML = `<div class="mythic-empty">아직 오늘 로테이션을 수집하지 않았습니다.</div>`;
+        box.innerHTML = `<div class="mythic-empty">${mythicCollectingMsg('daily')}</div>`;
         return;
     }
 
@@ -4810,7 +4932,7 @@ function mythicCardHtml(item) {
         : '';
 
     return `
-        <div class="mythic-item-card ${fit}${goto ? ' is-link' : ''}"${goto}>
+        <div class="mythic-item-card ${fit}${goto ? ' is-link' : ''}${finisher?.video ? ' is-finisher' : ''}"${goto}>
             ${timer}
             <div class="mythic-item-img-box">${media}</div>
             <div class="mythic-item-info">
@@ -4827,6 +4949,23 @@ function mythicCardHtml(item) {
 //     첫 화면 위젯이 그 경우다 (예전 동작 그대로).
 window.updateShopTimer = function () {
     const dailyEnd = mythicPeriod('daily').end;
+
+    // ★★ 페이지를 켜 둔 채 초기화 시각(한국 09:00)을 넘기면 화면을 다시 그린다 (2026-08-19).
+    //   안 그러면 타이머만 0 으로 돌고 **어제 상품이 계속 걸려 있었다.**
+    //   새 로테이션이 아직 수집 전이면 이번엔 "수집 중입니다" 안내가 나간다.
+    if (!window._shopRolloverEnd) window._shopRolloverEnd = dailyEnd;
+    if (Date.now() >= window._shopRolloverEnd) {
+        window._shopRolloverEnd = mythicPeriod('daily').end;
+        mythicTodayCache = null;
+        Object.keys(mythicSectionCache).forEach(k => delete mythicSectionCache[k]);
+        loadMythicShop();
+        const mythicBox = document.getElementById('mythic-container');
+        const activeTab = document.querySelector('.mshop-tab.active');
+        if (mythicBox && mythicBox.style.display !== 'none' && activeTab) {
+            renderMythicSection(activeTab.dataset.tab);
+        }
+    }
+
     document.querySelectorAll('.js-shop-timer').forEach(el => {
         const until = Number(el.dataset.until) || dailyEnd;
         el.innerText = remainText(until, el.dataset.suffix || '뒤 초기화');
@@ -4960,9 +5099,28 @@ async function renderMythicSection(key) {
     if (!isDaily && (!data.items || !data.items.length)) {
         body.innerHTML = `
             <div class="mshop-soon">
-                <div class="mshop-soon-title">${info.full}은 아직 수집 전입니다</div>
+                <div class="mshop-soon-title">${mythicCollectingMsg(key)}</div>
                 <p class="mshop-soon-desc">
                     이 구획은 아직 들어온 데이터가 없습니다. 수집이 시작되면 여기에 그대로 나옵니다.
+                </p>
+                <button class="mshop-goto" data-goto="daily">일일 로테이션 보기</button>
+            </div>`;
+        return;
+    }
+
+    // ★★ 초기화가 지났는데 새 로테이션이 아직 안 들어온 경우 (2026-08-19).
+    //   서버의 stale 은 "주기(7·14일)보다 오래 묵었나" 라 로테이션이 갓 바뀐 직후를 못 잡는다 —
+    //   수집 날짜가 **지금 판매 기간의 시작보다 앞이면** 그 상품은 이미 내려간 것이다.
+    //   지난 상품을 최신인 척 보여주는 대신 수집 중 안내로 바꾼다 (일일 탭이 하던 것과 같은 원칙).
+    const periodNow = mythicPeriod(key);
+    if (!isDaily && periodNow && data.date
+        && Date.parse(data.date + 'T00:00:00Z') < periodNow.start) {
+        body.innerHTML = `
+            <div class="mshop-soon">
+                <div class="mshop-soon-title">${mythicCollectingMsg(key)}</div>
+                <p class="mshop-soon-desc">
+                    로테이션이 바뀌었는데 새 상품이 아직 수집되지 않았습니다.<br>
+                    (마지막 수집: ${mythicDayLabel(data.date)})
                 </p>
                 <button class="mshop-goto" data-goto="daily">일일 로테이션 보기</button>
             </div>`;
@@ -4977,7 +5135,7 @@ async function renderMythicSection(key) {
     //   로테이션이 바뀌는 순간 깨진다. 자세한 건 style.css 의 `.is-featured` 주석.
     const cards = (data.items && data.items.length)
         ? `<div class="mshop-grid${key === 'featured' ? ' is-featured' : ''}">${data.items.map(mythicCardHtml).join('')}</div>`
-        : `<div class="mythic-empty">아직 오늘 로테이션을 수집하지 않았습니다.</div>`;
+        : `<div class="mythic-empty">${mythicCollectingMsg(key)}</div>`;
 
     // ★★ 제목 옆은 **다음 초기화까지 남은 시간**, 오른쪽 끝은 **판매 기간**이다 (2026-08-17).
     //   예전엔 "8월 17일 기준 · 오늘" 과 "수집 2026. 8. 17. 오후 2:23:11" 이 있었는데,
@@ -5986,6 +6144,7 @@ window.selectChampion = async function (champId, champName) {
     champViewTab = 'skills';
     champViewSkin = -1;
     syncChampUrl();
+    ++skinPreloadToken;   // 이전 챔피언 스킨 예열을 중단한다 (2026-08-19)
 
     document.querySelectorAll('.champ-sidebar-item').forEach(el => {
         el.classList.remove('active');
@@ -5999,7 +6158,10 @@ window.selectChampion = async function (champId, champName) {
     }
 
     const detailArea = document.getElementById('champ-detail-area');
-    detailArea.innerHTML = `<div style="color:#a79fbd; font-size:18px;">${champName} 상세 정보를 불러오는 중...</div>`;
+    // ★ 클래스로 뺐다 (2026-08-19). 폰에서는 상세 칸 높이가 auto 라 이 문구 한 줄 높이로
+    //   쪼그라들었다가 로딩이 끝나면 확 늘어났다 — style.css 의 .champ-loading 이
+    //   폰에서만 최소 높이를 잡아 상자 크기를 PC 처럼 유지한다.
+    detailArea.innerHTML = `<div class="champ-loading">${champName} 상세 정보를 불러오는 중...</div>`;
 
     try {
         const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/champion/${champId}.json`);
@@ -6939,6 +7101,8 @@ window.switchChampTab = function (event, tabName) {
     // 배경·대사는 열 때 채운다 (배경은 960KB 라 미리 받지 않는다)
     if (tabName === 'lore') renderChampLore();
     if (tabName === 'quotes') renderChampQuotes();
+    // 스킨 탭을 열면 나머지 원본 일러스트를 한 장씩 미리 받아 둔다 (위 preloadSkinFulls 주석)
+    if (tabName === 'skins') preloadSkinFulls(window.currentSkinList || [], (window.currentSkinIndex || 0) + 1);
 };
 
 // ============================================================
@@ -7317,6 +7481,9 @@ window.selectChroma = function (i) {
 
     // ★ 크로마 렌더는 270x303 세로 인물이라 cover 로 채우면 얼굴이 잘린다.
     //   일러스트(가로)와 렌더(세로)가 같은 칸을 쓰므로 맞춰서 바꿔 준다
+    // ★ 토큰을 올려 둔다 — selectSkin 이 걸어 둔 "원본 도착하면 바꿔 끼우기" 가
+    //   방금 고른 크로마를 덮어쓰지 않게 (2026-08-19)
+    ++skinViewToken;
     img.classList.toggle('is-chroma', !!c);
     img.src = c ? c.img : skin.full;
 
@@ -7335,6 +7502,36 @@ window.selectChroma = function (i) {
     document.querySelectorAll('.chroma-dot').forEach(el =>
         el.classList.toggle('active', Number(el.dataset.i) === window.currentChromaIndex));
 };
+
+// ============================================================
+//  스킨 그림 로딩 최적화 (2026-08-19)
+//    큰 그림(uncentered 일러스트, 장당 ~185KB)이 클릭할 때마다 새로 내려와서
+//    "누르고 한 박자 기다리는" 느낌이 났다. 두 가지로 잡는다:
+//    ① 누르는 즉시 **목록 썸네일(이미 받아 둔 그림)** 을 먼저 걸고, 원본이
+//       도착하면 바꿔 끼운다 — 빈 칸/이전 스킨이 걸려 있는 시간이 0 이 된다.
+//    ② 스킨 탭을 여는 순간부터 나머지 원본을 **한 장씩 차례로** 미리 받는다.
+//       (동시에 다 받으면 지금 보는 그림까지 느려지므로 순차다.)
+//       브라우저 캐시에 들어가므로 몇 초 뒤부터는 어떤 스킨을 눌러도 즉시 뜬다.
+// ============================================================
+let skinViewToken = 0;      // 늦게 도착한 원본이 다음 스킨을 덮어쓰지 않게 하는 표
+let skinPreloadToken = 0;   // 챔피언을 바꾸면 이전 챔피언 예열을 중단한다
+
+function preloadSkinFulls(list, startIdx) {
+    const token = ++skinPreloadToken;
+    const queue = [];
+    for (let i = 0; i < (list || []).length; i++) {
+        const idx = (startIdx + i) % list.length;   // 보고 있는 스킨 다음 것부터
+        if (list[idx] && list[idx].full) queue.push(list[idx].full);
+    }
+    let i = 0;
+    const next = () => {
+        if (token !== skinPreloadToken || i >= queue.length) return;
+        const img = new Image();
+        img.onload = img.onerror = () => setTimeout(next, 80);
+        img.src = queue[i++];
+    };
+    next();
+}
 
 window.selectSkin = function (index) {
     const list = window.currentSkinList;
@@ -7356,7 +7553,20 @@ window.selectSkin = function (index) {
 
     const skin = list[index];
     const img = document.getElementById('skin-view-img');
-    if (img) { img.classList.remove('is-chroma'); img.src = skin.full; }
+    if (img) {
+        img.classList.remove('is-chroma');
+        // ★ 썸네일(이미 캐시에 있다)을 먼저 걸고 원본이 오면 바꿔 끼운다 (2026-08-19).
+        //   토큰으로 "늦게 도착한 원본이 다음에 고른 스킨을 덮어쓰는" 경주를 막는다.
+        const want = ++skinViewToken;
+        if (skin.thumb && skin.thumb !== skin.full) {
+            img.src = skin.thumb;
+            const pre = new Image();
+            pre.onload = () => { if (want === skinViewToken) img.src = skin.full; };
+            pre.src = skin.full;
+        } else {
+            img.src = skin.full;
+        }
+    }
     // 스킨을 바꾸면 크로마도 풀리므로 흐린 배경도 같이 지운다
     const bgEl = document.getElementById('skin-view-bg');
     if (bgEl) bgEl.style.backgroundImage = '';

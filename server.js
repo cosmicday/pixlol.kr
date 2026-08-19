@@ -3046,6 +3046,55 @@ app.get('/api/rank-cutoffs', async (req, res) => {
     }
 });
 
+// ==========================================
+// 패치노트 목록 (2026-08-19 신설) — 홈 화면 패치노트 영역이 읽는다
+//   한국 롤 공식 홈페이지의 패치노트 태그 페이지를 긁는다. Next.js 라
+//   __NEXT_DATA__ JSON 안에 기사 목록(articleCardGrid.items)이 통째로 들어 있어서
+//   HTML 파싱 없이 JSON 만 뽑으면 된다 (2026-08-19 실측: 171건 · 최신순).
+//   ★ 30분 캐시 + 마지막 성공값 폴백 — 공식 페이지가 잠깐 죽거나 구조가 바뀌어도
+//     홈 화면이 통째로 비지 않게 한다. 구조가 바뀌면 콘솔 경고가 남는다.
+//   ★ UA 는 브라우저 꼴로 보낸다. 밋밋한 axios 기본 UA 는 그쪽 CDN 이 자를 수 있다
+//     (우리 Cloudflare 가 Python-urllib 를 잘랐던 것과 같은 이유다).
+let lastGoodPatchNotes = null;
+
+app.get('/api/patch-notes', async (req, res) => {
+    const hit = myCache.get('patch_notes');
+    if (hit) return res.json(hit);
+    try {
+        const r = await axios.get('https://www.leagueoflegends.com/ko-kr/news/tags/patch-notes/', {
+            timeout: 10000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
+                'Accept-Language': 'ko'
+            }
+        });
+        const m = String(r.data).match(/__NEXT_DATA__" type="application\/json"[^>]*>([\s\S]*?)<\/script>/);
+        if (!m) throw new Error('__NEXT_DATA__ 없음');
+        const blades = JSON.parse(m[1])?.props?.pageProps?.page?.blades || [];
+        const grid = blades.find(b => b.type === 'articleCardGrid');
+        if (!grid || !Array.isArray(grid.items)) throw new Error('articleCardGrid 없음');
+
+        const official = grid.items.slice(0, 5).map(it => {
+            const rel = it?.action?.payload?.url || '';
+            return {
+                title: String(it.title || '').slice(0, 200),
+                url: /^https?:/.test(rel) ? rel : `https://www.leagueoflegends.com${rel}`,
+                date: it?.analytics?.publishDate || null
+            };
+        }).filter(n => n.title && n.url);
+        if (!official.length) throw new Error('기사 0건');
+
+        const payload = { ok: true, official, fetchedAt: Date.now() };
+        lastGoodPatchNotes = payload;
+        myCache.set('patch_notes', payload, 1800);
+        res.json(payload);
+    } catch (e) {
+        console.warn('[PatchNotes] 수집 실패:', e.message);
+        if (lastGoodPatchNotes) return res.json(lastGoodPatchNotes);
+        res.json({ ok: false, official: [] });
+    }
+});
+
 app.get('/api/ranking', async (req, res) => {
     const cachedRanking = myCache.get('challenger_ranking_data');
     if (cachedRanking) return res.json(cachedRanking);
