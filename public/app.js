@@ -3953,7 +3953,13 @@ let rankingRefreshMs = 10 * 60 * 1000;
 
 // ==========================================
 // 컷라인 그래프 (2026-08-18)
-//   서버가 **매일 23:45(KST)** 에 300등 LP(챌린저 컷)와 1000등 LP(그마 컷)를 한 줄씩 남긴다.
+//   ★★ 서버가 **23:45~23:59 의 1분 표본 15개 중 c300+g1000 이 최대인 하나**를 골라
+//     그날의 **챌린저 최저 LP / 그마 최저 LP** 를 한 줄 남긴다 (2026-08-19 개편).
+//     즉 그래프의 점은 **티어 소속 기준**이다 — "300등의 LP" 가 아니다.
+//   ★★ 반면 카드 오른쪽의 "현재 커트라인" 숫자는 **지금 명단의 300등·1000등 LP** 다
+//     (아래 rankCutoffSideHtml 의 lpAt). **일부러 기준이 다르다** —
+//     저건 "지금 몇 점이면 300등 안인가" 라는 실시간 값이고, 그래프는 그날의 티어 경계다.
+//     재계산 전 시간대에는 둘이 50~150 LP 씩 벌어질 수 있는데 **버그가 아니다.**
 //   ★ 한 번 받으면 들고 있는다 — 하루 한 줄이라 페이지를 넘길 때마다 다시 받을 이유가 없다.
 //   ★ null 은 "아직 안 받았다", 빈 배열은 "받았는데 기록이 없다" 로 뜻이 다르다.
 //     빈 배열을 "아직" 으로 보여주면 첫날에 영영 로딩 중처럼 보인다.
@@ -3994,7 +4000,7 @@ function cutoffChartHtml(rows, key, opts) {
     }
     if (!pts.length) {
         return `<div class="cutoff-card">${head}
-            <div class="cutoff-empty">아직 기록이 없습니다.<br><b>매일 밤 23:45</b> 에 한 점씩 쌓입니다.</div></div>`;
+            <div class="cutoff-empty">아직 기록이 없습니다.<br><b>매일 밤 23:45~23:59</b> 를 재서 한 점씩 쌓입니다.</div></div>`;
     }
 
     const vals = pts.map(p => p.v);
@@ -4046,8 +4052,8 @@ const fmtCutoffDay = (d) => String(d).slice(5).replace('-', '.');
 function rankCutoffSideHtml() {
     const lpAt = (n) => fullRankingData.length >= n ? fullRankingData[n - 1].leaguePoints : null;
     return `<aside class="rank-side">
-        ${cutoffChartHtml(rankCutoffData, 'lp300', { title: '현재 챌린저 커트라인', color: '#eab308', nowLp: lpAt(300) })}
-        ${cutoffChartHtml(rankCutoffData, 'lp1000', { title: '현재 그랜드마스터 커트라인', color: '#f0576f', nowLp: lpAt(1000) })}
+        ${cutoffChartHtml(rankCutoffData, 'lpChal', { title: '현재 챌린저 커트라인', color: '#eab308', nowLp: lpAt(300) })}
+        ${cutoffChartHtml(rankCutoffData, 'lpGm', { title: '현재 그랜드마스터 커트라인', color: '#f0576f', nowLp: lpAt(1000) })}
     </aside>`;
 }
 const RANKING_ITEMS_PER_PAGE = 50;

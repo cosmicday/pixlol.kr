@@ -109,17 +109,26 @@ apexDriftSchema.index({ t: -1 });
 const ApexDrift = mongoose.model('ApexDrift', apexDriftSchema);
 
 // ==========================================
-// 컷라인 그래프용 — 하루 한 줄 (2026-08-18 신설). 랭킹 탭 오른쪽 그래프가 읽는다.
-//   ★ TTL 이 없다. 하루 한 줄 x 100B 라 1년 모아도 36KB 다.
-//   ★ `lp300` = 300등 LP(챌린저 컷) · `lp1000` = 1000등 LP(그랜드마스터 컷).
-//     **apexdrifts 의 `c300`/`g1000` 은 인원 수라 이름만 비슷하고 뜻이 다르다** —
-//     그래서 여기서는 `lp` 를 앞에 붙였다.
+// 컷라인 그래프용 — 하루 한 줄 (2026-08-18 신설 · 2026-08-19 정의 변경)
+//   랭킹 탭 오른쪽 그래프가 읽는다. ★ TTL 이 없다 (하루 한 줄 x 100B, 1년 36KB).
+//
+//   ★★ **등수 기준이 아니라 티어 소속 기준이다** (2026-08-19).
+//     `lpChal` = 챌린저 최저 LP · `lpGm` = 그마 최저 LP.
+//     예전엔 `lp300`/`lp1000`(300등·1000등의 LP)이었는데, 재계산 전에 재면 그 300등이
+//     **그마**이고 1000등이 **마스터**라 "티어 컷" 이 아니었다 — 8/18 실측이
+//     300등 1830 / 챌린저 최저 1773, 1000등 1330 / 그마 최저 1175 로 갈렸다.
+//   ★★ **필드 이름을 같이 바꾼 이유가 이것이다.** 이름을 두고 뜻만 바꾸면 옛 점과 새 점이
+//     한 그래프에 섞여도 아무도 못 알아챈다.
+//   ★ 화면의 "현재 커트라인" 숫자는 **여전히 300등·1000등의 LP** 다 (app.js 의 `lpAt`).
+//     저건 실시간 값이라 "지금 몇 점이면 300등 안인가" 라는 뜻이고 목적이 다르다 —
+//     **일부러 다른 기준이니 맞추려 하지 말 것.**
+//   ★ apexdrifts 의 `c300`/`g1000` 은 **인원 수**라 이름만 비슷하고 뜻이 다르다.
 // ==========================================
 const rankCutoffSchema = new mongoose.Schema({
     day: { type: String, required: true, unique: true },   // 한국시간 날짜 (YYYY-MM-DD)
-    t: { type: Date, default: Date.now },
-    lp300: { type: Number },     // 300등 LP  = 챌린저 컷
-    lp1000: { type: Number }     // 1000등 LP = 그랜드마스터 컷
+    t: { type: Date, default: Date.now },                  // 채택한 표본의 시각
+    lpChal: { type: Number },    // 챌린저 최저 LP = 챌린저 컷
+    lpGm: { type: Number }       // 그마 최저 LP   = 그랜드마스터 컷
 });
 const RankCutoff = mongoose.model('RankCutoff', rankCutoffSchema);
 
@@ -718,48 +727,94 @@ async function saveApexDrift() {
         ` · 그마 ${700 - g1000}명` +
         ` (챌 최저 ${c.min} / 그마 최고 ${g.max} / 마스터 최고 ${m.max})`);
 
-    await saveRankCutoff().catch(e => console.error('[Cutoff] 저장 실패:', e.message));
 }
 
 // ==========================================
-// ★★ 컷라인 그래프용 — 매일 23:45(KST) 한 번만 찍는다 (2026-08-18 신설)
-//   `apexdrifts` 와 목적이 다르다. 저쪽은 **어긋남을 분 단위로** 보려는 것이라 TTL 7일이고,
-//   이쪽은 **날짜별 컷 추이를 길게** 보려는 것이라 TTL 이 없다 (하루 한 줄 x 100B).
-//   ★ 왜 23:45 인가 — 티어 재계산 직전이라 **그날 하루가 온전히 반영된 값**이다.
-//     재계산 뒤에 재면 승격·강등이 섞여 전날과 이어 붙일 기준이 달라진다.
-//   ★ 창을 23:45~23:55 로 잡은 이유: 갱신 주기가 5분이라 23:45 에 정확히 도는 게
-//     정상이지만, 조회가 밀리거나 재시작 직후면 한두 번 건너뛸 수 있다. 창 안의
-//     **첫 성공 한 번만** 저장한다 (`$setOnInsert` 라 두 번째부터는 아무 일도 안 한다).
-//   ★★ 명단이 덜 찼으면 안 찍는다 — 마스터 조회만 실패해도 1000등 LP 가 통째로 달라져
-//     그래프에 없는 골짜기가 생긴다. `apexdrifts` 와 같은 이유다.
+// ★★ 컷라인 — 23:45~23:59 의 1분 표본 15개 중 **하나를 골라** 하루 한 줄 (2026-08-19 개편)
+//   `apexdrifts` 와 목적이 다르다. 저쪽은 어긋남을 분 단위로 보려는 것이라 TTL 7일이고,
+//   이쪽은 날짜별 컷 추이를 길게 보려는 것이라 TTL 이 없다.
+//
+//   ★★ **고르는 기준은 `c300 + g1000` 이 가장 큰 표본이다.**
+//     c300 = 상위 300등 안의 챌린저 수(최대 300) · g1000 = 상위 1000등 안의 그마 수(최대 700).
+//     **둘 다 클수록 LP 순위와 티어 소속이 덜 어긋난 순간**이고, 그 순간의 티어 최저 LP 가
+//     곧 그날의 진짜 컷이다. 합이 999~1000 이면 재계산 직후를 집은 것이다.
+//     · 동점이면 **먼저 나온 표본**을 쓴다 (`>` 비교) — 재계산 직후 가장 이른 시점이다.
+//   ★★ 예전 방식(창의 **첫 성공 한 줄**을 그대로 저장)이 왜 틀렸나: 23:45 는 재계산 10분
+//     전이라 **하루 중 어긋남이 가장 큰 순간**이었다. 8/18 실측이 챌린저 8명·그마 20명
+//     어긋난 상태였고, 그래서 "300등의 LP"(1830)가 실제 챌린저 컷(1773)과 57 차이 났다.
+//   ★★ **표본을 따로 들고 있지 않는다** — `apexdrifts` 가 이미 분마다 c300·g1000·cMin·gMin
+//     을 저장하므로 그걸 되읽는다. 재시작해도 안전하고, **규칙이 바뀌면 소급해서 다시 뽑을 수
+//     있다** (apexdrifts TTL 7일 안에서). 백필로 8/17·8/18 을 이 규칙으로 다시 찍었다.
+//   ★★ **명단 갱신 잡에 안 묶여 있다 (2026-08-19).** `scheduleCutoffJob()` 이 **한국시간
+//     자정 +30초**에 하루 한 번 혼자 돈다. 예전엔 `saveApexDrift()` 끝에 얹혀 있었는데,
+//     그러면 **그 사이클의 라이엇 조회가 실패하면 저장 시도조차 못 해서** 시각 창을 넓히고
+//     여러 번 재시도하는 군더더기가 필요했다. 떼어내니 **라이엇 호출과 무관해져서**
+//     한 번만 돌면 된다 — 표본은 이미 `apexdrifts` 에 다 들어 있다.
+//   ★ `day` 는 지금 날짜가 아니라 **어제**다 (자정 직후에 도니까). 안 그러면 8/18 밤 자료가
+//     8/19 로 들어간다.
+//   ★ 표본이 아직 없으면 5분 뒤 다시 시도한다. `$setOnInsert` 라 두 번 돌아도 안 덮인다.
 // ==========================================
-const CUTOFF_FROM = 23 * 60 + 45;   // 23:45
-const CUTOFF_TO = 23 * 60 + 55;     // 23:55 (이 시각은 포함하지 않는다)
-let cutoffSavedDay = null;          // 같은 날 두 번 부르지 않으려는 메모리 표식
+const CUTOFF_FROM = 23 * 60 + 45;      // 표본 창 23:45 ~ 23:59 (rankRefreshMs 의 1분 창과 같다)
+const CUTOFF_WINDOW_MIN = 15;          // 그 창의 길이(분). 1분 주기라 표본 15개가 정상이다
+const CUTOFF_JOB_OFFSET = 30 * 1000;   // 한국시간 자정 + 30초에 돈다
+const CUTOFF_RETRY = 5 * 60 * 1000;    // 실패하면 5분 뒤 다시 (성공하면 내일 자정)
 
+// 그날 23:45~23:59 표본 중 c300+g1000 이 최대인 줄을 돌려준다. 없으면 null.
+async function pickCutoffSample(day) {
+    const from = new Date(`${day}T${String(Math.floor(CUTOFF_FROM / 60)).padStart(2, '0')}:` +
+        `${String(CUTOFF_FROM % 60).padStart(2, '0')}:00+09:00`);
+    const to = new Date(from.getTime() + CUTOFF_WINDOW_MIN * 60000);
+
+    const rows = await ApexDrift.find({ t: { $gte: from, $lt: to } }).sort({ t: 1 }).lean();
+    const ok = rows.filter(r => typeof r.cMin === 'number' && typeof r.gMin === 'number'
+        && typeof r.c300 === 'number' && typeof r.g1000 === 'number');
+    if (!ok.length) return null;
+
+    let best = ok[0];
+    for (const r of ok) if (r.c300 + r.g1000 > best.c300 + best.g1000) best = r;   // 동점은 먼저 것
+    return { best, n: ok.length };
+}
+
+// 성공(또는 이미 있음)이면 true. 표본이 아직 없으면 false 를 돌려 재시도를 부른다.
 async function saveRankCutoff() {
-    if (challengerList.length < RANK_SET_MIN) return;
+    const day = kstDay(Date.now() - 24 * 3600000);          // 표본을 모은 날 = 어제
+    const picked = await pickCutoffSample(day);
+    if (!picked) {
+        console.warn(`[Cutoff] ${day} 표본이 없다 — ${CUTOFF_RETRY / 60000}분 뒤 다시 시도`);
+        return false;
+    }
+    const { best, n } = picked;
 
-    const k = new Date(Date.now() + 9 * 3600000);
-    const min = k.getUTCHours() * 60 + k.getUTCMinutes();
-    if (min < CUTOFF_FROM || min >= CUTOFF_TO) return;
-
-    const day = kstDay(Date.now());
-    if (cutoffSavedDay === day) return;
-
-    // challengerList 는 LP 내림차순이라 자리가 곧 등수다 (0-based)
-    const lp300 = challengerList[299]?.leaguePoints;
-    const lp1000 = challengerList[999]?.leaguePoints;
-    if (lp300 === undefined || lp1000 === undefined) return;
-
-    // ★ $setOnInsert 라 그날 첫 줄만 남는다. 재시작해서 메모리 표식이 날아가도 안전하다.
     const r = await RankCutoff.updateOne(
         { day },
-        { $setOnInsert: { day, t: new Date(), lp300, lp1000 } },
+        { $setOnInsert: { day, t: best.t, lpChal: best.cMin, lpGm: best.gMin } },
         { upsert: true }
     );
-    cutoffSavedDay = day;
-    if (r.upsertedCount) console.log(`[Cutoff] ${day} 챌린저컷(300등) ${lp300} / 그마컷(1000등) ${lp1000}`);
+    const hhmm = new Date(best.t.getTime() + 9 * 3600000).toISOString().slice(11, 19);
+    if (r.upsertedCount) {
+        console.log(`[Cutoff] ${day} 챌린저컷 ${best.cMin} / 그마컷 ${best.gMin}` +
+            ` (표본 ${n}개 중 ${hhmm} 채택 · c300+g1000=${best.c300 + best.g1000})`);
+    } else {
+        console.log(`[Cutoff] ${day} 는 이미 있다 — 건너뜀`);
+    }
+    return true;
+}
+
+// ★ 다음 한국시간 자정(+30초)까지 남은 시간. 자정 직후에 불려도 오늘 것을 겨냥한다.
+function nextCutoffDelay() {
+    const kstNow = Date.now() + 9 * 3600000;
+    let wait = CUTOFF_JOB_OFFSET - (kstNow % 86400000);
+    if (wait <= 0) wait += 86400000;
+    return wait;
+}
+
+function scheduleCutoffJob(overrideMs) {
+    setTimeout(async () => {
+        let ok = false;
+        try { ok = await saveRankCutoff(); }
+        catch (e) { console.error('[Cutoff] 저장 실패:', e.message); }
+        scheduleCutoffJob(ok ? undefined : CUTOFF_RETRY);   // 실패하면 5분 뒤, 성공하면 내일 자정
+    }, overrideMs === undefined ? nextCutoffDelay() : overrideMs);
 }
 
 // ★★ 스냅샷을 **합집합으로** 쌓는다 — "그날 명단에 한 번이라도 있던 사람" 이 맞다.
@@ -1448,26 +1503,23 @@ const RANK_REFRESH_NIGHT = 5 * 60 * 1000;
 const RANK_REFRESH_DAY = 10 * 60 * 1000;
 
 // ==========================================
-// ★★ 임시 계측 — 23:30~00:30(KST) 만 1분 주기 (2026-08-18 추가)
-//   **하루이틀 관찰하고 지울 것.** 아래 세 상수와 rankRefreshMs 안의 `← 임시` 두 줄만
-//   지우면 원래대로 돌아간다.
-//   왜: 8/17 실측에서 티어 재계산이 **23:52~23:57 사이**에 잡혔는데 5분 주기라 창이 넓다.
-//   1분으로 좁혀 정확한 시각과 **티어별 순서**를 본다 — 그때 그마·마스터가 먼저 움직이고
-//   챌린저가 5분 뒤에 따라왔는데, 라이엇이 나눠 처리한 건지 우리 조회 주기 탓인지
-//   5분 해상도로는 못 가른다.
-//   ★ 호출: 그 60분이 12사이클 → 60사이클이 되어 하루 **504 → 648회**(+144).
-//     순간 최대 3회/분이고, 같은 시간대에 도는 수집 잡(10회/분)을 더해도 14회/분이라
-//     개발 키 한도(50회/분)의 28% 다. 하루 예산으로는 0.9%.
-//   ★ `apexdrifts` 도 1분마다 한 줄씩 는다 — 하루 60줄 x 60B 라 무시할 수준이다.
+// ★★ 23:45~23:59(KST) 만 1분 주기 (2026-08-18 임시 계측 → 2026-08-19 상시로 승격)
+//   처음엔 "티어 재계산 시각을 재는 임시 계측" 이었는데 실측이 끝난 뒤에도 남긴다 —
+//   **컷라인(rankcutoffs)이 이 1분 표본에서 뽑히기 때문이다** (아래 saveRankCutoff).
+//   ★ 실측(8/18 밤, 1분 해상도): 챌린저↔그마 경계가 **23:55**, 그마↔마스터가 **23:56** 에
+//     재계산됐고 그 줄에서 어긋남이 0 이 됐다. 5분 해상도로는 이 순간을 못 집는다.
+//   ★ 창이 자정을 안 넘는 게 중요하다 — 표본이 전부 같은 날짜라 컷을 어느 날로 적을지가
+//     갈리지 않는다. (예전 창은 23:30~00:30 이라 자정을 넘었다)
+//   ★ 호출: 사이클 180회/일 x 3 = **540회/일**. 순간 최대 3회/분이고, 같은 시간대에 도는
+//     수집 잡(10회/분)을 더해도 13회/분이라 개발 키 한도(50회/분)의 26% 다.
 // ==========================================
 const RANK_REFRESH_PEAK = 60 * 1000;
-const RANK_PEAK_FROM = 23 * 60 + 30;   // 23:30 (분으로 환산)
-const RANK_PEAK_TO = 0 * 60 + 30;      // 00:30 — 이 시각은 포함하지 않는다
+const RANK_PEAK_FROM = 23 * 60 + 45;   // 23:45 (분으로 환산). 23:59 까지가 1분 주기다
 
 function rankRefreshMs() {
     const k = new Date(Date.now() + 9 * 3600000);                 // 한국시간
-    const min = k.getUTCHours() * 60 + k.getUTCMinutes();                        // ← 임시
-    if (min >= RANK_PEAK_FROM || min < RANK_PEAK_TO) return RANK_REFRESH_PEAK;   // ← 임시
+    const min = k.getUTCHours() * 60 + k.getUTCMinutes();
+    if (min >= RANK_PEAK_FROM) return RANK_REFRESH_PEAK;          // 23:45 ~ 23:59
     const h = k.getUTCHours();
     return (h >= 22 || h < 2) ? RANK_REFRESH_NIGHT : RANK_REFRESH_DAY;
 }
@@ -1529,6 +1581,8 @@ async function startJobs() {
     resolveNamesInBackground();
 
     scheduleRankUpdate();
+    // ★ 컷라인은 명단 갱신과 별개로 하루 한 번(한국시간 자정) 혼자 돈다. 라이엇 호출 0.
+    scheduleCutoffJob();
     setInterval(resolveNamesInBackground, 60 * 1000);
 
     // ★ 숙련도 잡은 30초 어긋나게 띄운다. 닉네임 20회(24초) + 숙련도 10회(12초)를
@@ -3034,7 +3088,7 @@ app.get('/api/rank-cutoffs', async (req, res) => {
     const hit = myCache.get(key);
     if (hit) return res.json(hit);
     try {
-        const rows = await RankCutoff.find({}, { _id: 0, day: 1, lp300: 1, lp1000: 1 })
+        const rows = await RankCutoff.find({}, { _id: 0, day: 1, lpChal: 1, lpGm: 1 })
             .sort({ day: -1 }).limit(days).lean();
         rows.reverse();   // 화면은 옛날 → 최근 순으로 그린다
         const payload = { ok: true, count: rows.length, days: rows };
