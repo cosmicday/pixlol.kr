@@ -50,10 +50,15 @@ main {
 body::before {
     content: '';
     position: fixed;
-    top: 0;
+    /* ★ 위아래로 150px 씩 삐져나가게 깐다 (2026-08-19, 모바일화면1.png 실측).
+       iOS 사파리는 반투명 주소창(툴바) 뒤로 **뷰포트 밖의 문서 내용**을 비춰 주는데,
+       fixed 오버레이가 bottom:0 에서 끝나니 그 띠에서만 일러스트가 원본 밝기로
+       비쳤다. 툴바 높이(~100px)보다 넉넉히 늘리면 그 띠까지 덮는다 —
+       데스크톱에서는 뷰포트 밖이라 잘려 나가서 아무 차이가 없다. */
+    top: -150px;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: -150px;
     background-color: rgba(11, 11, 20, 0.8);
     backdrop-filter: blur(5px);
     z-index: -1;
@@ -3100,6 +3105,13 @@ body.bg-solid::before {
 
 .stats-pickcut input:focus {
     border-color: #a78bfa;
+}
+
+/* ★ "라인" 은 정렬이 안 되는 유일한 헤더 칸이다. cursor·user-select 를 안 잡으면
+   글자 위에서 텍스트 선택 커서(I빔)로 바뀌어 옆의 정렬 칸들과 따로 논다 (2026-08-19) */
+.stats-lane-th {
+    cursor: default;
+    user-select: none;
 }
 
 .sortable-th {
@@ -6620,6 +6632,16 @@ body.bg-solid::before {
 
 @media (hover: hover) {
     .role-btn:hover::after {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* ★ 터치 기기는 hover 가 없어서 이름 말풍선을 볼 길이 없다 (2026-08-19).
+   대신 **켜져 있는 동안** 그 버튼 아래에 이름을 계속 띄운다 — 무슨 역할군을
+   골랐는지 보인다. 역할군은 최대 2개까지만 의미가 있어(AND 필터) 겹칠 일이 드물다 */
+@media (hover: none) {
+    .role-btn.on::after {
         opacity: 1;
         visibility: visible;
     }
