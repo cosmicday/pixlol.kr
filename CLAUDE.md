@@ -102,9 +102,19 @@
   `^Patch NN.NN … Preview` 글만 골라 **첫 줄에 Full 있으면 [상세], 없으면 [간단]** 으로
   `PBE 서버 26.17 패치 [상세]` 꼴 + x.com 주소로 내보낸다 (`/api/patch-notes` 의 `pbe`).
   **니터는 언제 죽어도 이상하지 않다** — 죽으면 lastGood 폴백, 그마저 없으면 화면은
-  index.html 의 정적 안내(프로필 바로가기)로 남는다. 공식/PBE 두 소스는 따로 try/catch 다
+  index.html 의 정적 안내(프로필 바로가기)로 남는다. 공식/PBE 두 소스는 따로 try/catch 다.
+  **★★ 니터 미러는 데이터센터 IP 를 막는다 (3차 실측)** — 로컬은 nitter.net 이 되는데
+  **Railway 에서는 빈손**이었다. 그래서 `PBE_RSS_SOURCES` 사슬로 4개를 차례로 시도한다:
+  nitter.net(브라우저 UA/RSS 리더 UA) → **rss.xcancel.com / xcancel.com (RSS 리더 UA 필수** —
+  브라우저 UA 면 "RSS 클라이언트에서만 동작" 이라며 거절한다). 어느 소스가 됐는지
+  `[PatchNotes] PBE 소스:` 로그로 남고, pbe 가 비면 캐시를 30분이 아니라 5분만 잡는다
 - **폰 헤더는 완전 불투명(#16112a) + 블러 없음** — 0.94 반투명으로도 "주소창 투명" 지적이
-  또 왔다. `html { background-color }` 바닥색도 같이 깔았다 (오버스크롤·주소창 샘플링용)
+  또 왔다.
+  **★★★ 이때 같이 넣었던 `html { background-color }` 는 사이트 전체를 밝게 만들어 즉시
+  롤백했다 (3차).** html 에 배경이 생기는 순간 body 배경(일러스트)이 루트 캔버스로
+  승격되지 못하고 **자기 상자에서 음수 z-index 오버레이(body::before)보다 위에** 그려져
+  어둡게 눌러 주던 층이 통째로 무력화된다. **html 에 배경을 깔지 말 것** — style.css
+  맨 위에 경고 주석이 있다. 주소창 색은 theme-color 메타가 담당한다
 - **★ 스킨 "썸네일 먼저 → 원본 교체" 는 폰 전용이다** (PC 롤백, 2차). PC 는 캐시된
   원본도 한 프레임 얼굴 중심 구도가 번쩍여서 — PC 는 순차 예열(preloadSkinFulls)만 탄다
 - **`.role-btn:hover` 도 `@media (hover:hover)` 로 감쌌다** — 폰에서 역할군을 껐는데

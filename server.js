@@ -3092,14 +3092,22 @@ async function fetchOfficialPatchNotes() {
     return official;
 }
 
-async function fetchPbePreviewNotes() {
-    const r = await axios.get('https://nitter.net/RiotPhroxzon/rss', {
-        timeout: 10000,
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36' }
-    });
-    const items = [...String(r.data).matchAll(/<item>([\s\S]*?)<\/item>/g)].map(x => x[1]);
-    if (!items.length) throw new Error('RSS item 0건');
+// ★★ 니터 미러는 데이터센터 IP 를 자주 막는다 (2026-08-19 실측).
+//   로컬(가정용 회선)에서는 nitter.net 이 브라우저 UA 로 뚫리는데 **Railway 에서는 빈손**이었다.
+//   그래서 소스를 사슬로 두고 위에서부터 시도한다 — 하나라도 되면 그걸로 간다:
+//     · nitter.net (브라우저 UA / RSS 리더 UA 두 벌)
+//     · xcancel.com — "RSS 클라이언트에서만 동작" 하는 곳이라 **RSS 리더 UA 가 필수**고,
+//       rss.xcancel.com 으로 302 를 태운다 (axios 가 따라간다)
+//   어느 소스가 됐는지 로그에 남는다. 전부 실패하면 lastGood → 정적 안내 순서다.
+const PBE_RSS_SOURCES = [
+    { name: 'nitter', url: 'https://nitter.net/RiotPhroxzon/rss', ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36' },
+    { name: 'nitter-rssua', url: 'https://nitter.net/RiotPhroxzon/rss', ua: 'FreshRSS/1.24.0 (Linux; https://freshrss.org)' },
+    { name: 'xcancel-rss', url: 'https://rss.xcancel.com/RiotPhroxzon/rss', ua: 'FreshRSS/1.24.0 (Linux; https://freshrss.org)' },
+    { name: 'xcancel', url: 'https://xcancel.com/RiotPhroxzon/rss', ua: 'FreshRSS/1.24.0 (Linux; https://freshrss.org)' }
+];
 
+function parsePbeRss(xml) {
+    const items = [...String(xml).matchAll(/<item>([\s\S]*?)<\/item>/g)].map(x => x[1]);
     const pbe = [];
     for (const it of items) {
         const title = ((it.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '').replace(/\s+/g, ' ').trim();
@@ -3119,8 +3127,27 @@ async function fetchPbePreviewNotes() {
         });
         if (pbe.length >= 5) break;   // RSS 가 최신순이라 앞에서 5개면 끝
     }
-    if (!pbe.length) throw new Error('Preview 글 0건');
     return pbe;
+}
+
+async function fetchPbePreviewNotes() {
+    const fails = [];
+    for (const src of PBE_RSS_SOURCES) {
+        try {
+            const r = await axios.get(src.url, {
+                timeout: 10000,
+                headers: { 'User-Agent': src.ua, 'Accept': 'application/rss+xml, application/xml, text/xml' }
+            });
+            if (!String(r.data).includes('<rss')) throw new Error('RSS 아님');
+            const pbe = parsePbeRss(r.data);
+            if (!pbe.length) throw new Error('Preview 글 0건');
+            console.log(`[PatchNotes] PBE 소스: ${src.name} (${pbe.length}건)`);
+            return pbe;
+        } catch (e) {
+            fails.push(`${src.name}: ${e.response ? e.response.status : e.message}`);
+        }
+    }
+    throw new Error('전 소스 실패 — ' + fails.join(' / '));
 }
 
 app.get('/api/patch-notes', async (req, res) => {
@@ -3138,8 +3165,12 @@ app.get('/api/patch-notes', async (req, res) => {
     else { console.warn('[PatchNotes] PBE(nitter) 수집 실패:', pbeR.reason?.message); pbe = lastGoodPbeNotes || []; }
 
     const payload = { ok: official.length > 0 || pbe.length > 0, official, pbe, fetchedAt: Date.now() };
-    // 둘 다 실패한 응답은 캐시하지 않는다 — 다음 요청이 곧바로 재시도하게 둔다
-    if (payload.ok) myCache.set('patch_notes', payload, 1800);
+    // ★ 한쪽이라도 비었으면 5분만 캐시한다 (2026-08-19). 30분으로 두면 니터가 잠깐
+    //   막혔을 때 빈 pbe 가 30분 동안 눌러앉는다. 둘 다 실패면 아예 캐시하지 않는다.
+    if (payload.ok) {
+        const full = official.length > 0 && pbe.length > 0;
+        myCache.set('patch_notes', payload, full ? 1800 : 300);
+    }
     res.json(payload);
 });
 
