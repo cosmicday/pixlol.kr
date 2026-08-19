@@ -3652,12 +3652,20 @@ body.bg-solid::before {
     #summary-stats-area>div>div {
         width: 100% !important;
         justify-content: center !important;
+        /* ★ align-items 도 가운데로 (2026-08-19). 챔피언 패널이 column 방향이라
+           justify-content 는 세로축이고, 가로 정렬은 align-items 가 맡는다 —
+           이게 없으면 "플레이한 챔피언" 제목과 챔피언 줄들이 왼쪽에 붙는다 */
+        align-items: center !important;
         text-align: center;
         margin: 0 !important;
     }
 
+    /* ★ PC 의 세로 구분선(1x90px)을 폰에서는 **가로 실선**으로 눕힌다 (2026-08-19).
+       예전엔 통째로 숨겼는데, 세로로 쌓인 세 패널 사이에 경계가 없어 한 덩어리로
+       뭉개져 보였다. width 100%·margin 0 은 위 일반 규칙이 이미 주므로
+       높이만 1px 로 눌러 주면 인라인 보라 배경색이 그대로 실선이 된다 */
     #summary-stats-area>div>div[style*="width: 1px"] {
-        display: none !important;
+        height: 1px !important;
     }
 
     /* ★★★ 폰 경기 카드 — OP.GG 모바일 카드를 실물 스크린샷 보고 그대로 따라 지었다

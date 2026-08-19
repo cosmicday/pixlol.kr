@@ -1908,11 +1908,14 @@ function renderSummaryStats(matchesToCalc) {
     const winDeg = Math.round((wins / totalGames) * 360);
     const maxPos = Math.max(posCounts.top, posCounts.jungle, posCounts.mid, posCounts.adc, posCounts.support) || 1;
 
-    const iconTop = `<img src="https://s-lol-web.op.gg/images/icon/icon-position-top.svg" style="width:16px;">`;
-    const iconJungle = `<img src="https://s-lol-web.op.gg/images/icon/icon-position-jungle.svg" style="width:16px;">`;
-    const iconMid = `<img src="https://s-lol-web.op.gg/images/icon/icon-position-mid.svg" style="width:16px;">`;
-    const iconAdc = `<img src="https://s-lol-web.op.gg/images/icon/icon-position-adc.svg" style="width:16px;">`;
-    const iconSup = `<img src="https://s-lol-web.op.gg/images/icon/icon-position-support.svg" style="width:16px;">`;
+    // ★ 여기 남아 있던 op.gg 아이콘 5개도 CD 공식으로 갈았다 (2026-08-19).
+    //   통계 탭과 같은 표(STAT_LANE_ICON)를 그대로 쓴다 — 두 벌 두면 어긋난다.
+    const posIcon = (k) => `<img src="${STAT_LANE_ICON[k]}" style="width:16px;">`;
+    const iconTop = posIcon('top');
+    const iconJungle = posIcon('jungle');
+    const iconMid = posIcon('mid');
+    const iconAdc = posIcon('adc');
+    const iconSup = posIcon('support');
 
     const posOrder = [
         { id: 'top', name: '탑', icon: iconTop, val: posCounts.top },
@@ -1926,7 +1929,9 @@ function renderSummaryStats(matchesToCalc) {
         const isActive = p.val === Math.max(posCounts.top, posCounts.jungle, posCounts.mid, posCounts.adc, posCounts.support) && p.val > 0;
         const h = p.val === 0 ? 0 : Math.max(2, (p.val / maxPos) * 60);
         const barColor = isActive ? '#a78bfa' : '#31313c';
-        const filterStyle = isActive ? 'filter: invert(65%) sepia(54%) saturate(3015%) hue-rotate(218deg) brightness(101%) contrast(97%);' : 'filter: invert(30%);';
+        // CD 아이콘은 원래 금색이라, 주 포지션은 원색 그대로 / 나머지는 회색으로 죽인다
+        // (역할군 버튼 .role-btn 과 같은 규칙. 옛 invert 필터는 흑백 op.gg 아이콘용이었다)
+        const filterStyle = isActive ? '' : 'filter: grayscale(1) brightness(0.75); opacity: 0.5;';
 
         return `
             <div data-tooltip="${p.name} 플레이 횟수: ${p.val}게임" style="display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:8px; height: 90px; width: 24px;">

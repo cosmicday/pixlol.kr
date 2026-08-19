@@ -121,7 +121,13 @@
   삐져나가게 늘려 해결 (데스크톱은 뷰포트 밖이라 잘려서 무영향).
   같은 4차: 터치 기기는 켜진 역할군 버튼(.role-btn.on) 아래에 이름 말풍선을 상시로
   띄운다(hover 가 없어 볼 길이 없었다) / "라인" 헤더 칸에 cursor·user-select 를 잡았다
-  (정렬 안 되는 유일한 헤더라 I빔 커서가 떴다)
+  (정렬 안 되는 유일한 헤더라 I빔 커서가 떴다).
+  5차 — 전적 요약 통계 박스: 폰에서 PC 의 세로 구분선(1x90, 인라인 style)을 숨기는 대신
+  **`height:1px !important` 로 눕혀 가로 실선**으로 쓴다(`[style*="width: 1px"]` 선택자).
+  패널 가로 가운데 정렬은 `align-items:center !important` 가 맡는다 — column 방향이라
+  justify-content 로는 안 된다. **여기 남아 있던 op.gg 라인 아이콘 5개도 CD 로 갈았다**
+  (renderSummaryStats 의 posIcon — STAT_LANE_ICON 재사용, invert 필터 제거).
+  이제 살아 있는 op.gg 참조는 진짜 0 이다 (showStatsLegacy 주석 안에만 남아 있다)
 - **★ 스킨 "썸네일 먼저 → 원본 교체" 는 폰 전용이다** (PC 롤백, 2차). PC 는 캐시된
   원본도 한 프레임 얼굴 중심 구도가 번쩍여서 — PC 는 순차 예열(preloadSkinFulls)만 탄다
 - **`.role-btn:hover` 도 `@media (hover:hover)` 로 감쌌다** — 폰에서 역할군을 껐는데
