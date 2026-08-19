@@ -3055,44 +3055,92 @@ app.get('/api/rank-cutoffs', async (req, res) => {
 //     홈 화면이 통째로 비지 않게 한다. 구조가 바뀌면 콘솔 경고가 남는다.
 //   ★ UA 는 브라우저 꼴로 보낸다. 밋밋한 axios 기본 UA 는 그쪽 CDN 이 자를 수 있다
 //     (우리 Cloudflare 가 Python-urllib 를 잘랐던 것과 같은 이유다).
-let lastGoodPatchNotes = null;
+//
+// ★★ 오른쪽(PBE) 칸도 여기서 같이 나간다 (2026-08-19 2차).
+//   X 는 로그인 장벽이라 직접 못 긁고 syndication 우회로는 2025-11 에 얼어붙은
+//   스냅샷만 줬는데, **nitter.net RSS 가 살아 있고 최신이다** (실측: 당일 글까지 옴).
+//   `Patch NN.NN [Full] Preview` 로 시작하는 글만 골라 x.com 주소로 바꿔 내보낸다.
+//   ★ 니터 인스턴스는 언제든 죽을 수 있다 — 죽으면 lastGood 폴백, 그마저 없으면
+//     pbe 가 빈 배열이고 화면은 index.html 의 정적 안내(프로필 바로가기)로 남는다.
+//   ★ 두 소스는 따로 try/catch 다. 한쪽이 죽어도 다른 쪽은 나가야 한다.
+let lastGoodOfficialNotes = null;
+let lastGoodPbeNotes = null;
+
+async function fetchOfficialPatchNotes() {
+    const r = await axios.get('https://www.leagueoflegends.com/ko-kr/news/tags/patch-notes/', {
+        timeout: 10000,
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
+            'Accept-Language': 'ko'
+        }
+    });
+    const m = String(r.data).match(/__NEXT_DATA__" type="application\/json"[^>]*>([\s\S]*?)<\/script>/);
+    if (!m) throw new Error('__NEXT_DATA__ 없음');
+    const blades = JSON.parse(m[1])?.props?.pageProps?.page?.blades || [];
+    const grid = blades.find(b => b.type === 'articleCardGrid');
+    if (!grid || !Array.isArray(grid.items)) throw new Error('articleCardGrid 없음');
+
+    const official = grid.items.slice(0, 5).map(it => {
+        const rel = it?.action?.payload?.url || '';
+        return {
+            title: String(it.title || '').slice(0, 200),
+            url: /^https?:/.test(rel) ? rel : `https://www.leagueoflegends.com${rel}`,
+            date: it?.analytics?.publishDate || null
+        };
+    }).filter(n => n.title && n.url);
+    if (!official.length) throw new Error('기사 0건');
+    return official;
+}
+
+async function fetchPbePreviewNotes() {
+    const r = await axios.get('https://nitter.net/RiotPhroxzon/rss', {
+        timeout: 10000,
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36' }
+    });
+    const items = [...String(r.data).matchAll(/<item>([\s\S]*?)<\/item>/g)].map(x => x[1]);
+    if (!items.length) throw new Error('RSS item 0건');
+
+    const pbe = [];
+    for (const it of items) {
+        const title = ((it.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '').replace(/\s+/g, ' ').trim();
+        const link = ((it.match(/<link>([\s\S]*?)<\/link>/) || [])[1] || '').trim();
+        const pub = ((it.match(/<pubDate>([\s\S]*?)<\/pubDate>/) || [])[1] || '').trim();
+        // 리트윗은 제목이 "RT by …" 로 시작해 어차피 아래 정규식에 안 걸린다
+        const pm = title.match(/^Patch\s+(\d+\.\d+)\b(.{0,30}?)Preview/i);
+        if (!pm) continue;
+        const idm = link.match(/\/status\/(\d+)/);
+        if (!idm) continue;
+        pbe.push({
+            patch: pm[1],
+            // 첫 줄에 Full 이 있으면 상세, 없으면 간단 (사용자 규칙 그대로)
+            detail: /full/i.test(pm[2]),
+            url: `https://x.com/RiotPhroxzon/status/${idm[1]}`,
+            date: pub ? new Date(pub).toISOString() : null
+        });
+        if (pbe.length >= 5) break;   // RSS 가 최신순이라 앞에서 5개면 끝
+    }
+    if (!pbe.length) throw new Error('Preview 글 0건');
+    return pbe;
+}
 
 app.get('/api/patch-notes', async (req, res) => {
     const hit = myCache.get('patch_notes');
     if (hit) return res.json(hit);
-    try {
-        const r = await axios.get('https://www.leagueoflegends.com/ko-kr/news/tags/patch-notes/', {
-            timeout: 10000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
-                'Accept-Language': 'ko'
-            }
-        });
-        const m = String(r.data).match(/__NEXT_DATA__" type="application\/json"[^>]*>([\s\S]*?)<\/script>/);
-        if (!m) throw new Error('__NEXT_DATA__ 없음');
-        const blades = JSON.parse(m[1])?.props?.pageProps?.page?.blades || [];
-        const grid = blades.find(b => b.type === 'articleCardGrid');
-        if (!grid || !Array.isArray(grid.items)) throw new Error('articleCardGrid 없음');
 
-        const official = grid.items.slice(0, 5).map(it => {
-            const rel = it?.action?.payload?.url || '';
-            return {
-                title: String(it.title || '').slice(0, 200),
-                url: /^https?:/.test(rel) ? rel : `https://www.leagueoflegends.com${rel}`,
-                date: it?.analytics?.publishDate || null
-            };
-        }).filter(n => n.title && n.url);
-        if (!official.length) throw new Error('기사 0건');
+    const [offR, pbeR] = await Promise.allSettled([fetchOfficialPatchNotes(), fetchPbePreviewNotes()]);
 
-        const payload = { ok: true, official, fetchedAt: Date.now() };
-        lastGoodPatchNotes = payload;
-        myCache.set('patch_notes', payload, 1800);
-        res.json(payload);
-    } catch (e) {
-        console.warn('[PatchNotes] 수집 실패:', e.message);
-        if (lastGoodPatchNotes) return res.json(lastGoodPatchNotes);
-        res.json({ ok: false, official: [] });
-    }
+    let official;
+    if (offR.status === 'fulfilled') { official = offR.value; lastGoodOfficialNotes = official; }
+    else { console.warn('[PatchNotes] 공식 수집 실패:', offR.reason?.message); official = lastGoodOfficialNotes || []; }
+
+    let pbe;
+    if (pbeR.status === 'fulfilled') { pbe = pbeR.value; lastGoodPbeNotes = pbe; }
+    else { console.warn('[PatchNotes] PBE(nitter) 수집 실패:', pbeR.reason?.message); pbe = lastGoodPbeNotes || []; }
+
+    const payload = { ok: official.length > 0 || pbe.length > 0, official, pbe, fetchedAt: Date.now() };
+    // 둘 다 실패한 응답은 캐시하지 않는다 — 다음 요청이 곧바로 재시도하게 둔다
+    if (payload.ok) myCache.set('patch_notes', payload, 1800);
+    res.json(payload);
 });
 
 app.get('/api/ranking', async (req, res) => {

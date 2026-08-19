@@ -1112,7 +1112,10 @@ function renderMatches(matches, append = false) {
             </div>
             <div class="pix-kda">
                 <div class="pix-kda-score">${game.kills} / <span class="d">${game.deaths}</span> / ${game.assists}</div>
-                <div class="pix-kda-ratio">평점 ${game.kda}</div>
+                <!-- 표기 두 벌: 데스크톱 "평점 5.40" / 폰 "5.40:1 평점" (op.gg 모바일 표기).
+                     CSS 가 한쪽만 보여준다 — 글자를 CSS 로는 못 바꿔서 둘 다 그려 둔다.
+                     숫자가 아닌 값(Perfect)에 ":1" 을 붙이면 "Perfect:1" 이 되므로 뺀다 -->
+                <div class="pix-kda-ratio"><span class="kda-ratio-pc">평점 ${game.kda}</span><span class="kda-ratio-m">${/^[\d.]+$/.test(String(game.kda)) ? `${game.kda}:1 평점` : `${game.kda}`}</span></div>
             </div>
             <div class="pix-stats">
                 ${statsHtml}
@@ -3469,6 +3472,7 @@ async function showStats() {
     window.statScope = data.scope;
     let curLane = 'all';        // 'all' 또는 0~4
     let curBand = 'all';        // 'all' | '8-10' | '5-7'
+    let minPick = 1;            // 픽률 커트라인(%). 입력칸이 바꾼다 — 폰은 칸이 숨어 1 고정
     let sortCol = 'tier', sortDir = 'desc';
 
     // ── 화면 뼈대. 표는 renderStatsTable() 이 매번 새로 그린다.
@@ -3495,6 +3499,11 @@ async function showStats() {
         <div class="stats-filter-container">
             <button class="stats-filter-btn all-btn active" data-lane="all">ALL</button>
             ${STAT_POS.map(p => `<button class="stats-filter-btn" data-lane="${p.code}" title="${p.name}"><img src="${STAT_LANE_ICON[p.key]}" alt="${p.name}"></button>`).join('')}
+            <!-- ★ 픽률 커트라인 (2026-08-19). 이 픽률 미만 줄은 표에서 뺀다. 기본 1%.
+                 폰은 입력칸을 숨기고 1% 고정이다 (style.css .stats-pickcut) -->
+            <label class="stats-pickcut" title="이 픽률 미만 챔피언은 표에서 뺍니다">
+                픽률 <input type="number" id="stats-pickcut-input" min="0" max="100" step="0.1" value="1" inputmode="decimal">% 이상
+            </label>
         </div>
 
         <div class="stats-table-wrapper">
@@ -3609,6 +3618,9 @@ async function showStats() {
             c.score = t ? t.score : null;
         });
 
+        // ★ 픽률 커트라인 (2026-08-19). 라인별 줄이라 픽률도 그 라인 값 기준이다
+        rows = rows.filter(c => c.pickRate >= minPick);
+
         rows.sort((a, b) => {
             let va, vb;
             // 티어 정렬은 등급이 아니라 **점수**로 한다 — 같은 S 안에서도 순서가 생긴다
@@ -3718,6 +3730,14 @@ async function showStats() {
     document.getElementById('stats-scope').addEventListener('change', (e) => {
         window.statScope = e.target.value;
         showStats();
+    });
+
+    // 픽률 커트라인. 지우거나 이상한 값을 치면 0(전부 표시)으로 본다
+    const pickInput = document.getElementById('stats-pickcut-input');
+    if (pickInput) pickInput.addEventListener('input', () => {
+        const v = parseFloat(pickInput.value);
+        minPick = Number.isFinite(v) ? Math.min(Math.max(v, 0), 100) : 0;
+        renderStatsTable();
     });
 
     document.querySelectorAll('.stats-band-btn').forEach(btn => {
@@ -4713,22 +4733,37 @@ function mythicCollectingMsg(key) {
 async function loadPatchNotes() {
     const box = document.getElementById('patch-note-list');
     if (!box) return;
+
+    const fmtDate = (iso) => {
+        const d = iso ? new Date(iso) : null;
+        const p = x => String(x).padStart(2, '0');
+        return d && !isNaN(d) ? `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}` : '';
+    };
+    const row = (url, title, date) => `<a class="patch-note-item" href="${escapeHtml(url)}" target="_blank" rel="noopener">
+            <span class="patch-note-title">${escapeHtml(title)}</span>
+            <span class="patch-note-date">${fmtDate(date)}</span>
+        </a>`;
+
+    let data = null;
     try {
         const res = await fetch('/api/patch-notes');
-        const data = await res.json();
-        if (!data.ok || !Array.isArray(data.official) || !data.official.length) throw new Error('empty');
-        box.innerHTML = data.official.slice(0, 5).map(n => {
-            const d = n.date ? new Date(n.date) : null;
-            const p = x => String(x).padStart(2, '0');
-            const dateText = d && !isNaN(d) ? `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}` : '';
-            return `<a class="patch-note-item" href="${escapeHtml(n.url)}" target="_blank" rel="noopener">
-                <span class="patch-note-title">${escapeHtml(n.title)}</span>
-                <span class="patch-note-date">${dateText}</span>
-            </a>`;
-        }).join('');
-    } catch (e) {
+        data = await res.json();
+    } catch (e) { /* 아래에서 폴백 처리 */ }
+
+    if (data && Array.isArray(data.official) && data.official.length) {
+        box.innerHTML = data.official.slice(0, 5).map(n => row(n.url, n.title, n.date)).join('');
+    } else {
         box.innerHTML = `<div class="patch-note-empty">패치노트를 불러오지 못했습니다.<br>
             <a class="patch-note-x-link" href="https://www.leagueoflegends.com/ko-kr/news/tags/patch-notes/" target="_blank" rel="noopener">공식 홈페이지에서 보기 →</a></div>`;
+    }
+
+    // ★ 오른쪽 PBE 칸 (2026-08-19 2차). 서버가 nitter RSS 에서 `Patch NN.NN [Full] Preview`
+    //   글만 골라 x.com 주소로 준다 — 첫 줄에 Full 이 있으면 [상세], 없으면 [간단].
+    //   비어 있으면(니터가 죽는 등) index.html 의 정적 안내(프로필 바로가기)를 그대로 둔다.
+    const pbeBox = document.getElementById('pbe-note-list');
+    if (pbeBox && data && Array.isArray(data.pbe) && data.pbe.length) {
+        pbeBox.innerHTML = data.pbe.slice(0, 5).map(n =>
+            row(n.url, `PBE 서버 ${n.patch} 패치 [${n.detail ? '상세' : '간단'}]`, n.date)).join('');
     }
 }
 
@@ -7555,10 +7590,14 @@ window.selectSkin = function (index) {
     const img = document.getElementById('skin-view-img');
     if (img) {
         img.classList.remove('is-chroma');
-        // ★ 썸네일(이미 캐시에 있다)을 먼저 걸고 원본이 오면 바꿔 끼운다 (2026-08-19).
-        //   토큰으로 "늦게 도착한 원본이 다음에 고른 스킨을 덮어쓰는" 경주를 막는다.
+        // ★ "썸네일 먼저 → 원본 교체" 는 **폰에서만** 한다 (2026-08-19 2차).
+        //   PC 는 이미 캐시된 원본도 한 프레임 얼굴 중심(썸네일) 구도가 번쩍여서 롤백했다 —
+        //   PC 는 어차피 아래 preloadSkinFulls 예열 덕에 곧바로 뜬다.
+        //   폰은 회선이 느려 빈 화면이 길어지는 쪽이 더 나빠서 그대로 둔다.
+        //   토큰은 "늦게 도착한 원본이 다음에 고른 스킨을 덮어쓰는" 경주 방지다.
         const want = ++skinViewToken;
-        if (skin.thumb && skin.thumb !== skin.full) {
+        const mobile = window.matchMedia('(max-width: 768px)').matches;
+        if (mobile && skin.thumb && skin.thumb !== skin.full) {
             img.src = skin.thumb;
             const pre = new Image();
             pre.onload = () => { if (want === skinViewToken) img.src = skin.full; };

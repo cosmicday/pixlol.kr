@@ -16,6 +16,12 @@
     --text-dim:    #78718e;   /*  3.7:1 — 옛 #5f666e·#4b5563 자리 (축 라벨·placeholder 전용) */
 }
 
+/* 문서 밑바닥 색 (2026-08-19). 모바일 브라우저가 주소창·오버스크롤 영역 색을 페이지에서
+   샘플링하는데, body 배경이 밝은 일러스트라 허옇게 떴다 — 맨 밑에 어두운 단색을 깔아 둔다 */
+html {
+    background-color: #16112a;
+}
+
 body {
     font-family: 'Malgun Gothic', sans-serif;
     color: #ffffff;
@@ -1770,6 +1776,11 @@ body.bg-solid::before {
     font-weight: bold;
 }
 
+/* 평점 표기 두 벌 중 폰용은 기본 숨김 — 폰 카드 블록에서 서로 바꾼다 (2026-08-19) */
+.kda-ratio-m {
+    display: none;
+}
+
 .pix-stats {
     width: 80px;
     flex-shrink: 0;
@@ -3060,6 +3071,35 @@ body.bg-solid::before {
     color: #ffffff;
 }
 
+/* ★ 픽률 커트라인 입력 (2026-08-19). 라인 버튼 줄의 오른쪽 끝에 붙는다.
+   폰에서는 숨기고 1% 고정이다 (아래 @media — JS 기본값이 1 이라 칸만 숨기면 된다) */
+.stats-pickcut {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: default;
+    white-space: nowrap;
+}
+
+.stats-pickcut input {
+    width: 56px;
+    padding: 7px 6px;
+    background: #12121f;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: var(--text-bright);
+    font-size: 13px;
+    text-align: center;
+    outline: none;
+}
+
+.stats-pickcut input:focus {
+    border-color: #a78bfa;
+}
+
 .sortable-th {
     cursor: pointer;
     user-select: none;
@@ -3070,11 +3110,17 @@ body.bg-solid::before {
    폰에서는 탭한 순간 :hover 가 걸리고 다른 곳을 누를 때까지 안 풀려서
    "누른 버튼에 회색이 눌어붙는" 것처럼 보였다 — @media (hover:hover) 로 감싸면
    터치 기기는 아예 안 탄다 (버튼 색은 .active 가 담당하므로 잃는 게 없다).
-   색도 회색(rgba 흰색)에서 헤더 보라(#2b1a52)에 어울리는 보라 톤으로 바꿨다. */
+   ★ 색은 반투명이 아니라 **단색 #3a2470** 이다 (2026-08-19 2차). 반투명 겹칠은
+   헤더 보라(#2b1a52) 위에서 탁하게 떠 보였다 — 사이트의 다른 hover(.mshop-goto 등)와
+   같은 단색 계단(#2b1a52 → #3a2470)으로 맞추고, 글자·화살표를 같이 밝힌다. */
 @media (hover: hover) {
     .sortable-th:hover {
         color: #ffffff;
-        background: rgba(167, 139, 250, 0.18);
+        background: #3a2470;
+    }
+
+    .sortable-th:hover .sort-icon {
+        color: #c4b5fd;
     }
 }
 
@@ -3425,10 +3471,14 @@ body.bg-solid::before {
     .header {
         padding: 0 8px 0 15px;
         justify-content: space-between;
-        /* ★ 폰에서는 반투명(0.6)을 거의 불투명으로 올린다 (2026-08-19).
-           일부 모바일 브라우저가 backdrop-filter 를 무시해서 밝은 배경 일러스트가
-           그대로 비쳤고, 주소창 주변이 허옇게 떠 보였다 (theme-color 메타와 한 쌍이다) */
-        background-color: rgba(22, 17, 42, 0.94);
+        /* ★ 폰 헤더는 **완전 불투명 + 블러 없음** 이다 (2026-08-19 2차).
+           0.94 반투명으로도 "주소창 쪽이 투명하게 비친다" 는 지적이 또 왔다 —
+           일부 모바일 브라우저가 backdrop-filter 를 무시해서 남은 6% 만큼 밝은
+           일러스트가 계속 비쳤던 것. 폰에서는 유리 효과를 통째로 포기한다
+           (theme-color 메타 · html 바닥색과 한 세트다) */
+        background-color: #16112a;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
     }
 
     .logo-top {
@@ -3596,81 +3646,99 @@ body.bg-solid::before {
         display: none !important;
     }
 
-    /* 전적 리스트 매치 박스
-       ★ 예전엔 justify-content: center 였는데, 칸들이 데스크톱 고정폭(115+103+80)을
-         그대로 들고 있어서 폰 안쪽 폭(약 314px)에 안 들어갔다. 그래서 .pix-stats 가
-         혼자 다음 줄로 넘어가고, 남은 두 칸이 가운데로 몰려 챔프와 KDA 사이가 뻥 뚫렸다.
-         아래 .pix-champ/.pix-kda/.pix-stats 의 width:auto 와 한 쌍이다 —
-         셋을 내용 크기로 줄여야 한 줄에 들어가고, 그때 space-between 이 의미가 있다. */
+    /* ★★★ 폰 경기 카드 — OP.GG 모바일 카드를 실물 스크린샷 보고 그대로 따라 지었다
+       (2026-08-19 2차). 구조 (HTML 은 안 바꾸고 CSS 재배열, 평점 표기만 두 벌):
+         [헤더 스트립(승패 색 배경): 승리 · 21분 24초 ..... 솔로랭크 · 12분 전 (🔗)(▾)]
+         [본문(승패 무관 어두운 남색): 원형 초상화+스펠/룬 2단 | KDA 크게+평점 | 지표 | 아이템 4×2]
+       ★ 카드 전체를 승패 색으로 칠하던 걸 버리고 **헤더 스트립만** 칠한다 — op.gg 방식.
+         왼쪽 세로 띠(border-left) 색은 데스크톱 규칙을 그대로 물려받는다. */
     .pix-game {
         flex-wrap: wrap;
         height: auto;
-        padding: 12px 34px 12px 12px;
-        gap: 10px 0;
+        padding: 0 10px 12px;
+        gap: 0;
         justify-content: space-between;
         align-items: center;
     }
 
-    /* ★★ 폰 경기 카드 상단줄 — OP.GG 모바일 배치를 따라 다시 짰다 (2026-08-19).
-       예전엔 [큐 · 날짜 · 결과 · 시간] 네 조각이 space-between 으로 뿔뿔이 흩어져
-       읽는 순서가 없었다. 지금은 **[승리(색) 큐이름] ...... [23분 40초 · 3일 전]** 이다.
-       HTML 은 안 건드리고 flex order 로만 재배열한다 — 클래스가 없는 두 칸은
-       자리(nth-child)로 잡는다: 2번째가 날짜, 5번째가 게임 시간이다. */
-    .pix-info {
-        width: 100%;
-        flex-direction: row;
-        align-items: baseline;
-        justify-content: flex-start;
-        gap: 8px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 8px;
-        margin-bottom: 5px;
+    .pix-game.win,
+    .pix-game.lose,
+    .pix-game.remake {
+        border-left-width: 4px;
+        background: #191925;   /* 본문은 승패 무관 — 색은 헤더 스트립과 왼쪽 띠가 말한다 */
     }
 
+    /* ── 헤더 스트립. 음수 마진으로 카드 끝까지 채운다 (마진 합이 0 이라 flex 줄에 꼭 맞는다) */
+    .pix-info {
+        width: calc(100% + 20px);
+        margin: 0 -10px 10px;
+        flex-direction: row;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 78px 9px 12px;   /* 오른쪽 78px = 버튼 두 개 자리 */
+        border-radius: 0 4px 0 0;
+    }
+
+    .pix-game.win .pix-info { background: #28344e; }
+    .pix-game.lose .pix-info { background: #59343b; }
+    .pix-game.remake .pix-info { background: #2b2b31; }
+
+    /* 순서 재배열 (DOM: 큐 · 날짜 · 구분선 · 결과 · 시간).
+       op.gg 순서 = [결과] [게임 길이] ..... [큐 이름] [n분 전] */
     .pix-info .win-text {
         order: 1;
         font-size: 14px;
     }
 
-    .pix-info .queue {
+    .pix-info > div:nth-child(5) {   /* 게임 길이 */
         order: 2;
+        font-size: 11px;
         color: var(--text-muted);
-        font-weight: 600;
-        font-size: 12px;
     }
 
-    .pix-info > div:nth-child(5) {   /* 게임 시간 */
+    /* ★ 큐 이름의 인라인 color(승패색)를 이긴다 — 헤더에선 결과 글자가 색을 말하므로 회색 */
+    .pix-info .queue {
         order: 3;
         margin-left: auto;
+        color: var(--text-muted) !important;
+        font-weight: normal;
         font-size: 11px;
-        color: var(--text-faint);
     }
 
     .pix-info > div:nth-child(2) {   /* n일 전 */
         order: 4;
         font-size: 11px;
-        color: var(--text-faint);
-    }
-
-    .pix-info > div:nth-child(2)::before {
-        content: "·";
-        margin-right: 6px;
-        color: var(--text-dim);
+        color: var(--text-muted);
     }
 
     .pix-info .bar {
         display: none;
     }
 
-    /* 왼쪽 결과 띠는 폰에서 6px 이 두껍다 */
-    .pix-game.win,
-    .pix-game.lose,
-    .pix-game.remake {
-        border-left-width: 4px;
+    /* ── 헤더 오른쪽 버튼 두 개 (링크 복사 · 펼침). 데스크톱은 오른쪽 세로 35px 기둥인데
+       폰에서는 op.gg 처럼 헤더 안 둥근 사각 버튼으로 바꾼다 */
+    .share-btn {
+        top: 5px;
+        right: 41px;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.25);
+        color: var(--text-muted);
     }
 
-    /* 고정폭을 풀어 내용 크기로 줄인다. 챔프 약 104px(아이콘48+스펠22+룬22) +
-       KDA 약 75px + 지표 약 80px = 260px 라 한 줄에 들어간다. */
+    .toggle-btn {
+        top: 5px;
+        right: 7px;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.25);
+        align-items: center;
+        padding-bottom: 0;
+    }
+
+    /* ── 본문 네 덩이. 고정폭을 풀어 내용 크기로 — space-between 이 남는 폭을 나눈다 */
     .pix-champ,
     .pix-kda,
     .pix-stats {
@@ -3678,13 +3746,53 @@ body.bg-solid::before {
         margin-left: 0;
     }
 
-    /* KDA 를 카드의 주인공으로 — OP.GG 모바일처럼 크게, 데스는 빨강 */
+    /* 원형 초상화 + 왼쪽 아래 레벨 배지 (op.gg 방식) */
+    .pix-champ {
+        margin-bottom: 0;
+        gap: 4px;
+    }
+
+    .pix-champ-icon img {
+        border-radius: 50%;
+    }
+
+    .pix-level {
+        left: -3px;
+        right: auto;
+        bottom: -3px;
+        width: 19px;
+        height: 19px;
+        padding: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        background: #0f0f1a;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    /* 뱃지(더블킬 등)는 폰 카드에서 접는다 — op.gg 모바일 접힌 카드에도 없고,
+       초상화 아래로 늘어져 본문 한 줄 높이를 흐트러뜨린다. 펼치면 상세에 다 있다 */
+    .pix-badges {
+        display: none;
+    }
+
+    /* 인라인 22px(보조 룬 img)을 이겨야 해서 !important */
+    .pix-spells img {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    /* KDA 를 카드의 주인공으로 — 크게, 데스만 빨강, 평점은 "5.40:1 평점" 표기(op.gg) */
     .pix-kda {
-        align-items: flex-start;
+        align-items: center;
+        gap: 2px;
     }
 
     .pix-kda-score {
         font-size: 16px;
+        letter-spacing: 0;
     }
 
     .pix-kda-score .d {
@@ -3692,42 +3800,49 @@ body.bg-solid::before {
     }
 
     .pix-kda-ratio {
-        font-size: 12px;
-        color: var(--text-muted);
+        font-size: 11px;
+        color: var(--text-faint);
+        font-weight: normal;
     }
 
+    .kda-ratio-pc { display: none; }
+    .kda-ratio-m { display: inline; }
+
+    /* 지표 기둥 (킬관여 · CS · DPM) */
     .pix-stats {
         padding-left: 0;
-        text-align: right;
-        align-items: flex-end;
-        font-size: 11px;
+        text-align: left;
+        align-items: flex-start;
+        font-size: 10.5px;
+        gap: 3px;
     }
 
-    /* 아이템은 한 단계 키운다 (22 → 24px). 터치 대상이기도 하다 */
+    /* ── 아이템: 본문 오른쪽 끝 4×2 격자 (장신구·와드 포함 8칸 = 딱 두 줄) */
+    .pix-items-box {
+        width: auto;
+        align-items: flex-end;
+        margin: 0;
+    }
+
+    .pix-items {
+        display: grid;
+        grid-template-columns: repeat(4, 20px);
+        grid-auto-rows: 20px;
+        gap: 2px;
+        justify-content: end;
+    }
+
+    /* 와드(8번째 칸)가 인라인 22px 을 들고 있어 !important 로 눌러 8칸을 맞춘다 */
     .pix-items img,
     .pix-items .empty {
-        width: 24px;
-        height: 24px;
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 4px;
     }
 
     .pix-players,
     .arena-players {
         display: none !important;
-    }
-
-    /* ★ 가운데 정렬이면 아이템 개수(빈 칸 포함)에 따라 줄 시작점이 카드마다 달라져
-       목록 전체가 들쭉날쭉해 보인다. 챔프 아이콘 기준으로 왼쪽에 고정한다. */
-    .pix-items-box {
-        width: 100%;
-        align-items: flex-start;
-        margin-top: 10px;
-        margin-left: 0;
-    }
-
-    .pix-items {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-start;
     }
 
     /* 상세 전적 테이블 가로 스크롤 허용 */
@@ -3833,6 +3948,11 @@ body.bg-solid::before {
 
     .stats-controls {
         padding: 0 10px;
+    }
+
+    /* 폰은 픽률 커트라인 입력칸을 숨기고 기본값 1% 로 고정한다 (자리가 안 나온다) */
+    .stats-pickcut {
+        display: none;
     }
 
     .stats-note {
@@ -6451,9 +6571,14 @@ body.bg-solid::before {
     transition: filter 0.15s, opacity 0.15s;
 }
 
-.role-btn:hover img {
-    filter: none;
-    opacity: 1;
+/* ★ hover 는 마우스 기기에서만 (2026-08-19). 폰에서는 탭한 순간 :hover 가 걸리고
+   다른 곳을 누를 때까지 안 풀려서 — 역할군을 껐는데도 버튼에 불이 남아 있었다.
+   켜짐 표시는 .on 이 담당하니 터치에서 잃는 게 없다 */
+@media (hover: hover) {
+    .role-btn:hover img {
+        filter: none;
+        opacity: 1;
+    }
 }
 
 .role-btn.on {
@@ -6491,9 +6616,11 @@ body.bg-solid::before {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
-.role-btn:hover::after {
-    opacity: 1;
-    visibility: visible;
+@media (hover: hover) {
+    .role-btn:hover::after {
+        opacity: 1;
+        visibility: visible;
+    }
 }
 
 /* ★ 검색·역할군에 안 걸린 항목. !important 가 필요하다 —
