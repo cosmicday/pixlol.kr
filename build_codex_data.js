@@ -123,9 +123,15 @@ async function getJson(url) {
     // ── 룬. perkstyles 슬롯이 "지금 쓰이는 목록" 이다
     const runes = {};
     const styles = {};
+    // ★★ `styles[id].sl` 은 **줄별 룬 id 배열**이고 CD 가 준 순서 그대로다.
+    //   도감 트리를 인게임과 같은 자리에 그리려면 이게 있어야 한다. 이름순으로 세우면
+    //   20슬롯 중 17개가 클라와 어긋난다 (정밀 핵심룬 = 집중공격/치명적속도/기민한발놀림/정복자).
+    const perkIds = new Set(perks.map(p => p.id));
     perkStyles.styles.forEach(st => {
-        styles[st.id] = { n: st.name, i: st.iconPath };
+        styles[st.id] = { n: st.name, i: st.iconPath, sl: [] };
         st.slots.filter(sl => sl.type !== 'kStatMod').forEach((sl, slotIdx) => {
+            // perks.json 에 없는 id 는 버린다 (바로 아래 runes 를 채우는 가드와 같은 기준이어야 한다)
+            styles[st.id].sl.push(sl.perks.filter(pid => perkIds.has(pid)));
             sl.perks.forEach(pid => {
                 const p = perks.find(x => x.id === pid);
                 if (!p) return;
@@ -140,6 +146,15 @@ async function getJson(url) {
             });
         });
     });
+    // ★★ 파편 3x3 을 자리 그대로 담는다 — 아래 `shards` 만으로는 못 그린다.
+    //   적응형 능력치(5008)가 1·2번 줄, 체력 증가(5001)가 2·3번 줄에 **두 번** 나오는데
+    //   shards 는 중복을 버려서(!shards[pid]) 처음 만난 줄만 남기기 때문이다.
+    //   ★ 실측(2026-08-21): 파편 3줄은 5개 계열이 전부 같다. 그래서 한 벌만 담는다.
+    const statRowsOf = st => st.slots.filter(sl => sl.type === 'kStatMod').map(sl => sl.perks.slice());
+    const shardRows = statRowsOf(perkStyles.styles[0]);
+    const rowsKey = JSON.stringify(shardRows);
+    const oddStyle = perkStyles.styles.find(st => JSON.stringify(statRowsOf(st)) !== rowsKey);
+
     // 스탯 파편도 도감에 넣는다 (룬 페이지의 일부다)
     const shards = {};
     perkStyles.styles[0].slots.filter(sl => sl.type === 'kStatMod').forEach((sl, i) => {
@@ -165,7 +180,7 @@ async function getJson(url) {
             };
         });
 
-    const data = { v: DD_VER, items, runes, styles, shards, spells };
+    const data = { v: DD_VER, items, runes, styles, shards, shardRows, spells };
     const body = JSON.stringify(data);
     const out = `// 자동 생성 — build_codex_data.js (${new Date().toISOString().slice(0, 10)}, DD ${DD_VER})
 // 도감 탭 데이터. 아이템·룬·소환사 주문의 한국어 이름/설명/수치/조합식.
@@ -189,6 +204,8 @@ const codexData = ${body};
     Object.values(items).forEach(x => x.g2.forEach(t => tagCount[t] = (tagCount[t] || 0) + 1));
     console.log(`  태그: ${Object.entries(tagCount).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ':' + v).join(' ')}`);
     console.log(`룬 ${Object.keys(runes).length}개 (perks.json ${perks.length}개 중) / 계열 ${Object.keys(styles).length} / 파편 ${Object.keys(shards).length}`);
+    console.log(`  줄 배치: ${Object.values(styles).map(st => st.n + ' ' + st.sl.map(r => r.length).join('-')).join(' / ')} / 파편 ${shardRows.map(r => r.length).join('-')}`);
+    if (oddStyle) console.log(`  ★ 파편 줄이 계열마다 다르다 (${oddStyle.name}) — 도감 파편 격자를 계열별로 갈라야 한다`);
     console.log(`소환사 주문 ${Object.keys(spells).length}개 (전체 ${Object.keys(ddSumm.data).length}개 중)`);
     console.log(`\n크기 ${(Buffer.byteLength(out) / 1024).toFixed(0)}KB  gzip ${(zlib.gzipSync(Buffer.from(out), { level: 9 }).length / 1024).toFixed(0)}KB  brotli ${(zlib.brotliCompressSync(Buffer.from(out)).length / 1024).toFixed(0)}KB`);
 

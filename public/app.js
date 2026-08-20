@@ -2865,6 +2865,7 @@ async function showCodex(target) {
     let curCat = 'all';     // 아이템 계열 (공격·주문·방어·신발·소모품·기타)
     let curDepth = 'all';   // 아이템 등급 (기본·시작·서사급·전설급·상위)
     let curStyle = 'all';   // 룬 계열 (정밀·지배·마법·영감·결의·파편)
+    let runeView = 'tree';  // 룬 탭 보기: 'tree'(인게임 자리) | 'list'(평평한 목록)
     let query = '';
     let selected = null;      // 지금 고른 항목 id (탭마다 따로 기억한다)
     const lastPick = {};
@@ -2904,15 +2905,32 @@ async function showCodex(target) {
             });
         }
         if (curTab === 'rune') {
-            const list = Object.keys(D.runes).map(id => {
-                const r = D.runes[id];
-                return { id, name: r.n, icon: codexPerkIcon(r.i), sub: D.styles[r.st]?.n || '', raw: r, sort: [r.st, r.sl] };
+            // ★★ 정렬이 가나다순이 아니라 **인게임 자리 순서**다 (계열 → 줄 → 줄 안의 자리).
+            //   codex_data 의 `styles[].sl` 이 CD perkstyles 슬롯 배열 그대로라 그걸 따라 담기만 하면 된다.
+            //   이름순으로 세우면 20슬롯 중 17개가 클라와 어긋난다
+            //   (정밀 핵심룬이 "기민한 발놀림 / 정복자 / 집중 공격 / 치명적 속도" 로 나왔다).
+            const list = [];
+            Object.keys(D.styles).sort((a, b) => a - b).forEach(st => {
+                (D.styles[st].sl || []).forEach((row, sl) => row.forEach((pid, col) => {
+                    const r = D.runes[pid];
+                    if (!r) return;
+                    list.push({
+                        id: String(pid), name: r.n, icon: codexPerkIcon(r.i),
+                        // 핵심 룬은 목록에서도 한눈에 갈리게 딱지를 붙인다 (아이콘 금테는 CSS)
+                        sub: sl === 0 ? `${D.styles[st].n} · <span class="codex-key-tag">핵심 룬</span>` : D.styles[st].n,
+                        raw: r, keystone: sl === 0, sort: [Number(st), sl * 10 + col]
+                    });
+                }));
             });
-            // 스탯 파편도 같은 목록에 붙인다 (룬 페이지의 일부다)
-            Object.keys(D.shards).forEach(id => {
-                const s = D.shards[id];
-                list.push({ id, name: s.n, icon: codexPerkIcon(s.i), sub: '스탯 파편', raw: s, shard: true, sort: [99999, s.row] });
-            });
+            // 스탯 파편도 같은 목록에 붙인다 (룬 페이지의 일부다).
+            // ★ 5008(적응형)·5001(체력 증가)은 두 줄에 걸쳐 있다 — 목록에는 한 번만 넣는다.
+            const seenShard = new Set();
+            D.shardRows.forEach((row, ri) => row.forEach((pid, ci) => {
+                const sh = D.shards[pid];
+                if (!sh || seenShard.has(pid)) return;
+                seenShard.add(pid);
+                list.push({ id: String(pid), name: sh.n, icon: codexPerkIcon(sh.i), sub: '스탯 파편', raw: sh, shard: true, sort: [99999, ri * 10 + ci] });
+            }));
             return list;
         }
         // ★ 주문은 부제를 안 붙인다. 9개뿐이라 목록에서 고를 때 쿨타임이 필요 없고,
@@ -2942,13 +2960,24 @@ async function showCodex(target) {
     }
 
     // 줄 하나를 그린다. group 이 다르면 서로 독립이고 **AND 로 겹쳐서 걸린다.**
-    function catRowHtml(label, list, cur, group) {
+    function catRowHtml(label, list, cur, group, extra) {
         return `
         <div class="codex-cat-row">
             <span class="codex-cat-label">${label}</span>
             <div class="codex-cat-btns">
                 ${list.map(c => `<button class="codex-cat${c.key === cur ? ' active' : ''}" data-group="${group}" data-key="${c.key}">${c.name}</button>`).join('')}
             </div>
+            ${extra || ''}
+        </div>`;
+    }
+
+    // 룬 탭만 갖는 보기 토글. 기본은 트리(인게임 자리)다.
+    // ★ 검색 중에는 트리로 못 그린다 — 걸러낸 결과를 자리에 앉힐 방법이 없어서 목록으로 되돌린다.
+    function runeViewToggleHtml() {
+        return `
+        <div class="codex-view-toggle" data-tooltip="검색 중에는 목록으로 보여줍니다">
+            ${[['tree', '트리'], ['list', '목록']].map(([k, n]) =>
+            `<button class="codex-view-btn${runeView === k ? ' active' : ''}" data-view="${k}">${n}</button>`).join('')}
         </div>`;
     }
 
@@ -2959,7 +2988,7 @@ async function showCodex(target) {
             html = catRowHtml('등급', CODEX_DEPTH_CATS, curDepth, 'depth')
                 + catRowHtml('분류', CODEX_ITEM_CATS, curCat, 'cat');
         } else if (curTab === 'rune') {
-            html = catRowHtml('계열', runeStyleCats(), curStyle, 'style');
+            html = catRowHtml('계열', runeStyleCats(), curStyle, 'style', runeViewToggleHtml());
         }
         el.innerHTML = html;                       // 주문 탭은 거를 게 없어서 빈 줄이다
         el.style.display = html ? 'block' : 'none';
@@ -2969,6 +2998,11 @@ async function showCodex(target) {
             if (g === 'depth') curDepth = k;
             else if (g === 'cat') curCat = k;
             else curStyle = k;
+            renderCats(); renderList();
+        }));
+
+        el.querySelectorAll('.codex-view-btn').forEach(b => b.addEventListener('click', () => {
+            runeView = b.dataset.view;
             renderCats(); renderList();
         }));
     }
@@ -2988,6 +3022,52 @@ async function showCodex(target) {
             .sort((a, b) => (a.sort[0] - b.sort[0]) || (a.sort[1] - b.sort[1]) || a.name.localeCompare(b.name, 'ko'));
     }
 
+    // ── 룬 트리. 인게임 룬 페이지와 **같은 자리**에 놓는다.
+    //   ★ 자리 정보는 codex_data 의 `styles[].sl`(줄별 id 배열)과 `shardRows`(3x3) 다.
+    //     둘 다 CD perkstyles.json 의 슬롯 배열 그대로라 순서를 손대지 않는다.
+    //   ★ 파편은 같은 id 가 두 칸에 나온다 (적응형 1·2줄 / 체력 증가 2·3줄) — 인게임 그대로다.
+    function runeTreeHtml() {
+        const styleIds = Object.keys(D.styles).sort((a, b) => a - b);
+        const want = (curStyle === 'all') ? styleIds : (curStyle === 'shard' ? [] : [curStyle]);
+        let html = want.map(st => {
+            const S = D.styles[st];
+            if (!S) return '';
+            return `
+            <div class="codex-rune-tree">
+                <div class="codex-rune-head">
+                    <img class="codex-rune-head-icon" src="${codexPerkIcon(S.i)}" alt="">
+                    <span>${S.n}</span>
+                </div>
+                ${(S.sl || []).map((row, i) => `
+                <div class="codex-rune-row${i === 0 ? ' is-key' : ''}">
+                    ${row.map(pid => runeNodeHtml(String(pid), D.runes[pid], i === 0)).join('')}
+                </div>`).join('')}
+            </div>`;
+        }).join('');
+
+        // 파편은 계열이 없어서 맨 뒤에 붙인다 ('파편' 버튼을 누르면 이것만 나온다)
+        if (curStyle === 'all' || curStyle === 'shard') {
+            html += `
+            <div class="codex-rune-tree">
+                <div class="codex-rune-head"><span>스탯 파편</span></div>
+                ${D.shardRows.map(row => `
+                <div class="codex-rune-row">
+                    ${row.map(pid => runeNodeHtml(String(pid), D.shards[pid], false)).join('')}
+                </div>`).join('')}
+            </div>`;
+        }
+        return html;
+    }
+
+    function runeNodeHtml(id, r, key) {
+        if (!r) return '';
+        return `
+        <div class="codex-rune-node${id === selected ? ' active' : ''}${key ? ' is-key' : ''}" data-id="${id}">
+            <img class="codex-rune-icon" src="${codexPerkIcon(r.i)}" alt="" loading="lazy">
+            <span class="codex-rune-label">${r.n}</span>
+        </div>`;
+    }
+
     // keepScroll — 목록 내용이 바뀌지 않는 경우(고른 항목만 달라질 때)만 true.
     //   ★ 탭·검색·분류를 바꿀 땐 맨 위로 되돌려야 한다. 같은 <div> 를 재사용하므로
     //     scrollTop 이 그대로 남아서, 룬 탭으로 옮기면 **아이템 탭에서 보던 위치**가
@@ -2999,6 +3079,9 @@ async function showCodex(target) {
 
         const el = document.getElementById('codex-list');
         const keep = keepScroll ? el.scrollTop : 0;
+        // ★ 트리는 룬 탭 · 트리 보기 · **검색어가 없을 때**만이다 (걸러낸 결과는 자리에 못 앉힌다)
+        const treeOn = curTab === 'rune' && runeView === 'tree' && !query.trim();
+        el.classList.toggle('is-tree', treeOn);
         if (!list.length) {
             el.innerHTML = `<div class="codex-none">결과가 없습니다.</div>`;
             return;
@@ -3006,9 +3089,16 @@ async function showCodex(target) {
         // 고른 게 목록에서 사라졌으면 첫 항목으로 옮긴다 (상세가 빈 채로 남지 않게)
         if (!selected || !list.some(e => e.id === selected)) selected = list[0].id;
 
+        if (treeOn) {
+            el.innerHTML = runeTreeHtml();
+            el.scrollTop = keep;
+            renderDetail();
+            return;
+        }
+
         el.innerHTML = list.map(e => `
-            <div class="codex-item${e.id === selected ? ' active' : ''}" data-id="${e.id}">
-                <img class="codex-item-img" src="${e.icon}" alt="" loading="lazy">
+            <div class="codex-item${e.id === selected ? ' active' : ''}${e.keystone ? ' is-keystone' : ''}" data-id="${e.id}">
+                <img class="codex-item-img${curTab === 'rune' ? ' codex-item-img-round' : ''}" src="${e.icon}" alt="" loading="lazy">
                 <div class="codex-item-body">
                     <div class="codex-item-name">${e.name}</div>
                     ${e.sub ? `<div class="codex-item-sub">${e.sub}</div>` : ''}
@@ -3022,11 +3112,14 @@ async function showCodex(target) {
     }
 
     document.getElementById('codex-list').addEventListener('click', (ev) => {
-        const row = ev.target.closest('.codex-item');
+        // 목록 줄과 트리 노드가 같은 위임을 탄다 (트리도 같은 <div> 안에 그려진다)
+        const row = ev.target.closest('.codex-item, .codex-rune-node');
         if (!row) return;
         selected = row.dataset.id;
         lastPick[curTab] = selected;
-        document.querySelectorAll('.codex-item').forEach(r => r.classList.toggle('active', r.dataset.id === selected));
+        // ★ 파편은 같은 id 가 두 칸에 있어서 둘 다 켜진다 — 인게임에서도 같은 파편이다
+        document.querySelectorAll('.codex-item, .codex-rune-node')
+            .forEach(r => r.classList.toggle('active', r.dataset.id === selected));
         renderDetail();
     });
 
@@ -3125,7 +3218,11 @@ async function showCodex(target) {
     function runeDetailHtml(e) {
         const r = e.raw;
         const styleName = e.shard ? '스탯 파편' : (D.styles[r.st]?.n || '');
-        const slotName = e.shard ? `${r.row + 1}번째 줄` : (r.sl === 0 ? '핵심 룬' : `${r.sl}번째 줄`);
+        // ★ 파편은 두 줄에 걸친 것이 있다 (적응형 1·2줄 / 체력 증가 2·3줄) — 있는 줄을 다 적는다
+        const shardRowsOf = id => D.shardRows
+            .map((row, i) => row.includes(Number(id)) ? i + 1 : 0).filter(Boolean);
+        const slotName = e.shard ? `${shardRowsOf(e.id).join('·')}번째 줄`
+            : (r.sl === 0 ? '핵심 룬' : `${r.sl}번째 줄`);
         return `
         <div class="codex-detail-head">
             <img class="codex-detail-img codex-detail-img-round" src="${codexPerkIcon(r.i)}" alt="">

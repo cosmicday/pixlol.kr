@@ -6890,6 +6890,142 @@ body.bg-solid::before {
     color: var(--text-faint);
 }
 
+/* 룬은 목록에서도 아이콘이 동그랗다 — 오른쪽 상세(.codex-detail-img-round)와 같은 모양이다 */
+.codex-item-img-round { border-radius: 50%; }
+
+/* ★ 핵심 룬은 목록에서 금테 + 딱지 두 가지로 갈린다.
+   테두리를 box-shadow 로 주는 이유: border 를 주면 아이콘이 36px 안에서 줄어들어
+   같은 줄의 다른 룬과 크기가 어긋난다. */
+.codex-item.is-keystone .codex-item-img {
+    box-shadow: 0 0 0 2px rgba(240, 200, 120, 0.75);
+}
+
+.codex-key-tag { color: #f0c878; font-weight: 600; }
+
+/* 보기 토글 (룬 탭 전용). 거르는 줄 오른쪽 끝에 붙는다. */
+.codex-view-toggle {
+    margin-left: auto;
+    flex-shrink: 0;
+    display: flex;
+    gap: 4px;
+}
+
+.codex-view-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+@media (hover: hover) {
+    .codex-view-btn:hover { color: var(--text-bright); }
+}
+
+.codex-view-btn.active {
+    background: rgba(167, 139, 250, 0.15);
+    border-color: rgba(167, 139, 250, 0.5);
+    color: #a78bfa;
+}
+
+/* ============================================================
+   룬 트리 — 인게임 룬 페이지와 같은 자리 (2026-08-21 신설)
+   ★ 이름을 codex-rune-* 로 뗀 이유: codex-tree-* 는 **아이템 조합식 트리**가
+     이미 쓰고 있다 (2026-08-20). 같은 이름을 쓰면 서로를 덮어쓴다.
+   ★ 줄 안 순서는 codex_data 의 styles[].sl · shardRows 가 정한다 — CSS 는 자리만 잡는다.
+   ============================================================ */
+.codex-list.is-tree {
+    display: block;
+    /* 계열 머리글이 sticky 라 위 여백은 머리글이 갖는다 (여백에 항목이 비쳐 보이지 않게) */
+    padding: 0 6px 12px 10px;
+}
+
+.codex-rune-tree { margin-bottom: 14px; }
+.codex-rune-tree:last-child { margin-bottom: 0; }
+
+.codex-rune-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0 8px;
+    background: #1a1a2e;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-bright);
+}
+
+.codex-rune-head-icon { width: 22px; height: 22px; aspect-ratio: 1 / 1; }
+
+/* ★ 격자가 아니라 flex + center 다. 줄마다 칸 수가 3~4개로 다른데(핵심 룬만 4개인 계열이
+   둘 있다) 격자로 깔면 3개짜리 줄이 왼쪽으로 몰려 인게임과 자리가 달라진다. */
+.codex-rune-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.codex-rune-row:last-child { margin-bottom: 0; }
+
+.codex-rune-node {
+    width: 118px;
+    box-sizing: border-box;
+    padding: 6px 4px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+/* ★ 호버 색은 반드시 hover 기기에서만 — 폰에서 탭 자국이 눌어붙는다 (사이트 공통 규칙) */
+@media (hover: hover) {
+    .codex-rune-node:hover { background: rgba(255, 255, 255, 0.04); }
+}
+
+.codex-rune-node.active {
+    background: rgba(167, 139, 250, 0.12);
+    border-color: rgba(167, 139, 250, 0.5);
+}
+
+/* ★ aspect-ratio 를 못 박는다 — 아이콘이 늦게 오면 높이가 0 이었다 늘어나며
+   트리 전체가 아래로 밀리고 스크롤 위치가 튄다 (목록·스킨 탭과 같은 이유). */
+.codex-rune-icon {
+    width: 40px;
+    height: 40px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* 핵심 룬만 크고 금테다 (인게임도 이 줄만 큰 원이다) */
+.codex-rune-node.is-key .codex-rune-icon {
+    width: 56px;
+    height: 56px;
+    box-shadow: 0 0 0 2px rgba(240, 200, 120, 0.6);
+}
+
+.codex-rune-label {
+    font-size: 11px;
+    line-height: 1.25;
+    color: var(--text-muted);
+    word-break: keep-all;
+}
+
+.codex-rune-node.active .codex-rune-label { color: #fff; }
+.codex-rune-node.is-key .codex-rune-label { color: var(--text-bright); font-weight: 600; }
+
 .codex-detail {
     flex: 1;
     min-width: 0;
@@ -7183,6 +7319,16 @@ body.bg-solid::before {
         max-height: 38vh;
         grid-template-columns: 1fr;
     }
+
+    /* ★ 트리는 목록보다 높이를 더 준다 — 38vh 면 한 계열도 다 안 들어와 계속 스크롤해야 한다 */
+    .codex-list.is-tree { max-height: 62vh; }
+
+    /* 390px 실측: 78 x 4칸 + gap 6 x 3 = 330px 이라 가로 넘침이 없다 */
+    .codex-rune-row { gap: 6px; }
+    .codex-rune-node { width: 78px; padding: 5px 2px; }
+    .codex-rune-icon { width: 34px; height: 34px; }
+    .codex-rune-node.is-key .codex-rune-icon { width: 46px; height: 46px; }
+    .codex-rune-label { font-size: 10px; }
 
     .codex-detail {
         overflow-y: visible;
