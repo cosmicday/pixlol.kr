@@ -2868,6 +2868,9 @@ async function showCodex(target) {
     let runeView = 'tree';  // 룬 탭 보기: 'tree'(인게임 자리) | 'list'(평평한 목록)
     let query = '';
     let selected = null;      // 지금 고른 항목 id (탭마다 따로 기억한다)
+    // ★ 파편은 같은 id 가 두 칸에 있어서(적응형 1·2줄 / 체력 증가 2·3줄) id 만으로는
+    //   어느 칸을 눌렀는지 모른다. 켜지는 건 **누른 칸 하나**여야 해서 칸 열쇠를 따로 든다.
+    let selectedCell = null;  // '5008:0-0' 꼴 (파편 트리에서만 쓴다)
     const lastPick = {};
 
     // ★ TOOLTIP_STYLE_CSS 를 여기 끼운다. style.css 로 못 옮기는 이유는 그 상수 주석 참고.
@@ -3050,19 +3053,32 @@ async function showCodex(target) {
             html += `
             <div class="codex-rune-tree">
                 <div class="codex-rune-head"><span>스탯 파편</span></div>
-                ${D.shardRows.map(row => `
+                ${D.shardRows.map((row, ri) => `
                 <div class="codex-rune-row">
-                    ${row.map(pid => runeNodeHtml(String(pid), D.shards[pid], false)).join('')}
+                    ${row.map((pid, ci) => runeNodeHtml(String(pid), D.shards[pid], false, `${pid}:${ri}-${ci}`)).join('')}
                 </div>`).join('')}
             </div>`;
         }
         return html;
     }
 
-    function runeNodeHtml(id, r, key) {
+    // 파편 격자에서 **켜질 칸 하나**를 정한다.
+    // ★ 목록에서 골랐거나 트리를 처음 그릴 때는 눌린 칸이 없다 — 그 파편이 **처음 나오는 칸**을 켠다.
+    function activeShardCell() {
+        if (selectedCell && selectedCell.startsWith(selected + ':')) return selectedCell;
+        for (let r = 0; r < D.shardRows.length; r++) {
+            const c = D.shardRows[r].indexOf(Number(selected));
+            if (c >= 0) return `${selected}:${r}-${c}`;
+        }
+        return null;
+    }
+
+    // cell 이 있으면 파편 칸이다 — id 가 같아도 **그 칸일 때만** 켠다
+    function runeNodeHtml(id, r, key, cell) {
         if (!r) return '';
+        const on = id === selected && (!cell || cell === activeShardCell());
         return `
-        <div class="codex-rune-node${id === selected ? ' active' : ''}${key ? ' is-key' : ''}" data-id="${id}">
+        <div class="codex-rune-node${on ? ' active' : ''}${key ? ' is-key' : ''}" data-id="${id}"${cell ? ` data-cell="${cell}"` : ''}>
             <img class="codex-rune-icon" src="${codexPerkIcon(r.i)}" alt="" loading="lazy">
             <span class="codex-rune-label">${r.n}</span>
         </div>`;
@@ -3116,10 +3132,12 @@ async function showCodex(target) {
         const row = ev.target.closest('.codex-item, .codex-rune-node');
         if (!row) return;
         selected = row.dataset.id;
+        selectedCell = row.dataset.cell || null;   // 파편이 아니면 null
         lastPick[curTab] = selected;
-        // ★ 파편은 같은 id 가 두 칸에 있어서 둘 다 켜진다 — 인게임에서도 같은 파편이다
-        document.querySelectorAll('.codex-item, .codex-rune-node')
-            .forEach(r => r.classList.toggle('active', r.dataset.id === selected));
+        // ★ 파편은 같은 id 가 두 칸에 있다 — **누른 칸 하나만** 켠다 (칸 열쇠로 가른다)
+        const cellOn = activeShardCell();
+        document.querySelectorAll('.codex-item, .codex-rune-node').forEach(r =>
+            r.classList.toggle('active', r.dataset.id === selected && (!r.dataset.cell || r.dataset.cell === cellOn)));
         renderDetail();
     });
 
