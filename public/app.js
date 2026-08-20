@@ -3039,8 +3039,8 @@ async function showCodex(target) {
             : curTab === 'rune' ? runeDetailHtml(e)
                 : spellDetailHtml(e);
 
-        // 조합식 아이콘을 누르면 그 아이템으로 옮겨간다
-        el.querySelectorAll('.codex-recipe-item').forEach(b => b.addEventListener('click', () => {
+        // 조합식 아이콘을 누르면 그 아이템으로 옮겨간다 (트리 노드도 같은 동작)
+        el.querySelectorAll('.codex-recipe-item, .codex-tree-node[data-id]').forEach(b => b.addEventListener('click', () => {
             const id = b.dataset.id;
             if (!D.items[id]) return;
             // 등급·분류·검색 때문에 목록에 없을 수 있으니 전부 풀어 준다
@@ -3071,6 +3071,31 @@ async function showCodex(target) {
         </div>`;
     }
 
+    // 조합식 트리 — f(DD from)를 재귀로 따라간다. 재료 215개가 표 안에서 하나도 안 빠지는
+    // 것을 빌드 때 확인해 뒀으므로(brokenFrom 0) 추가 데이터 없이 끝까지 그려진다.
+    // 뿌리(지금 보는 아이템)는 data-id 를 안 붙여 클릭 대상에서 뺀다 — 눌러 봐야 제자리다.
+    function recipeTreeNode(id, depth) {
+        const it = D.items[id];
+        if (!it) return '';
+        const kids = depth < 6 ? it.f : [];
+        return `
+            <li>
+                <div class="codex-tree-node${depth ? '' : ' is-root'}"${depth ? ` data-id="${id}"` : ''} title="${it.n}">
+                    <img src="${codexItemIcon(id)}" alt="" loading="lazy">
+                    <span class="codex-tree-gold">${it.g.toLocaleString()}</span>
+                </div>
+                ${kids.length ? `<ul>${kids.map(f => recipeTreeNode(f, depth + 1)).join('')}</ul>` : ''}
+            </li>`;
+    }
+
+    function recipeTreeRow(rootId) {
+        return `
+        <div class="codex-recipe">
+            <span class="codex-recipe-label">조합식</span>
+            <div class="codex-tree"><ul>${recipeTreeNode(rootId, 0)}</ul></div>
+        </div>`;
+    }
+
     function itemDetailHtml(e) {
         const it = e.raw;
         // 재료값 합계 대비 조합 비용 — "얼마를 더 내는가" 가 궁금한 자리다
@@ -3092,6 +3117,7 @@ async function showCodex(target) {
             </div>
         </div>
         <div class="codex-desc">${it.d || '<span class="codex-dim">설명이 없습니다.</span>'}</div>
+        ${it.f.length ? recipeTreeRow(e.id) : ''}
         ${recipeRow('재료', it.f)}
         ${recipeRow('상위 아이템', it.t)}`;
     }

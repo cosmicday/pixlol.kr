@@ -7027,6 +7027,126 @@ body.bg-solid::before {
     white-space: nowrap;
 }
 
+/* ── 조합식 트리 (2026-08-20) — 설명과 "재료" 줄 사이. DD from 재귀라 추가 요청 0.
+   연결선은 li 의 위 패딩(14px) 안에 가상요소로 그린다 —
+   ::before 가 왼쪽 절반 가로선, ::after 가 오른쪽 절반 가로선 + 가운데 세로선.
+   첫/끝 자식은 바깥쪽 가로선만 지우고, 외자식은 세로선만 남는다. */
+.codex-tree {
+    flex: 1;
+    min-width: 0;
+    /* 넓은 트리(전설급 잎 6~8개)가 폰에서 넘칠 때 자기만 가로 스크롤 */
+    overflow-x: auto;
+}
+
+.codex-tree ul {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 14px 0 0;
+    position: relative;
+}
+
+.codex-tree>ul {
+    padding-top: 0;
+    justify-content: flex-start;
+}
+
+.codex-tree li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding: 14px 5px 0;
+}
+
+.codex-tree>ul>li {
+    padding-top: 0;
+}
+
+/* 부모 노드에서 자식 줄로 내려오는 세로선 */
+.codex-tree ul ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 1px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.codex-tree li::before,
+.codex-tree li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    width: 50%;
+    height: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.codex-tree li::after {
+    right: auto;
+    left: 50%;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.codex-tree li:first-child::before {
+    border-top: none;
+}
+
+.codex-tree li:last-child::after {
+    border-top: none;
+}
+
+.codex-tree>ul>li::before,
+.codex-tree>ul>li::after {
+    display: none;
+}
+
+.codex-tree-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 7px;
+    padding: 5px;
+}
+
+.codex-tree-node[data-id] {
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+/* ★ :hover 는 항상 hover:hover 로 감싼다 — 폰 탭 잔상 방지 (role-btn 에서 겪은 것) */
+@media (hover: hover) {
+    .codex-tree-node[data-id]:hover {
+        background: rgba(167, 139, 250, 0.12);
+        border-color: rgba(167, 139, 250, 0.4);
+    }
+}
+
+.codex-tree-node img {
+    display: block;
+    width: 34px;
+    height: 34px;
+    border-radius: 5px;
+}
+
+.codex-tree-node.is-root img {
+    width: 40px;
+    height: 40px;
+}
+
+.codex-tree-gold {
+    font-size: 11px;
+    line-height: 1;
+    color: #f0e6d2;
+}
+
 .codex-empty,
 .codex-none {
     text-align: center;
@@ -7072,8 +7192,12 @@ body.bg-solid::before {
     .codex-detail-img { width: 52px; height: 52px; }
     .codex-detail-name { font-size: 16px; }
 
-    /* 재료 줄은 라벨을 위로 올린다 — 62px 을 떼면 아이콘 자리가 모자란다 */
-    .codex-recipe { flex-direction: column; gap: 8px; }
+    /* 재료 줄은 라벨을 위로 올린다 — 62px 을 떼면 아이콘 자리가 모자란다.
+       ★ stretch 필수 — 기본 규칙의 align-items: flex-start 가 column 에서 그대로 남으면
+       "자식 폭을 내용에 맞춰라" 가 되어 조합식 트리가 422px 로 벌어져 카드를 뚫는다
+       (.champ-page-wrap 에서 겪은 것과 같은 함정). stretch 여야 .codex-tree 의
+       overflow-x: auto 가 제 폭에서 잘라 자기 가로 스크롤로 처리한다. */
+    .codex-recipe { flex-direction: column; gap: 8px; align-items: stretch; }
     .codex-recipe-label { width: auto; padding-top: 0; }
 
     .codex-tabs { padding: 0; }
