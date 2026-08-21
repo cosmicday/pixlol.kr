@@ -226,6 +226,27 @@ const champBuildSchema = new mongoose.Schema({
 champBuildSchema.index({ scope: 1, champ: 1 });
 const ChampBuild = mongoose.model('ChampBuild', champBuildSchema);
 
+// ★★ 라인 상성 (2026-08-21 신설). "같은 라인에서 마주친 두 챔피언" 한 쌍이 한 줄이다.
+//   champ 이 나, foe 가 상대이고 **양방향으로 두 줄**을 만든다 (A vs B / B vs A).
+//   그래야 화면에서 한 챔피언만으로 조회할 수 있다 — 두 배가 되지만 한 줄이 40B 다.
+//   ★ 수집은 바꾼 게 없다. 슬림 문서 참가자 칸에 챔피언(0)·라인(1)·승패(2)·팀(3)이
+//     처음부터 다 있어서 **지난 원본도 소급해서 세어진다** (룬 빌드를 라인별로 쪼갤 때와 같다).
+//   ★ 실측(2026-08-21, 19,737판): **라인 5쌍이 온전한 판이 100.0%** 다
+//     (라인 판정 실패 참가자가 197,370명 중 7명). 그래서 짝이 안 맞는 판은 그냥 버린다.
+//   ★ `kb`(마스터+ 인원) 로 안 쪼갠다 — 룬 빌드와 같은 이유로 칸이 절반씩 얇아진다.
+//   ★ 라인 무관(-1) 줄은 **안 만든다.** 화면이 필요하면 라인별 줄을 더해서 쓴다
+//     (줄 수가 그만큼 줄고, 어차피 상성은 라인 안에서만 뜻이 있다).
+const champMatchupSchema = new mongoose.Schema({
+    scope: { type: String, required: true },
+    pos: { type: Number, required: true },     // 0~4 라인
+    champ: { type: Number, required: true },   // 나
+    foe: { type: Number, required: true },     // 상대
+    games: { type: Number, default: 0 },
+    wins: { type: Number, default: 0 }
+});
+champMatchupSchema.index({ scope: 1, champ: 1 });
+const ChampMatchup = mongoose.model('ChampMatchup', champMatchupSchema);
+
 const summonerCacheSchema = new mongoose.Schema({
     puuid: { type: String, required: true, unique: true },
     displayName: { type: String, required: true },   // 화면 표시용 원본 ("Faker#KR1")
@@ -1330,6 +1351,60 @@ async function buildOneBuildScope(scopeKey, matchCond) {
     return docs.length;
 }
 
+// ★ 표본이 이보다 적은 칸은 **저장하지 않는다.** 실측(19,737판): 칸이 22,154개인데
+//   5판 이상은 7,558개다. 1판짜리 칸이 컬렉션을 뒤덮는 걸 막는 장치이고,
+//   원본(matchstats)이 살아 있는 동안은 이 값을 바꿔 다시 세울 수 있다.
+const MATCHUP_MIN = 5;
+
+// 라인 상성 집계. **패치 scope 에만 부른다** (하루치는 칸마다 한두 판이라 뜻이 없다)
+async function buildOneMatchupScope(scopeKey, matchCond) {
+    const P = i => ({ $arrayElemAt: ['$p', i] });
+
+    const rows = await MatchStat.aggregate([
+        { $match: matchCond },
+        { $project: { p: 1 } },
+        { $unwind: '$p' },
+        { $project: { pos: P(1), team: P(3), c: P(0), w: P(2) } },
+        // 라인 판정이 실패한 참가자(-1)는 짝을 지을 수 없다
+        { $match: { pos: { $gte: 0 } } },
+        // 한 판의 한 라인에 모인 사람들. 정상이면 양 팀에서 한 명씩 둘이다.
+        { $group: { _id: { m: '$_id', pos: '$pos' }, s: { $push: { t: '$team', c: '$c', w: '$w' } } } },
+        { $match: { s: { $size: 2 } } },
+        { $project: { pos: '$_id.pos', a: { $arrayElemAt: ['$s', 0] }, b: { $arrayElemAt: ['$s', 1] } } },
+        // ★ 같은 팀 둘이 한 라인에 잡힌 판은 버린다 (상성이 아니다)
+        { $match: { $expr: { $ne: ['$a.t', '$b.t'] } } },
+        // ★ 양방향으로 두 줄을 만든다
+        {
+            $project: {
+                pos: 1,
+                pair: [
+                    { c: '$a.c', f: '$b.c', w: '$a.w' },
+                    { c: '$b.c', f: '$a.c', w: '$b.w' }
+                ]
+            }
+        },
+        { $unwind: '$pair' },
+        {
+            $group: {
+                _id: { pos: '$pos', c: '$pair.c', f: '$pair.f' },
+                games: { $sum: 1 },
+                wins: { $sum: '$pair.w' }
+            }
+        },
+        { $match: { games: { $gte: MATCHUP_MIN } } }
+    ]).allowDiskUse(true);
+
+    const docs = rows
+        .filter(r => r._id.c > 0 && r._id.f > 0)
+        .map(r => ({ scope: scopeKey, pos: r._id.pos, champ: r._id.c, foe: r._id.f, games: r.games, wins: r.wins }));
+
+    // champstats·champbuilds 와 같은 이유로 통째로 갈아 끼운다 —
+    // $set 으로 덮으면 이번에 안 나온 칸이 옛 숫자를 들고 남는다.
+    await ChampMatchup.deleteMany({ scope: scopeKey });
+    if (docs.length) await ChampMatchup.insertMany(docs, { ordered: false });
+    return docs.length;
+}
+
 async function buildChampStats() {
     if (isBuildingStats) return;
     isBuildingStats = true;
@@ -1352,10 +1427,14 @@ async function buildChampStats() {
 
         let total = 0;
         let builds = 0;
+        let matchups = 0;
         for (const s of scopes) {
             total += await buildOneScope(s.key, s.cond);
-            // ★ 룬 빌드는 패치 scope 에만 만든다. 하루치 룬 조합은 거의 전부 1판짜리다.
-            if (s.key.startsWith('p:')) builds += await buildOneBuildScope(s.key, s.cond);
+            // ★ 룬 빌드·상성은 패치 scope 에만 만든다. 하루치는 거의 전부 1판짜리다.
+            if (s.key.startsWith('p:')) {
+                builds += await buildOneBuildScope(s.key, s.cond);
+                matchups += await buildOneMatchupScope(s.key, s.cond);
+            }
         }
 
         // 원본이 사라진 패치의 빌드 집계는 그대로 얼려 둔다 (champstats 와 같은 규칙).
@@ -1368,7 +1447,7 @@ async function buildChampStats() {
         await StatScope.deleteMany({ scope: { $regex: '^d:', $nin: keep } });
 
         if (total > 0) {
-            console.log(`[Stat] 집계 완료: scope ${scopes.length}개 / 연인원 ${total}판 / 빌드 ${builds}행 / ${((Date.now() - started) / 1000).toFixed(1)}초`);
+            console.log(`[Stat] 집계 완료: scope ${scopes.length}개 / 연인원 ${total}판 / 빌드 ${builds}행 / 상성 ${matchups}행 / ${((Date.now() - started) / 1000).toFixed(1)}초`);
         }
     } catch (e) {
         console.error('[Stat] 집계 실패:', e.message);
@@ -1400,6 +1479,7 @@ async function ensureStatIndexes() {
         // 통계 수집·집계용
         { col: 'matchseens', key: { done: 1, cnt: -1 } },
         { col: 'champbuilds', key: { scope: 1, champ: 1 } },
+        { col: 'champmatchups', key: { scope: 1, champ: 1 } },
         // 신화상점.
         //   ★★ `date` 의 unique 도 여기 적어야 한다. 스키마에 `unique: true` 를 써 놨지만
         //     **실제로 안 만들어졌다** (2026-08-16 실측: `_id_` 와 아래 복합 인덱스뿐이었다).
@@ -2666,6 +2746,40 @@ app.get('/api/champion-stats', async (req, res) => {
 //     통째로 몇 배가 되는데, 실제로 펼쳐 보는 건 한두 챔피언이다.
 //   집계는 1시간마다 갱신되므로 캐시를 넉넉히 잡아도 안전하다.
 // ==========================================
+// ==========================================
+//  라인 상성 — GET /api/champion-matchups?scope=p:16.16&champ=112
+//    빌드와 같은 이유로 표에 미리 안 싣는다 (줄을 펼칠 때만 부른다).
+//    한 챔피언의 **모든 라인** 줄을 그대로 내려주고 화면이 라인을 고른다.
+// ==========================================
+app.get('/api/champion-matchups', async (req, res) => {
+    try {
+        const champ = Number(req.query.champ);
+        const scope = String(req.query.scope || '');
+        if (!Number.isFinite(champ) || !scope) {
+            return res.status(400).json({ error: '잘못된 요청입니다.' });
+        }
+
+        const cacheKey = `matchups_${scope}_${champ}`;
+        const hit = myCache.get(cacheKey);
+        if (hit) return res.json(hit);
+
+        const rows = await ChampMatchup.find({ scope, champ })
+            .select('-_id -__v -scope -champ').lean();
+
+        // 박제된 패치면 행이 파일에 있다 (champion-builds 와 같은 판별).
+        if (!rows.length && !(await ChampMatchup.exists({ scope })) && await StatScope.exists({ scope })) {
+            return res.json({ archived: true, scope, champ, rows: [] });
+        }
+
+        const payload = { scope, champ, min: MATCHUP_MIN, rows };
+        myCache.set(cacheKey, payload, 600);
+        res.json(payload);
+    } catch (e) {
+        console.error('[API] 상성 조회 실패:', e.message);
+        res.status(500).json({ error: '상성 통계를 불러오지 못했습니다.' });
+    }
+});
+
 app.get('/api/champion-builds', async (req, res) => {
     try {
         const champ = Number(req.query.champ);

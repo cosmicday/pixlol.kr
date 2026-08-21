@@ -2765,6 +2765,101 @@ body.bg-solid::before {
     font-size: 13px;
 }
 
+/* ============================================================
+   통계 탭 펼침 패널 — 룬 빌드 + 라인 상성 (2026-08-21 상성 추가)
+   ★ 폰에서는 세로로 쌓는데 **align-items: stretch 를 같이 준다.**
+     기본 규칙의 flex-start 가 column 에 남으면 "자식 폭을 내용에 맞춰라" 가 되어
+     칸이 가로로 벌어진다 (.champ-page-wrap · .codex-recipe 에서 두 번 겪은 함정).
+   ============================================================ */
+.stats-panels {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.stats-panels .build-panel { flex: 1; min-width: 0; }
+
+.mu-panel {
+    width: 300px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 14px;
+    box-sizing: border-box;
+}
+
+.mu-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.mu-side + .mu-side { margin-top: 12px; }
+
+.mu-side-title {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text-faint);
+}
+
+.mu-weak::before { content: '▼ '; color: #e35d6a; }
+.mu-strong::before { content: '▲ '; color: #4f9bff; }
+
+.mu-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 0;
+    font-size: 12px;
+}
+
+/* 표본이 얇은 줄은 흐리게 — 지우지는 않는다 (비면 고장으로 보인다) */
+.mu-thin { opacity: 0.5; }
+
+.mu-img {
+    width: 22px;
+    height: 22px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.mu-name {
+    flex: 1;
+    min-width: 0;
+    color: var(--text-bright);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mu-wr { font-weight: 700; }
+
+.mu-games {
+    width: 42px;
+    text-align: right;
+    color: var(--text-faint);
+    font-size: 11px;
+}
+
+.mu-foot {
+    margin-top: 10px;
+    font-size: 10px;
+    color: var(--text-faint);
+    line-height: 1.4;
+}
+
+.mu-empty {
+    color: var(--text-faint);
+    font-size: 12px;
+    padding: 8px 0;
+}
+
 .build-panel {
     padding: 18px 20px 20px;
     text-align: left;
@@ -3954,6 +4049,21 @@ body.bg-solid::before {
     .build-cols {
         grid-template-columns: 1fr;
         gap: 14px;
+    }
+
+    /* ★ 상성 패널은 폰에서 룬 패널 아래로 내린다.
+       stretch 를 같이 줘야 한다 — column 에 flex-start 가 남으면 자식이 내용 폭으로
+       벌어져 표가 통째로 넓어진다 (.champ-page-wrap 에서 겪은 그 함정). */
+    .stats-panels {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .mu-panel {
+        width: auto;
+        position: sticky;
+        left: 0;
     }
 
     /* ★★ 세로로 쌓는 것만으로는 부족하다 — 칸이 640px 이라 승률이 화면 밖에 남는다.

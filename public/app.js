@@ -3462,7 +3462,23 @@ function expandStatsArchive(a) {
             pos: x[1], type: ARCHIVE_TYPE[x[2]], games: x[3], wins: x[4], key: x.slice(5)
         });
     });
-    return { rows, builds };
+
+    // 상성 행 — 2026-08-21에 더했다. 옛 박제 파일에는 없으므로 없으면 빈 표다.
+    const matchups = {};
+    (a.m || []).forEach(x => {
+        const champ = x[1];
+        (matchups[champ] || (matchups[champ] = [])).push({ pos: x[0], foe: x[2], games: x[3], wins: x[4] });
+    });
+    return { rows, builds, matchups };
+}
+
+// 박제된 패치의 상성. API 응답과 **같은 모양**이라 renderMatchupPanel 은 안 바뀐다.
+function archivedMatchupsFor(scope, champ) {
+    const cache = window.statsArchiveExpanded?.[scope];
+    const rows = cache?.matchups?.[champ] || [];
+    // 옛 박제 파일(상성 없음)이면 "박제라 없다" 로 알려 준다 — 빈 표보다 낫다
+    if (!cache?.matchups) return { archived: true, scope, champ, rows: [] };
+    return { scope, champ, rows };
 }
 
 // 박제된 패치의 룬 빌드. API 를 안 부르고 이미 받아 둔 파일에서 꺼낸다.
@@ -3545,6 +3561,93 @@ const BUILD_MIN_GAMES = 5;
 // ★★ 두 번째 인자는 표에서 켜 둔 라인이다 ('all' 또는 '0'~'4').
 //   2026-08-18부터 룬 집계가 라인별로 갈려서, 표의 라인 필터와 패널이 같은 것을 본다.
 //   (예전에는 라인 무관 합산 하나뿐이라 "필터와 무관합니다" 라고 변명하고 있었다)
+// ==========================================
+//  라인 상성 패널 (2026-08-21 신설)
+//    "같은 라인에서 마주친 상대" 별 승률이다. `/api/champion-matchups` 가 그 챔피언의
+//    모든 라인 줄을 주고 여기서 **펼친 줄의 라인**만 골라 쓴다 (룬 패널과 같은 규칙).
+//
+//  ★ 서버는 5판 이상인 칸만 저장한다(`MATCHUP_MIN`). 그래도 5판짜리 승률은 잡음이라
+//    화면은 **10판 이상만 순위에 올리고**, 그것도 없으면 있는 대로 보여주되 흐리게 둔다.
+//    비워 두면 고장으로 보인다 — 룬 패널의 "전부 1판이면 한 줄은 남긴다" 와 같은 판단이다.
+// ==========================================
+const MATCHUP_SHOW_MIN = 10;   // 순위에 올릴 최소 표본
+const MATCHUP_SIDE_N = 5;      // 한쪽에 몇 명씩
+
+function renderMatchupPanel(mdata, lane) {
+    if (!mdata) return '';
+    if (mdata.archived) {
+        return `<div class="mu-panel"><div class="mu-empty">박제된 패치라 상성 통계가 없습니다.</div></div>`;
+    }
+
+    const pos = (lane == null || lane === 'all') ? -1 : Number(lane);
+    const laneName = pos < 0 ? '' : (STAT_POS.find(p => p.code === pos)?.name || '');
+
+    // ★ 라인 무관(-1) 줄은 서버가 안 만든다 — 화면에서 라인별 줄을 더해서 쓴다.
+    //   같은 상대를 여러 라인에서 만난 경우가 합쳐지는데, 그건 "라인 무관" 의 뜻 그대로다.
+    let rows;
+    if (pos < 0) {
+        const sum = new Map();
+        (mdata.rows || []).forEach(r => {
+            const cur = sum.get(r.foe) || { foe: r.foe, games: 0, wins: 0 };
+            cur.games += r.games; cur.wins += r.wins;
+            sum.set(r.foe, cur);
+        });
+        rows = [...sum.values()];
+    } else {
+        rows = (mdata.rows || []).filter(r => r.pos === pos);
+    }
+
+    if (!rows.length) {
+        return `<div class="mu-panel">
+            <div class="mu-head"><h4 class="build-title">상성</h4></div>
+            <div class="mu-empty">${laneName ? laneName + ' 상성 표본이 없습니다.' : '표본이 없습니다.'}</div>
+        </div>`;
+    }
+
+    const wr = r => r.wins / r.games;
+    const thick = rows.filter(r => r.games >= MATCHUP_SHOW_MIN);
+    const pool = thick.length >= 2 ? thick : rows;      // 두꺼운 게 거의 없으면 있는 대로
+    const sorted = [...pool].sort((a, b) => wr(a) - wr(b));
+
+    const n = Math.min(MATCHUP_SIDE_N, Math.floor(sorted.length / 2)) || Math.min(1, sorted.length);
+    const weak = sorted.slice(0, n);
+    const strong = sorted.slice(-n).reverse();
+
+    const line = r => {
+        const eng = championIdMap[r.foe];
+        const name = (window.korChampMap && window.korChampMap[eng]) || eng || r.foe;
+        const dim = r.games < MATCHUP_SHOW_MIN ? ' mu-thin' : '';
+        return `
+        <div class="mu-row${dim}">
+            <img class="mu-img" src="${champIconUrl(eng)}" alt="" loading="lazy">
+            <span class="mu-name">${name}</span>
+            <span class="mu-wr ${wr(r) >= 0.5 ? 'build-wr-up' : 'build-wr-down'}">${(wr(r) * 100).toFixed(1)}%</span>
+            <span class="mu-games">${r.games}판</span>
+        </div>`;
+    };
+
+    const laneTag = laneName ? `<span class="build-lane">${laneName}</span>` : '';
+    const thin = thick.length < 2
+        ? `<span class="build-thin">표본이 적어 참고용입니다</span>` : '';
+
+    return `
+    <div class="mu-panel">
+        <div class="mu-head">
+            <h4 class="build-title">상성</h4>
+            <span class="build-total">${laneTag}상대 ${rows.length}명 ${thin}</span>
+        </div>
+        <div class="mu-side">
+            <div class="mu-side-title mu-weak">이 챔피언이 약한 상대</div>
+            ${weak.map(line).join('') || '<div class="build-none">표본 없음</div>'}
+        </div>
+        <div class="mu-side">
+            <div class="mu-side-title mu-strong">이 챔피언이 강한 상대</div>
+            ${strong.map(line).join('') || '<div class="build-none">표본 없음</div>'}
+        </div>
+        <div class="mu-foot">같은 라인에서 마주친 판만 센다 · ${MATCHUP_SHOW_MIN}판 미만은 흐리게</div>
+    </div>`;
+}
+
 function renderBuildPanel(data, lane) {
     const pos = (lane == null || lane === 'all') ? -1 : Number(lane);
     const laneName = pos < 0 ? '' : (STAT_POS.find(p => p.code === pos)?.name || '');
@@ -3931,6 +4034,7 @@ async function showStats() {
     //   ★ 정렬·필터를 누르면 펼친 줄이 닫힌다. innerHTML 을 새로 그리니 당연한데,
     //     "닫히지 말아야 한다" 고 보기도 어렵다 — 줄 순서가 통째로 바뀌기 때문이다.
     const buildCache = new Map();
+    const matchupCache = new Map();   // 상성. 키는 빌드와 같은 `scope|champ` 다
     document.getElementById('stats-tbody').addEventListener('click', async (e) => {
         const tr = e.target.closest('.stats-row');
         if (!tr) return;
@@ -3956,6 +4060,18 @@ async function showStats() {
         const cacheKey = `${data.scope}|${champ}`;
         try {
             await loadPerkData();
+            // ★ 상성은 룬과 따로 받는다 — 실패해도 룬 패널은 떠야 하므로 catch 를 따로 둔다.
+            if (!matchupCache.has(cacheKey)) {
+                if (data.archived) {
+                    // 박제된 패치는 표를 그릴 때 파일을 이미 받아 뒀다. API 를 안 부른다.
+                    matchupCache.set(cacheKey, archivedMatchupsFor(data.scope, champ));
+                } else {
+                    try {
+                        const mres = await fetch(`/api/champion-matchups?scope=${encodeURIComponent(data.scope)}&champ=${champ}`);
+                        matchupCache.set(cacheKey, mres.ok ? await mres.json() : null);
+                    } catch (e) { matchupCache.set(cacheKey, null); }
+                }
+            }
             if (!buildCache.has(cacheKey)) {
                 // ★ 박제된 패치는 표를 그릴 때 파일을 이미 받아 뒀다. API 를 안 부른다.
                 if (data.archived) {
@@ -3971,7 +4087,10 @@ async function showStats() {
             // ★ ALL 탭도 줄이 라인별이 되면서(2026-08-19) 패널은 **그 줄의 라인**을 따른다.
             //   라인 필터가 켜져 있으면 어차피 둘이 같은 값이다.
             const rowLane = tr.dataset.lane != null && Number(tr.dataset.lane) >= 0 ? tr.dataset.lane : 'all';
-            row.innerHTML = `<td colspan="7">${renderBuildPanel(buildCache.get(cacheKey), rowLane)}</td>`;
+            row.innerHTML = `<td colspan="7"><div class="stats-panels">`
+                + renderBuildPanel(buildCache.get(cacheKey), rowLane)
+                + renderMatchupPanel(matchupCache.get(cacheKey), rowLane)
+                + `</div></td>`;
         } catch (err) {
             if (row.isConnected) {
                 row.innerHTML = `<td colspan="7"><div class="build-empty">룬 통계를 불러오지 못했습니다.</div></td>`;

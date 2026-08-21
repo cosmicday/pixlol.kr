@@ -72,7 +72,8 @@ const KB = (b) => (b / 1024).toFixed(1) + 'KB';
 
     const cs = await db.collection('champstats').find({ scope: SCOPE }).toArray();
     const cb = await db.collection('champbuilds').find({ scope: SCOPE }).toArray();
-    console.log(`${SCOPE} — champstats ${cs.length}행 / champbuilds ${cb.length}행 / statscopes ${scopes.length}행`);
+    const cm = await db.collection('champmatchups').find({ scope: SCOPE }).toArray();
+    console.log(`${SCOPE} — champstats ${cs.length}행 / champbuilds ${cb.length}행 / 상성 ${cm.length}행 / statscopes ${scopes.length}행`);
 
     if (!cs.length && !cb.length) {
         console.log('집계 행이 없다. 이미 박제된 패치이거나 아직 집계 전이다.');
@@ -95,7 +96,12 @@ const KB = (b) => (b / 1024).toFixed(1) + 'KB';
         // [champ, pos, type, games, wins, ...key]  — key 길이가 type 마다 다르므로 뒤에 붙인다
         //   ★ pos 는 2026-08-18에 끼워 넣었다. app.js 의 expandStatsArchive() 와 자리가
         //     같아야 하므로 **둘을 같이 고칠 것** (아직 박제한 패치가 없어서 안전하게 넣었다).
-        b: cb.map(x => [x.champ, x.pos == null ? -1 : x.pos, TYPE_LIST.indexOf(x.type), x.games, x.wins, ...x.key])
+        b: cb.map(x => [x.champ, x.pos == null ? -1 : x.pos, TYPE_LIST.indexOf(x.type), x.games, x.wins, ...x.key]),
+        // [pos, champ, foe, games, wins]  — 라인 상성 (2026-08-21 추가)
+        //   ★ 안 담으면 패치가 은퇴할 때 상성이 통째로 사라진다. 원본(matchstats)이
+        //     TTL 로 없어진 뒤에는 다시 만들 수 없다.
+        //   ★ app.js 의 expandStatsArchive() 와 자리가 같아야 한다 — **둘을 같이 고칠 것.**
+        m: cm.map(x => [x.pos, x.champ, x.foe, x.games, x.wins])
     };
 
     const body = JSON.stringify(archive);
@@ -143,12 +149,14 @@ window.statsArchive['${SCOPE}'] = ${body};
         else {
             if (back.r.length !== cs.length) problems.push(`champstats 행 수가 다르다 (파일 ${back.r.length} / DB ${cs.length})`);
             if (back.b.length !== cb.length) problems.push(`champbuilds 행 수가 다르다 (파일 ${back.b.length} / DB ${cb.length})`);
+            if ((back.m || []).length !== cm.length) problems.push(`상성 행 수가 다르다 (파일 ${(back.m || []).length} / DB ${cm.length})`);
             if (back.t.length !== scopes.length) problems.push('statscopes 행 수가 다르다');
             // 합계까지 대조한다 — 행 수만 같고 값이 밀렸을 수 있다
             const sum = (a, i) => a.reduce((s, x) => s + x[i], 0);
             if (sum(back.r, 3) !== cs.reduce((s, x) => s + x.games, 0)) problems.push('champstats games 합계가 다르다');
             if (sum(back.r, 4) !== cs.reduce((s, x) => s + x.wins, 0)) problems.push('champstats wins 합계가 다르다');
             if (sum(back.b, 2) !== cb.reduce((s, x) => s + x.games, 0)) problems.push('champbuilds games 합계가 다르다');
+            if (sum(back.m || [], 3) !== cm.reduce((s, x) => s + x.games, 0)) problems.push('상성 games 합계가 다르다');
         }
 
         if (problems.length) {
@@ -168,7 +176,8 @@ window.statsArchive['${SCOPE}'] = ${body};
         // ★ statscopes 는 남긴다 (scope 목록과 분모)
         const r1 = await db.collection('champstats').deleteMany({ scope: SCOPE });
         const r2 = await db.collection('champbuilds').deleteMany({ scope: SCOPE });
-        console.log(`champstats ${r1.deletedCount}행 / champbuilds ${r2.deletedCount}행 삭제. statscopes 는 남겼다.`);
+        const r3 = await db.collection('champmatchups').deleteMany({ scope: SCOPE });
+        console.log(`champstats ${r1.deletedCount}행 / champbuilds ${r2.deletedCount}행 / 상성 ${r3.deletedCount}행 삭제. statscopes 는 남겼다.`);
         console.log('★ 이 파일이 배포돼 있어야 화면이 옛 패치를 그린다. git 에 커밋했는지 확인할 것.');
     }
 
