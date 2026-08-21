@@ -13,7 +13,15 @@
     <title>pixlol.kr - 전적검색</title>
     
     <link rel="stylesheet" href="/style.css">
-    <link rel="icon" href="/favicon.ico">
+    <!-- 파비콘 — 마법사 모자 쓴 시바 (2026-08-21 교체). 원본은 public/favicon_lol.png(1254px).
+         ★ 원본에는 "투명" 을 뜻하는 **체커보드가 그림으로 구워져 있다**(24bpp, 알파 없음).
+           그대로 걸면 탭에 흰 사각형이 뜬다 — 귀퉁이에서 flood fill 로 배경만 지우고
+           여백을 잘라 32/64/180 을 만들어 두었다 (favicon.ico 도 그 둘을 담은 것이다).
+         ★ 원본 1.9MB 를 직접 걸면 안 된다. 파비콘은 모든 페이지가 받는다. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon_lol_32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon_lol_64.png">
+    <link rel="apple-touch-icon" href="/favicon_lol_180.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
     <!-- 워드마크(PIXLOL.KR) 폰트. 라틴 subset 만 받아서 작다 -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap">
