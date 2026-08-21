@@ -180,6 +180,14 @@ async function getJson(url) {
             };
         });
 
+    // ★ 통계 탭 "최종 아이템" 이 쓸 이름 표. **도감보다 넓다** — 도감은 살 수 있는 것만
+    //   215종인데, 최종 6칸에는 무라마나(3042)·추적자의 팔목(2422)처럼 **못 사는 아이템**이
+    //   그대로 남아 있다 (실측 상위 30종 안에 둘 다 있다). 협곡(maps 11)이면 다 담는다.
+    const itemNames = {};
+    Object.entries(all).forEach(([id, it]) => {
+        if (it.maps && it.maps['11'] && it.name) itemNames[id] = it.name.replace(/<[^>]+>/g, '');
+    });
+
     const data = { v: DD_VER, items, runes, styles, shards, shardRows, spells };
     const body = JSON.stringify(data);
     const out = `// 자동 생성 — build_codex_data.js (${new Date().toISOString().slice(0, 10)}, DD ${DD_VER})
@@ -209,10 +217,21 @@ const codexData = ${body};
     console.log(`소환사 주문 ${Object.keys(spells).length}개 (전체 ${Object.keys(ddSumm.data).length}개 중)`);
     console.log(`\n크기 ${(Buffer.byteLength(out) / 1024).toFixed(0)}KB  gzip ${(zlib.gzipSync(Buffer.from(out), { level: 9 }).length / 1024).toFixed(0)}KB  brotli ${(zlib.brotliCompressSync(Buffer.from(out)).length / 1024).toFixed(0)}KB`);
 
+    // 이름 표는 별도 파일이다 — 통계 탭이 도감 데이터 160KB 를 받게 할 수는 없다.
+    const namesOut = `// 자동 생성 — build_codex_data.js (${new Date().toISOString().slice(0, 10)}, DD ${DD_VER})
+// 아이템 id → 한국어 이름. 통계 탭의 "최종 아이템" 이 쓴다.
+// ★ 도감(codex_data.js)보다 넓다 — 도감은 **살 수 있는 것** 만이고 여기는 협곡(maps 11) 전부다.
+//   최종 6칸에는 무라마나처럼 못 사는(업그레이드) 아이템이 그대로 남기 때문이다.
+const itemNames = ${JSON.stringify(itemNames)};
+`;
+    console.log(`아이템 이름 표 ${Object.keys(itemNames).length}종 (${(Buffer.byteLength(namesOut) / 1024).toFixed(1)}KB)`);
+
     if (WRITE) {
         const dest = path.join(__dirname, 'public', 'codex_data.js');
         fs.writeFileSync(dest, out);
         console.log(`→ ${dest}`);
+        fs.writeFileSync(path.join(__dirname, 'public', 'item_names.js'), namesOut);
+        console.log(`→ ${path.join(__dirname, 'public', 'item_names.js')}`);
     } else {
         console.log('(--write 를 붙여야 파일을 만든다)');
     }

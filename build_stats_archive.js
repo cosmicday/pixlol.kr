@@ -44,7 +44,9 @@ const DELETE = has('--delete');
 // ★ 자리 뜻을 여기 한 군데에 적어 둔다. 화면(app.js 의 expandStatsArchive)이 같은
 //   순서로 되돌리므로 **순서를 바꾸면 양쪽을 같이 고쳐야 한다.**
 const KB_LIST = ['5-7', '8-10'];
-const TYPE_LIST = ['rune', 'keystone', 'spell', 'shard', 'all'];
+//   ★ 새 type 은 **반드시 맨 뒤에** 붙일 것. 앞에 끼우면 이미 만든 박제 파일의 숫자가
+//     통째로 다른 뜻이 된다 (파일에는 이름이 아니라 이 배열의 자리 번호가 들어간다).
+const TYPE_LIST = ['rune', 'keystone', 'spell', 'shard', 'all', 'item'];
 
 const OUT_DIR = path.join(__dirname, 'public', 'stats_archive');
 const fileNameOf = (scope) => scope.replace(/:/g, '_') + '.js';

@@ -54,6 +54,9 @@
          쓰이므로 위 챔피언 데이터와 별도로 재워 둔다 (class 가 다른 이유).
          app.js 의 loadPerkData() 가 붙인다. -->
     <script class="lazy-perk-data" data-src="/perk_data.js"></script>
+    <!-- 아이템 id → 한국어 이름 (통계 탭 "최종 아이템"). build_codex_data.js 가 같이 만든다.
+         8.9KB 라 룬 데이터와 함께 받는다. -->
+    <script class="lazy-perk-data" data-src="/item_names.js"></script>
 
     <!-- ▼▼ 도감 데이터 (아이템 254 · 룬 62 · 파편 7 · 소환사 주문 9) ▼▼
          build_codex_data.js 가 만든다. 182KB(gzip 35KB)라 도감 탭에 들어갈 때 처음 받는다.

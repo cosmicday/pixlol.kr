@@ -3444,7 +3444,8 @@ function loadStatsArchive(scope, version) {
 // ★ 배열로 눕힌 걸 되돌린다. 자리 뜻은 build_stats_archive.js 주석과 **반드시 같아야 한다**
 //   — 순서를 바꾸면 양쪽을 같이 고칠 것.
 const ARCHIVE_KB = ['5-7', '8-10'];
-const ARCHIVE_TYPE = ['rune', 'keystone', 'spell', 'shard', 'all'];
+// ★ build_stats_archive.js 의 TYPE_LIST 와 **자리가 같아야 한다.** 새 type 은 맨 뒤에.
+const ARCHIVE_TYPE = ['rune', 'keystone', 'spell', 'shard', 'all', 'item'];
 
 function expandStatsArchive(a) {
     // champstats 행 — API 의 rows 와 **같은 모양**이라 renderStatsTable() 은 안 바뀐다
@@ -3513,20 +3514,28 @@ function archivedBuildsFor(scope, champ) {
 let perkDataPromise = null;
 function loadPerkData() {
     if (perkDataPromise) return perkDataPromise;
-    const tag = document.querySelector('script.lazy-perk-data[data-src]');
-    if (!tag) return Promise.reject(new Error('perk_data.js 태그가 없습니다.'));
+    // ★ 묶음이 둘이다 — perk_data.js(룬)와 item_names.js(아이템 이름).
+    //   이름 표를 못 받아도 패널은 떠야 하므로(아이콘만 나온다) 실패도 성공으로 친다.
+    const tags = Array.from(document.querySelectorAll('script.lazy-perk-data[data-src]'));
+    if (!tags.length) return Promise.reject(new Error('perk_data.js 태그가 없습니다.'));
 
-    perkDataPromise = new Promise((resolve, reject) => {
+    perkDataPromise = Promise.all(tags.map(tag => new Promise((done, fail) => {
         const s = document.createElement('script');
         s.async = false;
         s.src = tag.dataset.src;      // ?v=mtime 은 server.js 가 이미 붙여 놨다
-        s.onload = resolve;
-        s.onerror = () => reject(new Error('룬 데이터를 받지 못했습니다.'));
+        s.onload = done;
+        s.onerror = () => (tag.dataset.src.includes('perk_data')
+            ? fail(new Error('룬 데이터를 받지 못했습니다.'))
+            : done());
         document.head.appendChild(s);
-    });
+    })));
     perkDataPromise.catch(() => { perkDataPromise = null; });
     return perkDataPromise;
 }
+
+// 최종 아이템. 이름 표(item_names.js)를 못 받았으면 아이콘만 나오게 둔다.
+const itemNameOf = id => (typeof itemNames !== 'undefined' && itemNames[id]) || '';
+const itemIconOf = id => `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${id}.png`;
 
 // 룬·계열은 한 표에서 같이 찾는다 (계열 id 도 그림이 있어야 해서다)
 const perkName = id => (perkData.perks[id] || perkData.styles[id] || [''])[0] || '';
@@ -3724,6 +3733,21 @@ function renderBuildPanel(data, lane) {
         </div>`;
     }).join('') || `<div class="build-none">표본 없음</div>`;
 
+    // ── 최종 아이템 (2026-08-21 신설)
+    //   ★ 조합이 아니라 **낱개**다. 한 판에서 6칸이 각각 세어지므로 픽률 합이 100%를 넘는다 —
+    //     "이 챔피언 판의 몇 %에서 이 아이템이 마지막까지 남았나" 라는 뜻이다.
+    //   ★ 소모품(제어 와드·충전형 물약)은 서버가 이미 뺐다. 안 빼면 1위가 제어 와드가 된다.
+    const items = top('item', 8).map(r => {
+        const id = r.key[0];
+        const nm = itemNameOf(id);
+        return `
+        <div class="build-item-cell" title="${nm ? nm + ' · ' : ''}${r.games}판 · 승률 ${wr(r.wins, r.games)}%">
+            <img class="build-item-img" src="${itemIconOf(id)}" alt="${nm}" loading="lazy">
+            <div class="build-item-pick">${pct(r.games)}%</div>
+            <div class="build-item-wr ${wrClass(r.wins, r.games)}">${wr(r.wins, r.games)}%</div>
+        </div>`;
+    }).join('') || `<div class="build-none">표본 없음</div>`;
+
     // ── 소환사 주문
     const spells = top('spell', 3).map(r => `
         <div class="build-item">
@@ -3756,6 +3780,9 @@ function renderBuildPanel(data, lane) {
             <span class="build-total">${laneTag}${total.toLocaleString()}판 기준 ${thin}</span>
         </div>
         <div class="build-ks-row">${keystones}</div>
+
+        <h4 class="build-title build-title-gap">최종 아이템</h4>
+        <div class="build-item-row">${items}</div>
 
         <div class="build-cols">
             <div class="build-col build-col-wide">
@@ -3827,7 +3854,7 @@ async function showStats() {
 
     window.statScope = data.scope;
     let curLane = 'all';        // 'all' 또는 0~4
-    let curBand = 'all';        // 'all' | '8-10' | '5-7'
+    // ★ 인원 밴드는 폐지됐다 (2026-08-21). 응답의 kb 는 항상 'all' 하나다.
     let minPick = 1;            // 픽률 커트라인(%). 입력칸이 바꾼다 — 폰은 칸이 숨어 1 고정
     let sortCol = 'tier', sortDir = 'desc';
 
@@ -3845,11 +3872,9 @@ async function showStats() {
 
         <div class="stats-controls">
             <select class="stats-select" id="stats-scope">${scopeOpts}</select>
-            <div class="stats-band" id="stats-band">
-                <button class="stats-band-btn active" data-band="all">전체</button>
-                <button class="stats-band-btn" data-band="8-10">8~10명</button>
-                <button class="stats-band-btn" data-band="5-7">5~7명</button>
-            </div>
+            <!-- ★ 인원 밴드(8~10명 / 5~7명) 버튼은 2026-08-21에 없앴다.
+                 수집이 이미 마스터+ **5명 이상**인 판만 담으므로 그게 곧 기준이고,
+                 쪼개 봐야 칸이 절반씩 얇아지기만 했다. 서버도 kb 를 'all' 하나로 쓴다. -->
         </div>
 
         <div class="stats-filter-container">
@@ -3889,10 +3914,9 @@ async function showStats() {
 
     // ── kb 밴드를 골라 champ+pos 로 합산한다
     function collect() {
-        const rows = curBand === 'all' ? data.rows : data.rows.filter(r => r.kb === curBand);
-        const total = curBand === 'all'
-            ? Object.values(data.totals).reduce((a, b) => a + b, 0)
-            : (data.totals[curBand] || 0);
+        // ★ 인원 밴드가 없어져서 kb 는 'all' 한 줄뿐이다. 분모는 statscopes 를 다 더한 값이다.
+        const rows = data.rows;
+        const total = Object.values(data.totals).reduce((a, b) => a + b, 0);
 
         const byKey = new Map();
         rows.forEach(r => {
@@ -4110,15 +4134,6 @@ async function showStats() {
         const v = parseFloat(pickInput.value);
         minPick = Number.isFinite(v) ? Math.min(Math.max(v, 0), 100) : 0;
         renderStatsTable();
-    });
-
-    document.querySelectorAll('.stats-band-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.stats-band-btn').forEach(b => b.classList.remove('active'));
-            e.currentTarget.classList.add('active');
-            curBand = e.currentTarget.dataset.band;
-            renderStatsTable();
-        });
     });
 
     const filterBtns = document.querySelectorAll('.stats-filter-btn');

@@ -2860,6 +2860,34 @@ body.bg-solid::before {
     padding: 8px 0;
 }
 
+/* 최종 아이템 줄 (2026-08-21). 핵심 룬 줄 바로 아래에 가로로 깐다. */
+.build-title-gap { margin-top: 18px; }
+
+.build-item-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 8px 0 4px;
+}
+
+.build-item-cell {
+    width: 56px;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.build-item-img {
+    width: 40px;
+    height: 40px;
+    aspect-ratio: 1 / 1;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.build-item-pick { color: var(--text-bright); font-weight: 600; }
+.build-item-wr { font-weight: 600; }
+
 .build-panel {
     padding: 18px 20px 20px;
     text-align: left;

@@ -1162,7 +1162,12 @@ async function fetchMatchStats() {
 //   ★ 증분이 아니라 scope 단위 **전체 재계산**이다. 증분은 중복 반영·누락 버그가
 //     나기 쉬운데, 일별은 하루치(3~4천 건)라 가볍고 패치별도 2주치뿐이다.
 // ==========================================
-const K_BAND_CUT = 8;              // 이 값 이상이면 "8-10", 미만이면 "5-7"
+// ★★ 인원 밴드(8-10 / 5-7)를 폐지했다 (2026-08-21). 수집이 이미 **마스터+ 5명 이상**
+//   (`STAT_MIN_K`)인 판만 담으므로 그게 곧 기준이고, 쪼개 봐야 칸이 절반씩 얇아지기만 했다.
+//   `kb` 필드는 남겨 두되 값이 항상 'all' 이다 — 스키마·인덱스·박제 파일 자리를 그대로 두려는 것이다.
+//   ★ 옛 '5-7'/'8-10' 줄은 champstats 는 통째로 갈아 끼우니 저절로 사라지는데,
+//     statscopes 는 upsert 라 남는다. 아래에서 따로 지운다 — 안 지우면 **분모가 두 배**가 된다.
+const K_BAND_ALL = 'all';
 const DAILY_SCOPE_DAYS = 7;        // 최근 며칠치 일별 집계를 유지할지
 
 // 한국시간 기준 날짜 문자열. 경기 시각(t)이 UTC epoch 라 그냥 자르면 하루가 밀린다.
@@ -1171,7 +1176,7 @@ const DAILY_SCOPE_DAYS = 7;        // 최근 며칠치 일별 집계를 유지�
 async function buildOneScope(scopeKey, matchCond) {
     const rows = await MatchStat.aggregate([
         { $match: matchCond },
-        { $addFields: { kb: { $cond: [{ $gte: ['$k', K_BAND_CUT] }, '8-10', '5-7'] } } },
+        { $addFields: { kb: K_BAND_ALL } },
         {
             $facet: {
                 // 참가자를 펼쳐 챔피언 x 라인으로 센다
@@ -1250,6 +1255,9 @@ async function buildOneScope(scopeKey, matchCond) {
             upsert: true
         }
     })));
+    // ★ 밴드 폐지 전에 만들어진 줄을 지운다. 화면이 statscopes 를 **더해서** 분모로 쓰므로
+    //   남겨 두면 판수가 두 배로 보인다.
+    await StatScope.deleteMany({ scope: scopeKey, kb: { $ne: K_BAND_ALL } });
 
     return f.totals.reduce((a, t) => a + t.games, 0);
 }
@@ -1258,6 +1266,22 @@ async function buildOneScope(scopeKey, matchCond) {
 //   보조 계열 4 x 조합) 판당 새 조합이 나오다시피 한다 — 자르지 않으면 1판짜리 줄이
 //   컬렉션을 뒤덮는다. 화면은 어차피 top 3 만 쓰므로 12면 넉넉하다.
 const BUILD_TOP_N = 12;
+
+// ★★ 최종 6칸에 남는 소모품은 뺀다 (2026-08-21). 실측(19,737판 x 10명 = 118만 칸):
+//   **제어 와드 8.9% · 충전형 물약 8.7%** 로 둘이 전체 아이템 상위 10위 안에 든다.
+//   안 빼면 "이 챔피언의 최종 아이템 1위 = 제어 와드" 가 된다.
+//   ★ 장신구는 뺄 필요가 없다 — 6번째 칸(item6)이라 슬림 문서에 애초에 안 담긴다.
+const ITEM_CONSUMABLES = [
+    2003,  // 체력 물약
+    2010,  // 비스킷
+    2031,  // 충전형 물약
+    2033,  // 부패 물약
+    2055,  // 제어 와드
+    2138, 2139, 2140,   // 영약 3종
+    2150, 2151, 2152    // 강화 영약 3종
+];
+// 아이템은 조합이 아니라 낱개라 가짓수가 적다. 화면이 8개를 쓰므로 15면 넉넉하다.
+const ITEM_TOP_N = 15;
 
 // 챔피언별 룬·주문 빌드 집계. **패치 scope 에만 부른다** (champBuildSchema 주석 참고)
 async function buildOneBuildScope(scopeKey, matchCond) {
@@ -1293,6 +1317,8 @@ async function buildOneBuildScope(scopeKey, matchCond) {
                 },
                 keystone: [P(17), P(18)],
                 shard: [P(25), P(26), P(27)],
+                // 최종 아이템 6칸 (9~14). 아래 facet 에서 한 번 더 펼쳐 낱개로 센다.
+                item: [P(9), P(10), P(11), P(12), P(13), P(14)],
                 // 같은 이유로 주문도 작은 id 를 앞으로. 점멸/점화와 점화/점멸이 갈리면
                 // 표본이 반이 된다.
                 spell: { $cond: [{ $lt: [P(15), P(16)] }, [P(15), P(16)], [P(16), P(15)]] }
@@ -1304,6 +1330,14 @@ async function buildOneBuildScope(scopeKey, matchCond) {
                 keystone: [{ $group: { _id: { c: '$c', pos: '$pos', k: '$keystone' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
                 spell: [{ $group: { _id: { c: '$c', pos: '$pos', k: '$spell' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
                 shard: [{ $group: { _id: { c: '$c', pos: '$pos', k: '$shard' }, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
+                // ★ 아이템은 **낱개**로 센다 (조합이 아니다). 6칸을 펼쳐서 하나씩 세므로
+                //   한 사람이 6줄에 기여하고, 그래서 픽률은 "이 챔피언 판의 몇 %에서 이 아이템이
+                //   최종까지 남았나" 가 된다 — 합이 100%를 넘는 게 정상이다.
+                item: [
+                    { $unwind: '$item' },
+                    { $match: { item: { $gt: 0, $nin: ITEM_CONSUMABLES } } },
+                    { $group: { _id: { c: '$c', pos: '$pos', k: ['$item'] }, games: { $sum: 1 }, wins: { $sum: '$w' } } }
+                ],
                 // ★ 챔피언 총 판수. top N 으로 자르고 나면 줄을 더해도 총합이 안 나오므로
                 //   분모를 따로 담아야 한다. champstats 에서 가져오면 될 것 같지만
                 //   거기는 kb 로 쪼개져 있고 화면의 밴드 필터에 따라 값이 달라진다.
@@ -1316,7 +1350,7 @@ async function buildOneBuildScope(scopeKey, matchCond) {
     if (!f) return 0;
 
     const docs = [];
-    for (const type of ['rune', 'keystone', 'spell', 'shard', 'all']) {
+    for (const type of ['rune', 'keystone', 'spell', 'shard', 'item', 'all']) {
         // ★ (챔피언 x 라인) 칸과 (챔피언 x 전체) 칸을 같이 만든다.
         //   top N 은 **칸마다 따로** 잘라야 한다 — 전체에서 자른 뒤 라인으로 나누면
         //   그 라인에서만 많이 쓰는 룬이 통째로 빠진다.
@@ -1338,9 +1372,10 @@ async function buildOneBuildScope(scopeKey, matchCond) {
             if (pos >= 0) put(c, pos, key, r.games, r.wins);   // 라인별 (판정 실패는 제외)
             put(c, -1, key, r.games, r.wins);                  // 라인 무관 전체 (전원)
         });
+        const topN = type === 'all' ? Infinity : (type === 'item' ? ITEM_TOP_N : BUILD_TOP_N);
         cells.forEach(bucket => {
             const list = [...bucket.values()].sort((a, b) => b.games - a.games);
-            docs.push(...(type === 'all' ? list : list.slice(0, BUILD_TOP_N)));
+            docs.push(...list.slice(0, topN));
         });
     }
 
