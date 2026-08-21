@@ -3251,10 +3251,10 @@ async function showCodex(target) {
                     <span>${styleName}</span>
                     <span class="codex-badge">${slotName}</span>
                 </div>
-                ${r.s ? `<div class="codex-plain">${r.s}</div>` : ''}
+                ${r.s ? `<div class="codex-plain is-plain">${r.s}</div>` : ''}
             </div>
         </div>
-        <div class="codex-desc">${r.d || '<span class="codex-dim">설명이 없습니다.</span>'}</div>`;
+        <div class="codex-desc is-plain">${r.d || '<span class="codex-dim">설명이 없습니다.</span>'}</div>`;
     }
 
     function spellDetailHtml(e) {

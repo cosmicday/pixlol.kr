@@ -7026,6 +7026,29 @@ body.bg-solid::before {
 .codex-rune-node.active .codex-rune-label { color: #fff; }
 .codex-rune-node.is-key .codex-rune-label { color: var(--text-bright); font-weight: 600; }
 
+/* ============================================================
+   ★ 룬 설명은 강조를 전부 끈 맨 글씨다 (2026-08-21, 요청 — "나중에 다시 보자")
+   룬 글에 쓰인 태그는 색·굵게 13종 + 점선 밑줄(lol-uikit-tooltipped-keyword 96자리)
+   + <i> 62자리 + <b> 22자리 + 라이엇이 원문에 박은 <font color> 24자리다.
+   ★ 되살리려면 이 블록만 지우면 된다 — TOOLTIP_STYLE_CSS 는 안 건드렸다
+     (같은 표를 챔피언 스킬 툴팁과 도감 아이템이 같이 쓴다).
+   ★ 줄바꿈(<br> 172자리)·목록(<li>)·구분선(<hr>)은 글의 뼈대라 그대로 둔다.
+   ============================================================ */
+.codex-desc.is-plain,
+.codex-desc.is-plain *,
+.codex-plain.is-plain,
+.codex-plain.is-plain * {
+    color: inherit !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    text-decoration: none !important;
+    border-bottom: none !important;
+    background: none !important;
+}
+
+/* 목록 줄표는 뼈대라 남기되 색만 본문을 따라가게 한다 */
+.codex-desc.is-plain li::before { color: inherit !important; }
+
 .codex-detail {
     flex: 1;
     min-width: 0;
