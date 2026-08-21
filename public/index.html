@@ -33,10 +33,10 @@
            그대로 따라가지만, 이름을 바꾸면 server.js 정규식 대상인지 확인할 것. -->
     <script class="lazy-champ-data" data-src="/custom_templates.js"></script>
     <script class="lazy-champ-data" data-src="/custom_values.js"></script>
-    <!-- ★ custom_graphs.js 는 반드시 custom_values.js **뒤에** 와야 한다.
-         drawGraph / drawSteps 헬퍼가 custom_values.js 에 있고, 이 파일은 로드되는
-         순간 그 함수들을 호출하기 때문이다. app.js 의 loadChampionData 가
-         async=false 로 붙이므로 문서 순서대로 실행된다. -->
+    <!-- ★ custom_graphs.js 는 로드되는 순간 drawGraph / drawSteps 를 호출한다.
+         그 헬퍼는 2026-08-21에 **app.js 로 옮겼다** (도감 룬 각주도 같은 함수를 쓰는데
+         custom_values.js 는 489KB 라 도감에서 받게 할 수 없었다). app.js 가 defer 로 먼저
+         돌고 그 안의 loadChampionData 가 이 파일을 붙이므로 순서는 항상 보장된다. -->
     <script class="lazy-champ-data" data-src="/custom_graphs.js"></script>
     <script class="lazy-champ-data" data-src="/custom_lore.js"></script>
     <!-- 챔피언 레벨별 스탯 (스탯 탭). build_stats_page.js 가 만든다.
@@ -59,6 +59,9 @@
          build_codex_data.js 가 만든다. 182KB(gzip 35KB)라 도감 탭에 들어갈 때 처음 받는다.
          app.js 의 loadCodexData() 가 붙인다. -->
     <script class="lazy-codex-data" data-src="/codex_data.js"></script>
+    <!-- 룬 레벨 스케일 각주(꺾은선 그래프). build_rune_graphs.js 가 롤위키에서 만든다.
+         3.7KB 라 도감 데이터와 같이 받는다. 그리는 건 app.js 의 drawGraph 다. -->
+    <script class="lazy-codex-data" data-src="/rune_graphs.js"></script>
 </head>
 
 <body>

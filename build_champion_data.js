@@ -425,7 +425,8 @@ function extractBlock(source, alias) {
     return null;
 }
 
-// custom_values.js 앞부분(drawGraph 함수 + 색상표 주석)을 그대로 가져온다
+// custom_values.js 앞부분(색상표 주석)을 그대로 가져온다
+//   ★ 예전엔 여기에 drawGraph/drawSteps 헬퍼도 있었는데 2026-08-21에 app.js 로 옮겼다.
 function extractPrelude(source, constName) {
     const idx = source.indexOf(`const ${constName}`);
     return idx === -1 ? '' : source.slice(0, idx);

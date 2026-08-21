@@ -7049,6 +7049,19 @@ body.bg-solid::before {
 /* 목록 줄표는 뼈대라 남기되 색만 본문을 따라가게 한다 */
 .codex-desc.is-plain li::before { color: inherit !important; }
 
+/* ★★ 각주(레벨 그래프)만은 위 강조 끄기의 예외다.
+   `background: none` 이 각주 상자의 배경까지 지워서 **툴팁이 투명해진다** — 실제로 그랬다.
+   각주 번호는 스킬 탭과 같은 보라색으로 되살린다. */
+.codex-desc.is-plain .custom-footnote { color: #a78bfa !important; }
+
+.codex-desc.is-plain .custom-footnote-content {
+    background-color: rgba(20, 20, 28, 0.98) !important;
+    color: #fff !important;
+}
+
+/* 각주 안의 제목 줄은 인라인 style 로 색을 갖고 있는데 위 !important 에 밀린다 */
+.codex-desc.is-plain .custom-footnote-content div { color: #fff !important; }
+
 .codex-detail {
     flex: 1;
     min-width: 0;

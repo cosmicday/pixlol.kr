@@ -1,90 +1,10 @@
 // ==========================================
-// ★ 꺾은선 그래프 툴팁 생성 헬퍼 함수
-// 사용법: drawGraph("각주번호", "선색상", [1렙수치, 2렙수치, ..., 18렙수치], "제목(생략 가능)")
-//   ★ 4번째 인자는 값과 각주의 **단위가 다를 때**만 쓴다 (2026-08-12).
-//     아이번 P 는 값이 `기본 최대 체력의 15 ~ 0.006%` 인데 각주는 실제 소모량(94.5 -> 0.1)이라
-//     제목이 "레벨별 성장 수치" 면 퍼센트 곡선으로 오해한다.
-//   ★ 이 헬퍼는 fill_values.js 가 만드는 게 아니라 **이 파일 앞부분에 그대로 남는다.**
-//     valuesPrelude 가 값 선언 시작 지점 앞을 통째로 물려주므로 여기서 고치면 된다.
-//   ★★ 이 위쪽 어디에도 값 선언과 똑같은 글자를 쓰지 말 것 (주석 안이라도).
-//     fill_values.js 가 indexOf 로 경계를 찾아서, 주석이 먼저 걸리면
-//     **그 앞까지만 물려주고 헬퍼가 통째로 날아간다.** 2026-08-12에 실제로 겪었다.
+// ★★ 각주 헬퍼(drawGraph / drawSteps)는 **app.js 로 옮겼다** (2026-08-21).
+//   도감 룬 탭도 같은 각주를 쓰는데, 그것 때문에 이 파일(489KB)을 받게 할 수는 없어서다.
+//   여기 있던 시절 기준으로 적힌 문서가 남아 있을 수 있으니 헷갈리면 app.js 를 볼 것.
+//   ★ 이 파일은 fill_values.js 가 다시 찍는데, **값 선언 앞부분은 그대로 물려받는다**
+//     (valuesPrelude). 그래서 이 주석과 아래 색표는 재생성해도 살아남는다.
 // ==========================================
-const drawGraph = (id, color, dataArr, title) => {
-    let max = Math.max(...dataArr);
-    let width = 210, height = 90, padX = 15, padY = 20;
-
-    let points = "";
-    let elements = "";
-
-    // 점 x좌표를 먼저 다 구해 둔다. 아래 "세로 히트존" 이 이웃 점과의 중간을 알아야 한다.
-    const xs = dataArr.map((_, i) => padX + (i / (dataArr.length - 1)) * (width - padX * 2));
-
-    dataArr.forEach((val, index) => {
-        let x = xs[index];
-        let y = (height - padY) - (val / max) * (height - padY * 2);
-        points += `${x},${y} `;
-
-        // 텍스트가 그래프 위로 뚫고 나가지 않도록 위치 자동 조정
-        let textY = y - 10;
-        if (textY < 12) textY = y + 18;
-
-        // ★ 세로 히트존 (2026-08-11)
-        //   예전엔 반지름 3.5px 점에 정확히 올려야만 수치가 떴다. 18개가 촘촘해서 매우 어렵다.
-        //   그래서 각 점이 "담당하는 x 구간"을 그래프 높이만큼 덮는 투명 사각형을 깔고,
-        //   CSS 인접 선택자(.graph-hit:hover + .graph-point)로 바로 뒤 점을 켠다.
-        //   구간은 이웃 점과의 중간까지다. 양 끝은 그래프 가장자리까지 늘린다.
-        const left = index === 0 ? 0 : (xs[index - 1] + x) / 2;
-        const right = index === dataArr.length - 1 ? width : (x + xs[index + 1]) / 2;
-
-        //   ★ 히트존이 반드시 <g> **바로 앞**에 와야 한다. CSS 가 + 로 짝짓기 때문이다.
-        elements += `
-        <rect class="graph-hit" x="${left}" y="0" width="${right - left}" height="${height}" fill="transparent" />
-        <g class="graph-point">
-            <circle cx="${x}" cy="${y}" r="3.5" fill="${color}" />
-            <text class="point-label" x="${x}" y="${textY}" text-anchor="middle" fill="#fff">Lv.${index + 1}: ${val}</text>
-        </g>`;
-    });
-
-    return `<span class="custom-footnote">[${id}]
-        <span class="custom-footnote-content">
-            <div style="font-size: 11px; margin-bottom: 8px; color: #fff;">${title || '레벨별 성장 수치'} (Lv.1 ~ 18)</div>
-            <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow: visible;">
-                <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" />
-                ${elements}
-                <text x="${padX}" y="${height - 2}" fill="#fff" font-size="10" text-anchor="middle">1</text>
-                <text x="${width - padX}" y="${height - 2}" fill="#fff" font-size="10" text-anchor="middle">18</text>
-                <text x="5" y="10" fill="${color}" font-size="11" font-weight="bold">${max}</text>
-            </svg>
-        </span>
-    </span>`;
-};
-
-// ==========================================
-// ★ 계단식 성장 각주 생성 헬퍼 함수
-// 사용법: drawSteps("각주번호", "선색상", [[1, 12], [7, 18], [13, 24]])
-//
-//   레벨마다 조금씩 크는 게 아니라 **특정 레벨에서만 값이 바뀌는** 스킬용이다.
-//   (나서스 P 생명력 흡수 12/18/24 는 1·7·13레벨에서만 바뀐다)
-//   이런 자리는 꺾은선으로 그리면 계단이 완만한 상승처럼 보여서 오해를 준다.
-//   ★ 제목의 "상승 / 감소" 는 양 끝값을 비교해 정한다 (2026-08-14).
-//     패시브 쿨타임이 대상에 들어오면서 **줄어드는 계단**이 처음 생겼다 —
-//     그라가스 12 -> 6 을 "상승" 이라고 적으면 정반대 뜻이 된다.
-// ==========================================
-const drawSteps = (id, color, pairs) => {
-    const rows = pairs.map(([lv, val]) => `
-        <div style="display:flex; justify-content:space-between; gap:14px; padding:2px 0;">
-            <span style="color:#fff;">Lv.${lv}</span>
-            <span style="color:${color}; font-weight:bold;">${val}</span>
-        </div>`).join('');
-
-    return `<span class="custom-footnote">[${id}]
-        <span class="custom-footnote-content">
-            <div style="font-size: 11px; margin-bottom: 6px; color: #fff;">${pairs.map(p => p[0]).join(' / ')}레벨에 ${pairs.length > 1 && Number(pairs[pairs.length - 1][1]) < Number(pairs[0][1]) ? '감소' : '상승'}</div>
-            <div style="font-size: 12px; min-width: 96px;">${rows}</div>
-        </span>
-    </span>`;
-};
 
 // ==========================================
 // 🎨 [롤 스탯/데미지 컬러 코드표]

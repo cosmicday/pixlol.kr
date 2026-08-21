@@ -2513,6 +2513,86 @@ document.addEventListener('DOMContentLoaded', () => {
 //      규칙을 걸고 있어서, 전역이 되면 약관·개인정보 페이지의 <li> 까지 줄표가 붙는다
 //      (index.html 5곳 · app.js 4곳에서 <li> 를 쓴다). 그래서 쓰는 쪽에 끼워 넣는다.
 // ============================================================
+// ==========================================
+// ★ 각주 헬퍼 두 개 — 챔피언 스킬 각주와 도감 룬 각주가 **같은 함수를 쓴다**.
+//   원래 custom_values.js 맨 앞에 있었는데 2026-08-21에 여기로 옮겼다.
+//   도감(룬)에서도 필요한데 그 파일이 489KB 라 도감에서 받게 할 수 없었다.
+//   ★ window 에 심는 이유: custom_values.js 가 `const drawGraph` 로 들고 있던 자리라,
+//     옛 파일이 캐시에 남아 같이 로드돼도 const 가 이걸 가리기만 하고 **에러가 안 난다.**
+//     (여기서도 const 로 선언하면 같은 이름이 두 번 선언돼 그 페이지가 통째로 죽는다)
+//   ★ custom_graphs.js 는 로드되는 순간 이 함수들을 부른다. app.js 가 defer 로 먼저 돌고
+//     그 안의 loadChampionData() 가 그 파일을 붙이므로 순서는 항상 보장된다.
+// ==========================================
+
+// 꺾은선 그래프 각주. drawGraph("각주번호", "선색상", [1렙, 2렙, ..., 18렙], "제목(생략 가능)")
+//   ★ 4번째 인자는 값과 각주의 **단위가 다를 때**만 쓴다 (아이번 P 두 자리).
+window.drawGraph = (id, color, dataArr, title) => {
+    let max = Math.max(...dataArr);
+    let width = 210, height = 90, padX = 15, padY = 20;
+
+    let points = "";
+    let elements = "";
+
+    // 점 x좌표를 먼저 다 구해 둔다. 아래 "세로 히트존" 이 이웃 점과의 중간을 알아야 한다.
+    const xs = dataArr.map((_, i) => padX + (i / (dataArr.length - 1)) * (width - padX * 2));
+
+    dataArr.forEach((val, index) => {
+        let x = xs[index];
+        let y = (height - padY) - (val / max) * (height - padY * 2);
+        points += `${x},${y} `;
+
+        // 텍스트가 그래프 위로 뚫고 나가지 않도록 위치 자동 조정
+        let textY = y - 10;
+        if (textY < 12) textY = y + 18;
+
+        // ★ 세로 히트존 (2026-08-11)
+        //   예전엔 반지름 3.5px 점에 정확히 올려야만 수치가 떴다. 18개가 촘촘해서 매우 어렵다.
+        //   그래서 각 점이 "담당하는 x 구간"을 그래프 높이만큼 덮는 투명 사각형을 깔고,
+        //   CSS 인접 선택자(.graph-hit:hover + .graph-point)로 바로 뒤 점을 켠다.
+        const left = index === 0 ? 0 : (xs[index - 1] + x) / 2;
+        const right = index === dataArr.length - 1 ? width : (x + xs[index + 1]) / 2;
+
+        //   ★ 히트존이 반드시 <g> **바로 앞**에 와야 한다. CSS 가 + 로 짝짓기 때문이다.
+        elements += `
+        <rect class="graph-hit" x="${left}" y="0" width="${right - left}" height="${height}" fill="transparent" />
+        <g class="graph-point">
+            <circle cx="${x}" cy="${y}" r="3.5" fill="${color}" />
+            <text class="point-label" x="${x}" y="${textY}" text-anchor="middle" fill="#fff">Lv.${index + 1}: ${val}</text>
+        </g>`;
+    });
+
+    return `<span class="custom-footnote">[${id}]
+        <span class="custom-footnote-content">
+            <div style="font-size: 11px; margin-bottom: 8px; color: #fff;">${title || '레벨별 성장 수치'} (Lv.1 ~ 18)</div>
+            <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow: visible;">
+                <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" />
+                ${elements}
+                <text x="${padX}" y="${height - 2}" fill="#fff" font-size="10" text-anchor="middle">1</text>
+                <text x="${width - padX}" y="${height - 2}" fill="#fff" font-size="10" text-anchor="middle">18</text>
+                <text x="5" y="10" fill="${color}" font-size="11" font-weight="bold">${max}</text>
+            </svg>
+        </span>
+    </span>`;
+};
+
+// 계단식 각주. drawSteps("각주번호", "선색상", [[1, 12], [7, 18], [13, 24]])
+//   레벨마다 조금씩 크는 게 아니라 **특정 레벨에서만 값이 바뀌는** 자리용이다.
+//   ★ 제목의 "상승 / 감소" 는 양 끝값을 비교해 정한다 — 줄어드는 계단(그라가스 12 -> 6)이 있다.
+window.drawSteps = (id, color, pairs) => {
+    const rows = pairs.map(([lv, val]) => `
+        <div style="display:flex; justify-content:space-between; gap:14px; padding:2px 0;">
+            <span style="color:#fff;">Lv.${lv}</span>
+            <span style="color:${color}; font-weight:bold;">${val}</span>
+        </div>`).join('');
+
+    return `<span class="custom-footnote">[${id}]
+        <span class="custom-footnote-content">
+            <div style="font-size: 11px; margin-bottom: 6px; color: #fff;">${pairs.map(p => p[0]).join(' / ')}레벨에 ${pairs.length > 1 && Number(pairs[pairs.length - 1][1]) < Number(pairs[0][1]) ? '감소' : '상승'}</div>
+            <div style="font-size: 12px; min-width: 96px;">${rows}</div>
+        </span>
+    </span>`;
+};
+
 const TOOLTIP_STYLE_CSS = `
             mainText { display: block; font-size: 14px; line-height: 1.6; color: #ddd; } stats { display: block; color: #a78bfa; font-size: 13px; margin-bottom: 12px; font-weight: bold; background: rgba(167, 139, 250, 0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(167, 139, 250, 0.1); }
             /* ★ 아래 색은 인게임 툴팁 스크린샷에서 픽셀을 직접 뽑은 값이다 (2026-08-09).
@@ -2743,18 +2823,21 @@ function statScopeLabel(scope) {
 let codexDataPromise = null;
 function loadCodexData() {
     if (codexDataPromise) return codexDataPromise;
-    const tag = document.querySelector('script.lazy-codex-data[data-src]');
-    if (!tag) return Promise.reject(new Error('codex_data.js 태그가 없습니다.'));
+    // ★ 도감 묶음은 두 개다 — codex_data.js(본체) + rune_graphs.js(룬 각주).
+    //   각주 파일을 못 받아도 도감은 떠야 하므로 **본체만 있으면 성공**으로 친다.
+    const tags = Array.from(document.querySelectorAll('script.lazy-codex-data[data-src]'));
+    if (!tags.length) return Promise.reject(new Error('codex_data.js 태그가 없습니다.'));
 
-    codexDataPromise = new Promise((resolve, reject) => {
+    codexDataPromise = Promise.all(tags.map(tag => new Promise(done => {
         const s = document.createElement('script');
         s.async = false;
         s.src = tag.dataset.src;      // ?v=mtime 은 server.js 가 붙여 놨다
-        s.onload = () => (typeof codexData !== 'undefined')
-            ? resolve(codexData)
-            : reject(new Error('도감 데이터가 비어 있습니다.'));
-        s.onerror = () => reject(new Error('도감 데이터를 받지 못했습니다.'));
+        s.onload = done;
+        s.onerror = done;             // 각주가 없으면 그 자리만 안 붙는다
         document.head.appendChild(s);
+    }))).then(() => {
+        if (typeof codexData === 'undefined') throw new Error('도감 데이터를 받지 못했습니다.');
+        return codexData;
     });
     codexDataPromise.catch(() => { codexDataPromise = null; });
     return codexDataPromise;
@@ -2843,6 +2926,30 @@ const codexItemIcon = id => `https://ddragon.leagueoflegends.com/cdn/${ddragonVe
 const codexSpellIcon = f => `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${f}`;
 // 룬·계열·파편은 CD 경로다. 소문자 변환은 스킨 탭이 쓰던 그 함수가 한다.
 const codexPerkIcon = p => cdAssetUrl(p);
+
+// ★★ 룬 설명의 레벨 스케일 수치 뒤에 각주를 단다 (2026-08-21).
+//   챔피언 스킬 각주와 **같은 drawGraph** 를 쓴다 — 그래서 생김새·조작이 똑같다.
+//   값은 rune_graphs.js (build_rune_graphs.js 가 롤위키에서 만든다).
+//   ★ 자리는 `a`(문장에 그대로 있는 문자열)로 찾는다. 패치로 문장이 바뀌면 **조용히 안 붙는다** —
+//     엉뚱한 자리에 붙는 것보다 낫고, 빌드 스크립트가 그때 경고를 찍는다.
+function withRuneGraphs(id, html) {
+    const list = (typeof runeGraphs !== 'undefined' && runeGraphs[id]) || [];
+    if (!list.length || typeof drawGraph !== 'function') return html;
+
+    // ★ 자리를 **원문 기준으로 먼저 다 찾아 두고 뒤에서부터** 끼운다.
+    //   앞에서부터 끼우면 각주 HTML 길이만큼 뒤쪽 자리가 밀린다.
+    const spots = [];
+    list.forEach(g => {
+        const at = html.indexOf(g.a);
+        if (at >= 0) spots.push({ end: at + g.a.length, g });
+    });
+    spots.sort((a, b) => a.end - b.end);
+    spots.forEach((s, i) => { s.no = i + 1; });          // 번호는 읽는 순서대로
+    spots.slice().reverse().forEach(s => {
+        html = html.slice(0, s.end) + drawGraph(String(s.no), s.g.c, s.g.v, s.g.t) + html.slice(s.end);
+    });
+    return html;
+}
 
 async function showCodex(target) {
     if (!window.location.pathname.startsWith('/codex')) {
@@ -3254,7 +3361,7 @@ async function showCodex(target) {
                 ${r.s ? `<div class="codex-plain is-plain">${r.s}</div>` : ''}
             </div>
         </div>
-        <div class="codex-desc is-plain">${r.d || '<span class="codex-dim">설명이 없습니다.</span>'}</div>`;
+        <div class="codex-desc is-plain">${r.d ? withRuneGraphs(e.id, r.d) : '<span class="codex-dim">설명이 없습니다.</span>'}</div>`;
     }
 
     function spellDetailHtml(e) {

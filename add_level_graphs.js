@@ -268,7 +268,7 @@ const out = [
     '// app.js 가 문장의 {pN} 을 채울 때 값 **바로 뒤에** 이어 붙인다.',
     '//   -> 색칠된 수치의 마지막 글자에 각주가 달린다.',
     '//',
-    '// drawGraph / drawSteps 헬퍼는 custom_values.js 맨 위에 있다.',
+    '// drawGraph / drawSteps 헬퍼는 app.js 에 있다 (2026-08-21에 custom_values.js 에서 옮겼다).',
     '// index.html 에서 custom_values.js 다음에 로드되어야 한다 (async=false 라 순서 보장).',
     '',
     'const customGraphs = {',
