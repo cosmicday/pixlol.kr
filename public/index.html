@@ -82,12 +82,15 @@
 
     <div id="error-toast" class="toast-hidden">현재 접속자가 많아 검색이 지연되고 있습니다. 잠시 후 다시 시도해주세요.</div>
 
+    <!-- ★ 히어로(로고 + 알약 검색창 + 즐겨찾기/최근 포커스 드롭다운)는 공통 파일이 그린다
+         (app.js mountDoguUI → DoguUI.mountHero('#hero')). pixlol 만 PIXLOL.KR 로고 + 돋보기 버튼이다.
+         main 밖에 둔다 — .main-search-section 의 모바일 좌우 28px 패딩이 검색창을 좁혀 다른 사이트와 달라졌다
+         (2026-08-22 실측). 홈이 아닐 땐 공통 CSS 가 body.dogu-home 기준으로 숨긴다 (goLobby/hideAllContainers 의 setHome) -->
+    <div id="hero"></div>
+
     <main>
         <div class="main-search-section page-container" id="search-section">
-            <!-- ★ 히어로(로고 + 알약 검색창 + 즐겨찾기/최근 포커스 드롭다운)는 공통 파일이 그린다
-                 (app.js mountDoguUI → DoguUI.mountHero('#hero')). pixlol 만 PIXLOL.KR 로고 + 돋보기 버튼이다.
-                 자동완성 상자는 pixlol 고유 기능이라 여기 두고, 마운트 뒤에 JS 가 .dogu-search-wrapper 안으로 옮긴다. -->
-            <div id="hero"></div>
+            <!-- 자동완성 상자는 pixlol 고유 기능이라 여기 두고, 마운트 뒤에 JS 가 .dogu-search-wrapper 안으로 옮긴다. -->
             <div id="autocomplete-dropdown" class="ac-dropdown"></div>
 
             <div id="mythic-shop-container" class="mythic-shop-container">
