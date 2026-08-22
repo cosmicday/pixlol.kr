@@ -600,8 +600,9 @@ mountDoguUI();
 function setActiveNav(navId) {
     const item = DOGU_NAV.find(n => n.navId === navId);
     if (window.DoguUI) DoguUI.setActiveNav(item ? item.key : null);
-    // 페이지 타이틀은 "PIXLOL.KR - {페이지명}" (DOGU_UI_PLAN.md 규격의 pixlol 예외)
-    document.title = 'PIXLOL.KR - ' + (item ? item.label : '전적검색');
+    // 탭 제목은 페이지와 무관하게 고정 — index.html <title> 과 같은 값 (2026-08-22 요청).
+    // 사이트 이름은 .env 가 아니라 여기와 index.html 두 곳에 박혀 있다
+    document.title = 'PIXLOL.KR: 리그오브레전드';
 }
 
 function hideAllContainers() {

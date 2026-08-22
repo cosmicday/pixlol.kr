@@ -64,7 +64,7 @@
   탭 6개는 `DOGU_NAV` 한 표다 — 비공개 탭(장인랭킹·클래식)을 되살릴 땐 여기 줄을 더한다
 - **★ 라우터 연결 두 곳**: `hideAllContainers()` 가 `DoguUI.setHome(false)`, `goLobby()`/진입부 `/` 가
   `setHome(true)`. `setActiveNav('nav-xxx')` 가 `DoguUI.setActiveNav('xxx')` + `document.title`
-  (`PIXLOL.KR - {탭 이름}`) 을 맡는다. 옛 `.bg-solid` · 햄버거(`toggleMobileMenu`) 는 지웠다
+  (고정 `PIXLOL.KR: 리그오브레전드` — index.html `<title>` 과 같은 값) 을 맡는다. 옛 `.bg-solid` · 햄버거(`toggleMobileMenu`) 는 지웠다
 - **★ 검색 입력 id 는 `dogu-search-input`** (옛 `summoner-input` 21곳 치환). `search-btn.click()` 9곳은
   `executeSearch()` 로. 1단 헤더 검색창도 값을 히어로 칸에 넣고 `executeSearch()` 를 탄다 —
   **executeSearch 가 그 칸을 읽는 규약**이라 헤더 검색을 따로 만들지 않았다
