@@ -69,24 +69,8 @@ main {
     }
 }
 
-/* 스크롤바 커스텀 */
-::-webkit-scrollbar {
-    width: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: #1a1a2e;
-    border-radius: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #6b46c1;
-    border-radius: 8px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #a78bfa;
-}
+/* (스크롤바 — dogu-ui.css 2-1절이 --dogu-accent-dark / hover --dogu-accent 로 그린다.
+   이 사이트 규칙(#6b46c1 / #a78bfa)이 규격이 됐다. 여기 두면 그쪽을 덮어쓴다. 2026-08-22 제거) */
 
 /* =========================================
    2. 헤더 · 3. 메인 검색 영역 → dogu-ui.css (2026-08-22)
