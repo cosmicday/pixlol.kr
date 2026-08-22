@@ -55,10 +55,14 @@
 - `fill_values.js --write` 돌리기 전에 `public/custom_values.js`를 백업해줘.
 - **인게임 툴팁 확인은 내가 해.** 수치가 맞는지 추측하지 말고, 확인이 필요하면 나한테 물어봐.
 
-## ★★ dogu.gg 공통 UI 적용 (2026-08-22 · 미커밋, 로컬 확인 대기)
+## ★★ dogu.gg 공통 UI 적용 (2026-08-22 · 커밋·배포됨)
 
 `DOGU_UI_PLAN.md` 2단계의 pixlol 몫. **`public/dogu-ui.css` · `public/dogu-header.js` 는 복사본이라
-여기서 고치지 말 것** (원본 `dogu_er/dogu-ui/`). 사양은 `DOGU_UI.md`. 데이터 로직은 안 건드렸다.
+여기서 고치지 말 것** (원본 `dogu_er/dogu-ui/`, 손대기 전 5곳 md5 확인 — `DOGU_UI.md` 11-0). 사양은 `dogu_er/dogu-ui/DOGU_UI.md`. 데이터 로직은 안 건드렸다.
+
+- **`#hero` 는 `main` 밖(헤더와 `main` 사이)에 있다.** `.main-search-section` 안에 두면 모바일 좌우 28px 패딩 때문에
+  검색창이 552px 로 좁아져 다른 사이트와 어긋났다 (실측 후 옮김). 홈이 아닐 땐 공통 CSS 가 `body.dogu-home` 기준으로 숨기므로
+  `hideAllContainers()`/`goLobby()` 의 `setHome()` 호출이 곧 히어로 표시 조건이다
 
 - **헤더·히어로 검색창·푸터는 전부 `app.js` 의 `mountDoguUI()` 가 그린다** (`index.html` 에 마크업 없음).
   탭 6개는 `DOGU_NAV` 한 표다 — 비공개 탭(장인랭킹·클래식)을 되살릴 땐 여기 줄을 더한다
@@ -77,8 +81,9 @@
 - **일부러 안 맞춘 것**: 로고·⌂·푸터 홈 링크는 `https://pixlol.kr` 가 아니라 `/` 다 (같은 곳인데
   절대 주소면 로컬에서 프로덕션으로 튄다). `body` 글자색은 공통 `#e6eefb` 가 이긴다 (옛 `#fff`).
   오버레이 색은 옛 값 `11,11,20` 을 변수로 넘겼다 (er 남색 `6,11,26` 아님)
-- **게임 스위처 아이콘**은 `app.js` 의 `decorateSwitcherIcons()` 가 마운트 뒤 DOM 에 끼운다 (`public/header_<key>.png` 256px → 32px,
-  `.pix-game-*` 클래스만 사용). 공통 원본에 아이콘이 들어가면 이 함수와 style.css 의 그 블록을 빼면 된다
+- **게임 스위처 아이콘은 공통 파일이 그린다** — `mountHeader` 에 `iconBase: '/'` 만 넘긴다 (`public/header_<key>.png` 5장).
+  한때 `app.js` 의 `decorateSwitcherIcons()` 가 DOM 을 덧칠했는데 아이콘 크기·간격이 다른 사이트와 어긋나서 뺐다 (2026-08-22).
+  **`.dogu-*` 안쪽을 사이트 JS 로 덧칠하지 말 것**
 - 실측(헤드리스 1400/390): 홈↔랭킹 오버레이 0.52↔0.8 전환 · 폰 넘침 0 · 전적 갱신 버튼은
   `.refresh-btn` 으로 분리(옛 `.search-btn` 그라데이션을 빌려 쓰고 있었다)
 
