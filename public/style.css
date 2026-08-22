@@ -110,6 +110,29 @@ main {
     width: 100%;
 }
 
+/* ★ 게임 스위처 아이콘 (2026-08-22). app.js 의 decorateSwitcherIcons() 가 끼운다.
+   256px 원본을 32px 로 — 여백은 원본에 맞춰져 있으니 padding·crop 금지.
+   현재 게임(is-active)만 또렷하고 나머지는 흐리게. 좁은 화면에선 이름을 숨기고 아이콘만 */
+.pix-game-row,
+.pix-game-btn-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+.pix-game-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    opacity: 0.45;
+    transition: opacity 0.15s;
+}
+.pix-game-icon.is-active { opacity: 1; }
+.pix-game-row:hover .pix-game-icon { opacity: 0.8; }
+@media (max-width: 768px) {
+    .pix-game-name { display: none; }
+    .pix-game-row, .pix-game-btn-row { gap: 0; }
+}
+
 /* =========================================
    4. 신화 상점 영역
    ========================================= */

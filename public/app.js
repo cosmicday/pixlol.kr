@@ -545,6 +545,41 @@ function doguRoute(href, navKey) {
     setActiveNav(item.navId);
 }
 
+// 게임 스위처에 아이콘을 끼운다 (2026-08-22 요청). public/header_<key>.png 256x256 투명 PNG 를 32x32 로.
+//   ★ 스위처 마크업은 공통 파일(dogu-header.js) 것이라 그 파일은 안 건드리고 마운트 직후 DOM 만 덧칠한다 —
+//     pixlol 전용 클래스(.pix-game-*)만 쓴다 (style.css 에 .dogu-* 선택자를 쓰면 안 되는 규칙).
+//     공통 원본에 아이콘이 들어가면 이 함수는 통째로 빼면 된다.
+//   항목: 아이콘 + 이름(좁은 화면에선 이름 숨김). 현재 게임만 is-active 로 밝고 나머지는 흐리다.
+//   버튼의 글자 마크(L/E/M…)도 같은 아이콘으로 바꾼다. width/height 를 박아 로드 전 레이아웃이 안 민다
+function decorateSwitcherIcons() {
+    const iconHtml = (g, active) =>
+        '<img class="pix-game-icon' + (active ? ' is-active' : '') + '" src="/header_' + g.key + '.png" width="32" height="32" alt="' + DoguUI.esc(g.name) + '">';
+    const byName = {};
+    DoguUI.GAMES.forEach(g => { byName[g.name] = g; });
+
+    document.querySelectorAll('.dogu-game-item').forEach(el => {
+        const g = byName[el.textContent.trim()];
+        if (!g) return;
+        const active = el.classList.contains('active');
+        el.innerHTML = '<span class="pix-game-row">' + iconHtml(g, active) +
+            '<span class="pix-game-name">' + DoguUI.esc(g.name) + '</span></span>';
+    });
+
+    const mark = document.querySelector('.dogu-switcher-btn .dogu-game-mark');
+    const btn = document.querySelector('.dogu-switcher-btn');
+    if (mark && btn) {
+        const g = DoguUI.GAMES.find(x => x.key === 'lol');
+        const wrap = document.createElement('span');
+        wrap.className = 'pix-game-btn-row';
+        wrap.innerHTML = iconHtml(g, true) + '<span class="pix-game-name">' + DoguUI.esc(g.name) + '</span>';
+        // 버튼 안 원래 글자 노드(마크 뒤의 텍스트)를 빼고 아이콘+이름으로 바꾼다. ▼ 캐럿은 남긴다
+        const caret = btn.querySelector('.dogu-caret');
+        btn.innerHTML = '';
+        btn.appendChild(wrap);
+        if (caret) btn.appendChild(caret);
+    }
+}
+
 function mountDoguUI() {
     if (!window.DoguUI) return;
 
@@ -563,6 +598,8 @@ function mountDoguUI() {
         aside: '',                                  // 패치 버전 — initDdragonVersion 뒤에 setAside 로 채운다
         search: { placeholder, onSubmit }
     }));
+
+    decorateSwitcherIcons();
 
     DoguUI.mountHero('#hero', Object.assign({}, DOGU_BRAND, {
         search: {
