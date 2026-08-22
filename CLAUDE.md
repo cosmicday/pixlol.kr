@@ -55,6 +55,31 @@
 - `fill_values.js --write` 돌리기 전에 `public/custom_values.js`를 백업해줘.
 - **인게임 툴팁 확인은 내가 해.** 수치가 맞는지 추측하지 말고, 확인이 필요하면 나한테 물어봐.
 
+## ★★ dogu.gg 공통 UI 적용 (2026-08-22 · 미커밋, 로컬 확인 대기)
+
+`DOGU_UI_PLAN.md` 2단계의 pixlol 몫. **`public/dogu-ui.css` · `public/dogu-header.js` 는 복사본이라
+여기서 고치지 말 것** (원본 `dogu_er/dogu-ui/`). 사양은 `DOGU_UI.md`. 데이터 로직은 안 건드렸다.
+
+- **헤더·히어로 검색창·푸터는 전부 `app.js` 의 `mountDoguUI()` 가 그린다** (`index.html` 에 마크업 없음).
+  탭 6개는 `DOGU_NAV` 한 표다 — 비공개 탭(장인랭킹·클래식)을 되살릴 땐 여기 줄을 더한다
+- **★ 라우터 연결 두 곳**: `hideAllContainers()` 가 `DoguUI.setHome(false)`, `goLobby()`/진입부 `/` 가
+  `setHome(true)`. `setActiveNav('nav-xxx')` 가 `DoguUI.setActiveNav('xxx')` + `document.title`
+  (`PIXLOL.KR - {탭 이름}`) 을 맡는다. 옛 `.bg-solid` · 햄버거(`toggleMobileMenu`) 는 지웠다
+- **★ 검색 입력 id 는 `dogu-search-input`** (옛 `summoner-input` 21곳 치환). `search-btn.click()` 9곳은
+  `executeSearch()` 로. 1단 헤더 검색창도 값을 히어로 칸에 넣고 `executeSearch()` 를 탄다 —
+  **executeSearch 가 그 칸을 읽는 규약**이라 헤더 검색을 따로 만들지 않았다
+- 즐겨찾기/최근은 `getFavorites/removeFavorite/getRecents/removeRecentSearch` 를 공통 드롭다운에
+  그대로 꽂았다. `renderDropdownList()` 는 `DoguUI.refreshDropdown()` 한 줄이다
+- 자동완성(`#autocomplete-dropdown`)은 pixlol 고유라 남기고 마운트 뒤 `.dogu-search-wrapper` 안으로
+  옮긴다 (`.ac-dropdown` 이 옛 `.search-dropdown` 의 자리 속성을 물려받았다)
+- **★★ CSS 주석에 `.nav-*/` 처럼 `*/` 가 들어가면 주석이 거기서 닫혀 뒤 규칙이 통째로 죽는다.**
+  실제로 한 번 그랬다 (홈 위젯이 가로로 눕는 증상) — 선택자 이름을 주석에 적을 땐 `*` 뒤에 `/` 금지
+- **일부러 안 맞춘 것**: 로고·⌂·푸터 홈 링크는 `https://pixlol.kr` 가 아니라 `/` 다 (같은 곳인데
+  절대 주소면 로컬에서 프로덕션으로 튄다). `body` 글자색은 공통 `#e6eefb` 가 이긴다 (옛 `#fff`).
+  오버레이 색은 옛 값 `11,11,20` 을 변수로 넘겼다 (er 남색 `6,11,26` 아님)
+- 실측(헤드리스 1400/390): 홈↔랭킹 오버레이 0.52↔0.8 전환 · 폰 넘침 0 · 전적 갱신 버튼은
+  `.refresh-btn` 으로 분리(옛 `.search-btn` 그라데이션을 빌려 쓰고 있었다)
+
 ## ★★ 다음 세션 먼저 볼 것 (2026-08-21 세션 끝)
 
 **긴 세션이었다. 커밋 9개가 전부 배포됐고 프로덕션에서 실측까지 했다.**

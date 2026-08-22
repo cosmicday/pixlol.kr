@@ -10,8 +10,12 @@
     <!-- 모바일 브라우저 주소창(상태바) 색. 없으면 브라우저가 반투명 헤더 뒤 배경을
          제멋대로 밝게 잡는다 — 사이트 바탕(#1a1a2e 계열)과 같은 어두운 색으로 못 박는다 -->
     <meta name="theme-color" content="#16112a">
-    <title>pixlol.kr - 전적검색</title>
+    <title>PIXLOL.KR - 전적검색</title>
     
+    <!-- ★ dogu.gg 공통 UI (2026-08-22). 헤더·히어로 검색창·푸터·배경 구조가 여기서 온다.
+         사이트 CSS 보다 **앞에** 둬야 style.css 의 :root 가 사이트별 변수를 덮어쓸 수 있다.
+         public/dogu-ui.css · dogu-header.js 는 복사본이라 여기서 고치지 말 것 (DOGU_UI.md) -->
+    <link rel="stylesheet" href="/dogu-ui.css">
     <link rel="stylesheet" href="/style.css">
     <!-- 파비콘 — 마법사 모자 쓴 시바 (2026-08-21 교체). 원본은 public/favicon_lol.png(1254px).
          ★ 원본에는 "투명" 을 뜻하는 **체커보드가 그림으로 구워져 있다**(24bpp, 알파 없음).
@@ -22,10 +26,6 @@
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon_lol_64.png">
     <link rel="apple-touch-icon" href="/favicon_lol_180.png">
     <link rel="icon" href="/favicon.ico" sizes="any">
-    <!-- 워드마크(PIXLOL.KR) 폰트. 라틴 subset 만 받아서 작다 -->
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap">
-    
     <!-- defer: 파싱을 막지 않는다. defer 끼리는 문서 순서대로 실행되므로
          chart.js 가 app.js 보다 항상 먼저 돈다. 둘 다 DOMContentLoaded 전에 끝난다. -->
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -75,76 +75,20 @@
     <script class="lazy-codex-data" data-src="/rune_graphs.js"></script>
 </head>
 
-<body>
-    <header class="header">
-        <!-- ★ 그림 로고 → 텍스트 워드마크 (2026-08-19). 홈 화면의 .main-logo-text 와
-             같은 Chakra Petch 700 이고, .KR 만 브랜드 보라다. -->
-        <a class="logo-top" onclick="goLobby(); setActiveNav('nav-search')">
-            <span class="logo-top-text">PIXLOL<span class="logo-tld">.KR</span></span>
-        </a>
-        <!-- 모바일 전용 햄버거 버튼 (2026-08-19). 데스크톱에서는 CSS 로 숨긴다.
-             누르면 header 에 .menu-open 이 붙고 nav-menu 가 드롭다운으로 펼쳐진다 (app.js toggleMobileMenu) -->
-        <button type="button" class="nav-toggle" id="nav-toggle" aria-label="메뉴 열기" onclick="toggleMobileMenu(event)">
-            <span></span><span></span><span></span>
-        </button>
-        <nav class="nav-menu">
-            <a class="nav-item active" id="nav-search" onclick="goLobby(); setActiveNav('nav-search')">전적검색</a>
-            <a class="nav-item" id="nav-ranking" onclick="showRanking(); setActiveNav('nav-ranking')">랭킹</a>
-            <!-- 통계: 2026-08-15에 실제 집계로 바꾸고 공개했다 (랭킹과 챔피언 사이). -->
-            <a class="nav-item" id="nav-stats" onclick="showStats(); setActiveNav('nav-stats')">통계</a>
-            <a class="nav-item" id="nav-champions" onclick="showChampions(); setActiveNav('nav-champions')">챔피언</a>
-            <!-- 도감: 아이템·룬·소환사 주문 (2026-08-16 신설). 챔피언 다음에 둔다 — 둘 다
-                 "찾아보는 자료" 라서 전적검색·랭킹·통계 같은 조회 기능과 성격이 다르다. -->
-            <a class="nav-item" id="nav-codex" onclick="showCodex(); setActiveNav('nav-codex')">도감</a>
-            <!-- 신화상점: 인게임 신화급 상점의 네 구획(추천·격주·주간·일일)을 그대로 따른다
-                 (2026-08-17 신설). 지금 데이터가 있는 건 일일 하나뿐이고 나머지 셋은
-                 수집기가 보내기 시작하면 채워진다 — app.js 의 MYTHIC_TABS 주석 참고. -->
-            <a class="nav-item" id="nav-mythic" onclick="showMythicShop(); setActiveNav('nav-mythic')">신화상점</a>
-            <!-- ▼▼ 비공개 처리 (장인랭킹) ▼▼
-                 하드코딩된 샘플 데이터라 아직 숨김. 되살릴 때: 이 주석 두 줄을 풀고
-                 app.js 의 HIDE_UNFINISHED_PAGES 를 false 로.
-            <a class="nav-item" id="nav-masters" onclick="showMasters(); setActiveNav('nav-masters')">장인랭킹</a>
-                 ▲▲ 비공개 처리 끝 ▲▲ -->
-            <!-- ▼▼ 비공개 처리 (챔피언 클래식) ▼▼
-                 되살릴 때: 이 주석 두 줄만 풀면 된다. 기능은 그대로 살아 있다
-                 (showChampions(null, true) · isClassicChamp · Jade_* 처리 전부 유지).
-            <a class="nav-item" id="nav-champions-classic" onclick="showChampions(null, true); setActiveNav('nav-champions-classic')">챔피언(클래식)</a>
-                 ▲▲ 비공개 처리 끝 ▲▲ -->
-        </nav>
-    </header>
+<!-- ★ 헤더는 app.js 의 mountDoguUI() 가 DoguUI.mountHeader() 로 body 맨 앞에 끼운다 (2026-08-22).
+     탭 6개(전적검색·랭킹·통계·챔피언·도감·신화상점)는 2단 네비로 내려갔고, 장인랭킹·챔피언(클래식)은
+     여전히 비공개다 — 되살릴 때는 app.js 의 DOGU_NAV 에 줄을 더하면 된다. -->
+<body class="dogu-body">
 
     <div id="error-toast" class="toast-hidden">현재 접속자가 많아 검색이 지연되고 있습니다. 잠시 후 다시 시도해주세요.</div>
 
     <main>
         <div class="main-search-section page-container" id="search-section">
-            <!-- ★ 그림 로고 → 텍스트 워드마크 (2026-08-18). 나중에 dogu.gg 하위로
-                 들어갈 예정이라 임시 브랜드에 그림 자산을 안 키우기로 했다.
-                 폰트는 Chakra Petch 700 (OFL · 무료 상업 가능). 헤더의 나비 미니 로고는 그대로다. -->
-            <h1 class="main-logo-text">PIXLOL<span class="logo-tld">.KR</span></h1>
-
-            <div class="search-box-wrapper" style="position: relative;">
-                <div class="search-box">
-                    <input type="text" class="search-input" id="summoner-input" placeholder="소환사명 검색 (예: Hide on bush#KR1)" autocomplete="off">
-                    <button class="search-btn" id="search-btn">.GG</button>
-                </div>
-                <div id="search-error-msg" class="search-error-msg"></div>
-
-                <div id="search-dropdown" class="search-dropdown">
-                    <div class="search-dropdown-header">
-                        <span id="tab-favorites" class="dropdown-tab active" onclick="switchTab('favorites')">★ 즐겨찾기</span>
-                        <span class="tab-divider">|</span>
-                        <span id="tab-recent" class="dropdown-tab" onclick="switchTab('recent')">🔍 최근기록</span>
-                        <!-- 안내 문구는 폰에서 숨긴다 (앞의 구분선까지 같이).
-                             탭 두 개가 한 줄에 들어가는 게 먼저다 — 이 문구 때문에
-                             "즐겨/찾기" "최근/기록" 까지 두 줄로 쪼개지고 있었다. -->
-                        <span class="tab-divider dropdown-hint-divider">|</span>
-                        <span class="dropdown-hint">즐겨찾기 및 최근기록은 10개까지 저장됩니다.</span>
-                    </div>
-                    <div id="dropdown-list" class="favorite-list"></div>
-                </div>
-
-                <div id="autocomplete-dropdown" class="search-dropdown ac-dropdown"></div>
-            </div>
+            <!-- ★ 히어로(로고 + 알약 검색창 + 즐겨찾기/최근 포커스 드롭다운)는 공통 파일이 그린다
+                 (app.js mountDoguUI → DoguUI.mountHero('#hero')). pixlol 만 PIXLOL.KR 로고 + 돋보기 버튼이다.
+                 자동완성 상자는 pixlol 고유 기능이라 여기 두고, 마운트 뒤에 JS 가 .dogu-search-wrapper 안으로 옮긴다. -->
+            <div id="hero"></div>
+            <div id="autocomplete-dropdown" class="ac-dropdown"></div>
 
             <div id="mythic-shop-container" class="mythic-shop-container">
                 <div class="shop-title-container">
@@ -305,27 +249,8 @@
 
     </main>
 
-    <!-- ★ 푸터는 main 바깥(body 직속)이다 (2026-08-18). body 가 세로 flex 고
-         main 이 flex:1 로 남는 높이를 차지해서, 홈처럼 짧은 페이지에선 푸터가
-         화면 바닥에 붙고 긴 페이지에선 예전처럼 내용 뒤에 흐른다.
-         main 안에 두고 main 을 flex 로 만들면 margin:auto 상자들이 쪼그라든다 — style.css 의 main 주석 참고 -->
-    <footer style="text-align: center; padding: 40px 20px; margin-top: 50px; border-top: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-faint); font-size: 12px; line-height: 1.6;">
-        <div style="margin-bottom: 20px; display: flex; justify-content: center; gap: 20px;">
-            <a onclick="showTerms()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">이용약관</a>
-            <span style="color: var(--text-dim);">|</span>
-            <a onclick="showPrivacyPolicy()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">개인정보 처리방침</a>
-            <span style="color: var(--text-dim);">|</span>
-            <a onclick="copyEmail()" class="summoner-link" style="color: #a78bfa; font-weight: bold; text-decoration: none; cursor: pointer;">버그제보 및 피드백</a>
-        </div>
-
-        <div style="color: rgba(255, 255, 255, 0.3); font-size: 11px; margin-top: 15px; word-break: keep-all;">
-            pixlol.kr isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
-        </div>
-
-        <div style="margin-top: 10px; font-size: 11px;">
-            Contact: <a onclick="copyEmail()" style="color: var(--text-faint); text-decoration: none; cursor: pointer;">00.y4no@gmail.com</a>
-        </div>
-    </footer>
+    <!-- ★ 푸터는 공통 파일이 body 끝에 붙인다 (app.js mountDoguUI → DoguUI.mountFooter).
+         main 바깥(body 직속)인 건 그대로다 — body 가 세로 flex 고 main 이 flex:1 이라 짧은 페이지에선 바닥에 붙는다 -->
 
     <!-- ▼▼ 비공개 처리 (장인랭킹 데이터) ▼▼
          mastersData.js 하나가 gzip 200KB 다. 첫 로드 용량의 절반이 여기였다.
@@ -334,6 +259,8 @@
          ▲▲ 비공개 처리 끝 ▲▲ -->
     <!-- statsData.js(하드코딩 샘플)는 2026-08-15부터 안 쓴다.
          통계 탭이 /api/champion-stats 를 부른다. 파일은 아직 지우지 않았다. -->
+    <!-- ★ 공통 헤더 스크립트는 app.js 보다 먼저. 둘 다 defer 라 문서 순서대로 돈다 -->
+    <script defer src="/dogu-header.js"></script>
     <script defer src="/app.js"></script>
 
 </body>

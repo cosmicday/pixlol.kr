@@ -226,6 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 페이지 접속 시 가장 먼저 버전 업데이트 및 툴팁 정보 백그라운드 다운로드
     ddragonReady = initDdragonVersion();
     ddragonReady.then(() => {
+        // 공통 헤더 2단 오른쪽 보조 정보 — DD 버전 앞 두 자리 (16.16.1 → 16.16)
+        if (window.DoguUI) DoguUI.setAside('패치 <b>' + String(ddragonVersion).split('.').slice(0, 2).join('.') + '</b>');
         fetchChampionMap();
         fetchRuneMap();
         fetchItemData();
@@ -303,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pathParts[1] === 'summoner' && pathParts[2]) {
         document.getElementById('result-container').style.display = "block";
         document.getElementById('game-list').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:#a79fbd;'>전적 데이터를 불러오는 중입니다...</div>";
-        document.getElementById('summoner-input').value = decodeURIComponent(pathParts[2]);
+        document.getElementById('dogu-search-input').value = decodeURIComponent(pathParts[2]);
         // /summoner/<라이엇 ID>/<경기 번호> — 친구가 받은 경기 링크. 검색이 끝나면 그 경기를 펼친다
         window.pendingMatchId = pathParts[3] ? decodeURIComponent(pathParts[3]) : null;
         executeSearch();
@@ -353,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setActiveNav('nav-champions');
     } else {
         document.getElementById('search-section').style.display = "flex";
+        if (window.DoguUI) DoguUI.setHome(true);
     }
 });
 
@@ -361,7 +364,7 @@ window.addEventListener('popstate', (event) => {
 
     if (currentPath.startsWith('/summoner/')) {
         const seg = currentPath.split('/');
-        document.getElementById('summoner-input').value = decodeURIComponent(seg[2]);
+        document.getElementById('dogu-search-input').value = decodeURIComponent(seg[2]);
         window.pendingMatchId = seg[3] ? decodeURIComponent(seg[3]) : null;
         executeSearch();
         setActiveNav('nav-search');
@@ -459,20 +462,18 @@ function showErrorToast(message) {
     toastTimer = setTimeout(() => toast.classList.remove('toast-show'), 3000);
 }
 
+// 공통 검색창 흔들기 (.dogu-search-box.shake — dogu-ui.css 의 doguShakeX)
 function triggerShake() {
-    const searchBox = document.querySelector('.search-box');
+    const searchBox = document.querySelector('.dogu-search-box');
     if (searchBox) {
-        searchBox.classList.remove('error-shake');
+        searchBox.classList.remove('shake');
         void searchBox.offsetWidth;
-        searchBox.classList.add('error-shake');
+        searchBox.classList.add('shake');
     }
 }
 
 function clearSearchError() {
-    const errorMsg = document.getElementById('search-error-msg');
-    if (errorMsg) errorMsg.style.display = 'none';
-    const searchBox = document.querySelector('.search-box');
-    if (searchBox) searchBox.classList.remove('error-shake');
+    if (window.DoguUI) DoguUI.showSearchError('');
 }
 
 // ============================================================
@@ -502,10 +503,105 @@ function isClassicChamp(id) {
 // (selectChampion이 주소를 만들 때 필요)
 let currentChampMode = 'normal';
 
+// ==========================================
+// [1.5] dogu.gg 공통 UI — 헤더(2단) · 히어로 검색창 · 푸터 (2026-08-22, DOGU_UI.md)
+//   public/dogu-header.js 의 DoguUI 가 마크업을 만든다. 여기서는 pixlol 만의 설정
+//   (PIXLOL.KR 로고 · 돋보기 버튼 · 탭 6개 · 즐겨찾기/최근 데이터)을 꽂고 라우터에 잇는다.
+//   ★ 라우터 연결은 두 줄이다 — hideAllContainers()/goLobby() 의 DoguUI.setHome(),
+//     setActiveNav() 안의 DoguUI.setActiveNav(). 안 잇으면 홈/비홈 오버레이 농도가 안 바뀌고
+//     네비 불이 안 붙는다.
+//   ★ 이 블록은 app.js 의 **실행 코드보다 위**에 있어야 한다 — 아래 [2]절이 스크립트 실행
+//     시점에 #dogu-search-input 에 리스너를 붙이므로 히어로가 그 전에 그려져 있어야 한다.
+// ==========================================
+const DOGU_NAV = [
+    { key: 'search',    navId: 'nav-search',    label: '전적검색', href: '/',          go: () => goLobby() },
+    { key: 'ranking',   navId: 'nav-ranking',   label: '랭킹',     href: '/ranking',   go: () => showRanking() },
+    { key: 'stats',     navId: 'nav-stats',     label: '통계',     href: '/stats',     go: () => showStats() },
+    { key: 'champions', navId: 'nav-champions', label: '챔피언',   href: '/champions', go: () => showChampions() },
+    { key: 'codex',     navId: 'nav-codex',     label: '도감',     href: '/codex',     go: () => showCodex() },
+    { key: 'mythic',    navId: 'nav-mythic',    label: '신화상점', href: '/mythic',    go: () => showMythicShop() },
+    // 비공개: 장인랭킹(nav-masters) · 챔피언(클래식)(nav-champions-classic). 되살릴 때 여기 줄을 더한다
+];
+
+// 로고·⌂·푸터 링크가 가는 홈. 사이트가 pixlol.kr 루트에서 돌아가므로 '/' 가 곧 pixlol.kr 홈이다
+// (절대 주소를 박으면 로컬에서 프로덕션으로 튄다)
+const DOGU_HOME = '/';
+const DOGU_BRAND = { brand: 'PIXLOL', tld: '.KR', home: DOGU_HOME, linkAttr: 'data-link' };
+
+function doguSearchInput() { return document.getElementById('dogu-search-input'); }
+
+// 공통 링크(data-link)를 pixlol 의 show* 함수로 돌린다. 공통 파일은 href 만 알고 라우터는 모른다
+function doguRoute(href, navKey) {
+    if (href.startsWith('/summoner/')) {
+        const input = doguSearchInput();
+        if (input) input.value = decodeURIComponent(href.split('/')[2] || '');
+        executeSearch();
+        return;
+    }
+    if (href === '/terms') { showTerms(); return; }
+    if (href === '/privacy') { showPrivacyPolicy(); return; }
+    const item = DOGU_NAV.find(n => n.key === navKey) || DOGU_NAV.find(n => n.href === href) || DOGU_NAV[0];
+    item.go();
+    setActiveNav(item.navId);
+}
+
+function mountDoguUI() {
+    if (!window.DoguUI) return;
+
+    // 1단(헤더)·히어로 검색창 둘 다 같은 길로 — 값을 히어로 입력칸에 넣고 executeSearch()
+    // (executeSearch 가 그 칸을 읽는다. 나머지 호출처 20여 곳이 전부 같은 규약이라 그대로 둔다)
+    const onSubmit = (q) => {
+        const input = doguSearchInput();
+        if (input) input.value = q;
+        executeSearch();
+    };
+    const placeholder = '소환사명 검색 (예: Hide on bush#KR1)';
+
+    DoguUI.mountHeader(Object.assign({}, DOGU_BRAND, {
+        site: 'lol',
+        nav: DOGU_NAV.map(n => ({ key: n.key, label: n.label, href: n.href, active: n.key === 'search' })),
+        aside: '',                                  // 패치 버전 — initDdragonVersion 뒤에 setAside 로 채운다
+        search: { placeholder, onSubmit }
+    }));
+
+    DoguUI.mountHero('#hero', Object.assign({}, DOGU_BRAND, {
+        search: {
+            placeholder,
+            button: DoguUI.TEXT.searchIcon,         // ★ pixlol 만 돋보기 (다른 사이트는 .GG 글자)
+            onSubmit,
+            favorites: { all: getFavorites, remove: removeFavorite },
+            recents:   { all: getRecents,   remove: removeRecentSearch },
+            itemHref:  (name) => '/summoner/' + encodeURIComponent(name),
+            onPick:    (name) => onSubmit(name)
+        }
+    }));
+
+    // pixlol 고유 자동완성 상자를 공통 검색창 상자 안으로 옮긴다 (position:absolute 기준이 되도록)
+    const wrap = document.querySelector('.dogu-search-wrapper');
+    const ac = document.getElementById('autocomplete-dropdown');
+    if (wrap && ac) wrap.appendChild(ac);
+
+    DoguUI.mountFooter(null, Object.assign({}, DOGU_BRAND, {
+        links: { terms: '/terms', privacy: '/privacy' },
+        notice: "pixlol.kr isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
+        contact: '00.y4no@gmail.com'
+    }));
+
+    // 공통 마크업의 내부 링크를 가로챈다. 드롭다운 항목은 onPick 이 이미 처리하므로 뺀다
+    document.addEventListener('click', (e) => {
+        const a = e.target.closest('a[data-link]');
+        if (!a || a.classList.contains('dogu-dropdown-link')) return;
+        e.preventDefault();
+        doguRoute(a.getAttribute('href') || '/', a.dataset.nav);
+    });
+}
+mountDoguUI();
+
 function setActiveNav(navId) {
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    const activeItem = document.getElementById(navId);
-    if (activeItem) activeItem.classList.add('active');
+    const item = DOGU_NAV.find(n => n.navId === navId);
+    if (window.DoguUI) DoguUI.setActiveNav(item ? item.key : null);
+    // 페이지 타이틀은 "PIXLOL.KR - {페이지명}" (DOGU_UI_PLAN.md 규격의 pixlol 예외)
+    document.title = 'PIXLOL.KR - ' + (item ? item.label : '전적검색');
 }
 
 function hideAllContainers() {
@@ -513,9 +609,9 @@ function hideAllContainers() {
         container.style.display = "none";
     });
 
-    // 홈(히어로)이 아닌 화면은 배경 일러스트를 더 눌러 바닥을 단색에 가깝게 한다.
-    // 홈으로 돌아오는 goLobby() 가 다시 벗긴다
-    document.body.classList.add('bg-solid');
+    // ★ 홈(히어로)이 아닌 화면은 공통 오버레이를 진하게 (body.dogu-home 을 뗀다).
+    //   페이지를 갈아 끼우는 길목이 여기 하나라 홈 판정도 여기서 한다. 홈은 goLobby() 가 켠다
+    if (window.DoguUI) DoguUI.setHome(false);
 
     // 랭킹 탭에서만 통을 넓혔던 것을 되돌린다 (안 벗기면 전적검색 화면까지 넓어진다)
     const resultBox = document.getElementById('result-container');
@@ -524,42 +620,18 @@ function hideAllContainers() {
     clearSearchError();
     if (window.refreshTimerInterval) clearInterval(window.refreshTimerInterval);
 
-    // 모바일 햄버거 메뉴가 열려 있으면 닫는다 (메뉴를 골랐다는 뜻이므로)
-    closeMobileMenu();
-
     // ★ 메뉴를 옮기면 스크롤을 맨 위로 되돌린다 (2026-08-19).
     //   랭킹 탭만 renderRankingPage 가 알아서 올려 주고 나머지는 스크롤이 내려간 채
     //   새 화면이 나왔다. 페이지를 갈아 끼우는 유일한 길목이 여기라 여기서 한 번에 처리한다.
     window.scrollTo(0, 0);
 }
 
-// ==========================================
-// 모바일 햄버거 메뉴 (2026-08-19)
-//   폰에서는 헤더에 메뉴 6개를 눕히는 대신 오른쪽 햄버거 버튼으로 접는다.
-//   header 에 .menu-open 을 토글하면 CSS 가 .nav-menu 를 드롭다운으로 펼친다.
-// ==========================================
-function toggleMobileMenu(e) {
-    if (e) e.stopPropagation();
-    document.querySelector('.header').classList.toggle('menu-open');
-}
-
-function closeMobileMenu() {
-    const h = document.querySelector('.header');
-    if (h) h.classList.remove('menu-open');
-}
-
-// 메뉴 밖(페이지 아무 데나)을 누르면 닫는다. 메뉴 항목 클릭은 hideAllContainers 가 닫는다.
-document.addEventListener('click', (e) => {
-    const h = document.querySelector('.header');
-    if (h && h.classList.contains('menu-open') && !e.target.closest('.header')) closeMobileMenu();
-});
-
 function goLobby() {
     if (window.location.pathname !== '/') window.history.pushState(null, '', '/');
     hideAllContainers();
     document.getElementById('search-section').style.display = "flex";
-    document.body.classList.remove('bg-solid');
-    document.getElementById('summoner-input').value = "";
+    if (window.DoguUI) DoguUI.setHome(true);     // 홈 — 오버레이를 옅게
+    document.getElementById('dogu-search-input').value = "";
     hideAutocomplete();
     setActiveNav('nav-search');
 }
@@ -567,25 +639,19 @@ function goLobby() {
 // ==========================================
 // [2] 전적 검색 및 모스트 챔피언
 // ==========================================
-document.getElementById('search-btn').addEventListener('click', executeSearch);
-document.getElementById('summoner-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') executeSearch();
-});
-document.getElementById('summoner-input').addEventListener('input', clearSearchError);
+// ★ 검색 버튼 클릭·Enter 는 공통 히어로의 <form submit> 이 받아 mountDoguUI 의 onSubmit 으로 온다.
+//   여기선 입력이 바뀌면 오류 문구만 지운다
+document.getElementById('dogu-search-input').addEventListener('input', clearSearchError);
 
 async function executeSearch() {
-    const inputName = document.getElementById('summoner-input').value.trim();
-    const errorMsgDiv = document.getElementById('search-error-msg');
+    const inputName = document.getElementById('dogu-search-input').value.trim();
 
     clearSearchError();
 
     hideAutocomplete();
 
     if (!inputName) {
-        if (errorMsgDiv) {
-            errorMsgDiv.innerHTML = "소환사명을 입력해 주세요.";
-            errorMsgDiv.style.display = 'block';
-        }
+        if (window.DoguUI) DoguUI.showSearchError("소환사명을 입력해 주세요.");
         triggerShake();
         return;
     }
@@ -682,7 +748,7 @@ async function executeSearch() {
                     <div id="profile-fav-wrap"></div>
                 </div>
                 <div class="profile-actions">
-                    <button id="refresh-btn" class="search-btn profile-action-btn">전적 갱신</button>
+                    <button id="refresh-btn" class="refresh-btn profile-action-btn">전적 갱신</button>
                     <button id="live-btn" class="profile-action-btn live-btn" onclick="toggleLiveGamePanel()" disabled>인게임 정보</button>
                 </div>
             </div>
@@ -1010,7 +1076,7 @@ function renderMatches(matches, append = false) {
                 const shortName = p.summonerName.split('#')[0];
                 const isMeStyle = p.isSearchedUser ? "font-weight: bold; color: #fff;" : "";
                 return `
-                    <div class="pix-player" onclick="document.getElementById('summoner-input').value='${p.summonerName}'; document.getElementById('search-btn').click();" style="cursor:pointer;" title="${p.summonerName} 검색">
+                    <div class="pix-player" onclick="document.getElementById('dogu-search-input').value='${p.summonerName}'; executeSearch();" style="cursor:pointer;" title="${p.summonerName} 검색">
                         <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png" alt="${p.championName}">
                         <span style="${isMeStyle}">${shortName}</span>
                     </div>
@@ -1033,7 +1099,7 @@ function renderMatches(matches, append = false) {
                                 <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png"
                                      class="${p.isSearchedUser ? 'me' : ''}"
                                      title="${p.summonerName}"
-                                     onclick="document.getElementById('summoner-input').value='${p.summonerName}'; document.getElementById('search-btn').click();">
+                                     onclick="document.getElementById('dogu-search-input').value='${p.summonerName}'; executeSearch();">
                             `).join('')}
                         </div>`;
                     }).join('')}
@@ -1194,7 +1260,7 @@ function renderMatches(matches, append = false) {
                     <td class="detail-champ-col">
                         <div class="champ-name-wrapper">
                             <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png">
-                            <div class="detail-summoner" onclick="document.getElementById('summoner-input').value='${p.summonerName}'; document.getElementById('search-btn').click();" title="${p.summonerName}">${p.summonerName}</div>
+                            <div class="detail-summoner" onclick="document.getElementById('dogu-search-input').value='${p.summonerName}'; executeSearch();" title="${p.summonerName}">${p.summonerName}</div>
                         </div>
                     </td>
                     <td class="detail-spell-rune-col">
@@ -1289,7 +1355,7 @@ function renderMatches(matches, append = false) {
                             <td class="detail-champ-col">
                                 <div class="champ-name-wrapper">
                                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png">
-                                    <div class="detail-summoner" onclick="document.getElementById('summoner-input').value='${p.summonerName}'; document.getElementById('search-btn').click();" title="${p.summonerName}">${p.summonerName}</div>
+                                    <div class="detail-summoner" onclick="document.getElementById('dogu-search-input').value='${p.summonerName}'; executeSearch();" title="${p.summonerName}">${p.summonerName}</div>
                                 </div>
                             </td>
                             <td class="detail-spell-rune-col">
@@ -2362,8 +2428,6 @@ document.addEventListener('mouseover', (e) => {
 // ==========================================
 // [6] 즐겨찾기 및 최근기록 로직
 // ==========================================
-let currentDropdownTab = 'favorites';
-
 function getFavorites() { return JSON.parse(localStorage.getItem('pix_favorites') || '[]'); }
 function saveFavorites(favs) { localStorage.setItem('pix_favorites', JSON.stringify(favs)); }
 
@@ -2416,7 +2480,7 @@ function addRecentSearch(name) {
     recents.unshift(name);
     if (recents.length > 10) recents.pop();
     saveRecents(recents);
-    if (currentDropdownTab === 'recent') renderDropdownList();
+    renderDropdownList();
 }
 
 function removeRecentSearch(name) {
@@ -2425,79 +2489,12 @@ function removeRecentSearch(name) {
     saveRecents(recents); renderDropdownList();
 }
 
-// 드롭다운을 열 때 어느 탭을 먼저 보여줄지 정한다.
-//   즐겨찾기가 있으면 즐겨찾기, 없으면 최근기록.
-function pickDefaultDropdownTab() {
-    const tab = getFavorites().length > 0 ? 'favorites' : 'recent';
-    currentDropdownTab = tab;
-
-    const favTab = document.getElementById('tab-favorites');
-    const recTab = document.getElementById('tab-recent');
-    if (favTab) favTab.classList.toggle('active', tab === 'favorites');
-    if (recTab) recTab.classList.toggle('active', tab === 'recent');
-
-    renderDropdownList();
-}
-
-function switchTab(tabName) {
-    currentDropdownTab = tabName;
-    document.getElementById('tab-favorites').classList.toggle('active', tabName === 'favorites');
-    document.getElementById('tab-recent').classList.toggle('active', tabName === 'recent');
-    renderDropdownList();
-    document.getElementById('summoner-input').focus();
-}
-
+// ★ 드롭다운 자체는 공통 파일(DoguUI.mountHero 의 favorites/recents)이 그린다 (2026-08-22).
+//   목록이 바뀌면 열려 있는 드롭다운만 다시 그려 달라고 한다. 옛 switchTab/pickDefaultDropdownTab
+//   /renderDropdownList 본체와 focus/바깥 클릭 리스너는 전부 공통 파일로 넘어갔다
 function renderDropdownList() {
-    const listDiv = document.getElementById('dropdown-list');
-
-    if (currentDropdownTab === 'favorites') {
-        const favs = getFavorites();
-        if (favs.length === 0) {
-            listDiv.innerHTML = '<div class="empty-favorite">즐겨찾기에 등록된 유저가 존재하지 않습니다.</div>';
-            return;
-        }
-        listDiv.innerHTML = favs.map(f => `
-            <div class="favorite-item" onclick="document.getElementById('summoner-input').value='${f}'; document.getElementById('search-btn').click();">
-                <span class="favorite-name">${f}</span>
-                <button class="favorite-del-btn" onclick="event.stopPropagation(); removeFavorite('${f}');" title="삭제">×</button>
-            </div>
-        `).join('');
-    } else {
-        const recents = getRecents();
-        if (recents.length === 0) {
-            listDiv.innerHTML = '<div class="empty-favorite">최근 검색한 소환사가 없습니다.</div>';
-            return;
-        }
-        listDiv.innerHTML = recents.map(r => `
-            <div class="favorite-item" onclick="document.getElementById('summoner-input').value='${r}'; document.getElementById('search-btn').click();">
-                <span class="favorite-name">${r}</span>
-                <button class="favorite-del-btn" onclick="event.stopPropagation(); removeRecentSearch('${r}');" title="삭제">×</button>
-            </div>
-        `).join('');
-    }
+    if (window.DoguUI) DoguUI.refreshDropdown();
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('summoner-input');
-    const dropdown = document.getElementById('search-dropdown');
-
-    searchInput.addEventListener('focus', () => {
-        // 입력값이 있으면 자동완성이 우선이므로 즐겨찾기는 띄우지 않음
-        if (searchInput.value.trim()) return;
-
-        // 이미 열려 있으면 탭을 건드리지 않는다.
-        // switchTab이 끝에서 input.focus()를 호출하기 때문에, 여기서 무조건
-        // 기본 탭으로 되돌리면 사용자가 누른 탭이 즉시 취소된다.
-        if (dropdown.style.display !== 'block') {
-            pickDefaultDropdownTab();   // 즐겨찾기가 있으면 즐겨찾기부터, 없으면 최근기록부터
-        }
-        dropdown.style.display = 'block';
-    });
-    document.addEventListener('click', (e) => {
-        const wrapper = document.querySelector('.search-box-wrapper');
-        if (wrapper && !wrapper.contains(e.target)) dropdown.style.display = 'none';
-    });
-});
 
 // ==========================================
 // [7] 통계 및 랭킹 페이지 로직
@@ -4781,8 +4778,8 @@ function renderRankingPage(page, opts = {}) {
         body.addEventListener('click', (e) => {
             const link = e.target.closest('.summoner-link');
             if (!link) return;
-            document.getElementById('summoner-input').value = link.dataset.name;
-            document.getElementById('search-btn').click();
+            document.getElementById('dogu-search-input').value = link.dataset.name;
+            executeSearch();
         });
     }
 
@@ -4977,7 +4974,7 @@ function renderMasterTable() {
                 <td>
                     <div class="master-summoner">
                         <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${currentChampId}.png" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
-                        <div><div class="summoner-link" onclick="document.getElementById('summoner-input').value='${player.name}'; document.getElementById('search-btn').click();" title="${player.name} 검색">${player.name}</div></div>
+                        <div><div class="summoner-link" onclick="document.getElementById('dogu-search-input').value='${player.name}'; executeSearch();" title="${player.name} 검색">${player.name}</div></div>
                     </div>
                 </td>
                 <td><div class="master-tier"><span class="tier-badge ${tierBadgeClass}" style="white-space: nowrap;">${fullTierName}</span> ${lpDisplay}</div></td>
@@ -5587,13 +5584,7 @@ async function renderMythicSection(key) {
     updateShopTimer();
 }
 
-window.copyEmail = function () {
-    navigator.clipboard.writeText("00.y4no@gmail.com").then(() => {
-        showErrorToast("이메일 주소(00.y4no@gmail.com)가 클립보드에 복사되었습니다.");
-    }).catch(err => {
-        showErrorToast("이메일 복사에 실패했습니다. 직접 복사해주세요: 00.y4no@gmail.com");
-    });
-};
+// copyEmail 은 지웠다 (2026-08-22) — 푸터의 "버그제보 및 피드백" 은 공통 파일이 클립보드 복사까지 한다
 
 window.switchDetailTab = async function (event, matchId, tabName) {
     const wrapper = event.target.closest('.match-detail');
@@ -5904,8 +5895,8 @@ function renderLivePlayer(p, side, showRunes = true) {
 
 window.searchSummonerFromLive = function (riotId) {
     if (!riotId) return;
-    document.getElementById('summoner-input').value = riotId;
-    document.getElementById('search-btn').click();
+    document.getElementById('dogu-search-input').value = riotId;
+    executeSearch();
 };
 
 // 인게임 패널은 공간이 넉넉해서 전적 목록보다 정식 명칭을 쓴다.
@@ -8097,9 +8088,9 @@ function renderAutocomplete(list, typed) {
 
     if (!list || list.length === 0) { hideAutocomplete(); return; }
 
-    // 즐겨찾기 드롭다운과 동시에 뜨지 않도록
-    const fav = document.getElementById('search-dropdown');
-    if (fav) fav.style.display = 'none';
+    // 즐겨찾기 드롭다운(공통)과 동시에 뜨지 않도록
+    const fav = document.getElementById('dogu-search-dropdown');
+    if (fav) fav.classList.remove('open');
 
     acItems = list;
     acIndex = -1;
@@ -8138,7 +8129,7 @@ function highlightAcItem() {
 window.pickAutocomplete = function (i) {
     const item = acItems[i];
     if (!item) return;
-    document.getElementById('summoner-input').value = item.displayName;
+    document.getElementById('dogu-search-input').value = item.displayName;
     hideAutocomplete();
     executeSearch();
 };
@@ -8154,7 +8145,7 @@ async function fetchAutocomplete(value) {
         const list = await res.json();
 
         if (seq !== acSeq) return;                       // 늦게 도착한 응답 무시
-        const now = document.getElementById('summoner-input').value.trim();
+        const now = document.getElementById('dogu-search-input').value.trim();
         if (now.split('#')[0].trim() !== namePart) return;
 
         renderAutocomplete(list, namePart);
@@ -8197,7 +8188,7 @@ async function showCandidates(name) {
         const safe = it.displayName.replace(/'/g, "\\'");
 
         return `
-            <div class="cand-item" onclick="document.getElementById('summoner-input').value='${escapeHtml(safe)}'; executeSearch();">
+            <div class="cand-item" onclick="document.getElementById('dogu-search-input').value='${escapeHtml(safe)}'; executeSearch();">
                 <span class="cand-badge ${cls}">${shortTier(it.tier, it.rank)}</span>
                 <span class="cand-name">${escapeHtml(namePart)}<span class="ac-tag">#${escapeHtml(tag || '')}</span></span>
                 <span class="cand-lp">${escapeHtml(lpText)}</span>
@@ -8213,7 +8204,7 @@ async function showCandidates(name) {
 
 // 입력 이벤트 연결 (디바운스 0.2초)
 document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('summoner-input');
+    const input = document.getElementById('dogu-search-input');
     if (!input) return;
 
     input.addEventListener('input', () => {
@@ -8246,7 +8237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('click', (e) => {
-        const wrapper = document.querySelector('.search-box-wrapper');
+        const wrapper = document.querySelector('.dogu-search-wrapper');
         if (wrapper && !wrapper.contains(e.target)) hideAutocomplete();
     });
 });

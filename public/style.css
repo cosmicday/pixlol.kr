@@ -14,6 +14,16 @@
     --text-muted:  #a79fbd;   /*  6.8:1 — 옛 #9aa4af·#8a8a9a 자리 */
     --text-faint:  #8b84a0;   /*  4.8:1 — 옛 #555·#666·#777·#6b7280 자리 */
     --text-dim:    #78718e;   /*  3.7:1 — 옛 #5f666e·#4b5563 자리 (축 라벨·placeholder 전용) */
+
+    /* ★ dogu.gg 공통 UI 사이트별 변수 (2026-08-22, DOGU_UI.md 2절). 값은 DOGU_UI_PLAN.md 색 표.
+       헤더·히어로·검색창·푸터·배경은 public/dogu-ui.css 가 그리고, 여기선 **이 변수만** 바꾼다.
+       `.dogu-*` 선택자를 이 파일에 쓰면 안 된다 — 한 사이트만 달라지면 통일이 무너진다 */
+    --dogu-bg: #16112a;                         /* theme-color 메타와 같은 값 */
+    --dogu-accent: #9b6be8;                     /* 로고 .KR · 네비 활성 밑줄 · 검색 버튼 그라데이션 시작 */
+    --dogu-accent-dark: #6a3fc4;                /* 검색 버튼 그라데이션 끝 */
+    --dogu-bg-image: url('https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lulu_2.jpg');
+    --dogu-overlay-rgb: 11, 11, 20;             /* 예전 body::before 오버레이 색 그대로 (보라 기운 바탕) */
+    /* 블러는 공통 기본값 0 — 예전의 blur(5px) 는 규격에 따라 걷어냈다 */
 }
 
 /* ★★★ html 에 배경을 깔면 안 된다 (2026-08-19 사고 — 즉시 롤백).
@@ -24,11 +34,12 @@
    요소보다 뒤 순서로**(페인트 순서상 나중에 = 위에) 그려진다 — 오버레이가 일러스트
    밑에 깔려 무력화된다. 주소창 색은 theme-color 메타만으로 해결할 것. */
 
+/* ★ 배경 이미지·오버레이는 여기 없다 (2026-08-22). dogu-ui.css 의 body.dogu-body::before(이미지) /
+   ::after(오버레이) 가 깐다. 홈/비홈 농도는 app.js 가 DoguUI.setHome() 으로 body.dogu-home 을 토글한다.
+   글꼴·글자색도 body.dogu-body 가 정한다 (Pretendard → Malgun Gothic 폴백 · #e6eefb) */
 body {
     font-family: 'Malgun Gothic', sans-serif;
     color: #ffffff;
-    background: url('https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lulu_2.jpg') no-repeat center center fixed;
-    background-size: cover;
     min-height: 100vh;
     overflow-x: hidden;
     /* ★ 푸터를 화면 바닥에 붙이기 위한 뼈대 (2026-08-18). body(세로 flex) 안에서
@@ -47,30 +58,6 @@ main {
     flex: 1 0 auto;
 }
 
-body::before {
-    content: '';
-    position: fixed;
-    /* ★ 위아래로 150px 씩 삐져나가게 깐다 (2026-08-19, 모바일화면1.png 실측).
-       iOS 사파리는 반투명 주소창(툴바) 뒤로 **뷰포트 밖의 문서 내용**을 비춰 주는데,
-       fixed 오버레이가 bottom:0 에서 끝나니 그 띠에서만 일러스트가 원본 밝기로
-       비쳤다. 툴바 높이(~100px)보다 넉넉히 늘리면 그 띠까지 덮는다 —
-       데스크톱에서는 뷰포트 밖이라 잘려 나가서 아무 차이가 없다. */
-    top: -150px;
-    left: 0;
-    right: 0;
-    bottom: -150px;
-    background-color: rgba(11, 11, 20, 0.8);
-    backdrop-filter: blur(5px);
-    z-index: -1;
-    transition: background-color 0.3s;
-}
-
-/* 데이터 페이지(홈 이외 전부)는 배경 일러스트를 기척만 남기고 누른다.
-   app.js 의 hideAllContainers()/goLobby() 가 클래스를 토글한다 (2026-08-18) */
-body.bg-solid::before {
-    background-color: rgba(11, 11, 20, 0.93);
-}
-
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -79,18 +66,6 @@ body.bg-solid::before {
     to {
         opacity: 1;
         transform: translateY(0);
-    }
-}
-
-@keyframes errorShake {
-    0%, 100% {
-        transform: translateX(0);
-    }
-    20%, 60% {
-        transform: translateX(-6px);
-    }
-    40%, 80% {
-        transform: translateX(6px);
     }
 }
 
@@ -114,314 +89,25 @@ body.bg-solid::before {
 }
 
 /* =========================================
-   2. 헤더 네비게이션
-   ========================================= */
-.header {
-    display: flex;
-    align-items: center;
-    /* 프로스트 유리 (2026-08-18). 홈에선 일러스트가 뭉개져 비치고,
-       데이터 페이지는 뒤가 0.93 오버레이라 그냥 어두운 바로 보인다.
-       sticky 라 스크롤하면 콘텐츠가 유리 밑으로 지나간다 */
-    position: sticky;
-    top: 0;
-    z-index: 500;
-    background-color: rgba(45, 20, 60, 0.6);
-    backdrop-filter: blur(12px) saturate(1.3);
-    -webkit-backdrop-filter: blur(12px) saturate(1.3);
-    padding: 0 5px;
-    height: 65px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.logo-top {
-    cursor: pointer;
-    text-decoration: none;
-    /* 그림 로고 시절 이미지가 벌려 주던 좌우 간격을 텍스트가 이어받는다 */
-    margin: 0 28px 0 12px;
-}
-
-/* ★ 헤더 로고도 텍스트 워드마크다 (2026-08-19). 홈 화면 .main-logo-text 와 같은
-   Chakra Petch 700 · .KR 만 브랜드 보라 — 크기만 헤더에 맞게 줄였다.
-   (logo.webp 는 이제 안 쓴다) */
-.logo-top-text {
-    font-family: 'Chakra Petch', 'Malgun Gothic', sans-serif;
-    font-weight: 700;
-    font-size: 21px;
-    letter-spacing: 1px;
-    line-height: 1;
-    color: #fff;
-    text-shadow: 0 0 12px rgba(167, 139, 250, 0.4);
-    white-space: nowrap;
-}
-
-.logo-top-text .logo-tld {
-    color: #a78bfa;
-}
-
-/* 모바일 햄버거 버튼. 데스크톱에서는 숨긴다 (@media 블록에서 켠다) */
-.nav-toggle {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    width: 42px;
-    height: 42px;
-    padding: 0;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-}
-
-.nav-toggle span {
-    display: block;
-    width: 20px;
-    height: 2px;
-    border-radius: 1px;
-    background: #fff;
-    transition: transform 0.2s, opacity 0.2s;
-}
-
-/* 열려 있는 동안 세 줄이 X 로 바뀐다 — 같은 버튼이 닫기임을 보여준다 */
-.header.menu-open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.header.menu-open .nav-toggle span:nth-child(2) { opacity: 0; }
-.header.menu-open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-.nav-menu {
-    display: flex;
-    gap: 30px;
-    margin-left: 0px;
-}
-
-.nav-item {
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: none;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: color 0.2s;
-    padding: 4px 0;
-    /* 선택 표시가 밑줄이라 자리부터 잡아 둔다 — 없으면 선택할 때 1px 뛴다 */
-    border-bottom: 2px solid transparent;
-}
-
-.nav-item:hover {
-    color: #a78bfa;
-}
-
-/* ★ 선택 표시는 볼드가 아니라 흰 글자 + 보라 밑줄이다 (2026-08-18).
-   볼드는 맑은 고딕의 다른 판본이라 자형이 달라 보였고("글씨체가 다르냐"는 지적),
-   글자 폭이 변해서 메뉴를 옮길 때마다 옆 항목들이 1~2px 밀렸다 */
-.nav-item.active {
-    color: #ffffff;
-    border-bottom-color: #a78bfa;
-}
-
-/* =========================================
-   3. 메인 검색 영역 (검색창 및 드롭다운)
+   2. 헤더 · 3. 메인 검색 영역 → dogu-ui.css (2026-08-22)
+   ★ 헤더(2단 · 게임 스위처 · 1단 검색창), 히어로 로고, 알약 검색창, 즐겨찾기/최근 검색 드롭다운,
+     푸터는 전부 공통 파일이 그린다. 옛 .header · .logo-top · .nav-menu · .nav-item · .nav-toggle(햄버거) ·
+     .main-logo-text · .search-box · .search-input · .search-btn · .search-dropdown · .dropdown-tab ·
+     .favorite-item 규칙은 지웠다.
+     여기 남는 건 홈 화면의 **틀**(.main-search-section)과 pixlol 고유 자동완성 상자뿐이다.
    ========================================= */
 .main-search-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 15px;
     transition: all 0.4s ease;
     animation: fadeIn 0.6s ease;
 }
 
-/* ★ 텍스트 워드마크 (2026-08-18, 그림 로고를 대체). 폰트는 index.html 의
-   Chakra Petch 700. .KR 만 브랜드 보라 — dogu.gg 로 넘어갈 때 글자만 갈면 된다 */
-.main-logo-text {
-    font-family: 'Chakra Petch', 'Malgun Gothic', sans-serif;
-    font-weight: 700;
-    font-size: 82px;
-    line-height: 1;
-    color: #fff;
-    letter-spacing: 2px;
-    margin: 120px 0 65px;
-    text-shadow: 0 0 32px rgba(167, 139, 250, 0.45);
-}
-
-.main-logo-text .logo-tld {
-    color: #a78bfa;
-}
-
-.search-box-wrapper {
+/* ★ 히어로 칸은 flex 항목이라 폭을 안 주면 내용 폭으로 쪼그라든다 (align-items: center).
+   공통 .dogu-search-wrapper 가 max-width 600 + margin auto 로 가운데를 잡으니 칸은 통째로 넓혀 둔다 */
+#hero {
     width: 100%;
-    max-width: 600px;
-    position: relative;
-}
-
-.search-box {
-    display: flex;
-    width: 100%;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    border-radius: 30px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.search-box.error-shake {
-    animation: errorShake 0.4s ease-in-out;
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important;
-}
-
-.search-input {
-    flex: 1;
-    padding: 18px 25px;
-    border: none;
-    outline: none;
-    font-size: 16px;
-    /* 유리 입력창 (2026-08-18). 사이트에서 혼자 순백색이던 상자를 어두운 유리로 */
-    background: rgba(20, 15, 35, 0.55);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    color: #fff;
-}
-
-.search-input::placeholder {
-    color: rgba(255, 255, 255, 0.45);
-}
-
-.search-btn {
-    padding: 0 35px;
-    /* 주 행동 버튼이라 유리로 안 하고 브랜드 보라 램프(#8b5cf6→#6b46c1)로 또렷하게.
-       옛 색 #6b3f8e 는 램프 밖의 탁한 자주색이었다 */
-    background: linear-gradient(135deg, #8b5cf6, #6b46c1);
-    color: white;
-    border: none;
-    font-weight: bold;
-    /* ★ <button> 은 페이지 글자 크기를 상속하지 않는다 — 안 적으면 브라우저 기본
-       13px 로 나가서 버튼 덩치에 비해 글자만 작아 보였다 */
-    font-size: 17px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: filter 0.2s;
-}
-
-.search-btn:hover {
-    filter: brightness(1.15);
-}
-
-.search-error-msg {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    color: #ef4444;
-    font-size: 13px;
-    margin-top: 12px;
-    line-height: 1.5;
-    font-weight: bold;
-    display: none;
-    z-index: 10;
-}
-
-/* 검색 즐겨찾기 드롭다운 */
-.search-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: #1a1a2e;
-    border: 1px solid rgba(167, 139, 250, 0.4);
-    border-radius: 12px;
-    margin-top: 8px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-    z-index: 100;
-    display: none;
-    overflow: hidden;
-}
-
-.search-dropdown-header {
-    padding: 12px 20px;
-    background: rgba(43, 26, 82, 0.5);
-    font-size: 13px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.dropdown-tab {
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: color 0.2s;
-    user-select: none;
-}
-
-.dropdown-tab:hover {
-    color: #fff;
-}
-
-.dropdown-tab.active {
-    color: #a78bfa;
-    font-weight: bold;
-}
-
-#tab-favorites.active {
-    color: #facc15;
-    text-shadow: 0 0 8px rgba(250, 204, 21, 0.3);
-}
-
-.tab-divider {
-    color: rgba(255, 255, 255, 0.2);
-    font-size: 11px;
-    user-select: none;
-}
-
-/* index.html 의 인라인 style 을 옮긴 것. 값은 같다 (폰에서 숨기려고 클래스가 필요했다) */
-.dropdown-hint {
-    font-size: 11px;
-    color: var(--text-faint);
-    font-weight: normal;
-    cursor: default;
-}
-
-.favorite-list {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.favorite-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.favorite-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.favorite-name {
-    color: #fff;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.favorite-del-btn {
-    color: var(--text-muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    padding: 0 5px;
-    outline: none;
-}
-
-.favorite-del-btn:hover {
-    color: #ef4444;
-}
-
-.empty-favorite {
-    padding: 25px;
-    text-align: center;
-    color: var(--text-faint);
-    font-size: 13px;
 }
 
 /* =========================================
@@ -1311,6 +997,15 @@ body.bg-solid::before {
     gap: 8px;
     min-width: 150px;
 }
+
+/* ★ 전적 갱신 버튼 색. 예전엔 `class="search-btn profile-action-btn"` 으로 히어로 검색 버튼의
+   그라데이션을 빌려 썼는데 그 규칙을 지우면서 (2026-08-22) 여기로 옮겼다 */
+.refresh-btn {
+    background: linear-gradient(135deg, #8b5cf6, #6b46c1);
+    font-weight: bold;
+    transition: filter 0.2s;
+}
+.refresh-btn:hover { filter: brightness(1.15); }
 
 .profile-action-btn {
     padding: 10px 20px;
@@ -3604,23 +3299,8 @@ body.bg-solid::before {
    14. 모바일 반응형 최적화 (@media)
    ========================================= */
 @media (max-width: 768px) {
-    /* 헤더 메뉴 */
-    .header {
-        padding: 0 8px 0 15px;
-        justify-content: space-between;
-        /* ★ 폰 헤더는 **완전 불투명 + 블러 없음** 이다 (2026-08-19 2차).
-           0.94 반투명으로도 "주소창 쪽이 투명하게 비친다" 는 지적이 또 왔다 —
-           일부 모바일 브라우저가 backdrop-filter 를 무시해서 남은 6% 만큼 밝은
-           일러스트가 계속 비쳤던 것. 폰에서는 유리 효과를 통째로 포기한다
-           (theme-color 메타 · html 바닥색과 한 세트다) */
-        background-color: #16112a;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-    }
-
-    .logo-top {
-        margin: 0;
-    }
+    /* ★ 폰 헤더·햄버거 메뉴 규칙은 지웠다 (2026-08-22). 공통 헤더가 768px 이하에서
+       1단 검색창을 숨기고 2단 네비를 가로 스크롤로 처리한다 (dogu-ui.css 8절) */
 
     /* ★ 홈 신화상점 위젯 헤더 (2026-08-18 실측). 한 줄 강제였을 때 폭이 모자라
        "오늘의 신/화 상점" · "8월 18일 로/테이션" 처럼 **낱말 중간에서** 꺾였다.
@@ -3642,77 +3322,11 @@ body.bg-solid::before {
         display: none;
     }
 
-    /* ★★ 폰 메뉴는 햄버거 드롭다운이다 (2026-08-19 개편). 예전엔 6개를 헤더에 눕히고
-       글자를 12px 로 줄여 가로 스크롤로 버텼는데, 로고만 남기고 전부 접었다.
-       버튼(.nav-toggle)을 누르면 header 에 .menu-open 이 붙는다 (app.js toggleMobileMenu).
-       메뉴 항목을 누르면 hideAllContainers() 가 닫고, 밖을 눌러도 닫힌다. */
-    .nav-toggle {
-        display: flex;
-    }
-
-    .nav-menu {
-        display: none;
-    }
-
-    .header.menu-open .nav-menu {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-        position: absolute;
-        top: 65px;
-        right: 0;
-        width: 190px;
-        background: rgba(22, 17, 42, 0.98);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-top: none;
-        border-radius: 0 0 12px 12px;
-        padding: 6px 0 10px;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-    }
-
-    .header.menu-open .nav-item {
-        font-size: 14px;
-        padding: 12px 22px;
-        border-bottom: none;
-        white-space: nowrap;
-    }
-
-    /* 밑줄 대신 왼쪽 보라 띠 + 옅은 배경으로 선택을 표시한다 (세로 목록이라 밑줄이 안 어울린다) */
-    .header.menu-open .nav-item.active {
-        background: rgba(167, 139, 250, 0.12);
-        box-shadow: inset 3px 0 0 #a78bfa;
-    }
-
-    /* 메인 검색 및 신화상점 */
-    .main-logo-text {
-        /* 82px 이면 글자 폭이 460px 쯤이라 390px 화면을 넘는다 */
-        font-size: 42px;
-        letter-spacing: 1px;
-        margin: 70px 0 45px;
-    }
-
-    /* 검색창이 화면 끝에서 끝까지 닿았다. .search-box-wrapper 가 width:100% 인데
-       이 상자에 좌우 패딩이 없어서다. 드롭다운·에러문구가 전부 wrapper 기준
-       position:absolute 라 wrapper 를 줄이는 대신 부모에 패딩을 준다. */
+    /* 홈 위젯(신화상점·패치노트)이 화면 끝에서 끝까지 닿지 않게 틀에 좌우 패딩.
+       히어로 검색창은 공통 파일이 자기 패딩(16px)을 갖는다 */
     .main-search-section {
         padding-left: 28px;
         padding-right: 28px;
-    }
-
-    .search-box {
-        flex-direction: column;
-        border-radius: 15px;
-    }
-
-    .search-input {
-        border-radius: 15px 15px 0 0;
-        text-align: center;
-    }
-
-    .search-btn {
-        padding: 15px;
-        border-radius: 0 0 15px 15px;
-        width: 100%;
     }
 
     .mythic-items-grid {
@@ -4144,7 +3758,22 @@ body.bg-solid::before {
 /* ================================
    닉네임 자동완성 드롭다운
    ================================ */
+/* ★ 옛 .search-dropdown(지움)에 얹혀 있던 자리·배경 속성을 여기로 옮겼다 (2026-08-22).
+   app.js 가 이 상자를 공통 .dogu-search-wrapper 안으로 옮겨 넣으므로 top:100% 는 그 기준이다.
+   공통 즐겨찾기 드롭다운(z-index 20)보다 위에 뜬다 — 타이핑 중엔 자동완성이 우선 */
 .ac-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #1a1a2e;
+    border: 1px solid rgba(167, 139, 250, 0.4);
+    border-radius: 12px;
+    margin-top: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    z-index: 100;
+    display: none;
+    overflow: hidden;
     padding: 6px 0;
 }
 
@@ -5974,21 +5603,6 @@ body.bg-solid::before {
         display: none;
     }
 
-    /* 검색 드롭다운 헤더: 안내 문구가 탭을 밀어내 "즐겨/찾기" 로 쪼개고 있었다.
-       탭 두 개가 한 줄에 들어가는 게 먼저다. */
-    .search-dropdown-header {
-        padding: 10px 14px;
-        gap: 10px;
-    }
-
-    .dropdown-tab {
-        white-space: nowrap;
-    }
-
-    .dropdown-hint,
-    .dropdown-hint-divider {
-        display: none;
-    }
 }
 
 /* =========================================
