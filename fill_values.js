@@ -319,6 +319,10 @@ const STAT_MANUAL = {
     '칼리스타 Q': { '투사체 속도': '2400' },  // 롤위키 2400 = bin `KalistaMysticShotMisTrue` (Missile 객체는 3000)
     '신드라 E': { '투사체 속도': '2500' },    // 롤위키 2500 (bin 계열은 1100~2000 이 섞여 있다)
     '탈론 R': { '투사체 속도': '2400' },      // 롤위키 2400 = bin `TalonRMisOne` (돌아오는 칼날 MisTwo 는 4000)
+    // 공격 속도로 줄어드는 시전시간 — 롤위키 공식 (2026-08-23). bin castTime 은 기본값 하나뿐이다
+    '야스오 Q': { '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)' },
+    '요네 Q': { '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)' },
+    '요네 W': { '시전시간': '0.5 ~ 0.19 (추가 공격 속도 1.68%당 1% 감소, 최대 62.5%)' },
     '애쉬 W': { '투사체 속도': '2000' },      // 롤위키·나무위키 2000 (계열 `VolleyAttack` 1500 은 다른 값)
     '하이머딩거 W': { '투사체 속도': '1200' }, // 나무위키 1200 (계열 750 은 다른 값)
     // --- 사거리: `castRangeDisplayOverride` 가 있는데도 틀린 자리 (나무위키·롤위키 둘 다 다르다) ---
@@ -363,6 +367,10 @@ const CD_MANUAL = {
     // 인게임 확인 (2026-08-23, zeriQ.PNG / kenchR.PNG)
     '제리 Q': '1.52 (1레벨 기준, 공격 속도에 따라 감소)', // 클라 1.52초 = 1 ÷ 기본 공격 속도 0.658. 문장에 "공격 속도에 따라 감소" 가 있다
     '탐 켄치 R': '120 / 100 / 80',   // 클라 문장 `@CDCalc@{{ Item_Cooldown }}` 이 깨져 "113 (0초)" 로 뜬다. 툴팁 하단 표의 재사용 대기시간
+    // ★ 공격 속도로 줄어드는 쿨타임 — 클라 툴팁은 "단축할 수 있다" 고만 적고 수치를 안 준다. 롤위키 공식 (2026-08-23)
+    '야스오 Q': '4 ~ 1.33 (추가 공격 속도 1.67%당 1% 감소, 최대 67%)',
+    '요네 Q': '4 ~ 1.33 (추가 공격 속도 1.67%당 1% 감소, 최대 67%)',
+    '요네 W': '14 ~ 6 (추가 공격 속도 1.51%당 1% 감소, 최대 62.5%)',
 };
 
 // 소모값이 bin 스펠 객체에 없는 식으로 변하는 자리 — 인게임 확인값 (2026-08-23)
@@ -381,7 +389,8 @@ const WIKI_STATS = (() => {
     catch (e) { console.log('★ wiki_stats.json 이 없다 — node build_wiki_stats.js 를 먼저 돌릴 것'); return {}; }
 })();
 const wikiStatUsed = [];           // 위키 값으로 채운 자리
-const STAT_ORDER = ['사거리', '효과 범위', '시전시간', '투사체 속도', '돌진 속도', '스킬 폭'];
+// ★ 순서는 "공간(사거리·효과 범위·스킬 폭) → 시간(시전시간·투사체·돌진)" 이다 (2026-08-23 결정)
+const STAT_ORDER = ['사거리', '효과 범위', '스킬 폭', '시전시간', '투사체 속도', '돌진 속도'];
 
 const STAT_DROP = {
     // 위키로 "투사체가 아니다" 를 확인한 자리
@@ -2898,6 +2907,11 @@ async function main() {
                     }
                 }
             }
+            // CD_MANUAL 은 문장을 풀었든 못 풀었든 최우선이다 (야스오 Q 처럼 풀리긴 하는데 수치가 부족한 자리)
+            if (CD_MANUAL[`${c.name} ${key}`] !== undefined && cd !== CD_MANUAL[`${c.name} ${key}`]) {
+                activeCdMade.push(`${c.name} ${key}: ${cd} → ${CD_MANUAL[`${c.name} ${key}`]} (CD_MANUAL)`);
+                cd = CD_MANUAL[`${c.name} ${key}`];
+            }
             const costJ = lv(s.costCoefficients, maxRank);
             let cost = (costJ && !/^0( \/ 0)*$/.test(costJ)) ? costJ : '';
             // ★ 마나 스킬이어도 소모값 문장에 **숫자 말고 다른 말**이 붙어 있으면 문장을 쓴다 (2026-08-23).
@@ -3054,12 +3068,13 @@ async function main() {
             };
 
             const statRows = [];
+            // 순서는 STAT_ORDER 와 같아야 한다 (공간 → 시간)
             put(statRows, '사거리', hasRange ? rng : null);
             put(statRows, '효과 범위', null);
+            put(statRows, '스킬 폭', lineWidth);
             put(statRows, '시전시간', castTime);
             put(statRows, '투사체 속도', missileSpeed);
             put(statRows, '돌진 속도', dashSpeed);
-            put(statRows, '스킬 폭', lineWidth);
             if (statRows.length) lines.push(`            "stats": {\n${statRows.join(',\n')}\n            }`);
             // 마지막 항목 뒤 쉼표 제거
             const last = lines[lines.length - 1];

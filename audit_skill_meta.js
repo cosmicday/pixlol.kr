@@ -341,7 +341,8 @@ for (const [ddId, champ] of Object.entries(cv)) {
         const ct = st['시전시간'];
         if (ct != null && ct !== '') {
             const our = Number(toNums(ct)[0]);
-            if (!(our > 0) || our > 10) R.castTimeOdd.push(`${tag} = ${ct}`);
+            // 공격 속도 비례 범위("0.35 ~ 0.175 …")는 STAT_MANUAL 이다 (야스오 Q·요네 Q/W, 2026-08-23)
+            if ((!(our > 0) || our > 10) && !/~/.test(String(ct))) R.castTimeOdd.push(`${tag} = ${ct}`);
         }
     }
 }
