@@ -77,6 +77,7 @@ const SELF_TYPES = new Set(['Self', 'SelfAoe']);
 //   ★ 검사를 건너뛰지 않고 "확인 끝난 자리" 칸으로 옮기기만 한다 —
 //     예외로 빼 버리면 그 자리가 나중에 진짜 문제가 돼도 영영 안 보인다.
 const KNOWN_OK = new Map([
+    ['트리스타나 W', '돌진 속도 1100 은 손표 — bin 이 점프 속도를 투사체 칸(missileSpeed)에 들고 있어 이름에 dash 가 없다'],
     ['쉔 Q', '투사체 속도 2000~5000 은 롤위키 손표 — 영혼 검이 돌아오는 속도다 (자기 시전이지만 투사체가 있다)'],
     ['시비르 W', '투사체 속도 1000 은 롤위키 손표 — 튕기는 부메랑'],
     ['파이크 R', '회색 글씨 두 줄이 다 **인게임에서 실시간으로 세는 누적 골드**라 고정값이 없다. KEEP_TEXT 로 일부러 비웠다 (드레이븐 P·초가스 R 과 같은 처리)'],
@@ -186,7 +187,7 @@ for (const [ddId, champ] of Object.entries(values)) {
         }
         if (st['돌진 속도'] && spell && !fromWiki('돌진 속도')) {
             const names = (spell.DataValues || []).map(d => String(d.name || ''));
-            if (!names.some(n => /dash|leap/i.test(n))) R.dashNoDash.push(`${tag} = ${st['돌진 속도']}`);
+            if (!names.some(n => /dash|leap/i.test(n))) pushHit(R.dashNoDash, tag, `${tag} = ${st['돌진 속도']}`);
         }
     }
 }
