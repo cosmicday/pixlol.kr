@@ -7738,7 +7738,12 @@ window.playSkill = function (index) {
     // ★ 예시 영상. **없는 스킬이 있다** — 라이엇이 안 만든 자리다 (이즈리얼 패시브가 그렇다).
     //   예전엔 그냥 src 를 꽂아서 실패하면 **검은 네모만 남았다.**
     //   지금은 숨겨 두고 성공했을 때만 보여 준다.
-    const VIDEO_BASE = 'https://d28xe8vt774jo5.cloudfront.net/champion-abilities';
+    // ★★ 호스트를 `lol.dyn.riotcdn.net` 으로 바꿨다 (2026-08-23). 라이엇 공식 챔피언 페이지가 지금 쓰는 곳이다.
+    //   옛 cloudfront 는 **갱신이 멈춘 사본**이었다 — 전수 대조(865건)에서 836건은 ETag 가 같지만
+    //   쉬바나 Q/W/E/R 은 2026-03 리워크 판이 새 호스트에만 있고, 로크·신 짜오 영상 10개와
+    //   쉬바나·헤카림·트리스타나 패시브는 새 호스트에만 존재한다. 옛 호스트에만 있는 건 0건.
+    //   케넨처럼 "영상이 옛날 것" 인 챔피언은 두 호스트가 같은 파일(2016-07 업로드)이라 라이엇에 더 새 게 없다.
+    const VIDEO_BASE = 'https://lol.dyn.riotcdn.net/x/videos/champion-abilities';
     const setVideo = (el, id) => {
         if (!el) return;
         const url = `${VIDEO_BASE}/${window.currentChampPaddedKey}/ability_${window.currentChampPaddedKey}_${id}.webm`;
@@ -7755,7 +7760,7 @@ window.playSkill = function (index) {
     //   173챔피언 x P/Q/W/E/R x 1~5 를 전부 두드려 본 결과, 슬롯당 영상은 하나뿐이고
     //   두 번째 영상(Q2·W2·E2·R2)은 폼이 둘인 5명(나르·엘리스·제이스·니달리·렉사이)에만 있다.
     //   자헨만 Q 영상이 `Q1` 이 아니라 `Q2` 로 올라가 있어서 우리 화면에서 통째로 안 나왔다.
-    //   (로크·신 짜오는 아예 영상이 없다. 우리 코드는 실패하면 조용히 숨기니 그대로 두면 된다)
+    //   (로크·신 짜오는 옛 호스트엔 없었고 새 호스트(2026-08-23 전환)엔 있다)
     const VIDEO_ID_FIX = { '0904': { Q1: 'Q2' } };   // 4자리 키 -> { 원래id: 실제id }
     const fixId = (id) => (VIDEO_ID_FIX[window.currentChampPaddedKey] || {})[id] || id;
 
