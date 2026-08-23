@@ -133,7 +133,8 @@ const customValues = {
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "50",
             "stats": {
-                "사거리": "275"
+                "사거리": "275",
+                "효과 범위": "175 ~ 350 (충전 시간에 따라)"
             }
         },
         "E": {
@@ -320,7 +321,8 @@ const customValues = {
             "cooldown": "-",
             "cost": "-",
             "stats": {
-                "스킬 폭": "40"
+                "스킬 폭": "40",
+                "투사체 속도": "3000"
             }
         },
         "Q": {
@@ -456,6 +458,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/gwen/hud/icons2d/gwen_r2.png", "https://raw.communitydragon.org/latest/game/assets/characters/gwen/hud/icons2d/gwen_r3.png"],
             "stats": {
                 "사거리": "1200",
+                "스킬 폭": "240 ~ 30",
                 "시전시간": "0.25",
                 "투사체 속도": "1800"
             }
@@ -915,6 +918,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "2500 / 3250 / 4000",
+                "효과 범위": "전역",
                 "돌진 속도": "1800"
             }
         },
@@ -1633,6 +1637,7 @@ const customValues = {
             "cooldown": "120 / 105 / 90",
             "cost": "100",
             "stats": {
+                "사거리": "800",
                 "효과 범위": "400",
                 "스킬 폭": "150",
                 "투사체 속도": "900",
@@ -1779,6 +1784,7 @@ const customValues = {
             "stats": {
                 "사거리": "1750",
                 "스킬 폭": "180",
+                "시전시간": "0.58 (발사)",
                 "투사체 속도": "1600"
             }
         },
@@ -2245,7 +2251,8 @@ const customValues = {
             "cooldown": "100 / 90 / 80",
             "cost": "-",
             "stats": {
-                "사거리": "2500 / 3000 / 3500"
+                "사거리": "2500 / 3000 / 3500",
+                "효과 범위": "2500 ~ 3500"
             }
         },
     },
@@ -2403,7 +2410,8 @@ const customValues = {
             "cooldown": "-",
             "cost": "-",
             "stats": {
-                "스킬 폭": "60"
+                "스킬 폭": "60",
+                "투사체 속도": "900 ~ 2600"
             }
         },
         "Q": {
@@ -3176,6 +3184,7 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "사거리": "675",
+                "스킬 폭": "90 ~ 150",
                 "시전시간": "0.5"
             }
         },
@@ -4295,6 +4304,7 @@ const customValues = {
             "stats": {
                 "사거리": "400",
                 "스킬 폭": "380",
+                "시전시간": "0.15 (발사)",
                 "투사체 속도": "1900"
             }
         },
@@ -4310,6 +4320,7 @@ const customValues = {
             "cost": "현재 체력의 5% 소모",
             "stats": {
                 "사거리": "12000",
+                "효과 범위": "전역",
                 "스킬 폭": "320",
                 "시전시간": "1",
                 "투사체 속도": "2200",
@@ -4759,6 +4770,7 @@ const customValues = {
             "cooldown": "-",
             "cost": "-",
             "stats": {
+                "사거리": "650 ~ 950",
                 "투사체 속도": "2050"
             }
         },
@@ -5484,6 +5496,7 @@ const customValues = {
             "cooldown": "150 / 135 / 120",
             "cost": "100",
             "stats": {
+                "효과 범위": "전역",
                 "시전시간": "0.25"
             }
         },
@@ -5514,7 +5527,9 @@ const customValues = {
             "cost": "140 / 130 / 120 / 110 / 100",
             "stats": {
                 "사거리": "400",
-                "스킬 폭": "160"
+                "효과 범위": "전역",
+                "스킬 폭": "160",
+                "투사체 속도": "2000 ~ 5000"
             }
         },
         "W": {
@@ -5859,6 +5874,7 @@ const customValues = {
             "stats": {
                 "사거리": "700",
                 "효과 범위": "600",
+                "시전시간": "0.3",
                 "투사체 속도": "1650"
             }
         },
@@ -5923,7 +5939,8 @@ const customValues = {
             "cooldown": "12",
             "cost": "60",
             "stats": {
-                "효과 범위": "500"
+                "효과 범위": "500",
+                "투사체 속도": "1000 (튕김)"
             }
         },
         "E": {
@@ -6185,6 +6202,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/thresh/hud/icons2d/thresh_q3.png"],
             "stats": {
                 "사거리": "1075",
+                "효과 범위": "전역",
                 "스킬 폭": "120",
                 "시전시간": "0.5",
                 "투사체 속도": "1900"
@@ -6651,6 +6669,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/akali/hud/icons2d/akali_e2.png"],
             "stats": {
                 "사거리": "825",
+                "효과 범위": "전역",
                 "스킬 폭": "140",
                 "시전시간": "0.25",
                 "투사체 속도": "1900"
@@ -6684,7 +6703,10 @@ const customValues = {
             "p6": "40 ~ 280 (레벨에 따라) (+ 추가 공격력의 35%)", // TotalShieldAmount
             "p7": "16 ~ 4 (레벨에 따라)", // PassiveCooldown
             "cooldown": "-",
-            "cost": "-"
+            "cost": "-",
+            "stats": {
+                "투사체 속도": "5000"
+            }
         },
         "Q": {
             "p1": "45 / 75 / 105 / 135 / 165 (+ 추가 공격력의 70%)", // FinalDamage
@@ -6950,7 +6972,10 @@ const customValues = {
             "p5": "5 ~ 30 (레벨에 따라) (+ 추가 공격력의 25%)", // Calc_OnHit_Damage_Flat
             "p6": "40 ~ 70 (레벨에 따라)", // Calc_OnHit_Energy_Refund
             "cooldown": "-",
-            "cost": "-"
+            "cost": "-",
+            "stats": {
+                "사거리": "175 ~ 350"
+            }
         },
         "Q": {
             "p1": "40 / 60 / 80 / 100 / 120 (+ 추가 공격력의 60%)", // Calc_Damage_1_Max
@@ -7146,6 +7171,7 @@ const customValues = {
             "cost": "60+초당 마나 35 / 45 / 55",
             "stats": {
                 "사거리": "750",
+                "효과 범위": "200 ~ 400 (지속 시간에 따라)",
                 "스킬 폭": "300"
             }
         },
@@ -7306,6 +7332,7 @@ const customValues = {
             "cost": "50 / 60 / 70 / 80 / 90",
             "stats": {
                 "사거리": "1075",
+                "효과 범위": "160 ~ 210",
                 "스킬 폭": "120",
                 "시전시간": "0.25",
                 "투사체 속도": "1650"
@@ -7542,6 +7569,7 @@ const customValues = {
             "cost": "60",
             "stats": {
                 "사거리": "900",
+                "효과 범위": "전역",
                 "스킬 폭": "180",
                 "시전시간": "0.25",
                 "투사체 속도": "1600"
@@ -7785,7 +7813,8 @@ const customValues = {
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "체력 28 / 46 / 64 / 82 / 100 (+ 총 공격력의 20%) 소모",
             "stats": {
-                "사거리": "325"
+                "사거리": "325",
+                "시전시간": "0.25 ~ 0.175"
             }
         },
         "R": {
@@ -7861,6 +7890,8 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yone/hud/icons2d/yonee2.png"],
             "stats": {
                 "사거리": "300",
+                "효과 범위": "전역",
+                "시전시간": "0.225 (재사용)",
                 "돌진 속도": "1200"
             }
         },
@@ -8106,6 +8137,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/urgot/hud/icons2d/urgot_rrecast.png"],
             "stats": {
                 "사거리": "2500",
+                "효과 범위": "전역",
                 "스킬 폭": "160",
                 "시전시간": "0.5",
                 "투사체 속도": "3200"
@@ -8363,7 +8395,8 @@ const customValues = {
             "stats": {
                 "사거리": "825",
                 "효과 범위": "300",
-                "스킬 폭": "200"
+                "스킬 폭": "200",
+                "시전시간": "0.25 (재사용)"
             }
         },
         "E": {
@@ -8378,6 +8411,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/irelia/hud/icons2d/irelia_e2.png"],
             "stats": {
                 "사거리": "850",
+                "효과 범위": "전역",
                 "스킬 폭": "140",
                 "투사체 속도": "2000"
             }
@@ -8732,6 +8766,7 @@ const customValues = {
             "cost": "20",
             "stats": {
                 "사거리": "2000",
+                "효과 범위": "전역",
                 "스킬 폭": "160",
                 "투사체 속도": "4000"
             }
@@ -8999,7 +9034,8 @@ const customValues = {
             "cost": "90 / 95 / 100 / 105 / 110",
             "stats": {
                 "사거리": "1075",
-                "스킬 폭": "240"
+                "스킬 폭": "240",
+                "투사체 속도": "880 ~ 1408"
             }
         },
         "W": {
@@ -9175,7 +9211,8 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zed/hud/icons2d/zedr2.png"],
             "stats": {
-                "사거리": "625"
+                "사거리": "625",
+                "효과 범위": "전역"
             }
         },
     },
@@ -9464,6 +9501,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zoe/hud/icons2d/zoe_w2.png"],
             "stats": {
                 "사거리": "3000 / 4500 / 6000 / 3000 / 3000",
+                "효과 범위": "전역",
                 "스킬 폭": "240",
                 "투사체 속도": "2000"
             }
@@ -10108,6 +10146,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "10000",
+                "효과 범위": "전역",
                 "시전시간": "0.25"
             }
         },
@@ -10751,6 +10790,7 @@ const customValues = {
             "cost": "100 / 50 / 0",
             "stats": {
                 "사거리": "900",
+                "효과 범위": "675 / 675 / 775",
                 "시전시간": "0.5"
             }
         },
@@ -11242,6 +11282,7 @@ const customValues = {
             "cost": "35",
             "stats": {
                 "사거리": "340",
+                "효과 범위": "500 (+ 추가 공격 사거리)",
                 "돌진 속도": "500"
             }
         },
@@ -11821,7 +11862,8 @@ const customValues = {
             "cost": "100",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/spells/icons2d/cardmaster_premonition.png"],
             "stats": {
-                "사거리": "5500"
+                "사거리": "5500",
+                "효과 범위": "전역"
             }
         },
     },
@@ -12088,7 +12130,8 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/pantheon/hud/icons2d/pantheon_e2.png"],
             "stats": {
                 "사거리": "400",
-                "효과 범위": "525"
+                "효과 범위": "525",
+                "시전시간": "0.25 (재사용)"
             }
         },
         "R": {
@@ -12110,7 +12153,13 @@ const customValues = {
         },
     },
     "Fiddlesticks": { // 피들스틱
-        "P": { "cooldown": "-", "cost": "-" },
+        "P": {
+            "cooldown": "-",
+            "cost": "-",
+            "stats": {
+                "효과 범위": "900"
+            }
+        },
         "Q": {
             "p1": "1.2 / 1.4 / 1.6 / 1.8 / 2", // FearDuration
             "p2": "4 / 4.5 / 5 / 5.5 / 6% (+ 주문력의 3%)", // TotalPercentHealthDamage
@@ -12123,7 +12172,8 @@ const customValues = {
             "cost": "65",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/fiddlesticks/hud/icons2d/fiddlesticksq2.png"],
             "stats": {
-                "사거리": "575"
+                "사거리": "575",
+                "시전시간": "0.35"
             }
         },
         "W": {
@@ -12139,7 +12189,9 @@ const customValues = {
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "60 / 65 / 70 / 75 / 80",
             "stats": {
-                "사거리": "650"
+                "사거리": "650",
+                "효과 범위": "650",
+                "시전시간": "0.25"
             }
         },
         "E": {
@@ -12166,7 +12218,8 @@ const customValues = {
             "cooldown": "140 / 110 / 80",
             "cost": "100",
             "stats": {
-                "사거리": "800"
+                "사거리": "800",
+                "효과 범위": "600"
             }
         },
     },

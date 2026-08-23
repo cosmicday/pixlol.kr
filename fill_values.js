@@ -289,7 +289,7 @@ const STAT_MANUAL = {
     // --- 사거리: bin `castRange` 가 25000 이라 뺀 자리 중 위키에 진짜 값이 있는 것 ---
     '유미 Q': { '사거리': '850' },    // 롤위키 850 · 나무위키 850 (bin 계열은 1150/1250 로 셋 다 달랐다)
     '유미 W': { '사거리': '700' },    // 롤위키 700 · 나무위키 700 · bin 계열 `YuumiWCast` 700 — 셋 일치
-    '요네 E': { '사거리': '300' },    // 나무위키 300 · bin DataValue `EDashRange` 300 — 일치
+    '요네 E': { '사거리': '300', '효과 범위': '전역', '시전시간': '0.225 (재사용)' },    // 사거리: 나무위키 300 · bin `EDashRange` 300. 나머지 둘은 롤위키 (2026-08-23)
     '세라핀 R': { '사거리': '1200' }, // 나무위키 1200 · bin DataValue `RRange` 1200 — 일치
     '아트록스 E': { '사거리': '300' },  // 롤위키 `75 - 300` · bin DataValue `EMaxRange` 300
     '오른 W': { '사거리': '500' },      // 롤위키 `500 • 560` (bin 계열 override 2500 은 취약 효과 범위였다)
@@ -319,6 +319,30 @@ const STAT_MANUAL = {
     '칼리스타 Q': { '투사체 속도': '2400' },  // 롤위키 2400 = bin `KalistaMysticShotMisTrue` (Missile 객체는 3000)
     '신드라 E': { '투사체 속도': '2500' },    // 롤위키 2500 (bin 계열은 1100~2000 이 섞여 있다)
     '탈론 R': { '투사체 속도': '2400' },      // 롤위키 2400 = bin `TalonRMisOne` (돌아오는 칼날 MisTwo 는 4000)
+    // --- 롤위키 값이 "숫자 하나" 가 아니라 build_wiki_stats.js 가 버린 자리 (2026-08-23, 손으로 옮김) ---
+    //   효과 범위 `Global` 은 "전역" · 범위/충전 비례는 `A ~ B` · `None | 0.25` 는 뒤쪽(재사용/2타) 값
+    '녹턴 R': { '효과 범위': '전역' }, '쉔 Q': { '효과 범위': '전역', '투사체 속도': '2000 ~ 5000' }, '아칼리 E': { '효과 범위': '전역' },
+    '오로라 Q': { '효과 범위': '전역' }, '이렐리아 E': { '효과 범위': '전역' },
+    '자야 E': { '효과 범위': '전역' }, '제드 R': { '효과 범위': '전역' }, '카서스 R': { '효과 범위': '전역' },
+    '트위스티드 페이트 R': { '효과 범위': '전역' }, '소라카 R': { '효과 범위': '전역' },
+    '우르곳 R': { '효과 범위': '전역' }, '쓰레쉬 Q': { '효과 범위': '전역' }, '조이 W': { '효과 범위': '전역' },
+    '갈리오 W': { '효과 범위': '175 ~ 350 (충전 시간에 따라)' },
+    '렝가 R': { '효과 범위': '2500 ~ 3500' },
+    '애니비아 R': { '효과 범위': '200 ~ 400 (지속 시간에 따라)' },
+    '케일 R': { '효과 범위': '675 / 675 / 775' },
+    '에코 Q': { '효과 범위': '160 ~ 210' },
+    '킨드레드 Q': { '효과 범위': '500 (+ 추가 공격 사거리)' },
+    '누누와 윌럼프 W': { '사거리': '750 ~ 1750 (충전 시간에 따라)' },   // STAT_DROP 은 override 7500 용이다 — 손표가 이긴다
+    '사미라 P': { '사거리': '650 ~ 950' },
+    '암베사 P': { '사거리': '175 ~ 350' },
+    '올라프 E': { '시전시간': '0.25 ~ 0.175' },
+    '스카너 W': { '시전시간': '0.3' },
+    '이렐리아 W': { '시전시간': '0.25 (재사용)' },
+    '판테온 E': { '시전시간': '0.25 (재사용)' }, '브라이어 E': { '시전시간': '0.15 (발사)' }, '럼블 R': { '시전시간': '0.58 (발사)' },
+    '룰루 P': { '투사체 속도': '900 ~ 2600' }, '잔나 Q': { '투사체 속도': '880 ~ 1408' },
+    '시비르 W': { '투사체 속도': '1000 (튕김)' }, '아크샨 P': { '투사체 속도': '5000' },
+    '그레이브즈 P': { '투사체 속도': '3000' },
+    '모데카이저 Q': { '스킬 폭': '90 ~ 150' }, '그웬 R': { '스킬 폭': '240 ~ 30' },
     // 공격 속도로 줄어드는 시전시간 — 롤위키 공식 (2026-08-23). bin castTime 은 기본값 하나뿐이다
     '야스오 Q': { '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)' },
     '요네 Q': { '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)' },
@@ -342,7 +366,7 @@ const STAT_MANUAL = {
     //     bin 의 `KnockbackSpeed`(800)·`VictimDashMod`(1.3)는 **끌려가는 적**의 속도라
     //     우리가 쓰는 "돌진 속도"(크산테 본인)와 다른 값이다 — 롤위키의 "knockback speed" 가 이것이다
     '크산테 W': { '돌진 속도': '1500' },
-    '람머스 R': { '돌진 속도': '900 ~ 2000' },   // 롤위키 min 900 / max 2000
+    '람머스 R': { '돌진 속도': '900 ~ 2000', '사거리': '800' },   // 롤위키 min 900 / max 2000 · 사거리 800
     // ★ "고정분 + 이동 속도 %" 꼴이 있다. 본문 계수 표기(`(+ 주문력의 60%)`)와 같은 모양으로 적는다.
     //   bin 의 `DashSpeed` 는 **고정분만** 들고 있어서 그대로 쓰면 실제보다 느려 보인다.
     '라칸 E': { '돌진 속도': '1250 (+ 이동 속도의 80%)' },   // 롤위키 `1250 + 80% movement speed`
@@ -350,7 +374,7 @@ const STAT_MANUAL = {
     '키아나 E': { '돌진 속도': '600 (+ 이동 속도의 100%)' }, // 롤위키 `600 + 100% movement speed`
                                                             // (bin `DashSpeedMax` 1200 은 상한이다)
     '키아나 W': { '돌진 속도': '440 (+ 이동 속도의 100%)' }, // 롤위키 `440 + 100% movement speed`
-    '브라이어 R': { '돌진 속도': '2500 ~ 5000' }, // 나무위키 "돌진 속도: 2500 ~ 5000"
+    '브라이어 R': { '돌진 속도': '2500 ~ 5000', '효과 범위': '전역' }, // 나무위키 "돌진 속도: 2500 ~ 5000" · 효과 범위 롤위키 Global
     //   브라이어 Q — 롤위키 `600 - 900 (based on distance)`.
     //   bin 의 `DashSpeedBase` 600 + `ExtraDashSpeedBasedOnDistance` 300 = 900 과 정확히 맞는다
     '브라이어 Q': { '돌진 속도': '600 ~ 900 (거리에 따라)' },
@@ -2444,10 +2468,13 @@ async function main() {
         //   따로 만들어져서 원래 icons 줄이 안 붙고 있었다 — 2026-08-09 추가.
         // ★ 패시브 stats 는 bin 에 없어서 전부 위키다 (아지르 P 700, 자크 P 700, 질리언 P 875 …). 2026-08-23
         const pStatBlock = (() => {
-            const w = (WIKI_STATS[alias] || {}).P || {};
+            const wk = (WIKI_STATS[DD_ID[alias] || alias] || {}).P || {};
+            const man = STAT_MANUAL[`${c.name} P`] || {};
             const drop = STAT_DROP[`${c.name} P`] || [];
+            if (STAT_MANUAL[`${c.name} P`] || STAT_DROP[`${c.name} P`]) statManualUsed.add(`${c.name} P`);
+            const w = Object.assign({}, wk, man);   // 손표 > 위키
             const rows = STAT_ORDER.filter(k => w[k] !== undefined && !drop.includes(k))
-                .map(k => { wikiStatUsed.push(`${c.name} P ${k} = ${w[k]}`); return `                ${q(k)}: ${q(w[k])}`; });
+                .map(k => { if (man[k] === undefined) wikiStatUsed.push(`${c.name} P ${k} = ${w[k]}`); return `                ${q(k)}: ${q(w[k])}`; });
             return rows.length ? `            "stats": {\n${rows.join(',\n')}\n            }` : null;
         })();
         const pIcons = extraIcons.P;
@@ -3055,7 +3082,7 @@ async function main() {
             const manualStat = STAT_MANUAL[statKey] || {};
             const dropStat = STAT_DROP[statKey] || [];
             if (STAT_MANUAL[statKey] || STAT_DROP[statKey]) statManualUsed.add(statKey);
-            const wikiStat = (WIKI_STATS[alias] || {})[key] || {};
+            const wikiStat = (WIKI_STATS[DD_ID[alias] || alias] || {})[key] || {};   // alias 가 DD id 와 다른 건 FiddleSticks 뿐
             const put = (rows, name, val) => {
                 if (dropStat.includes(name)) return;
                 let v = manualStat[name] !== undefined ? manualStat[name] : val;

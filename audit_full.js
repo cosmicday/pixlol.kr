@@ -77,6 +77,8 @@ const SELF_TYPES = new Set(['Self', 'SelfAoe']);
 //   ★ 검사를 건너뛰지 않고 "확인 끝난 자리" 칸으로 옮기기만 한다 —
 //     예외로 빼 버리면 그 자리가 나중에 진짜 문제가 돼도 영영 안 보인다.
 const KNOWN_OK = new Map([
+    ['쉔 Q', '투사체 속도 2000~5000 은 롤위키 손표 — 영혼 검이 돌아오는 속도다 (자기 시전이지만 투사체가 있다)'],
+    ['시비르 W', '투사체 속도 1000 은 롤위키 손표 — 튕기는 부메랑'],
     ['파이크 R', '회색 글씨 두 줄이 다 **인게임에서 실시간으로 세는 누적 골드**라 고정값이 없다. KEEP_TEXT 로 일부러 비웠다 (드레이븐 P·초가스 R 과 같은 처리)'],
 ]);
 const knownOk = [];
@@ -175,7 +177,7 @@ for (const [ddId, champ] of Object.entries(values)) {
         const wk = ((WIKI_STATS[ddId] || {})[slot]) || {};
         const fromWiki = (name) => st[name] != null && wk[name] !== undefined && String(wk[name]) === String(st[name]);
         if (st['투사체 속도'] && SELF_TYPES.has(ttype) && !hasMissileObj && !fromWiki('투사체 속도')) {
-            R.missileOnSelf.push(`${tag} = ${st['투사체 속도']}   (타겟팅: ${ttype})`);
+            pushHit(R.missileOnSelf, tag, `${tag} = ${st['투사체 속도']}   (타겟팅: ${ttype})`);
         }
         // 스킬 폭은 투사체만큼 명확하지 않다 — 자기 주변 광역에도 폭이 있을 수 있다.
         //   미사일이 진짜 있는 자리(카이사 Q 등)만 빼고 나머지를 후보로 남긴다.
