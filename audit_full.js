@@ -23,7 +23,10 @@ const FULL = process.argv.includes('--full');
 
 // ------------------------------------------------------------
 function loadJs(file, varName) {
-    const ctx = { document: { createElement: () => ({ style: {} }) } };
+    // ★ drawGraph/drawSteps 는 2026-08-21 에 custom_values.js → app.js 로 옮겨졌다.
+    //   custom_graphs.js 가 그 둘을 부르므로 여기선 더미를 심는다 (안 심으면 ReferenceError).
+    const ctx = { document: { createElement: () => ({ style: {} }) }, drawGraph: () => '', drawSteps: () => '' };
+    ctx.window = ctx;
     vm.createContext(ctx);
     for (const f of [].concat(file)) vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx);
     vm.runInContext(`__out = ${varName};`, ctx);
@@ -31,6 +34,7 @@ function loadJs(file, varName) {
 }
 
 const values = loadJs('public/custom_values.js', 'customValues');
+const WIKI_STATS = (() => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'wiki_stats.json'), 'utf8')); } catch { return {}; } })();
 const templates = loadJs('public/custom_templates.js', 'customTemplates');
 // custom_graphs.js 는 custom_values.js 의 헬퍼가 먼저 있어야 평가된다 (브라우저와 같은 순서)
 const graphs = loadJs(['public/custom_values.js', 'public/custom_graphs.js'], 'customGraphs');
@@ -167,15 +171,18 @@ for (const [ddId, champ] of Object.entries(values)) {
                 });
             }
         }
-        if (st['투사체 속도'] && SELF_TYPES.has(ttype) && !hasMissileObj) {
+        // ★ wiki_stats.json 출처(bin 에 없는 값)는 건너뛴다 (2026-08-23)
+        const wk = ((WIKI_STATS[ddId] || {})[slot]) || {};
+        const fromWiki = (name) => st[name] != null && wk[name] !== undefined && String(wk[name]) === String(st[name]);
+        if (st['투사체 속도'] && SELF_TYPES.has(ttype) && !hasMissileObj && !fromWiki('투사체 속도')) {
             R.missileOnSelf.push(`${tag} = ${st['투사체 속도']}   (타겟팅: ${ttype})`);
         }
         // 스킬 폭은 투사체만큼 명확하지 않다 — 자기 주변 광역에도 폭이 있을 수 있다.
         //   미사일이 진짜 있는 자리(카이사 Q 등)만 빼고 나머지를 후보로 남긴다.
-        if (st['스킬 폭'] && SELF_TYPES.has(ttype) && !hasMissileObj) {
+        if (st['스킬 폭'] && SELF_TYPES.has(ttype) && !hasMissileObj && !fromWiki('스킬 폭')) {
             R.widthOnSelf.push(`${tag} = ${st['스킬 폭']}   (타겟팅: ${ttype})`);
         }
-        if (st['돌진 속도'] && spell) {
+        if (st['돌진 속도'] && spell && !fromWiki('돌진 속도')) {
             const names = (spell.DataValues || []).map(d => String(d.name || ''));
             if (!names.some(n => /dash|leap/i.test(n))) R.dashNoDash.push(`${tag} = ${st['돌진 속도']}`);
         }

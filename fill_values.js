@@ -68,6 +68,9 @@ const MANUAL = {
   '사일러스 R / PerTargetCooldown': '200',
   '카타리나 E / DaggerCooldownReduction': '12 / 11 / 10 / 9 / 8',
   '애쉬 E / ChargeCooldown': '5',
+  // ★ 클라 회색 글씨가 "보호막은 200초에 걸쳐 점차 사라집니다" 로 뜬다 — 라이엇이 초당 감소량(200)을
+  //   지속시간 자리에 꽂은 오타다. 본문 "최대 2.5초까지 감소하는 보호막" 이 진짜 값 (kenchR.PNG, 2026-08-23)
+  '탐 켄치 R / ShieldDecayPerSecond': '2.5',
 
   // 2026-08-08 인게임 확인분.
   //   벨베스 E / 세트 W / 신 짜오 E / 진 E 는 숫자만으로 안 끝난다.
@@ -296,6 +299,9 @@ const STAT_MANUAL = {
     '세트 W': { '사거리': '720' },      // 롤위키 `Range: -25 - 720` / `Circle Radius: 720`
     '자헨 Q': { '사거리': '200' },      // 나무위키 200 (기본 공격 175 + bin DataValue `QBonusRange` 25)
     '자헨 E': { '사거리': '350' },      // 나무위키 돌진 거리 350 · bin DataValue `DashDistance` 350 — 일치
+    // --- 사거리: bin 값이 20000 컷 **아래**의 더미라 걸러지지 않던 자리 (2026-08-23 롤위키 전수 대조) ---
+    '트위스티드 페이트 Q': { '사거리': '1450' },   // bin castRange 10000 (override 없음) · 롤위키 1450
+    '사이온 Q': { '사거리': '300 ~ 600 (충전 시간에 따라)' }, // bin castRange 10000 · 나무위키 300 ~ 600 (롤위키 500~850 은 폭을 더한 값으로 보인다)
 
     // --- 투사체 속도: 본체 값이 기본 공격 기본값이라 진짜 값이 딴 데 있는 자리 ---
     //   ★ 롤위키 스킬 상자에 `SPEED:` 로 적혀 있다. 나무위키는 "투사체 속도" 로 적는다
@@ -309,6 +315,22 @@ const STAT_MANUAL = {
     //   미스 포츈 R — 사거리는 나무위키 1400(bin 계열 650 은 튕기는 탄 사거리),
     //   투사체 속도는 롤위키 `SPEED: 2000` (본체 779.9)
     '미스 포츈 R': { '사거리': '1400', '투사체 속도': '2000' },
+    // 계열 미사일 객체가 여럿이라 이름 규칙으로 못 고르는 자리 (2026-08-23 롤위키 SPEED)
+    '칼리스타 Q': { '투사체 속도': '2400' },  // 롤위키 2400 = bin `KalistaMysticShotMisTrue` (Missile 객체는 3000)
+    '신드라 E': { '투사체 속도': '2500' },    // 롤위키 2500 (bin 계열은 1100~2000 이 섞여 있다)
+    '탈론 R': { '투사체 속도': '2400' },      // 롤위키 2400 = bin `TalonRMisOne` (돌아오는 칼날 MisTwo 는 4000)
+    '애쉬 W': { '투사체 속도': '2000' },      // 롤위키·나무위키 2000 (계열 `VolleyAttack` 1500 은 다른 값)
+    '하이머딩거 W': { '투사체 속도': '1200' }, // 나무위키 1200 (계열 750 은 다른 값)
+    // --- 사거리: `castRangeDisplayOverride` 가 있는데도 틀린 자리 (나무위키·롤위키 둘 다 다르다) ---
+    '자야 Q': { '사거리': '1100' },            // override 400 / castRange 1100 · 롤위키·나무위키 1100
+    '자크 E': { '사거리': '1200 ~ 1800 (충전 시간에 따라)' }, // override 300 · 롤위키 1200~1800 · 나무위키 "1레벨 1200 최대 레벨 1800"
+    // override 가 위키 둘(롤위키·나무위키 일치)과 다른 자리 — 둘이 같으면 위키를 따른다 (2026-08-23)
+    '오른 E': { '사거리': '800' },       // override 450 · 롤위키 800 · 나무위키 800
+    '밀리오 W': { '사거리': '650' },     // override 350 · castRange 650 · 롤위키 650 · 나무위키 650
+    '볼리베어 R': { '사거리': '700' },   // override 550 · castRange 700 · 롤위키 700 · 나무위키 "도약 거리 700"
+    '칼리스타 R': { '사거리': '1200' },  // override 1000 · 롤위키 1200 · 나무위키 1200
+    '초가스 W': { '사거리': '650' },     // castRange 300 · 롤위키 650 · 나무위키 650 (전방 60도 원뿔)
+    '탈론 W': { '사거리': '900' },       // castRange 650 · 롤위키 900 · 나무위키 900
 
     // --- 돌진 속도: 후보가 둘이라 자동으로 건너뛴 자리 ---
     //   ★ 크산테 W — bin `DashSpeedBase` 는 1400 인데 **롤위키·나무위키·bin `missileSpeed`
@@ -334,6 +356,33 @@ const STAT_MANUAL = {
 // ★ 화면에서 빼야 하는 자리. **투사체가 없는 스킬인데 값이 박혀 있는 것**이다.
 //   `828.5` / `779.9` 는 라이엇 기본 공격 계열 기본값이라 본체에 남아 있다
 //   (347.8 과 같은 성격인데 값이 챔피언마다 달라 값만으로는 못 걸러낸다).
+// 액티브 keyCooldown 문장의 `@f1@` 이 bin 에 없어서 못 푸는 자리 — 나무위키로 확정한 값 (2026-08-23)
+const CD_MANUAL = {
+    '탈론 E': '2',    // 나무위키 "재사용 대기시간이 2초로 매우 짧은 대신" (벽당 160~60초 재사용 불가는 문장에 따로 있다)
+    '베이가 W': '8',  // 나무위키 표 8 (극악 50중첩마다 10% 감소는 문장에 있다)
+    // 인게임 확인 (2026-08-23, zeriQ.PNG / kenchR.PNG)
+    '제리 Q': '1.52 (1레벨 기준, 공격 속도에 따라 감소)', // 클라 1.52초 = 1 ÷ 기본 공격 속도 0.658. 문장에 "공격 속도에 따라 감소" 가 있다
+    '탐 켄치 R': '120 / 100 / 80',   // 클라 문장 `@CDCalc@{{ Item_Cooldown }}` 이 깨져 "113 (0초)" 로 뜬다. 툴팁 하단 표의 재사용 대기시간
+};
+
+// 소모값이 bin 스펠 객체에 없는 식으로 변하는 자리 — 인게임 확인값 (2026-08-23)
+const COST_MANUAL = {
+    // bin `mana` 는 40 고정인데 18레벨 툴팁이 23 이다 (롤위키 `40 → 23 레벨 비례`). 패시브 가교 쪽 계산으로 보이나 bin 에 없다
+    '우디르 W': '40 ~ 23 (레벨에 따라)',
+    '우디르 E': '40 ~ 23 (레벨에 따라)',
+    '우디르 R': '40 ~ 23 (레벨에 따라)',
+};
+
+// ★ 롤위키 우상단 값 (build_wiki_stats.js → wiki_stats.json, 2026-08-23).
+//   **bin 에 값이 없는 자리에만** 깔린다 — 우선순위 STAT_MANUAL > bin > 위키. STAT_DROP 은 여기도 막는다.
+//   효과 범위(effect radius)는 bin 에 대응 필드가 없어 전부 위키다. 사거리 "전역" 도 위키 `Global`.
+const WIKI_STATS = (() => {
+    try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'wiki_stats.json'), 'utf8')); }
+    catch (e) { console.log('★ wiki_stats.json 이 없다 — node build_wiki_stats.js 를 먼저 돌릴 것'); return {}; }
+})();
+const wikiStatUsed = [];           // 위키 값으로 채운 자리
+const STAT_ORDER = ['사거리', '효과 범위', '시전시간', '투사체 속도', '돌진 속도', '스킬 폭'];
+
 const STAT_DROP = {
     // 위키로 "투사체가 아니다" 를 확인한 자리
     '럼블 W': ['투사체 속도'],         // 나무위키: 자기 보호막. 투사체 아님
@@ -351,6 +400,15 @@ const STAT_DROP = {
     //     못 박는다. 투사체가 아니다. bin 본체에 `missileSpeed 1300` · `mLineWidth 80` 이
     //     둘 다 박혀 있는데 **80 은 원뿔 반경 500 과도 안 맞는 값**이라 같이 뺀다
     '이블린 R': ['투사체 속도', '스킬 폭'],
+    // 2026-08-23 롤위키 전수 대조에서 걸린 사거리 더미
+    '누누와 윌럼프 W': ['사거리'],   // override 7500 — 굴러가는 최대 거리지 사거리가 아니다 (롤위키 750~1750 은 충전 비례)
+    '초가스 E': ['사거리'],          // castRange 40 — 기본 공격 강화라 사거리가 없다 (20 이하 더미 컷을 간신히 넘긴 값)
+    // 위키 `speed`/`width` 가 투사체가 아닌 것을 적은 자리 (wiki_stats.json 폴백을 막는다)
+    '유나라 Q': ['투사체 속도'],     // 위키 10000 = "즉시" 더미
+    '클레드 P': ['투사체 속도'],     // 위키 400 = 스칼이 달려오는 속도
+    '렐 R': ['투사체 속도'],         // 위키 300 = 끌어당기는 속도
+    '그웬 W': ['투사체 속도'],       // 위키 2000 = 안개 퍼지는 속도
+    '쓰레쉬 R': ['스킬 폭'],         // 위키 30 = 벽 두께
 };
 
 // ★ 패시브 쿨타임 각주 — **인게임 툴팁 값과 실제 동작이 다른 자리** (2026-08-14).
@@ -399,8 +457,24 @@ function roundLeadingRange(val) {
 const statManualUsed = new Set();  // 안 쓰인 키는 오타 경고로 잡는다
 const passiveCdMade = [];         // 패시브 쿨타임을 채운 곳 (bin 의 keyCooldown)
 const passiveCdFail = [];         // keyCooldown 은 있는데 값을 못 푼 곳
+const activeCdMade = [];          // QWER 의 keyCooldown 문장으로 쿨타임을 바꾼 곳 (2026-08-23)
+const activeCdFail = [];          // QWER keyCooldown 이 있는데 못 푼 곳
+const costSentence = [];          // 마나 스킬인데 소모값 문장을 그대로 쓴 곳 (2026-08-23)
+// DD partype (마나/기력/…) — 소모값 문장의 @AbilityResourceName@ 을 푸는 데 쓴다
+const ddPartype = (() => {
+    try {
+        const f = fs.readdirSync(path.join(__dirname, '.cache')).filter(x => /^dd_championFull_/.test(x)).sort().pop();
+        const d = JSON.parse(fs.readFileSync(path.join(__dirname, '.cache', f), 'utf8')).data;
+        const m = {};
+        // ★ 여기 c.id 는 DD 의 영문 키고, 아래 루프의 c.id 는 CD 의 **숫자 id** 다. 둘 다 넣는다.
+        for (const c of Object.values(d)) { m[c.id] = c.partype || ''; m[String(c.key)] = c.partype || ''; }
+        return m;
+    } catch (e) { return {}; }
+})();
 const dashMulti = [];             // 돌진 속도 후보가 둘 이상이라 건너뛴 곳
 const missileSelfDropped = [];    // 자기 대상 스킬이라 투사체 속도를 뺀 곳
+const missileFamilyFix = [];      // 본체 틀값을 계열 미사일 객체 값으로 바꾼 곳 (2026-08-23)
+const missileFamilyMulti = [];    // 계열 후보가 여럿이라 못 고른 곳
 const widthSelfDropped = [];      // 자기 대상 스킬이라 스킬 폭을 뺀 곳
 let spellIndex = {};              // 지금 처리 중인 챔피언의 스펠 객체 색인 (buildSpellIndex)
 
@@ -2359,6 +2433,14 @@ async function main() {
         // 패시브도 하위 아이콘을 가진다 (신드라 P2, 케인 암살자/그림자 패시브,
         //   카타리나 단검 회수, 피들스틱 P2 등 17자리). QWER 쪽과 달리 이 블록은
         //   따로 만들어져서 원래 icons 줄이 안 붙고 있었다 — 2026-08-09 추가.
+        // ★ 패시브 stats 는 bin 에 없어서 전부 위키다 (아지르 P 700, 자크 P 700, 질리언 P 875 …). 2026-08-23
+        const pStatBlock = (() => {
+            const w = (WIKI_STATS[alias] || {}).P || {};
+            const drop = STAT_DROP[`${c.name} P`] || [];
+            const rows = STAT_ORDER.filter(k => w[k] !== undefined && !drop.includes(k))
+                .map(k => { wikiStatUsed.push(`${c.name} P ${k} = ${w[k]}`); return `                ${q(k)}: ${q(w[k])}`; });
+            return rows.length ? `            "stats": {\n${rows.join(',\n')}\n            }` : null;
+        })();
         const pIcons = extraIcons.P;
         const pIconLine = pIcons && pIcons.length
             ? `            "icons": [${pIcons.map(x => q(x.url)).join(', ')}],`
@@ -2374,7 +2456,14 @@ async function main() {
                 if (carried.P && carried.P.v2 !== undefined) lines.push(carried.P.v2);
                 lines.push(`            "cooldown": ${q(passiveCd)},${passiveCdCalc ? ` // ${passiveCdCalc}` : ''}`);
                 if (pIconLine) lines.push(pIconLine);
-                lines.push(`            "cost": "-"`);
+                lines.push(`            "cost": "-"${pStatBlock ? ',' : ''}`);
+                if (pStatBlock) lines.push(pStatBlock);
+                lines.push(`        },`);
+            } else if (pStatBlock) {
+                lines.push(`        "P": {`);
+                lines.push(`            "cooldown": ${q(passiveCd)},`);
+                lines.push(`            "cost": "-",`);
+                lines.push(pStatBlock);
                 lines.push(`        },`);
             } else {
                 lines.push(`        "P": { "cooldown": ${q(passiveCd)}, "cost": "-" },`);
@@ -2430,7 +2519,8 @@ async function main() {
             if (carried.P && carried.P.v2 !== undefined) lines.push(carried.P.v2);
             lines.push(`            "cooldown": ${q(passiveCd)},${passiveCdCalc ? ` // ${passiveCdCalc}` : ''}`);
             if (pIconLine) lines.push(pIconLine);
-            lines.push(`            "cost": "-"`);
+            lines.push(`            "cost": "-"${pStatBlock ? ',' : ''}`);
+            if (pStatBlock) lines.push(pStatBlock);
             lines.push(`        },`);
         }
         const seenKey = new Set();
@@ -2586,7 +2676,11 @@ async function main() {
             //     그게 실패했을 때만 써야 한다. 먼저 쓰면 럼블이 "20 열기" 대신
             //     "20" 이 된다 (열기가 사라짐).
             const binManaUi = spell ? lv0(spell.manaUiOverride, maxRank) : null;
-            const castTime = (spell && typeof spell.mCastTime === 'number' && spell.mCastTime > 0)
+            // ★ 0.05 미만은 "시전시간 없음" 더미다 (2026-08-23). 브라움 E·피오라 W·루시안 R·
+            //   킨드레드 Q·탈리야 R·헤카림 R·밀리오 E 0.01, 그라가스 W·잔나 R 0.001, 제라스 Q 0.005,
+            //   닐라 W 0.013 — 롤위키는 전부 `CAST TIME: none` 이다. 화면에 `시전시간 0.01` 은 뜻이 없다
+            const CAST_TIME_MIN = 0.05;
+            const castTime = (spell && typeof spell.mCastTime === 'number' && spell.mCastTime >= CAST_TIME_MIN)
                 ? tidy(spell.mCastTime) : null;
             // ★★ 투사체 속도는 **본체에서만** 읽는다 (2026-08-14).
             //   예전엔 pool 전체를 훑어 `> 0` 인 첫 값을 잡았는데, pool 은
@@ -2626,6 +2720,48 @@ async function main() {
                 && !MISSILE_DUMMY.some(d => Math.abs(parseFloat(msTidy) - d) < 0.05)
                 && parseFloat(msTidy) < MISSILE_MAX) ? msTidy : null;
 
+            // ★★ 본체 `missileSpeed` 가 **틀(기본값)** 인 자리는 진짜 값이 계열 미사일 객체에 있다 (2026-08-23).
+            //   롤위키 `SPEED` 전수 대조에서 106자리가 어긋났는데, bin 을 되짚으니 본체 값이
+            //   `1200` / `902` / `828.5` / `779.9` / `8700` 다섯 가지 **틀값**에 몰려 있었고
+            //   (브랜드 Q 본체 1200 · 제드 Q 본체 902 · 요네 Q 본체 8700 …), 같은 챔피언의
+            //   `<본체이름>Missile` / `<본체이름>Mis` 객체의 `mMissileSpec.movementComponent.mSpeed` 가
+            //   롤위키와 일치했다 (브랜드 Q 1600 · 제드 Q 1700 · 케이틀린 R 3200 · 베이가 Q 2200 ·
+            //   쓰레쉬 Q 1900 · 바루스 R 1500 · 에코 Q 1650 · 조이 Q 1200 — 단일 후보 47자리 중 40 일치).
+            //   규칙:
+            //     · 본체 값이 **틀값일 때만** 바꾼다. 본체가 0 인 자리는 건드리지 않는다
+            //       ("투사체가 있나" 의 판정은 그대로 두고 **숫자만** 고친다 — 카밀 E·조이 R 같은
+            //        돌진·순간이동 스킬에도 계열 미사일 객체가 있어서, 새로 채우면 오탐이 난다)
+            //     · 후보가 하나면 그 값. 여럿이면 이름이 정확히 `<본체>Missile`·`<본체>Mis` 인 것.
+            //       그래도 못 고르면 본체 값을 그대로 두고 `missileFamilyMulti` 로 찍는다
+            //     · 칼리스타 Q(계열 3000 / 롤위키 2400)·신드라 E(계열 2000 / 롤위키 2500) 는
+            //       STAT_MANUAL 로 덮는다 — 이름 규칙으로는 못 고르는 자리다
+            const MISSILE_TEMPLATE = [1200, 902, 828.5, 779.9, 8700];
+            if (missileSpeed !== null && MISSILE_TEMPLATE.some(d => Math.abs(bodyMs - d) < 0.05) && spell) {
+                const bodyName = String((pool[0] && pool[0].path) || '').split('/').pop().toLowerCase();
+                const fam = [];
+                for (const cand of pool.slice(1)) {
+                    const nm = String(cand.path || '').split('/').pop();
+                    if (!bodyName || !nm.toLowerCase().includes(bodyName)) continue;
+                    const mc = cand.spell && cand.spell.mMissileSpec && cand.spell.mMissileSpec.movementComponent;
+                    if (!mc) continue;
+                    const sp = (typeof mc.mSpeed === 'number' && mc.mSpeed) || (typeof mc.mInitialSpeed === 'number' && mc.mInitialSpeed) || 0;
+                    // 300 미만(아칼리 W 장막 150)은 투사체 속도가 아니고, 20000 이상(아칼리 Q 99999)은 "즉시" 더미다
+                    if (sp >= 300 && sp < 20000) fam.push({ nm, sp });
+                }
+                const uniq = [...new Set(fam.map(x => x.sp))];
+                let pick = null;
+                if (uniq.length === 1) pick = uniq[0];
+                else if (uniq.length > 1) {
+                    const exact = fam.find(x => /^(.+?)(missile|mis)$/i.test(x.nm) && x.nm.toLowerCase().replace(/(missile|mis)$/, '') === bodyName);
+                    if (exact) pick = exact.sp;
+                    else missileFamilyMulti.push(`${c.name} ${key}: 본체 ${bodyMs} / 후보 ${fam.map(x => `${x.nm}=${x.sp}`).join(' ')}`);
+                }
+                if (pick !== null && tidy(pick) !== missileSpeed) {
+                    missileFamilyFix.push(`${c.name} ${key}: ${missileSpeed} → ${tidy(pick)}`);
+                    missileSpeed = tidy(pick);
+                }
+            }
+
             // ★★★ **자기 대상 스킬에는 투사체가 없다** (2026-08-14, 44자리).
             //   `mTargetingTypeData` 가 `Self` / `SelfAoe` 인데 본체에 `missileSpeed` 가
             //   박혀 있는 자리가 무더기로 있었다 — 가렌 E(회전 공격) 700,
@@ -2659,8 +2795,14 @@ async function main() {
             //     퀸 R: 폭도 반경도 없다 (채널링 스킬인데 우리는 200 이었다)
             //   초가스 E 만 위키에 `WIDTH 340 - 500 (크기 비례)` 이 있는데 우리 170 과 다르고
             //   크기 비례라 고정값으로 못 적는다. 그래서 이 자리도 같이 뺀다
+            // ★★ `mLineWidth` 는 **반지름(절반 폭)** 이다 — 화면에는 2배(전체 폭)로 낸다 (2026-08-23).
+            //   롤위키 `WIDTH` 전수 대조(127자리)에서 63자리가 **정확히 우리 값의 2배**였고
+            //   (드레이븐 E 130↔260, 문도 Q 60↔120, 드레이븐 R 160↔320, 아리 Q 100↔200…),
+            //   나머지도 거기에 대상 히트박스(65)를 더한 값이라 계열이 같다.
+            //   "폭" 이라 적고 반지름을 내보내면 읽는 사람이 절반으로 이해한다.
+            //   되돌리려면 아래 `* 2` 하나만 지우면 된다.
             let lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
-                ? tidy(spell.mLineWidth) : null;
+                ? tidy(spell.mLineWidth * 2) : null;
             if (lineWidth && selfOnly && !hasMissile) {
                 lineWidth = null;
                 widthSelfDropped.push(`${c.name} ${key} (${ttype})`);
@@ -2694,9 +2836,106 @@ async function main() {
             }
 
             const lv = lvTop;
-            const cd = currentCooldown;
+            let cd = currentCooldown;
+
+            // ---- ★ 액티브 스킬의 쿨타임 문장 (2026-08-23) ----
+            //   패시브처럼 QWER 에도 `keyCooldown` 이 붙은 스킬이 36자리 있다. 클라이언트는
+            //   그 문장을 쿨타임 칸에 그대로 쓴다 — 라칸 E `%i:cooldown% @Cooldown@초`,
+            //   갱플랭크 E `재충전 대기시간 @AmmoRechargeTime@초 (최대: @MaxAmmo@개)`,
+            //   칼리스타 E `재사용 대기시간 @FakedCooldown@초`, 렝가 Q/W/E `@AmmoRechargeTime@초`.
+            //   예전엔 이걸 무시하고 CD 의 cooldownCoefficients 만 찍어서 라칸 E·칼리스타 E·
+            //   카서스 Q·탈론 E 가 **쿨타임 0**, 렝가가 **0.25** 로 나갔다 (DD 도 같은 값이라
+            //   audit_skill_meta 에는 안 걸렸다 — 롤위키 전수 대조에서 드러남).
+            //   ★ `@Cooldown@` 은 스펠 필드가 아니라 "이 스킬의 쿨타임" 별명이다.
+            //     값이 0 이 아니면 CD 쿨타임, 0 이면 탄약 재충전 시간(라칸 E)으로 푼다.
+            //   ★ 화면은 `쿨타임 ${cd}` 로 찍으므로 앞의 "재사용 대기시간" 은 떼고,
+            //     순수 숫자만 남으면 "초" 도 뗀다 (다른 슬롯과 같은 꼴). 문장이 남으면 그대로 둔다.
+            {
+                const lk = spell && spell.mClientData && spell.mClientData.mTooltipData
+                    && spell.mClientData.mTooltipData.mLocKeys;
+                const raw = lk && lk.keyCooldown ? strings[String(lk.keyCooldown).toLowerCase()] : null;
+                const plain = raw ? String(raw).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
+                if (plain) {
+                    const ammoRecharge = (() => {
+                        const r = resolveFromPool('AmmoRechargeTime', pool, maxRank);
+                        const v = r && r.val !== null ? String(r.val) : null;
+                        return (v && !/^0( \/ 0)*$/.test(v)) ? v : null;
+                    })();
+                    const cdNonZero = cd && cd !== '-' && !/^0( \/ 0)*$/.test(cd);
+                    let ok = true;
+                    ctx = `${c.name} ${key} / keyCooldown`;
+                    let filled = plain
+                        .replace(/%i:cooldown%/g, '재사용 대기시간')
+                        .replace(/%i:[a-zA-Z0-9_]+%/g, '')
+                        .replace(/@([A-Za-z0-9_.*+\-/():]+?)@/g, (m0, nm) => {
+                            const want = nm.trim();
+                            if (/^cooldown$/i.test(want)) {
+                                if (cdNonZero) return cd;
+                                if (ammoRecharge) return ammoRecharge;
+                                ok = false; return m0;
+                            }
+                            const r = resolveFromPool(want, pool, maxRank);
+                            if (!r || r.val === null) { ok = false; return m0; }
+                            return r.val;
+                        })
+                        .replace(/\s+/g, ' ').trim();
+                    if (ok && filled && !/[@?{]/.test(filled)) {
+                        filled = filled.replace(/^재사용 대기시간\s*/, '').replace(/\(\s*재사용 대기시간\s*/g, '(재사용 ');
+                        if (/^[\d.\s/~()레벨에 따라]+초$/.test(filled)) filled = filled.replace(/초$/, '').trim();
+                        if (filled === '재사용 대기시간 없음' || filled === '없음') filled = '없음';
+                        if (filled) {
+                            if (filled !== cd) activeCdMade.push(`${c.name} ${key}: ${cd} → ${filled}`);
+                            cd = filled;
+                        }
+                    } else if (ammoRecharge && !cdNonZero) {
+                        // 문장은 못 풀었지만 탄약 스킬이면 재충전 시간이 곧 쿨타임이다 (바드 W `@f7@`)
+                        activeCdMade.push(`${c.name} ${key}: ${cd} → ${ammoRecharge} (재충전 시간으로 대체)`);
+                        cd = ammoRecharge;
+                    } else {
+                        const man = CD_MANUAL[`${c.name} ${key}`];
+                        if (man !== undefined) { activeCdMade.push(`${c.name} ${key}: ${cd} → ${man} (CD_MANUAL)`); cd = man; }
+                        else activeCdFail.push(`${c.name} ${key} (${lk.keyCooldown}) = ${filled || plain}`);
+                    }
+                }
+            }
             const costJ = lv(s.costCoefficients, maxRank);
             let cost = (costJ && !/^0( \/ 0)*$/.test(costJ)) ? costJ : '';
+            // ★ 마나 스킬이어도 소모값 문장에 **숫자 말고 다른 말**이 붙어 있으면 문장을 쓴다 (2026-08-23).
+            //   클라이언트가 그 문장을 소모값 칸에 그대로 찍는다 — 소라카 W `최대 체력의 10%, 마나 40`,
+            //   로크 W `초당 마나 50, 현재 체력 N%`, 애니비아 R `60+초당 마나 N`, 하이머딩거 Q
+            //   `포탑 부품 1 + 마나 20`, 징크스 Q `로켓 1발당 마나 20`, 아무무 W `초당 …`.
+            //   예전엔 costCoefficients 가 0 이 아니면 숫자만 찍어서 체력 소모·"초당" 이 통째로 빠졌다.
+            //   ★ 범용 문장 `@AbilityResourceName@ @Cost@` 와 `마나 @Cost@` 는 숫자와 같은 말이라 건너뛴다.
+            //   ★ `@AbilityResourceName@` 은 DD `partype`(마나/기력…) 으로 푼다 (아무무 W `초당 마나 8`).
+            if (cost && s.cost) {
+                const txt0 = String(s.cost).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+                const generic = /^(@AbilityResourceName@|마나)\s*@[A-Za-z0-9_.]+@$/i.test(txt0) || !/@/.test(txt0);
+                if (!generic) {
+                    const resName = (ddPartype[String(c.id)] || ddPartype[c.alias] || "").trim();
+                    let ok = true;
+                    const out = txt0
+                        .replace(/@AbilityResourceName@/gi, () => { if (!resName) ok = false; return resName; })
+                        .replace(/@([A-Za-z0-9_.*+\-/():]+?)@/g, (m0, nm) => {
+                            const want = nm.trim();
+                            if (/^cost$/i.test(want)) return cost;
+                            ctx = `${c.name} ${key} / cost:${want}`;
+                            const r = resolveFromPool(want, pool, maxRank);
+                            if (!r || r.val === null) { ok = false; return m0; }
+                            return r.val;
+                        })
+                        .replace(/\s+/g, ' ').trim();
+                    if (ok && !/[@?]/.test(out)) {
+                        // 괄호 안 "현재값" 은 본문 쪽 규칙과 같이 버린다 (아래 dropRuntimeParen 주석 참고)
+                        const cleaned = out.replace(/\s*\(([^()]+)\)/g, (m0, inner) => {
+                            const t = inner.trim();
+                            return (t.startsWith('+') || /^[\d\s./%~-]+$/.test(t)) ? m0 : '';
+                        }).replace(/\s+/g, ' ').trim();
+                        if (cleaned !== cost) { costSentence.push(`${c.name} ${key}: ${cost} → ${cleaned}`); cost = cleaned; }
+                    } else {
+                        costTextFail.push(`${c.name} ${key} = ${txt0}`);
+                    }
+                }
+            }
             if (!cost) {
                 if (binMana && !/^0( \/ 0)*$/.test(binMana)) cost = binMana;
                 else if (/없음/.test(s.cost || '')) cost = '-';
@@ -2777,6 +3016,10 @@ async function main() {
             lines.push(vv.v1 !== undefined ? vv.v1 : `            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)`);
             lines.push(vv.v2 !== undefined ? vv.v2 : `            "v2": "",`);
             lines.push(`            "cooldown": ${q(cd)},`);
+            if (COST_MANUAL[`${c.name} ${key}`] !== undefined) {
+                costSentence.push(`${c.name} ${key}: ${cost} → ${COST_MANUAL[`${c.name} ${key}`]} (COST_MANUAL)`);
+                cost = COST_MANUAL[`${c.name} ${key}`];
+            }
             lines.push(`            "cost": ${q(cost)},`);
             // 같은 스킬에 아이콘이 여러 개 달리는 자리 (재시전·취소·진화·1·2·3타).
             // 첫 번째 폼 라벨. 폼이 두 개인 챔피언의 기본 스킬에만 붙는다.
@@ -2798,14 +3041,21 @@ async function main() {
             const manualStat = STAT_MANUAL[statKey] || {};
             const dropStat = STAT_DROP[statKey] || [];
             if (STAT_MANUAL[statKey] || STAT_DROP[statKey]) statManualUsed.add(statKey);
+            const wikiStat = (WIKI_STATS[alias] || {})[key] || {};
             const put = (rows, name, val) => {
                 if (dropStat.includes(name)) return;
-                const v = manualStat[name] !== undefined ? manualStat[name] : val;
+                let v = manualStat[name] !== undefined ? manualStat[name] : val;
+                // ★ bin 에 없으면 위키. 속도는 둘 중 하나라도 bin 에 있으면 위키를 안 본다 (같은 칸이다)
+                if (!v && wikiStat[name] !== undefined) {
+                    const speedPair = (name === '투사체 속도' || name === '돌진 속도') && (missileSpeed || dashSpeed);
+                    if (!speedPair) { v = wikiStat[name]; wikiStatUsed.push(`${c.name} ${key} ${name} = ${v}`); }
+                }
                 if (v) rows.push(`                ${q(name)}: ${q(v)}`);
             };
 
             const statRows = [];
             put(statRows, '사거리', hasRange ? rng : null);
+            put(statRows, '효과 범위', null);
             put(statRows, '시전시간', castTime);
             put(statRows, '투사체 속도', missileSpeed);
             put(statRows, '돌진 속도', dashSpeed);
@@ -3025,6 +3275,25 @@ async function main() {
     }
 
     if (passiveCdMade.length || passiveCdFail.length) {
+        {
+            const cnt = {};
+            wikiStatUsed.forEach(x => { const k = x.split(' ').slice(2, -2).join(' '); cnt[k] = (cnt[k] || 0) + 1; });
+            console.log(`\n[위키 우상단 값] ${wikiStatUsed.length}자리 — bin 에 없어서 wiki_stats.json 으로 채웠다:`, JSON.stringify(cnt));
+        }
+        console.log(`\n[투사체 속도 계열 보정] ${missileFamilyFix.length}자리 — 본체 틀값을 계열 미사일 객체 값으로 (2026-08-23):`);
+        missileFamilyFix.forEach(x => console.log(`  ${x}`));
+        if (missileFamilyMulti.length) {
+            console.log(`  -- 후보가 여럿이라 본체 값을 그대로 둔 것 ${missileFamilyMulti.length}자리:`);
+            missileFamilyMulti.forEach(x => console.log(`     ${x}`));
+        }
+        console.log(`\n[액티브 쿨타임 문장] ${activeCdMade.length}자리 — bin keyCooldown 문장으로 바꿨다 (2026-08-23):`);
+        activeCdMade.forEach(x => console.log(`  ${x}`));
+        if (activeCdFail.length) {
+            console.log(`  -- keyCooldown 은 있는데 못 푼 것 ${activeCdFail.length}자리 (CD 쿨타임을 그대로 둔다):`);
+            activeCdFail.forEach(x => console.log(`     ${x}`));
+        }
+        console.log(`\n[소모값 문장] ${costSentence.length}자리 — 마나 스킬인데 문장에 다른 말이 있어 문장을 썼다:`);
+        costSentence.forEach(x => console.log(`  ${x}`));
         console.log(`\n[패시브 쿨타임] ${passiveCdMade.length}명 — bin 의 keyCooldown 에서 채웠다. 인게임 툴팁과 대조할 것:`);
         passiveCdMade.forEach(x => console.log(`  ${x}`));
         if (passiveCdFail.length) {

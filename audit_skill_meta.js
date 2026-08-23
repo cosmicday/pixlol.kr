@@ -126,6 +126,7 @@ const sameNumList = (a, b) => {
 // ------------------------------------------------------------
 
 const cv = loadCustomValues();
+const WIKI_STATS = (() => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'wiki_stats.json'), 'utf8')); } catch { return {}; } })();
 const dd = loadDD();
 if (!dd) { console.error('DD championFull 캐시가 없다. build_level_curves.js 를 한 번 돌릴 것.'); process.exit(1); }
 
@@ -148,14 +149,24 @@ const KNOWN_OK = new Map([
     ['아트록스 E', '롤위키 75-300 = bin EMaxRange'],
     ['오른 W', '롤위키 500 (bin 계열 2500 은 취약 효과 범위)'],
     ['바드 Q', '롤위키 850 (bin 계열은 950·525)'],
+    // 2026-08-23 롤위키 전수 대조에서 잡은 자리
+    ['트위스티드 페이트 Q', '사거리 롤위키 1450 (bin castRange 10000 은 20000 컷 아래의 더미)'],
+    ['신드라 E', '투사체 롤위키 2500 (bin 계열 1100~2000 혼재)'],
+    ['자야 Q', '사거리 롤위키·나무위키 1100 (override 400 은 틀린 값, castRange 1100)'],
+    ['오른 E', '사거리 롤위키·나무위키 800 (override 450)'],
+    ['밀리오 W', '사거리 롤위키·나무위키 650 (override 350)'],
+    ['볼리베어 R', '사거리 롤위키·나무위키 700 (override 550)'],
+    ['칼리스타 R', '사거리 롤위키·나무위키 1200 (override 1000)'],
+    ['초가스 W', '사거리 롤위키·나무위키 650 (castRange 300)'],
+    ['탈론 W', '사거리 롤위키·나무위키 900 (castRange 650)'],
+    ['애쉬 W', '투사체 롤위키·나무위키 2000 (계열 VolleyAttack 1500 은 다른 값)'],
+    ['하이머딩거 W', '투사체 나무위키 1200 (계열 750 은 다른 값)'],
     ['헤카림 R', '롤위키 300-1000 = bin MaxDashRange'],
     ['세트 W', '롤위키 Range -25 - 720'],
     ['자헨 Q', '나무위키 200 = 기본 공격 175 + QBonusRange 25'],
     ['자헨 E', '나무위키 350 = bin DashDistance'],
     ['제리 E', '롤위키 300 = bin MaxDistance'],
     ['진 R', '사거리 롤위키 3500 · 투사체 나무위키 3000'],
-    ['코르키 R', '투사체 나무위키 2000 (본체 828.5 는 기본 공격 속도)'],
-    ['카직스 W', '투사체 롤위키 SPEED 1700 (본체 828.5)'],
 
     // --- 라이엇 데이터가 원래 그런 자리 ---
     ['암베사 P', '패시브에 쿨타임이 **없는** 스킬이다 (롤위키·나무위키 둘 다 명시). bin 에 keyCooldown 키만 남아 있고 문장은 빈 문자열'],
@@ -199,6 +210,22 @@ for (const [ddId, champ] of Object.entries(cv)) {
     const paths = binSpellPaths(bin, ddId);
     const baSpeeds = basicAttackSpeeds(bin);
     const koName = ddc.name;
+    // 본체 이름을 포함하는 계열 객체들의 mMissileSpec 속도 집합 (fill_values.js 의 계열 보정과 같은 규칙)
+    const familySpeeds = (slot) => {
+        const out = new Set();
+        const p = paths[slot];
+        if (!bin || !p) return out;
+        const bodyName = p.split('/').pop().toLowerCase();
+        for (const [k, v] of Object.entries(bin)) {
+            if (k === p || !v || !v.mSpell) continue;
+            if (!k.split('/').pop().toLowerCase().includes(bodyName)) continue;
+            const mc = v.mSpell.mMissileSpec && v.mSpell.mMissileSpec.movementComponent;
+            if (!mc) continue;
+            const sp = (typeof mc.mSpeed === 'number' && mc.mSpeed) || (typeof mc.mInitialSpeed === 'number' && mc.mInitialSpeed) || 0;
+            if (sp >= 300 && sp < 20000) out.add(Math.round(sp * 100) / 100);
+        }
+        return out;
+    };
 
     // DD 스킬을 슬롯 문자로 색인
     const ddSpell = {};
@@ -228,7 +255,14 @@ for (const [ddId, champ] of Object.entries(cv)) {
             R.cdEmpty.push(`${tag} = ${JSON.stringify(cd)}`);
         } else if (d && String(cd) !== '-') {
             const ourN = toNums(cd), ddN = toNums(d.cooldownBurn);
-            if (isNumList(cd) && ddN.length) {
+            // ★ bin 에 keyCooldown 문장이 있는 액티브 스킬은 클라가 그 문장을 쓴다 (2026-08-23).
+            //   라칸 E·렝가 Q/W/E·칼리스타 E·카서스 Q 가 그래서 DD cooldownBurn(0 / 0.25)과 다르다.
+            //   fill_values.js 가 문장을 풀어 넣으므로 여기서는 DD 대조를 건너뛴다.
+            const lk = bin && paths[slot] && bin[paths[slot]].mSpell.mClientData
+                && bin[paths[slot]].mSpell.mClientData.mTooltipData
+                && bin[paths[slot]].mSpell.mClientData.mTooltipData.mLocKeys;
+            const hasCdKey = !!(lk && lk.keyCooldown);
+            if (isNumList(cd) && ddN.length && !hasCdKey) {
                 if (!sameNumList(cd, d.cooldownBurn))
                     R.cdMismatch.push(`${tag}  우리 ${cd}  /  DD ${d.cooldownBurn}`);
                 // 칸 수 (접힌 경우는 제외)
@@ -253,6 +287,9 @@ for (const [ddId, champ] of Object.entries(cv)) {
 
         // ---------- stats ----------
         const st = v.stats || {};
+        // ★ wiki_stats.json 에서 온 값은 bin 에 없는 게 당연하다 — 출처 검사를 건너뛴다 (2026-08-23)
+        const wk = ((WIKI_STATS[ddId] || {})[slot]) || {};
+        const fromWiki = (name) => st[name] != null && wk[name] !== undefined && String(wk[name]) === String(st[name]);
         for (const [k, val] of Object.entries(st)) {
             if (val === '' || val == null) R.statEmpty.push(`${tag} / ${k}`);
         }
@@ -267,13 +304,13 @@ for (const [ddId, champ] of Object.entries(cv)) {
             if (rN.length && rN.every(x => x >= 20000)) R.rangeHuge.push(`${tag} = ${rng}`);
             if (d && isNumList(rng) && toNums(d.rangeBurn).length && !sameNumList(rng, d.rangeBurn)
                 ) {
-                pushHit(R.rangeMismatch, tag, `${tag}  우리 ${rng}  /  DD ${d.rangeBurn}`);
+                if (!fromWiki('사거리')) pushHit(R.rangeMismatch, tag, `${tag}  우리 ${rng}  /  DD ${d.rangeBurn}`);
             }
         }
 
         // 투사체 속도 — 본체에 있는 값인지 확인한다
         const ms = st['투사체 속도'];
-        if (ms != null && ms !== '') {
+        if (ms != null && ms !== '' && !fromWiki('투사체 속도')) {
             const our = Number(toNums(ms)[0]);
             const bodySpeed = (bin && paths[slot] && bin[paths[slot]].mSpell.missileSpeed) || 0;
             if (our <= 20) {
@@ -282,7 +319,9 @@ for (const [ddId, champ] of Object.entries(cv)) {
                 // 347.8 = 라이엇 엔진의 기본 공격 기본값 / 10억 = "즉시 도달".
                 //   둘 다 "값을 안 정했다" 는 뜻이라 투사체가 없는 스킬이다.
                 R.missileEngine.push(`${tag} = ${ms}`);
-            } else if (Math.abs(bodySpeed - our) > 0.05) {
+            } else if (Math.abs(bodySpeed - our) > 0.05 && !familySpeeds(slot).has(our)) {
+                // ★ 본체가 틀값(1200·902·828.5·779.9·8700)이면 fill_values.js 가 계열 미사일 객체의
+                //   mMissileSpec.movementComponent.mSpeed 를 쓴다 (2026-08-23). 그 값이면 정상이다.
                 const fromBA = baSpeeds.has(Math.round(our * 10) / 10);
                 pushHit(R.missileDirty, tag,
                     `${tag} = ${ms}   (본체 ${bodySpeed || 0}${fromBA ? ' · 기본공격 속도와 일치' : ''})`);
@@ -291,10 +330,11 @@ for (const [ddId, champ] of Object.entries(cv)) {
 
         // 스킬 폭
         const w = st['스킬 폭'];
-        if (w != null && w !== '') {
+        if (w != null && w !== '' && !fromWiki('스킬 폭')) {
             const our = Number(toNums(w)[0]);
-            const bodyW = (bin && paths[slot] && bin[paths[slot]].mSpell.mLineWidth) || 0;
-            if (Math.abs(bodyW - our) > 0.05) R.widthDirty.push(`${tag} = ${w}  (본체 ${bodyW || '없음'})`);
+            // ★ mLineWidth 는 반지름이라 화면에는 2배(전체 폭)로 나간다 (2026-08-23, fill_values.js 참고)
+            const bodyW = ((bin && paths[slot] && bin[paths[slot]].mSpell.mLineWidth) || 0) * 2;
+            if (Math.abs(bodyW - our) > 0.05) R.widthDirty.push(`${tag} = ${w}  (본체x2 ${bodyW || '없음'})`);
         }
 
         // 시전시간

@@ -1215,6 +1215,7 @@ node build_stats_page.js --write          # 스탯 탭
 node build_codex_data.js --write          # 도감 탭 (★ DD_VER 하드코딩을 손으로 올릴 것)
 node build_perk_data.js --write           # 통계 탭 룬 빌드 아이콘
 node build_rune_graphs.js --write        # 도감 룬 레벨 각주 (★ 도감 다음에 — codex_data.js 를 읽는다)
+node build_wiki_stats.js --refresh       # 롤위키 우상단 값 → wiki_stats.json (★ fill_values 보다 먼저 — 그게 이걸 읽는다)
 ```
 
 **★ 받은 뒤 반드시 확인할 것 — "값이 통째로 평평해진 스탯".**
