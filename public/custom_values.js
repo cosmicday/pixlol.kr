@@ -961,7 +961,7 @@ const customValues = {
             "cost": "50 / 55 / 60 / 65 / 70",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/nunu/hud/icons2d/nunuw2.png"],
             "stats": {
-                "효과 범위": "130",
+                "효과 범위": "130 ~ 390 (눈덩이 크기에 따라)",
                 "스킬 폭": "200",
                 "투사체 속도": "1500"
             }
@@ -2251,8 +2251,7 @@ const customValues = {
             "cooldown": "100 / 90 / 80",
             "cost": "-",
             "stats": {
-                "사거리": "2500 / 3000 / 3500",
-                "효과 범위": "2500 ~ 3500"
+                "사거리": "2500 / 3000 / 3500"
             }
         },
     },
@@ -2411,7 +2410,7 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "스킬 폭": "60",
-                "투사체 속도": "900 ~ 2600"
+                "투사체 속도": "900 ~ 2600 (가속)"
             }
         },
         "Q": {
