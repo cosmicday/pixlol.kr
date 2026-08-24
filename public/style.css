@@ -4918,8 +4918,13 @@ main {
         gap: 10px;
     }
 
+    /* ★ 폰에서는 자리가 남아도 항상 이름 아래 줄로 (2026-08-24 요청).
+       예전엔 flex-wrap 에 맡겨서 "공간 있으면 오른쪽, 없으면 아래" 로 스킬마다 달랐다.
+       flex-basis 100% 가 메타를 무조건 새 줄로 내린다. */
     .champ-skill-meta {
         text-align: left;
+        flex-basis: 100%;
+        width: 100%;
     }
 }
 
