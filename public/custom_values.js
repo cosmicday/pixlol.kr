@@ -6023,7 +6023,7 @@ const customValues = {
             "p4": "95 / 142.5 / 190 / 237.5 / 285 (+ 주문력의 201.875%)", // ApproximateTotalDamageTooltip
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "0",
+            "cooldown": "없음",
             "cost": "초당 마나 13",
             "stats": {
                 "효과 범위": "180"
@@ -8651,7 +8651,7 @@ const customValues = {
             "p5": "100", // KillAmmoRefundChamp*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "없음",
+            "cooldown": "없음<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>씨앗 재충전 18 / 16 / 14 / 12 / 10초</div></span></span>",
             "cost": "씨앗 1개",
             "stats": {
                 "사거리": "850",
