@@ -3368,7 +3368,6 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "1400",
-                "효과 범위": "1450",
                 "스킬 폭": "200",
                 "투사체 속도": "2000"
             }
@@ -5664,7 +5663,6 @@ const customValues = {
             "cost": "40 / 45 / 50 / 55 / 60",
             "stats": {
                 "사거리": "750",
-                "효과 범위": "725",
                 "시전시간": "0.25"
             }
         },
@@ -7723,7 +7721,6 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "사거리": "700",
-                "효과 범위": "600",
                 "시전시간": "0.5 ~ 0.19<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.68%당 1% 감소, 최대 62.5%</div></span></span>"
             }
         },
@@ -9800,7 +9797,6 @@ const customValues = {
             "cost": "50 / 55 / 60 / 65 / 70",
             "stats": {
                 "사거리": "610",
-                "효과 범위": "325",
                 "스킬 폭": "200",
                 "투사체 속도": "1750"
             }
@@ -10016,7 +10012,6 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "825",
-                "효과 범위": "850",
                 "시전시간": "0.5"
             }
         },
@@ -10705,7 +10700,6 @@ const customValues = {
             "cost": "50 / 55 / 60 / 65 / 70",
             "stats": {
                 "사거리": "600",
-                "효과 범위": "690",
                 "투사체 속도": "902"
             }
         },
@@ -11893,7 +11887,6 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/pantheon/hud/icons2d/pantheon_e2.png"],
             "stats": {
                 "사거리": "400",
-                "효과 범위": "525",
                 "시전시간": "0.25 (재사용)"
             }
         },

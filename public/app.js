@@ -563,6 +563,7 @@ function mountDoguUI() {
     DoguUI.mountHeader(Object.assign({}, DOGU_BRAND, {
         site: 'lol',
         iconBase: '/',                              // 스위처 아이콘 public/header_{key}.png — pixlol 은 루트에서 돈다
+        gamesOrigin: 'https://dogu.gg',             // ★ 다른 게임 링크의 기준 — 안 주면 pixlol.kr/er 로 가서 제자리가 된다 (2026-08-24)
         nav: DOGU_NAV.map(n => ({ key: n.key, label: n.label, href: n.href, active: n.key === 'search' })),
         aside: '',                                  // 패치 버전 — initDdragonVersion 뒤에 setAside 로 채운다
         search: { placeholder, onSubmit }
