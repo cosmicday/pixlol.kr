@@ -7543,7 +7543,7 @@ const customValues = {
             "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "80",
             "stats": {
-                "사거리": "700",
+                "사거리": "300<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>지형 넘으면 450</div></span></span>",
                 "시전시간": "0.25",
                 "투사체 속도": "1800",
                 "돌진 속도": "350"

@@ -284,6 +284,26 @@
   롤위키는 `300(일반 돌진) / 450(지형 넘을 때)` 이다. 돌진 거리와 시전 사거리 중
   무엇인지 갈리지 않아 **인게임 확인 대기**
 
+**★★ 오로라 W 도 끝났다 (2026-08-24) — `700` → `300 (지형 넘으면 450)`.**
+"E(825)의 절반쯤" 이라는 관찰을 듣고 bin DataValue 를 열어 보니 답이 그대로 있었다:
+
+```
+AuroraW   override 700 · castRadius 1000
+   DV JumpDistance       300   ← 롤위키 "Regular dash distance"
+   DV WallCheatDistance  450   ← 롤위키 "Increased dash distance across terrain"
+   DV DashBonusSpeed     350   ← 우리가 이미 "돌진 속도" 로 쓰던 값
+```
+
+- **★ 롤위키 300/450 이 bin DataValue 와 정확히 일치한다.** 이 자리는 위키가 맞았다
+- **★ `castRangeDisplayOverride` 가 돌진 거리와 무관한 자리다.** override 700 · castRadius 1000 의
+  정체는 확인 못 했지만 **돌진 거리는 아니라는 것만 확실하다.** 문장도
+  "지정한 방향으로 뛰어오릅니다" 라 대상 지정이 없다
+- **★ 돌진 거리를 사거리 칸에 적는 건 이 저장소 관례다** — 자헨 E 350(`DashDistance`) ·
+  헤카림 R 1000(`MaxDashRange`) · 볼리베어 R 700(도약 거리)
+- **★★ 교훈: "얼마쯤으로 보이더라" 는 관찰이 bin 의 어느 필드를 볼지 정해 준다.**
+  700 이 아니라는 것만 알면 `JumpDistance`·`WallCheatDistance` 를 찾아볼 이유가 생긴다.
+  숫자를 정확히 못 재도 **자릿수만 좁혀 주면 데이터에서 답을 찾을 수 있다**
+
 ### ★★ "사거리가 롤위키와 다른 112자리" 는 대체로 문제가 아니다 (결론)
 
 **`wiki_stats.json` 은 bin 에 값이 **없는** 자리만 채우는 보조 자료**라 (우선순위
