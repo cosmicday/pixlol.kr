@@ -4828,7 +4828,7 @@ const customValues = {
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "45",
             "stats": {
-                "사거리": "300 ~ 600 (충전 시간에 따라)",
+                "사거리": "500 ~ 850 (충전 시간에 따라)",
                 "투사체 속도": "1500"
             }
         },
@@ -4860,7 +4860,7 @@ const customValues = {
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "35 / 40 / 45 / 50 / 55",
             "stats": {
-                "사거리": "800",
+                "사거리": "800<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>밀려난 유닛은 최대 1350까지</div></span></span>",
                 "효과 범위": "130",
                 "스킬 폭": "160",
                 "시전시간": "0.25",
@@ -7227,10 +7227,10 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yasuo/hud/icons2d/yasuo_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/yasuo/hud/icons2d/yasuo_q3.png"],
             "stats": {
-                "사거리": "475",
+                "사거리": "475<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>회오리 1150</div></span></span>",
                 "효과 범위": "215",
                 "스킬 폭": "110",
-                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
+                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[3]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
                 "투사체 속도": "1500"
             }
         },
@@ -7812,9 +7812,9 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yone/hud/icons2d/yoneq3.png"],
             "stats": {
-                "사거리": "450",
+                "사거리": "450<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>회오리 1050</div></span></span>",
                 "스킬 폭": "30",
-                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
+                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[3]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
                 "투사체 속도": "1500",
                 "돌진 속도": "1500"
             }
@@ -7834,7 +7834,7 @@ const customValues = {
             "stats": {
                 "사거리": "700",
                 "효과 범위": "600",
-                "시전시간": "0.5 ~ 0.19<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.68%당 1% 감소, 최대 62.5%</div></span></span>"
+                "시전시간": "0.5 ~ 0.19<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.68%당 1% 감소, 최대 62.5%</div></span></span>"
             }
         },
         "E": {
@@ -10448,7 +10448,7 @@ const customValues = {
             "cooldown": "160 / 140 / 120",
             "cost": "100",
             "stats": {
-                "사거리": "1200"
+                "사거리": "1000<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>던지는 거리 1200</div></span></span>"
             }
         },
     },
@@ -11768,7 +11768,7 @@ const customValues = {
                 "사거리": "1450",
                 "스킬 폭": "80",
                 "시전시간": "0.25",
-                "투사체 속도": "1450.4"
+                "투사체 속도": "1000"
             }
         },
         "W": {

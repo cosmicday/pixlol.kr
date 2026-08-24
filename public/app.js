@@ -7393,7 +7393,7 @@ function drawStatPanel() {
     // 비교 챔피언이 이 스탯을 아예 안 가진 경우(가렌의 마나 등). 목록에는 켜져 있는데
     // 선이 없으면 고장 난 것처럼 보이므로 이유를 적어 준다.
     const vsNote = (vsRec && !vsV)
-        ? `<span class="savg-item"><em>${vsRec.n} — 이 스탯 없음</em></span>` : '';
+        ? `<span class="savg-item"><em>${vsRec.n}: 해당 스탯 없음</em></span>` : '';
 
     const legend = vsNote + extras.map(e => `
         <span class="savg-item">

@@ -300,8 +300,16 @@ const STAT_MANUAL = {
     '자헨 Q': { '사거리': '200' },      // 나무위키 200 (기본 공격 175 + bin DataValue `QBonusRange` 25)
     '자헨 E': { '사거리': '350' },      // 나무위키 돌진 거리 350 · bin DataValue `DashDistance` 350 — 일치
     // --- 사거리: bin 값이 20000 컷 **아래**의 더미라 걸러지지 않던 자리 (2026-08-23 롤위키 전수 대조) ---
-    '트위스티드 페이트 Q': { '사거리': '1450' },   // bin castRange 10000 (override 없음) · 롤위키 1450
-    '사이온 Q': { '사거리': '300 ~ 600 (충전 시간에 따라)' }, // bin castRange 10000 · 나무위키 300 ~ 600 (롤위키 500~850 은 폭을 더한 값으로 보인다)
+    // ★★ 투사체 속도 1000 — 2026-08-24 인게임 실측. **본체 missileSpeed 1450.4 가 틀값이었다.**
+    //   스탑워치로 카드가 닿는 데 1.7초가 걸렸는데, 시전시간 0.25 를 더하면
+    //   1000 → 1.70초 · 1300(나무위키) → 1.37초 · 1450.4 → 1.25초 라 롤위키가 정확히 맞는다.
+    //   ★ 틀값 목록(1200/902/828.5/779.9/8700)에 없는 값도 틀릴 수 있다는 첫 사례다.
+    //     TF 기본 공격은 1500 이라 "기본공격 값이 새어든 것" 도 아니었다
+    '트위스티드 페이트 Q': { '사거리': '1450', '투사체 속도': '1000' },   // bin castRange 10000 (override 없음) · 롤위키 둘 다
+    // ★★ 2026-08-24 정정 — 롤위키가 맞았다. 예전엔 "롤위키 500~850 은 폭을 더한 값" 이라 보고
+    //   나무위키 300~600 을 골랐는데, **인게임에서 최대 충전 표시가 사이온 E(800) 와 거의 같았다.**
+    //   롤위키 원문도 충전 시간별 표를 갖고 있다: {{pp|채널 시간|500;500;675;762.5;850|0~1초}}
+    '사이온 Q': { '사거리': '500 ~ 850 (충전 시간에 따라)' }, // bin castRange 10000 (더미)
 
     // --- 투사체 속도: 본체 값이 기본 공격 기본값이라 진짜 값이 딴 데 있는 자리 ---
     //   ★ 롤위키 스킬 상자에 `SPEED:` 로 적혀 있다. 나무위키는 "투사체 속도" 로 적는다
@@ -338,6 +346,10 @@ const STAT_MANUAL = {
     // ★ 누누 W 사거리는 안 적는다 (STAT_DROP). 굴린 거리 750~1750 은 사거리 개념이 아니다.
     //   대신 폭발 반경을 효과 범위로 — 롤위키 130/260/390 (눈덩이 크기별)
     '누누와 윌럼프 W': { '효과 범위': '130 ~ 390 (눈덩이 크기에 따라)' },
+    // ★ 사이온 E — 롤위키 range 칸에 값이 **둘**이다: 800(포효 미사일) · 1350(밀려난 미니언의
+    //   최대 이동 거리). 우리가 첫 값만 가져오고 있었다. 문장에도 "밀려난 유닛에게 부딪힌
+    //   적들에게 동일하게 적용" 이라 적혀 있으니 실효 범위가 훨씬 길다 (2026-08-24 사용자 지적)
+    '사이온 E': { '사거리': '800 (밀려난 유닛은 최대 1350까지)' },
     '암베사 P': { '사거리': '175 ~ 350' },
     '올라프 E': { '시전시간': '0.25 ~ 0.175' },
     '스카너 W': { '시전시간': '0.3' },
@@ -351,8 +363,11 @@ const STAT_MANUAL = {
     // 그웬 R 바늘은 날아가면서 폭이 좁아진다 (롤위키 "0.5초당 -140"). 숫자만 두면 오타처럼 읽힌다
     '그웬 R': { '스킬 폭': '240 ~ 30 (거리에 따라)' },
     // 공격 속도로 줄어드는 시전시간 — 롤위키 공식 (2026-08-23). bin castTime 은 기본값 하나뿐이다
-    '야스오 Q': { '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)' },
-    '요네 Q': { '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)' },
+    // ★★ 사거리는 **한 줄에 같이 적어야 한다** — 키를 두 번 적으면 뒤엣것만 남아 시전시간이 조용히 사라진다.
+    //   Q3(회오리)은 평타 Q 와 사거리가 완전히 다른데 우리는 첫 값만 쓰고 있었다 (롤위키 range 칸 둘째 값).
+    '야스오 Q': { '사거리': '475 (회오리 1150)', '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)' },
+    // 요네 Q 는 롤위키 range 칸에 값이 셋이다 — 450(찌르기) · 450(3타 돌진 거리) · 1050(회오리 전체)
+    '요네 Q': { '사거리': '450 (회오리 1050)', '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)' },
     '요네 W': { '시전시간': '0.5 ~ 0.19 (추가 공격 속도 1.68%당 1% 감소, 최대 62.5%)' },
     '애쉬 W': { '투사체 속도': '2000' },      // 롤위키·나무위키 2000 (계열 `VolleyAttack` 1500 은 다른 값)
     '하이머딩거 W': { '투사체 속도': '1200' }, // 나무위키 1200 (계열 750 은 다른 값)
@@ -363,7 +378,11 @@ const STAT_MANUAL = {
     '오른 E': { '사거리': '800' },       // override 450 · 롤위키 800 · 나무위키 800
     '밀리오 W': { '사거리': '650' },     // override 350 · castRange 650 · 롤위키 650 · 나무위키 650
     '볼리베어 R': { '사거리': '700' },   // override 550 · castRange 700 · 롤위키 700 · 나무위키 "도약 거리 700"
-    '칼리스타 R': { '사거리': '1200' },  // override 1000 · 롤위키 1200 · 나무위키 1200
+    // ★ 칼리스타 R 은 두 단계라 사거리가 둘이다 (2026-08-24 인게임 확인 + bin 대조).
+    //   R1(창에 꽂힌 아군을 끌어당김) = 본체 `KalistaRx` castRange·override 1000 — 인게임에서 E(1000) 와 같았다
+    //   R2(그 아군을 던짐)          = `KalistaRAllyStun` castRange 1200 — 위키 둘이 적은 값이 이쪽이었다
+    //   **위키가 틀린 게 아니라 다른 걸 재고 있었다.** 시전 사거리는 1000 이 맞다
+    '칼리스타 R': { '사거리': '1000 (던지는 거리 1200)' },
     '초가스 W': { '사거리': '650' },     // castRange 300 · 롤위키 650 · 나무위키 650 (전방 60도 원뿔)
 
     // --- 돌진 속도: 후보가 둘이라 자동으로 건너뛴 자리 ---
@@ -478,7 +497,11 @@ const passiveCdNoteMade = [];
 //   ★ 남기는 괄호 셋: ① `+` 로 시작(계수 — 올라프 E 체력 소모) ② `…에 따라` 로 끝(값의 정체 —
 //     레벨/충전/거리) ③ 7자 미만(눈으로 읽는 게 빠르다 — `(가속)`·`(재사용)`·`(튕김)`).
 //   ★ 홑따옴표만 쓴다 — 값이 큰따옴표 문자열이라 `"` 가 들어가면 add_level_graphs 의 줄 파싱이 깨진다.
-function foldParenNote(val) {
+// ★★ `ctr` 은 **스킬 하나** 안에서 이어지는 각주 번호다 (2026-08-24).
+//   없이 쓰면 값마다 [1] 부터 다시 세어, 한 스킬에 각주가 둘 이상일 때
+//   화면에 [1] 이 여러 번 뜬다 — 야스오 Q 는 쿨타임·사거리·시전시간 셋이 전부 [1] 이었다.
+//   번호 순서는 화면 순서와 같다 (쿨타임 → 소모값 → 우상단 값. index.html 의 champ-skill-meta).
+function foldParenNote(val, ctr) {
     if (typeof val !== 'string' || val.includes('custom-footnote')) return val;
     let no = 0;
     return val.replace(/\s*\(([^()]+)\)/g, (m, inner) => {
@@ -487,7 +510,8 @@ function foldParenNote(val) {
         // 닐라 E `(재사용 0.5초)` 만 8자라 각주가 되면 재충전형끼리 들쭉날쭉해진다
         if (t.startsWith('+') || t.startsWith('재사용') || /에 따라$/.test(t) || t.length < 7) return m;
         no++;
-        return `<span class='custom-footnote'>[${no}]<span class='custom-footnote-content'>` +
+        const shown = ctr ? ++ctr.n : no;
+        return `<span class='custom-footnote'>[${shown}]<span class='custom-footnote-content'>` +
             `<div style='font-size:12px; color:#fff; white-space:nowrap;'>${t}</div></span></span>`;
     });
 }
@@ -3087,18 +3111,19 @@ async function main() {
             const rng = okRange(binRange) ? binRange : v1Range;
             const hasRange = okRange(rng);
 
+            const fnCtr = { n: 0 };   // ★ 각주 번호는 스킬 단위로 이어진다
             lines.push(`        "${key}": {`);
             if (pLines.length) lines.push(pLines.join('\n'));
             // 손으로 쓴 게 있으면 원문 그대로, 없으면 빈칸.
             const vv = carried[key] || {};
             lines.push(vv.v1 !== undefined ? vv.v1 : `            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)`);
             lines.push(vv.v2 !== undefined ? vv.v2 : `            "v2": "",`);
-            lines.push(`            "cooldown": ${q(foldParenNote(cd))},`);
+            lines.push(`            "cooldown": ${q(foldParenNote(cd, fnCtr))},`);
             if (COST_MANUAL[`${c.name} ${key}`] !== undefined) {
                 costSentence.push(`${c.name} ${key}: ${cost} → ${COST_MANUAL[`${c.name} ${key}`]} (COST_MANUAL)`);
                 cost = COST_MANUAL[`${c.name} ${key}`];
             }
-            lines.push(`            "cost": ${q(foldParenNote(cost))},`);
+            lines.push(`            "cost": ${q(foldParenNote(cost, fnCtr))},`);
             // 같은 스킬에 아이콘이 여러 개 달리는 자리 (재시전·취소·진화·1·2·3타).
             // 첫 번째 폼 라벨. 폼이 두 개인 챔피언의 기본 스킬에만 붙는다.
             //   ★ 폼2 로 대체되는 슬롯에만 붙인다 — 클레드는 Q 만 바뀌므로 W·E·R 엔 안 붙는다
@@ -3137,7 +3162,7 @@ async function main() {
                     const speedPair = (name === '투사체 속도' || name === '돌진 속도') && (missileSpeed || dashSpeed);
                     if (!speedPair) { v = wikiStat[name]; wikiStatUsed.push(`${c.name} ${key} ${name} = ${v}`); }
                 }
-                if (v) rows.push(`                ${q(name)}: ${q(foldParenNote(v))}`);
+                if (v) rows.push(`                ${q(name)}: ${q(foldParenNote(v, fnCtr))}`);
             };
 
             const statRows = [];
