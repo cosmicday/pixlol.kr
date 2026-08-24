@@ -7672,8 +7672,12 @@ window.playSkill = function (index) {
 
     const cooldownEl = document.getElementById('champ-skill-cooldown-header');
     const costEl = document.getElementById('champ-skill-cost-header');
-    if (cooldownEl) cooldownEl.innerHTML = `쿨타임 ${skill.cooldown}${skill.cooldownNote || ''}`;
-    if (costEl) costEl.innerHTML = `소모값 ${skill.cost}`;
+    // ★ 값이 "-" 면 줄을 통째로 숨긴다 (2026-08-24). 인게임 툴팁도 소모값 없는 스킬엔
+    //   소모값 줄 자체가 없다. **"없음" 은 숨기지 않는다** — 클라가 "재사용 대기시간 없음"
+    //   이라고 일부러 적는 자리다 (바이 W·쉬바나 R·유나라 Q·자이라 W·트위스티드 페이트 E).
+    const metaLine = (label, v, extra) => (v && v !== '-') ? `${label} ${v}${extra || ''}` : '';
+    if (cooldownEl) cooldownEl.innerHTML = metaLine('쿨타임', skill.cooldown, skill.cooldownNote);
+    if (costEl) costEl.innerHTML = metaLine('소모값', skill.cost);
 
     const descTextEl = document.getElementById('champ-skill-desc-text-body');
     if (descTextEl) descTextEl.innerHTML = skill.desc;
@@ -7692,8 +7696,8 @@ window.playSkill = function (index) {
             put('champ-skill2-form', f2.label);
             put('champ-skill2-name',
                 `<span style="color:#d9d5e3; font-weight: normal; font-size: 16px;">[${skill.keyChar}]</span> ${f2.name}`);
-            put('champ-skill2-cooldown', `쿨타임 ${f2.cooldown}`);
-            put('champ-skill2-cost', `소모값 ${f2.cost}`);
+            put('champ-skill2-cooldown', metaLine('쿨타임', f2.cooldown));
+            put('champ-skill2-cost', metaLine('소모값', f2.cost));
             put('champ-skill2-desc', f2.desc);
             box2El.style.display = 'block';
         } else {
