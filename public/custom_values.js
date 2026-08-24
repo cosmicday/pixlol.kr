@@ -7337,7 +7337,7 @@ const customValues = {
             "stats": {
                 "사거리": "850",
                 "효과 범위": "375",
-                "시전시간": "0.25"
+                "시전시간": "0.5"
             }
         },
     },
@@ -9712,8 +9712,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/jinx/hud/icons2d/jinx_q2.png"],
             "stats": {
                 "사거리": "600",
-                "효과 범위": "250",
-                "시전시간": "0.25"
+                "효과 범위": "250"
             }
         },
         "W": {
@@ -9811,6 +9810,7 @@ const customValues = {
             "cooldown": "8 / 7 / 6 / 5 / 4",
             "cost": "30",
             "stats": {
+                "사거리": "650",
                 "투사체 속도": "1475"
             }
         },
@@ -11861,7 +11861,7 @@ const customValues = {
             "cooldown": "90",
             "cost": "100",
             "stats": {
-                "사거리": "1200",
+                "사거리": "1100 (+ 추가 공격 사거리)",
                 "스킬 폭": "120",
                 "투사체 속도": "5000"
             }
