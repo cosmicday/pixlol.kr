@@ -487,7 +487,7 @@ const customValues = {
             "cost": "-",
             "form1": "미니 나르",
             "stats": {
-                "사거리": "1100",
+                "사거리": "1100<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>돌아올 때 3000</div></span></span>",
                 "스킬 폭": "110",
                 "시전시간": "0.25",
                 "투사체 속도": "2500"
@@ -2795,7 +2795,7 @@ const customValues = {
             "cooldown": "150 / 130 / 110",
             "cost": "50",
             "stats": {
-                "사거리": "1600",
+                "사거리": "전역",
                 "스킬 폭": "200",
                 "시전시간": "0.4"
             }
@@ -3468,7 +3468,7 @@ const customValues = {
             "cost": "90 / 100 / 110 / 120 / 130",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/milio/hud/icons2d/milio_w2.png"],
             "stats": {
-                "사거리": "650",
+                "사거리": "650 (재사용 3000)",
                 "효과 범위": "415",
                 "시전시간": "0.25"
             }
@@ -5986,7 +5986,7 @@ const customValues = {
             "cooldown": "11",
             "cost": "60",
             "stats": {
-                "사거리": "650",
+                "사거리": "650<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>도전 대상 1100</div></span></span>",
                 "효과 범위": "250",
                 "돌진 속도": "2500"
             }
@@ -10632,7 +10632,7 @@ const customValues = {
             "cost": "40 / 45 / 50 / 55 / 60",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_w_ass.png", "https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_w_slay.png"],
             "stats": {
-                "사거리": "700",
+                "사거리": "700<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>그림자 암살자 900</div></span></span>",
                 "스킬 폭": "350",
                 "시전시간": "0.55"
             }
@@ -10666,7 +10666,7 @@ const customValues = {
             "cost": "100",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_r2_ass.png", "https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_r2_slay.png"],
             "stats": {
-                "사거리": "550",
+                "사거리": "550<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>그림자 암살자 750</div></span></span>",
                 "효과 범위": "300",
                 "시전시간": "0.1"
             }
@@ -10882,7 +10882,7 @@ const customValues = {
             "cost": "35",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/corki/hud/icons2d/corki_r_bigone.png"],
             "stats": {
-                "사거리": "1225",
+                "사거리": "1225<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>세 번째 미사일 1500</div></span></span>",
                 "효과 범위": "150",
                 "스킬 폭": "80",
                 "시전시간": "0.175",
@@ -10983,7 +10983,7 @@ const customValues = {
             "cost": "20",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/ksante/hud/icons2d/icons_ksante_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/ksante/hud/icons2d/icons_ksante_q3.png"],
             "stats": {
-                "사거리": "450",
+                "사거리": "450 (강화 930)",
                 "스킬 폭": "200",
                 "시전시간": "0.35"
             }
@@ -11105,7 +11105,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kled/hud/icons2d/kled_e2.png"],
             "stats": {
-                "사거리": "550",
+                "사거리": "550 (재사용 765)",
                 "돌진 속도": "600"
             }
         },
