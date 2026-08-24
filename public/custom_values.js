@@ -192,7 +192,6 @@ const customValues = {
             "cooldown": "22 / 20 / 18 / 16 / 14",
             "cost": "60 / 70 / 80 / 90 / 100",
             "stats": {
-                "사거리": "400",
                 "시전시간": "0.25"
             }
         },
@@ -701,7 +700,6 @@ const customValues = {
             "cooldown": "120 / 100 / 80",
             "cost": "100",
             "stats": {
-                "사거리": "400",
                 "시전시간": "0.2"
             }
         },
@@ -748,7 +746,6 @@ const customValues = {
             "cooldown": "26 / 24 / 22 / 20 / 18",
             "cost": "60",
             "stats": {
-                "사거리": "400",
                 "시전시간": "0.75"
             }
         },
@@ -1193,10 +1190,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "26 / 25 / 24 / 23 / 22",
-            "cost": "60 / 45 / 30 / 15 / 0",
-            "stats": {
-                "사거리": "150"
-            }
+            "cost": "60 / 45 / 30 / 15 / 0"
         },
         "E": {
             "p1": "60 / 70 / 80 / 90 / 100 (+ 추가 공격력의 20%)", // DashDamage
@@ -1578,7 +1572,6 @@ const customValues = {
             "cooldown": "12 / 10.5 / 9 / 7.5 / 6",
             "cost": "60",
             "stats": {
-                "사거리": "300",
                 "효과 범위": "250"
             }
         },
@@ -1590,10 +1583,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7",
-            "cost": "40",
-            "stats": {
-                "사거리": "300"
-            }
+            "cost": "40"
         },
         "E": {
             "p1": "1.2 / 1.4 / 1.6 / 1.8 / 2", // Duration
@@ -2270,10 +2260,7 @@ const customValues = {
             "v2": "",
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "초당 마나 50 / 55 / 60 / 65 / 70, 현재 체력 2%",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/locke/hud/icons2d/locke_w2.png"],
-            "stats": {
-                "사거리": "250"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/locke/hud/icons2d/locke_w2.png"]
         },
         "E": {
             "p1": "40 / 50 / 60 / 70 / 80 (+ 주문력의 40%)", // OnHitDamage
@@ -3093,7 +3080,6 @@ const customValues = {
             "cooldown": "38 / 35 / 33 / 29 / 26",
             "cost": "80 / 60 / 40 / 20 / 0",
             "stats": {
-                "사거리": "250",
                 "효과 범위": "175"
             }
         },
@@ -4465,10 +4451,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
-            "cost": "25",
-            "stats": {
-                "사거리": "300"
-            }
+            "cost": "25"
         },
         "R": {
             "p1": "50 / 100 / 150 (+ 주문력의 30 / 40 / 50% + 최대 마나의 2%)", // PassiveDamage
@@ -6800,10 +6783,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "0.8",
-            "cost": "-",
-            "stats": {
-                "사거리": "250"
-            }
+            "cost": "-"
         },
         "E": {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -7747,10 +7727,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "100 / 90 / 80",
-            "cost": "100",
-            "stats": {
-                "사거리": "400"
-            }
+            "cost": "100"
         },
     },
     "Yone": { // 요네
@@ -9024,7 +9001,6 @@ const customValues = {
             "cooldown": "17 / 15 / 13 / 11 / 9",
             "cost": "50 / 60 / 70 / 80 / 90",
             "stats": {
-                "사거리": "300",
                 "효과 범위": "375"
             }
         },
@@ -10439,7 +10415,6 @@ const customValues = {
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "80",
             "stats": {
-                "사거리": "170",
                 "효과 범위": "200"
             }
         },
@@ -10587,10 +10562,7 @@ const customValues = {
             "v2": "",
             "cooldown": "21 / 19 / 17 / 15 / 13",
             "cost": "90",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_e_ass.png"],
-            "stats": {
-                "사거리": "400"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_e_ass.png"]
         },
         "R": {
             "p1": "2.5", // InfestDuration
@@ -11641,10 +11613,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12",
-            "cost": "-",
-            "stats": {
-                "사거리": "400"
-            }
+            "cost": "-"
         },
         "W": {
             "p1": "4", // ReductionDuration
