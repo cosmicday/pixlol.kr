@@ -208,7 +208,7 @@ const customValues = {
             "p6": "2 ~ 0.5 (레벨에 따라)", // BarrelDecayTime
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "재충전 대기시간 17 / 16 / 15 / 14 / 13초<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>최대: 3 / 3 / 4 / 4 / 5개</div></span></span>",
+            "cooldown": "재충전 대기시간 17 / 16 / 15 / 14 / 13초 (재사용 0.5초)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>최대: 3 / 3 / 4 / 4 / 5개</div></span></span>",
             "cost": "-",
             "stats": {
                 "사거리": "1000",

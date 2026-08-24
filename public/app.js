@@ -7675,7 +7675,14 @@ window.playSkill = function (index) {
     // ★ 값이 "-" 면 줄을 통째로 숨긴다 (2026-08-24). 인게임 툴팁도 소모값 없는 스킬엔
     //   소모값 줄 자체가 없다. **"없음" 은 숨기지 않는다** — 클라가 "재사용 대기시간 없음"
     //   이라고 일부러 적는 자리다 (바이 W·쉬바나 R·유나라 Q·자이라 W·트위스티드 페이트 E).
-    const metaLine = (label, v, extra) => (v && v !== '-') ? `${label} ${v}${extra || ''}` : '';
+    // ★ 값이 이미 "재충전 대기시간 …" 같은 문장이면 라벨을 뺀다 (2026-08-24).
+    //   "쿨타임 재충전 대기시간 17…" 처럼 말이 겹쳐서 어색했다 — 클라도 그 자리엔 문장만 쓴다
+    //   (갱플랭크 E·닐라 E·밀리오 E·아무무 Q·아지르 W·코르키 R·하이머딩거 Q).
+    const metaLine = (label, v, extra) => {
+        if (!v || v === '-') return '';
+        const skipLabel = label === '쿨타임' && /^[가-힣 ]*대기시간/.test(String(v));
+        return `${skipLabel ? '' : label + ' '}${v}${extra || ''}`;
+    };
     if (cooldownEl) cooldownEl.innerHTML = metaLine('쿨타임', skill.cooldown, skill.cooldownNote);
     if (costEl) costEl.innerHTML = metaLine('소모값', skill.cost);
 
