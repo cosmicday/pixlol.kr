@@ -31,7 +31,8 @@ const path = require('path');
 const WRITE = process.argv.includes('--write');
 const CACHE_BIN = path.join(__dirname, '.cache', 'bin');
 const CACHE_DIR = path.join(__dirname, '.cache');
-const DD_VER = process.env.DD_VER || '16.16.1';
+// ★ DD 버전은 dd_version.js 가 정한다 (versions.json 최신 · DD_VER 환경변수가 이긴다).
+const { ddVersion } = require('./dd_version');
 
 // ------------------------------------------------------------
 // 성장 곡선
@@ -349,6 +350,8 @@ function collectSkillCurves() {
 // 2) 챔피언 스탯 곡선
 // ------------------------------------------------------------
 async function fetchDD() {
+    // ★ withCD — DD 스탯과 CD bin(.cache/bin) 을 같이 쓰므로 짝짝이를 막는다
+    const DD_VER = await ddVersion({ withCD: true });
     const cacheFile = path.join(CACHE_DIR, `dd_championFull_${DD_VER}.json`);
     if (fs.existsSync(cacheFile)) return JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
     const url = `https://ddragon.leagueoflegends.com/cdn/${DD_VER}/data/ko_KR/championFull.json`;

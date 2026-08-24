@@ -33,8 +33,10 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const DD_VER = process.env.DD_VER || '16.16.1';
-const DD = `https://ddragon.leagueoflegends.com/cdn/${DD_VER}/data/ko_KR`;
+// ★ DD 버전은 dd_version.js 가 정한다 (versions.json 최신 · DD_VER 환경변수가 이긴다).
+//   상수가 아니라 아래 IIFE 첫머리에서 채운다 — 받아오는 데 await 가 필요해서다.
+const { ddVersion } = require('./dd_version');
+let DD_VER, DD;
 const CD = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/ko_kr/v1';
 // 아이템 등급(`epicness`) 이 여기에만 있다. 15MB 라 빌드 때만 받는다 (런타임 의존 0).
 const CD_ITEM_BIN = 'https://raw.communitydragon.org/latest/game/items.cdtb.bin.json';
@@ -47,6 +49,10 @@ async function getJson(url) {
 }
 
 (async () => {
+    // ★ withCD — DD 아이템(이름·가격·조합식)과 CD 등급·룬을 같이 쓰므로 짝짝이를 막는다
+    DD_VER = await ddVersion({ withCD: true });
+    DD = `https://ddragon.leagueoflegends.com/cdn/${DD_VER}/data/ko_KR`;
+
     const [ddItem, ddSumm, perks, perkStyles, itemBin] = await Promise.all([
         getJson(`${DD}/item.json`),
         getJson(`${DD}/summoner.json`),

@@ -19,7 +19,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const DD_VER = '16.16.1';
+// ★ DD 버전은 dd_version.js 가 정한다 (versions.json 최신 · DD_VER 환경변수가 이긴다).
+//   여기만 예전에 환경변수조차 못 받는 순수 하드코딩이었다.
+const { ddVersion } = require('./dd_version');
 const UNIVERSE = 'https://universe-meeps.leagueoflegends.com/v1/ko_kr/champions/';
 // ★ 배경은 **챔피언별 파일**로 쪼갠다 (2026-08-13).
 //   통짜 하나(gzip 335KB)로 뒀더니 배경 탭을 처음 열 때 그걸 다 받아야 했다.
@@ -57,6 +59,9 @@ function cleanQuote(s) {
 }
 
 async function main() {
+    // ★ 여기만 `withCD` 를 일부러 안 켠다 — 상대가 Universe(라이엇 공식)라
+    //   CommunityDragon 과 무관하다. DD 에서 받는 건 챔피언 목록뿐이다.
+    const DD_VER = await ddVersion();
     const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${DD_VER}/data/ko_KR/champion.json`);
     const champs = Object.values((await res.json()).data);
     console.log(`[1/2] 챔피언 ${champs.length}명 — Universe 에서 배경을 받는 중...`);
