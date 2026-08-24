@@ -457,7 +457,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/gwen/hud/icons2d/gwen_r2.png", "https://raw.communitydragon.org/latest/game/assets/characters/gwen/hud/icons2d/gwen_r3.png"],
             "stats": {
                 "사거리": "1200",
-                "스킬 폭": "240 ~ 30",
+                "스킬 폭": "240 ~ 30 (거리에 따라)",
                 "시전시간": "0.25",
                 "투사체 속도": "1800"
             }
