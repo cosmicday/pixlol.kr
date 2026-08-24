@@ -4303,8 +4303,7 @@ const customValues = {
             "cooldown": "120 / 100 / 80",
             "cost": "현재 체력의 5% 소모",
             "stats": {
-                "사거리": "12000",
-                "효과 범위": "전역",
+                "사거리": "12000<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>2차 시전 돌진은 전역</div></span></span>",
                 "스킬 폭": "320",
                 "시전시간": "1",
                 "투사체 속도": "2200",
@@ -5500,8 +5499,7 @@ const customValues = {
             "cooldown": "8 / 7.25 / 6.5 / 5.75 / 5",
             "cost": "140 / 130 / 120 / 110 / 100",
             "stats": {
-                "사거리": "400",
-                "효과 범위": "전역",
+                "사거리": "400<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>영혼검 회수는 전역</div></span></span>",
                 "스킬 폭": "160",
                 "투사체 속도": "2000 ~ 5000"
             }
@@ -6171,8 +6169,7 @@ const customValues = {
             "cost": "70",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/thresh/hud/icons2d/thresh_q3.png"],
             "stats": {
-                "사거리": "1075",
-                "효과 범위": "전역",
+                "사거리": "1075<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>기절·끌어당김은 전역</div></span></span>",
                 "스킬 폭": "120",
                 "시전시간": "0.5",
                 "투사체 속도": "1900"
@@ -6636,8 +6633,7 @@ const customValues = {
             "cost": "30",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/akali/hud/icons2d/akali_e2.png"],
             "stats": {
-                "사거리": "825",
-                "효과 범위": "전역",
+                "사거리": "825 (재사용은 전역)",
                 "스킬 폭": "140",
                 "시전시간": "0.25",
                 "투사체 속도": "1900"
@@ -7528,8 +7524,7 @@ const customValues = {
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "60",
             "stats": {
-                "사거리": "900",
-                "효과 범위": "전역",
+                "사거리": "900<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>표식 대상 재사용은 전역</div></span></span>",
                 "스킬 폭": "180",
                 "시전시간": "0.25",
                 "투사체 속도": "1600"
@@ -7848,8 +7843,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yone/hud/icons2d/yonee2.png"],
             "stats": {
-                "사거리": "300",
-                "효과 범위": "전역",
+                "사거리": "300<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>귀환 돌진은 전역</div></span></span>",
                 "시전시간": "0.225 (재사용)",
                 "돌진 속도": "1200"
             }
@@ -8093,8 +8087,8 @@ const customValues = {
             "cost": "100",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/urgot/hud/icons2d/urgot_rrecast.png"],
             "stats": {
-                "사거리": "2500",
-                "효과 범위": "전역",
+                "사거리": "2500 (재사용은 전역)",
+                "효과 범위": "600",
                 "스킬 폭": "160",
                 "시전시간": "0.5",
                 "투사체 속도": "3200"
@@ -8365,8 +8359,7 @@ const customValues = {
             "cost": "50",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/irelia/hud/icons2d/irelia_e2.png"],
             "stats": {
-                "사거리": "850",
-                "효과 범위": "전역",
+                "사거리": "850<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>검이 모이는 거리는 전역</div></span></span>",
                 "스킬 폭": "140",
                 "투사체 속도": "2000"
             }
@@ -9165,8 +9158,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zed/hud/icons2d/zedr2.png"],
             "stats": {
-                "사거리": "625",
-                "효과 범위": "전역"
+                "사거리": "625 (재사용은 전역)"
             }
         },
     },
@@ -9454,7 +9446,6 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zoe/hud/icons2d/zoe_w2.png"],
             "stats": {
-                "사거리": "3000 / 4500 / 6000 / 3000 / 3000",
                 "효과 범위": "전역",
                 "스킬 폭": "240",
                 "투사체 속도": "2000"
