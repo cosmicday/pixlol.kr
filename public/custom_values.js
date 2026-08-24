@@ -5894,7 +5894,7 @@ const customValues = {
             "stats": {
                 "사거리": "1200",
                 "스킬 폭": "180",
-                "시전시간": "0.25",
+                "시전시간": "0.25 ~ 0.1<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 100%당 50% 감소, 최대 60%</div></span></span>",
                 "투사체 속도": "1350"
             }
         },
@@ -8682,7 +8682,7 @@ const customValues = {
             "stats": {
                 "사거리": "1100",
                 "스킬 폭": "100",
-                "시전시간": "0.25",
+                "시전시간": "0.25 ~ 0.1<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 100%당 0.07초 감소, 최대 60%</div></span></span>",
                 "투사체 속도": "700"
             }
         },
