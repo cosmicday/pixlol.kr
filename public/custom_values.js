@@ -11536,7 +11536,7 @@ const customValues = {
             "p1": "20 / 35 / 50 / 65 / 80", // MaximumBonusAD
             "p2": "30 / 40 / 50 / 60 / 70 (+ 주문력의 30%)", // BaseHeal
             "p3": "0.5 / 0.95 / 1.4 / 1.85 / 2.3 (+ 주문력의 1.2%)", // HealPerFury
-            "p4": "80 / 135 / 190 / 245 / 300 (+ 주문력의 150%)", // MaximumHeal
+            "p4": "<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>최대: 80 / 135 / 190 / 245 / 300 (+ 주문력의 150%)</div></span></span>", // MaximumHeal
             "p5": "10", // RemainingHealthThreshold*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",

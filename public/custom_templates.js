@@ -2028,7 +2028,7 @@ const customTemplates = {
     },
     "Tryndamere": { // 트린다미어
         "P": "트린다미어가 기본 공격 시 <keywordmajor>분노가 5</keywordmajor>만큼, 치명타 명중 시 <keywordmajor>분노가 10</keywordmajor>만큼 그리고 마무리 일격 시 <keywordmajor>분노가 10</keywordmajor>만큼 상승합니다. 전투에서 벗어나 8초가 경과하면 트린다미어가 초당 <keywordmajor>5의 분노</keywordmajor>를 잃습니다.<br><br><keywordmajor>분노</keywordmajor>가 1 상승할 때마다 치명타 확률이 {p1}%씩 증가합니다.", // 격노 — stringtable
-        "Q": "<passive>기본 지속 효과:</passive> 트린다미어가 피에 굶주려 잃은 체력에 비례해 최대 <scalead>{p1}의 공격력</scalead>을 얻습니다.<br><br><active>사용 시:</active> 트린다미어가 <keywordmajor>분노</keywordmajor>를 소모하여 <healing>체력을 {p2}+분노당 {p3}만큼 회복(최대: {p4})</healing>합니다.", // 피의 갈망
+        "Q": "<passive>기본 지속 효과:</passive> 트린다미어가 피에 굶주려 잃은 체력에 비례해 최대 <scalead>{p1}의 공격력</scalead>을 얻습니다.<br><br><active>사용 시:</active> 트린다미어가 <keywordmajor>분노</keywordmajor>를 소모하여 <healing>체력을 {p2}+분노당 {p3}만큼 회복</healing>{p4}합니다.", // 피의 갈망 — "(최대: {p4})" 를 각주로 접었다 (2026-08-24, KEEP_TEXT)
         "Q_rules": "<rules>남은 체력이 {p5}%일 때 공격력 증가량이 최대가 됩니다.</rules>", // 구분선 아래 회색 글씨
         "W": "트린다미어가 모욕을 퍼부어 {p1}초 동안 챔피언의 공격력을 {p2} 감소시킵니다. 트린다미어에게서 도망치는 적은 {p3}초 동안 {p4}% <status>둔화</status>됩니다.", // 조롱의 외침
         "E": "트린다미어가 검을 들고 회전하며 적을 베어넘겨 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입히고 적중한 적 하나당 <keywordmajor>분노가 {p2}</keywordmajor> 생성되며, 대상이 챔피언일 경우 <keywordmajor>분노가 {p3}</keywordmajor> 생성됩니다.<br><br>트린다미어가 치명타를 입힐 때마다 이 스킬의 재사용 대기시간이 {p4}초 감소하며 챔피언에게 치명타를 입히면 {p5}초 감소합니다.", // 회전 베기

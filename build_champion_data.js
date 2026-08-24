@@ -324,6 +324,9 @@ const KEEP_TEXT = {
     Smolder: ['P', 'Q', 'W', 'E'], Swain: ['P'], XinZhao: ['E'], AurelionSol: ['P', 'R_rules'],
     Aphelios: ['P', 'Q', 'W', 'E', 'R'], Ornn: ['P'], Zilean: ['P'],
     Kaisa: ['P', 'W', 'E'], Kalista: ['P'],
+    //   트린다미어 Q — 문장이 너무 길다는 지적으로 "(최대: {p4})" 를 각주로 접었다 (2026-08-24).
+    //   {p4}(MaximumHeal) 값이 fill_values MANUAL 에서 각주 HTML 로 나온다
+    Tryndamere: ['Q'],
     //   렝가 P — 뼈이빨 목걸이 공격력 증가량이 **원문에 아예 없다** (수치도 `{pN}` 자리도 없음).
     //   bin 에도 없다 — `RengarPassiveBonetoothBuff1~5` 는 껍데기고 값은 버프 스크립트 안이다.
     //   롤위키 "1% – 36% (based on Trophies) bonus AD" 를 보고 손으로 적었다 (2026-08-10)

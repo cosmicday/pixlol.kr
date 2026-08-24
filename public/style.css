@@ -3191,7 +3191,10 @@ main {
 .custom-footnote-content {
     visibility: hidden;
     opacity: 0;
-    width: 240px;
+    /* ★ 240px 고정이었는데 내용 길이가 제각각이라 어떤 건 남고 어떤 건 넘쳤다 (2026-08-24).
+       내용에 맞추되 화면(폰)과 360px 를 상한으로 두고, 상한에 걸리면 아래 div 규칙이 줄바꿈을 허용한다. */
+    width: max-content;
+    max-width: min(360px, calc(100vw - 16px));
     background-color: rgba(20, 20, 28, 0.98);
     color: #fff;
     text-align: center;
@@ -3214,6 +3217,10 @@ main {
     font-weight: normal;
     transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
 }
+
+/* ★ 각주 내용 div 는 생성기가 인라인 white-space:nowrap 을 박는다. 위 max-width 상한에
+   걸렸을 때만 실제로 줄이 바뀌도록 !important 로 푼다 — 짧은 내용은 그대로 한 줄이다. */
+.custom-footnote-content div { white-space: normal !important; }
 
 .custom-footnote-content::before {
     content: "";

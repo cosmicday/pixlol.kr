@@ -73,8 +73,10 @@ const MANUAL = {
   '아우렐리온 솔 Q / MaxChannelDuration': '3.25 (5랭크는 무제한)',
   // ★ 자동 추출이 "최대 마나의 100% x (…)" 라는 식을 그대로 내보내던 자리 (2026-08-24).
   //   트린다미어의 자원은 분노(최대 100)다 — 접으면 롤위키 Maximum Heal 과 정확히 일치:
-  //   30+0.5x100 ~ 70+2.3x100 = 80~300, 주문력 30% + 1.2%x100 = 150%
-  '트린다미어 Q / MaximumHeal': '80 / 135 / 190 / 245 / 300 (+ 주문력의 150%)',
+  //   30+0.5x100 ~ 70+2.3x100 = 80~300, 주문력 30% + 1.2%x100 = 150%.
+  //   ★ 문장이 길다는 지적으로 "(최대: …)" 를 통째로 각주로 접었다 — 템플릿의 {p4} 자리에
+  //     이 각주 HTML 이 그대로 들어간다 (KEEP_TEXT Tryndamere Q 와 한 쌍, 홑따옴표만 쓸 것)
+  '트린다미어 Q / MaximumHeal': "<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>최대: 80 / 135 / 190 / 245 / 300 (+ 주문력의 150%)</div></span></span>",
   // ★ 클라 회색 글씨가 "보호막은 200초에 걸쳐 점차 사라집니다" 로 뜬다 — 라이엇이 초당 감소량(200)을
   //   지속시간 자리에 꽂은 오타다. 본문 "최대 2.5초까지 감소하는 보호막" 이 진짜 값 (kenchR.PNG, 2026-08-23)
   '탐 켄치 R / ShieldDecayPerSecond': '2.5',
