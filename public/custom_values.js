@@ -916,7 +916,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "2500 / 3250 / 4000",
-                "효과 범위": "전역",
+                "효과 범위": "전역 (어둠)",
                 "돌진 속도": "1800"
             }
         },
@@ -8714,7 +8714,7 @@ const customValues = {
             "cost": "20",
             "stats": {
                 "사거리": "2000",
-                "효과 범위": "전역",
+                "효과 범위": "전역 (깃털 회수)",
                 "스킬 폭": "160",
                 "투사체 속도": "4000"
             }
@@ -9446,7 +9446,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zoe/hud/icons2d/zoe_w2.png"],
             "stats": {
-                "효과 범위": "전역",
+                "효과 범위": "전역<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>파편 떨어뜨리기</div></span></span>",
                 "스킬 폭": "240",
                 "투사체 속도": "2000"
             }
