@@ -468,6 +468,26 @@ const PASSIVE_CD_NOTE = {
 };
 const passiveCdNoteMade = [];
 
+// ★ 우상단 값의 긴 괄호를 각주 [n] 로 접는다 (2026-08-24, 야스오 Q 지적).
+//   `쿨타임 4 ~ 1.33 (추가 공격 속도 1.67%당 1% 감소, 최대 67%)` 가 한 줄에 다 나가면 너무 길다 —
+//   괄호를 hover 각주로 빼서 `쿨타임 4 ~ 1.33 [1]` 로 줄인다. 쿨타임·소모값·stats 에만 적용한다 (문장 pN 은 제외).
+//   ★ 남기는 괄호 셋: ① `+` 로 시작(계수 — 올라프 E 체력 소모) ② `…에 따라` 로 끝(값의 정체 —
+//     레벨/충전/거리) ③ 7자 미만(눈으로 읽는 게 빠르다 — `(가속)`·`(재사용)`·`(튕김)`).
+//   ★ 홑따옴표만 쓴다 — 값이 큰따옴표 문자열이라 `"` 가 들어가면 add_level_graphs 의 줄 파싱이 깨진다.
+function foldParenNote(val) {
+    if (typeof val !== 'string' || val.includes('custom-footnote')) return val;
+    let no = 0;
+    return val.replace(/\s*\(([^()]+)\)/g, (m, inner) => {
+        const t = inner.trim();
+        // `재사용 N초` 는 길이와 무관하게 인라인 — 아무무 Q `(재사용 3초)` 는 6자라 남는데
+        // 닐라 E `(재사용 0.5초)` 만 8자라 각주가 되면 재충전형끼리 들쭉날쭉해진다
+        if (t.startsWith('+') || t.startsWith('재사용') || /에 따라$/.test(t) || t.length < 7) return m;
+        no++;
+        return `<span class='custom-footnote'>[${no}]<span class='custom-footnote-content'>` +
+            `<div style='font-size:12px; color:#fff; white-space:nowrap;'>${t}</div></span></span>`;
+    });
+}
+
 function passiveCdFootnote(no, shown, real, why) {
     return `<span class='custom-footnote'>[${no}]` +
         `<span class='custom-footnote-content'>` +
@@ -2487,7 +2507,7 @@ async function main() {
             if (STAT_MANUAL[`${c.name} P`] || STAT_DROP[`${c.name} P`]) statManualUsed.add(`${c.name} P`);
             const w = Object.assign({}, wk, man);   // 손표 > 위키
             const rows = STAT_ORDER.filter(k => w[k] !== undefined && !drop.includes(k))
-                .map(k => { if (man[k] === undefined) wikiStatUsed.push(`${c.name} P ${k} = ${w[k]}`); return `                ${q(k)}: ${q(w[k])}`; });
+                .map(k => { if (man[k] === undefined) wikiStatUsed.push(`${c.name} P ${k} = ${w[k]}`); return `                ${q(k)}: ${q(foldParenNote(w[k]))}`; });
             return rows.length ? `            "stats": {\n${rows.join(',\n')}\n            }` : null;
         })();
         const pIcons = extraIcons.P;
@@ -3069,12 +3089,12 @@ async function main() {
             const vv = carried[key] || {};
             lines.push(vv.v1 !== undefined ? vv.v1 : `            "v1": "", // 구분선 아래 피해량 줄 (직접 작성)`);
             lines.push(vv.v2 !== undefined ? vv.v2 : `            "v2": "",`);
-            lines.push(`            "cooldown": ${q(cd)},`);
+            lines.push(`            "cooldown": ${q(foldParenNote(cd))},`);
             if (COST_MANUAL[`${c.name} ${key}`] !== undefined) {
                 costSentence.push(`${c.name} ${key}: ${cost} → ${COST_MANUAL[`${c.name} ${key}`]} (COST_MANUAL)`);
                 cost = COST_MANUAL[`${c.name} ${key}`];
             }
-            lines.push(`            "cost": ${q(cost)},`);
+            lines.push(`            "cost": ${q(foldParenNote(cost))},`);
             // 같은 스킬에 아이콘이 여러 개 달리는 자리 (재시전·취소·진화·1·2·3타).
             // 첫 번째 폼 라벨. 폼이 두 개인 챔피언의 기본 스킬에만 붙는다.
             //   ★ 폼2 로 대체되는 슬롯에만 붙인다 — 클레드는 Q 만 바뀌므로 W·E·R 엔 안 붙는다
@@ -3113,7 +3133,7 @@ async function main() {
                     const speedPair = (name === '투사체 속도' || name === '돌진 속도') && (missileSpeed || dashSpeed);
                     if (!speedPair) { v = wikiStat[name]; wikiStatUsed.push(`${c.name} ${key} ${name} = ${v}`); }
                 }
-                if (v) rows.push(`                ${q(name)}: ${q(v)}`);
+                if (v) rows.push(`                ${q(name)}: ${q(foldParenNote(v))}`);
             };
 
             const statRows = [];

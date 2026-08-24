@@ -208,7 +208,7 @@ const customValues = {
             "p6": "2 ~ 0.5 (레벨에 따라)", // BarrelDecayTime
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "재충전 대기시간 17 / 16 / 15 / 14 / 13초 (최대: 3 / 3 / 4 / 4 / 5개)",
+            "cooldown": "재충전 대기시간 17 / 16 / 15 / 14 / 13초<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>최대: 3 / 3 / 4 / 4 / 5개</div></span></span>",
             "cost": "-",
             "stats": {
                 "사거리": "1000",
@@ -7223,14 +7223,14 @@ const customValues = {
             "p4": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 치명타 피해량의 105%)", // TotalDamageCrit
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "4 ~ 1.33 (추가 공격 속도 1.67%당 1% 감소, 최대 67%)",
+            "cooldown": "4 ~ 1.33<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.67%당 1% 감소, 최대 67%</div></span></span>",
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yasuo/hud/icons2d/yasuo_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/yasuo/hud/icons2d/yasuo_q3.png"],
             "stats": {
                 "사거리": "475",
                 "효과 범위": "215",
                 "스킬 폭": "110",
-                "시전시간": "0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)",
+                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
                 "투사체 속도": "1500"
             }
         },
@@ -7808,13 +7808,13 @@ const customValues = {
             "p4": "25 / 50 / 75 / 100 / 125 (+ 총 공격력의 치명타 피해량의 110%)", // TotalDamageCrit
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "4 ~ 1.33 (추가 공격 속도 1.67%당 1% 감소, 최대 67%)",
+            "cooldown": "4 ~ 1.33<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.67%당 1% 감소, 최대 67%</div></span></span>",
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yone/hud/icons2d/yoneq3.png"],
             "stats": {
                 "사거리": "450",
                 "스킬 폭": "30",
-                "시전시간": "0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)",
+                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
                 "투사체 속도": "1500",
                 "돌진 속도": "1500"
             }
@@ -7829,12 +7829,12 @@ const customValues = {
             "p7": "30 ~ 330 (레벨에 따라)", // MinimumDamageMinions
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "14 ~ 6 (추가 공격 속도 1.51%당 1% 감소, 최대 62.5%)",
+            "cooldown": "14 ~ 6<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.51%당 1% 감소, 최대 62.5%</div></span></span>",
             "cost": "-",
             "stats": {
                 "사거리": "700",
                 "효과 범위": "600",
-                "시전시간": "0.5 ~ 0.19 (추가 공격 속도 1.68%당 1% 감소, 최대 62.5%)"
+                "시전시간": "0.5 ~ 0.19<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.68%당 1% 감소, 최대 62.5%</div></span></span>"
             }
         },
         "E": {
@@ -9252,7 +9252,7 @@ const customValues = {
             "p4": "60", // ExcessAttackSpeedToADMult*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "1.52 (1레벨 기준, 공격 속도에 따라 감소)",
+            "cooldown": "1.52<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>1레벨 기준, 공격 속도에 따라 감소</div></span></span>",
             "cost": "-",
             "stats": {
                 "사거리": "700",
@@ -11382,7 +11382,7 @@ const customValues = {
                 "사거리": "900",
                 "스킬 폭": "150",
                 "시전시간": "0.25",
-                "투사체 속도": "2571 (돌아올 때 3000)"
+                "투사체 속도": "2571<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>돌아올 때 3000</div></span></span>"
             }
         },
         "E": {
