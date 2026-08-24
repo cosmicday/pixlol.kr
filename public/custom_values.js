@@ -309,8 +309,8 @@ const customValues = {
     },
     "Graves": { // 그레이브즈
         "P": {
-            "p1": "총 공격력의 70 ~ 100.005 (레벨에 따라)%", // SingleBulletDamage
-            "p2": "총 공격력의 70 ~ 100.005 (레벨에 따라)%", // MultiBulletDamage
+            "p1": "총 공격력의 70 ~ 100 (레벨에 따라)%", // SingleBulletDamage
+            "p2": "총 공격력의 70 ~ 100 (레벨에 따라)%", // MultiBulletDamage
             "p3": "50%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>65%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageMult
             "p4": "25", // StructureDamageReduction*100
             "cooldown": "-",
@@ -376,7 +376,7 @@ const customValues = {
                 "효과 범위": "740",
                 "스킬 폭": "200",
                 "시전시간": "0.25",
-                "투사체 속도": "1400"
+                "투사체 속도": "2100"
             }
         },
     },
@@ -501,7 +501,6 @@ const customValues = {
             "cost": "-",
             "form1": "미니 나르",
             "stats": {
-                "사거리": "550",
                 "스킬 폭": "200",
                 "시전시간": "0.6"
             }
@@ -531,7 +530,6 @@ const customValues = {
             "cooldown": "90 / 60 / 30",
             "cost": "-",
             "stats": {
-                "사거리": "590",
                 "효과 범위": "475",
                 "시전시간": "0.25",
                 "투사체 속도": "1200"
@@ -544,7 +542,7 @@ const customValues = {
             "p4": "70", // spell.GnarQ:MegaCDRefund*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "17.5 / 16 / 14.5 / 13 / 11.5",
+            "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
             "cost": "-",
             "name": "돌덩이 던지기",
             "form": "메가 나르",
@@ -566,7 +564,7 @@ const customValues = {
             "p2": "80", // spell.GnarE:MoveSpeedMod*-100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "24.5 / 22 / 19.5 / 17 / 14.5",
+            "cooldown": "22 / 19.5 / 17 / 14.5 / 12",
             "cost": "-",
             "name": "우지끈",
             "form": "메가 나르",
@@ -823,7 +821,6 @@ const customValues = {
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
             "cost": "50 / 60 / 70 / 80 / 90",
             "stats": {
-                "사거리": "600",
                 "시전시간": "0.25"
             }
         },
@@ -1146,7 +1143,6 @@ const customValues = {
             "cooldown": "120 / 105 / 90",
             "cost": "100",
             "stats": {
-                "사거리": "600",
                 "효과 범위": "590",
                 "시전시간": "0.6"
             }
@@ -1216,7 +1212,6 @@ const customValues = {
             "cooldown": "110 / 95 / 80",
             "cost": "100",
             "stats": {
-                "사거리": "400",
                 "효과 범위": "450"
             }
         },
@@ -1309,7 +1304,7 @@ const customValues = {
                 "사거리": "900",
                 "스킬 폭": "200",
                 "시전시간": "0.25",
-                "투사체 속도": "1300"
+                "투사체 속도": "1900<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>바깥쪽 원호 2100</div></span></span>"
             }
         },
         "W": {
@@ -1322,7 +1317,6 @@ const customValues = {
             "cooldown": "15 / 13.5 / 12 / 10.5 / 9",
             "cost": "40 / 45 / 50 / 55 / 60",
             "stats": {
-                "사거리": "800",
                 "효과 범위": "200",
                 "시전시간": "0.25"
             }
@@ -1383,7 +1377,6 @@ const customValues = {
             "cooldown": "12",
             "cost": "40 / 35 / 30 / 25 / 20",
             "stats": {
-                "사거리": "1000",
                 "시전시간": "0.242"
             }
         },
@@ -1469,7 +1462,7 @@ const customValues = {
                 "사거리": "615",
                 "효과 범위": "350",
                 "시전시간": "0.25",
-                "투사체 속도": "3500"
+                "투사체 속도": "4000"
             }
         },
         "R": {
@@ -1549,7 +1542,6 @@ const customValues = {
             "cooldown": "130 / 110 / 90",
             "cost": "100",
             "stats": {
-                "사거리": "150",
                 "시전시간": "0.5"
             }
         },
@@ -1667,7 +1659,7 @@ const customValues = {
                 "사거리": "1100",
                 "효과 범위": "310",
                 "시전시간": "0.25",
-                "투사체 속도": "1300"
+                "투사체 속도": "1200"
             }
         },
         "R": {
@@ -1737,7 +1729,7 @@ const customValues = {
             "p8": "82.5 / 120 / 157.5 / 195 / 232.5 (+ 주문력의 75%)", // EmpDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "재충전 대기시간 6초 (최대: 2개)",
+            "cooldown": "재충전 대기시간 6초 (재사용 0.5초) (최대: 2개)",
             "cost": "20 열기",
             "stats": {
                 "사거리": "850",
@@ -1862,7 +1854,6 @@ const customValues = {
             "cooldown": "7",
             "cost": "-",
             "stats": {
-                "사거리": "325",
                 "효과 범위": "400"
             }
         },
@@ -2069,7 +2060,7 @@ const customValues = {
             "p3": "8", // spell.RekSaiE:MaximumTunnels
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "18 / 18 / 17 / 16 / 15",
+            "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "-",
             "name": "",
             "form": "매복 상태",
@@ -2137,7 +2128,6 @@ const customValues = {
             "cooldown": "120 / 100 / 80",
             "cost": "100",
             "stats": {
-                "사거리": "200",
                 "효과 범위": "450",
                 "시전시간": "0.25"
             }
@@ -2211,10 +2201,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "100 / 90 / 80",
-            "cost": "-",
-            "stats": {
-                "사거리": "2500 / 3000 / 3500"
-            }
+            "cost": "-"
         },
     },
     "Locke": { // 로크
@@ -2596,7 +2583,6 @@ const customValues = {
             "cooldown": "11 / 10 / 9 / 8 / 7",
             "cost": "-",
             "stats": {
-                "사거리": "260",
                 "효과 범위": "300",
                 "시전시간": "0.267",
                 "투사체 속도": "1500"
@@ -2663,7 +2649,6 @@ const customValues = {
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "40",
             "stats": {
-                "사거리": "450",
                 "효과 범위": "275"
             }
         },
@@ -2721,7 +2706,6 @@ const customValues = {
             "cooldown": "6 / 5.5 / 5 / 4.5 / 4",
             "cost": "65",
             "stats": {
-                "사거리": "450",
                 "효과 범위": "485",
                 "시전시간": "0.25"
             }
@@ -2751,7 +2735,7 @@ const customValues = {
                 "효과 범위": "150",
                 "스킬 폭": "120",
                 "시전시간": "0.35",
-                "투사체 속도": "1750"
+                "투사체 속도": "1400"
             }
         },
         "R": {
@@ -2867,7 +2851,6 @@ const customValues = {
             "stats": {
                 "사거리": "525",
                 "스킬 폭": "240",
-                "투사체 속도": "1500",
                 "돌진 속도": "1300"
             }
         },
@@ -2973,8 +2956,7 @@ const customValues = {
             "cooldown": "140 / 110 / 80",
             "cost": "100",
             "stats": {
-                "사거리": "700",
-                "시전시간": "0.005"
+                "사거리": "700"
             }
         },
     },
@@ -3037,7 +3019,7 @@ const customValues = {
                 "사거리": "1000",
                 "효과 범위": "325",
                 "스킬 폭": "320",
-                "투사체 속도": "700"
+                "돌진 속도": "1500 (+ 이동 속도의 100%)"
             }
         },
     },
@@ -3275,7 +3257,7 @@ const customValues = {
                 "사거리": "975",
                 "스킬 폭": "120",
                 "시전시간": "0.25",
-                "투사체 속도": "1500"
+                "투사체 속도": "2000"
             }
         },
         "W": {
@@ -3357,10 +3339,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12",
-            "cost": "45",
-            "stats": {
-                "사거리": "600"
-            }
+            "cost": "45"
         },
         "E": {
             "p1": "2", // BaseDuration
@@ -3391,7 +3370,6 @@ const customValues = {
                 "사거리": "1400",
                 "효과 범위": "1450",
                 "스킬 폭": "200",
-                "시전시간": "0.001",
                 "투사체 속도": "2000"
             }
         },
@@ -3567,7 +3545,7 @@ const customValues = {
             "stats": {
                 "사거리": "925",
                 "스킬 폭": "150",
-                "투사체 속도": "1500"
+                "투사체 속도": "1900"
             }
         },
         "W": {
@@ -3648,10 +3626,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "없음",
-            "cost": "-",
-            "stats": {
-                "사거리": "750"
-            }
+            "cost": "-"
         },
         "E": {
             "p1": "10 / 30 / 50 / 70 / 90 (+ 총 공격력의 110% + 주문력의 100%)", // TotalDamageTooltip
@@ -3674,8 +3649,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "800",
-                "시전시간": "0.25",
-                "투사체 속도": "1400"
+                "시전시간": "0.25"
             }
         },
     },
@@ -3768,10 +3742,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "0",
-            "cost": "-",
-            "stats": {
-                "사거리": "750"
-            }
+            "cost": "-"
         },
         "E": {
             "p1": "50 / 85 / 120 / 155 / 190 (+ 추가 공격력의 50%)", // TotalDamage
@@ -3826,7 +3797,7 @@ const customValues = {
                 "사거리": "1200",
                 "스킬 폭": "360",
                 "시전시간": "0.15",
-                "투사체 속도": "700"
+                "투사체 속도": "600"
             }
         },
         "W": {
@@ -3857,7 +3828,7 @@ const customValues = {
                 "사거리": "800",
                 "스킬 폭": "120",
                 "시전시간": "0.25",
-                "투사체 속도": "1250"
+                "투사체 속도": "1300"
             }
         },
         "R": {
@@ -3874,7 +3845,7 @@ const customValues = {
                 "효과 범위": "650",
                 "스킬 폭": "200",
                 "시전시간": "0.25",
-                "투사체 속도": "1750"
+                "투사체 속도": "1600"
             }
         },
     },
@@ -3984,7 +3955,7 @@ const customValues = {
                 "사거리": "1050",
                 "스킬 폭": "120",
                 "시전시간": "0.251",
-                "투사체 속도": "1200"
+                "투사체 속도": "1300"
             }
         },
         "W": {
@@ -3998,7 +3969,7 @@ const customValues = {
             "stats": {
                 "사거리": "1050",
                 "스킬 폭": "175",
-                "투사체 속도": "1200"
+                "투사체 속도": "1700"
             }
         },
         "E": {
@@ -4136,7 +4107,7 @@ const customValues = {
                 "사거리": "1000",
                 "스킬 폭": "140",
                 "시전시간": "0.25",
-                "투사체 속도": "1100"
+                "투사체 속도": "1700"
             }
         },
         "W": {
@@ -4179,7 +4150,7 @@ const customValues = {
                 "효과 범위": "300",
                 "스킬 폭": "160",
                 "시전시간": "0.5",
-                "투사체 속도": "1200"
+                "투사체 속도": "1400"
             }
         },
     },
@@ -4207,7 +4178,6 @@ const customValues = {
             "stats": {
                 "사거리": "475",
                 "시전시간": "0.25",
-                "투사체 속도": "1500",
                 "돌진 속도": "600 ~ 900 (거리에 따라)"
             }
         },
@@ -4265,7 +4235,7 @@ const customValues = {
                 "사거리": "12000<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>2차 시전 돌진은 전역</div></span></span>",
                 "스킬 폭": "320",
                 "시전시간": "1",
-                "투사체 속도": "2200",
+                "투사체 속도": "2000",
                 "돌진 속도": "2500 ~ 5000"
             }
         },
@@ -4273,7 +4243,7 @@ const customValues = {
     "Brand": { // 브랜드
         "P": {
             "p1": "2", // PercentHealthDamage
-            "p2": "20 ~ 39.983 (레벨에 따라)", // ManaRestore
+            "p2": "20 ~ 40 (레벨에 따라)", // ManaRestore
             "p3": "6 ~ 12% (레벨에 따라) (+ 주문력의 2%)", // ExplosionDamage
             "cooldown": "-",
             "cost": "-",
@@ -4318,7 +4288,7 @@ const customValues = {
                 "사거리": "625",
                 "효과 범위": "300",
                 "시전시간": "0.25",
-                "투사체 속도": "1800"
+                "투사체 속도": "900"
             }
         },
         "R": {
@@ -4800,7 +4770,6 @@ const customValues = {
             "cost": "75 / 80 / 85 / 90 / 95",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/sion/hud/icons2d/sion_w2.png"],
             "stats": {
-                "사거리": "500",
                 "효과 범위": "525"
             }
         },
@@ -4834,7 +4803,6 @@ const customValues = {
             "cost": "100",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/sion/hud/icons2d/sion_r2.png"],
             "stats": {
-                "사거리": "7500",
                 "스킬 폭": "200",
                 "투사체 속도": "1500"
             }
@@ -4895,7 +4863,7 @@ const customValues = {
             "stats": {
                 "사거리": "400",
                 "스킬 폭": "120",
-                "투사체 속도": "1800"
+                "투사체 속도": "1600"
             }
         },
         "R": {
@@ -4981,7 +4949,6 @@ const customValues = {
             "cooldown": "100 / 90 / 80",
             "cost": "100",
             "stats": {
-                "사거리": "200",
                 "효과 범위": "250",
                 "시전시간": "0.25"
             }
@@ -5032,7 +4999,7 @@ const customValues = {
                 "효과 범위": "280",
                 "스킬 폭": "120",
                 "시전시간": "0.25",
-                "투사체 속도": "1000"
+                "투사체 속도": "1200"
             }
         },
         "E": {
@@ -5059,7 +5026,7 @@ const customValues = {
                 "사거리": "전역",
                 "스킬 폭": "360",
                 "시전시간": "1",
-                "투사체 속도": "2000"
+                "투사체 속도": "20000"
             }
         },
     },
@@ -5342,7 +5309,6 @@ const customValues = {
             "cooldown": "14",
             "cost": "65",
             "stats": {
-                "사거리": "430",
                 "효과 범위": "400"
             }
         },
@@ -5435,7 +5401,7 @@ const customValues = {
             "p1": "2.5", // ShieldDuration
             "p2": "47 ~ 120 (레벨에 따라) (+ 추가 최대 체력의 13%)", // ShieldValue
             "p3": "11", // ShieldCooldown
-            "p4": "4 ~ 7.995 (레벨에 따라)", // ShieldCooldownReduction
+            "p4": "4 ~ 8 (레벨에 따라)", // ShieldCooldownReduction
             "cooldown": "11", // ShieldCooldown
             "cost": "-"
         },
@@ -5619,7 +5585,7 @@ const customValues = {
                 "사거리": "550",
                 "효과 범위": "285",
                 "시전시간": "0.25",
-                "투사체 속도": "2200"
+                "투사체 속도": "1800"
             }
         },
         "W": {
@@ -5732,7 +5698,7 @@ const customValues = {
                 "효과 범위": "100",
                 "스킬 폭": "170",
                 "시전시간": "0.25",
-                "투사체 속도": "935"
+                "투사체 속도": "1125"
             }
         },
         "R": {
@@ -5797,7 +5763,6 @@ const customValues = {
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "60 / 65 / 70 / 75 / 80",
             "stats": {
-                "사거리": "700",
                 "효과 범위": "600",
                 "시전시간": "0.3",
                 "투사체 속도": "1650"
@@ -5912,7 +5877,7 @@ const customValues = {
             "p4": "50", // Effect6Amount*-100
             "p5": "3", // MarkDuration
             "p6": "33.3", // CritChanceAmp*100
-            "p7": "50 ~ 100.002 (레벨에 따라)", // MinionMod
+            "p7": "50 ~ 100 (레벨에 따라)", // MinionMod
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
@@ -6155,7 +6120,7 @@ const customValues = {
                 "효과 범위": "270",
                 "스킬 폭": "220",
                 "시전시간": "0.3889",
-                "투사체 속도": "1100"
+                "투사체 속도": "2000"
             }
         },
         "R": {
@@ -6207,7 +6172,6 @@ const customValues = {
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "30",
             "stats": {
-                "사거리": "700",
                 "효과 범위": "150",
                 "시전시간": "0.25"
             }
@@ -6223,7 +6187,7 @@ const customValues = {
                 "사거리": "975",
                 "스킬 폭": "120",
                 "시전시간": "0.25",
-                "투사체 속도": "1200"
+                "투사체 속도": "1550"
             }
         },
         "R": {
@@ -6274,7 +6238,6 @@ const customValues = {
             "cooldown": "1",
             "cost": "초당 마나 8",
             "stats": {
-                "사거리": "300",
                 "효과 범위": "350"
             }
         },
@@ -6317,7 +6280,7 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
-            "p1": "3.25 / 3.25 / 3.25 / 3.25 / 9999", // MaxChannelDuration
+            "p1": "3.25 (5랭크는 무제한)", // MaxChannelDuration
             "p2": "45 / 60 / 75 / 90 / 105 (+ 주문력의 55%)", // DamagePerSecond
             "p3": "50", // AOEModifier*100
             "p4": "60 / 70 / 80 / 90 / 100 (+ 주문력의 30%)", // BurstDamage
@@ -6367,8 +6330,7 @@ const customValues = {
             "cost": "90",
             "stats": {
                 "사거리": "750",
-                "시전시간": "0.2",
-                "투사체 속도": "1300"
+                "시전시간": "0.2"
             }
         },
         "R": {
@@ -6648,7 +6610,6 @@ const customValues = {
             "cooldown": "18 / 14 / 10 / 6 / 2",
             "cost": "40 / 30 / 20 / 10 / 0",
             "stats": {
-                "사거리": "5500",
                 "시전시간": "0.5"
             }
         },
@@ -6832,7 +6793,6 @@ const customValues = {
             "cooldown": "14 / 13 / 12 / 11 / 10",
             "cost": "50 / 55 / 60 / 65 / 70",
             "stats": {
-                "사거리": "365",
                 "효과 범위": "375",
                 "시전시간": "0.25"
             }
@@ -7038,7 +6998,7 @@ const customValues = {
                 "효과 범위": "225",
                 "스킬 폭": "220",
                 "시전시간": "0.25",
-                "투사체 속도": "850"
+                "투사체 속도": "950"
             }
         },
         "W": {
@@ -7145,7 +7105,7 @@ const customValues = {
                 "효과 범위": "400",
                 "스킬 폭": "260",
                 "시전시간": "0.25",
-                "투사체 속도": "1600"
+                "투사체 속도": "1500"
             }
         },
     },
@@ -7173,7 +7133,7 @@ const customValues = {
                 "효과 범위": "215",
                 "스킬 폭": "110",
                 "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[3]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
-                "투사체 속도": "1500"
+                "투사체 속도": "1200 (회오리)"
             }
         },
         "W": {
@@ -7182,8 +7142,7 @@ const customValues = {
             "cooldown": "25 / 23 / 21 / 19 / 17",
             "cost": "-",
             "stats": {
-                "사거리": "400",
-                "시전시간": "0.013"
+                "사거리": "400"
             }
         },
         "E": {
@@ -7281,7 +7240,6 @@ const customValues = {
             "cooldown": "110 / 80 / 50",
             "cost": "100",
             "stats": {
-                "사거리": "850",
                 "효과 범위": "375",
                 "시전시간": "0.5"
             }
@@ -7373,7 +7331,7 @@ const customValues = {
             "p2": "40 / 55 / 70 / 85 / 100", // spell.EliseSpiderE:PBonusIncrease*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "23 / 22 / 21 / 20 / 19",
+            "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "-",
             "name": "줄타기",
             "form": "거미 형태",
@@ -7401,7 +7359,6 @@ const customValues = {
             "cooldown": "8 / 7.5 / 7 / 6.5 / 6",
             "cost": "20",
             "stats": {
-                "사거리": "250 / 275 / 300 / 325 / 350",
                 "시전시간": "0.5"
             }
         },
@@ -7486,7 +7443,6 @@ const customValues = {
             "stats": {
                 "사거리": "300<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>지형 넘으면 450</div></span></span>",
                 "시전시간": "0.25",
-                "투사체 속도": "1800",
                 "돌진 속도": "350"
             }
         },
@@ -7618,7 +7574,7 @@ const customValues = {
                 "사거리": "815",
                 "효과 범위": "175",
                 "스킬 폭": "160",
-                "투사체 속도": "1200"
+                "투사체 속도": "1400"
             }
         },
         "W": {
@@ -7647,7 +7603,7 @@ const customValues = {
             "stats": {
                 "사거리": "1095",
                 "스킬 폭": "160",
-                "투사체 속도": "1200"
+                "투사체 속도": "1850"
             }
         },
         "R": {
@@ -7657,7 +7613,6 @@ const customValues = {
             "cooldown": "110 / 95 / 80",
             "cost": "100",
             "stats": {
-                "사거리": "410",
                 "효과 범위": "415",
                 "시전시간": "0.5"
             }
@@ -7701,10 +7656,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "16 / 15 / 14 / 13 / 12",
-            "cost": "50",
-            "stats": {
-                "사거리": "700"
-            }
+            "cost": "50"
         },
         "E": {
             "p1": "70 / 115 / 160 / 205 / 250 (+ 총 공격력의 50%)", // TotalDamage
@@ -7994,7 +7946,7 @@ const customValues = {
             "stats": {
                 "효과 범위": "490",
                 "스킬 폭": "80",
-                "투사체 속도": "1600"
+                "투사체 속도": "2500"
             }
         },
         "E": {
@@ -8010,7 +7962,6 @@ const customValues = {
                 "사거리": "450 ~ 475",
                 "스킬 폭": "200",
                 "시전시간": "0.45",
-                "투사체 속도": "1500",
                 "돌진 속도": "1200"
             }
         },
@@ -8195,7 +8146,7 @@ const customValues = {
             "stats": {
                 "사거리": "850",
                 "스킬 폭": "130",
-                "투사체 속도": "100"
+                "투사체 속도": "950<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>부착 강화 시 1650</div></span></span>"
             }
         },
         "W": {
@@ -8433,7 +8384,7 @@ const customValues = {
                 "사거리": "1150",
                 "스킬 폭": "120",
                 "시전시간": "0.25",
-                "투사체 속도": "1200"
+                "투사체 속도": "1700"
             }
         },
         "E": {
@@ -8527,7 +8478,6 @@ const customValues = {
             "cooldown": "120 / 95 / 70",
             "cost": "100",
             "stats": {
-                "사거리": "450",
                 "효과 범위": "500",
                 "시전시간": "0.5"
             }
@@ -8564,7 +8514,6 @@ const customValues = {
             "cooldown": "9",
             "cost": "30",
             "stats": {
-                "사거리": "625",
                 "효과 범위": "600"
             }
         },
@@ -8663,7 +8612,6 @@ const customValues = {
             "cooldown": "140 / 120 / 100",
             "cost": "100",
             "stats": {
-                "사거리": "450",
                 "효과 범위": "1060",
                 "투사체 속도": "2200"
             }
@@ -8794,7 +8742,7 @@ const customValues = {
             "stats": {
                 "사거리": "1200 ~ 1800 (충전 시간에 따라)",
                 "효과 범위": "265",
-                "투사체 속도": "1500"
+                "돌진 속도": "1350"
             }
         },
         "R": {
@@ -8851,7 +8799,7 @@ const customValues = {
                 "사거리": "850",
                 "스킬 폭": "140",
                 "시전시간": "0.5",
-                "투사체 속도": "1600"
+                "투사체 속도": "2900"
             }
         },
         "E": {
@@ -8884,7 +8832,6 @@ const customValues = {
                 "사거리": "600",
                 "효과 범위": "550",
                 "시전시간": "0.5",
-                "투사체 속도": "8700",
                 "돌진 속도": "2800"
             }
         },
@@ -8957,7 +8904,6 @@ const customValues = {
             "cooldown": "130 / 115 / 100",
             "cost": "100",
             "stats": {
-                "사거리": "725",
                 "효과 범위": "700"
             }
         },
@@ -9019,7 +8965,6 @@ const customValues = {
             "cooldown": "110 / 100 / 90",
             "cost": "100",
             "stats": {
-                "사거리": "260",
                 "효과 범위": "375",
                 "시전시간": "0.25"
             }
@@ -9059,7 +9004,7 @@ const customValues = {
                 "사거리": "650",
                 "효과 범위": "2000",
                 "스킬 폭": "80",
-                "투사체 속도": "1600"
+                "투사체 속도": "2500"
             }
         },
         "E": {
@@ -9073,7 +9018,6 @@ const customValues = {
             "cooldown": "5 / 4.5 / 4 / 3.5 / 3",
             "cost": "40",
             "stats": {
-                "사거리": "290",
                 "효과 범위": "315"
             }
         },
@@ -9195,7 +9139,7 @@ const customValues = {
                 "사거리": "1150",
                 "스킬 폭": "80",
                 "시전시간": "0.55",
-                "투사체 속도": "3300"
+                "투사체 속도": "2500"
             }
         },
         "E": {
@@ -9227,7 +9171,6 @@ const customValues = {
             "cooldown": "80 / 75 / 70",
             "cost": "100",
             "stats": {
-                "사거리": "800",
                 "효과 범위": "825",
                 "시전시간": "0.25"
             }
@@ -9266,7 +9209,6 @@ const customValues = {
             "cost": "40",
             "form1": "망치 형태",
             "stats": {
-                "사거리": "285",
                 "효과 범위": "350"
             }
         },
@@ -9311,7 +9253,7 @@ const customValues = {
             "p2": "총 공격력의 70 / 78 / 86 / 94 / 102 / 110%", // spell.JayceHyperCharge:ActualDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "14.6 / 13 / 11.4 / 9.8 / 8.2 / 6.6",
+            "cooldown": "13 / 11.4 / 9.8 / 8.2 / 6.6 / 5",
             "cost": "40",
             "name": "초전하",
             "form": "대포 형태",
@@ -9393,7 +9335,7 @@ const customValues = {
                 "효과 범위": "250",
                 "스킬 폭": "80",
                 "시전시간": "0.3",
-                "투사체 속도": "1700"
+                "투사체 속도": "1850"
             }
         },
         "R": {
@@ -9555,7 +9497,7 @@ const customValues = {
                 "사거리": "3500",
                 "스킬 폭": "160",
                 "시전시간": "1",
-                "투사체 속도": "3000"
+                "투사체 속도": "5000"
             }
         },
     },
@@ -9587,10 +9529,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "14 / 12 / 10 / 8 / 6",
-            "cost": "35",
-            "stats": {
-                "사거리": "600"
-            }
+            "cost": "35"
         },
         "E": {
             "p1": "2.5", // Duration
@@ -9819,10 +9758,7 @@ const customValues = {
             "v2": "",
             "cooldown": "40 / 38 / 36 / 34",
             "cost": "-",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_w2.png", "https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_e2.png"],
-            "stats": {
-                "사거리": "1100"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_w2.png", "https://raw.communitydragon.org/latest/game/assets/characters/karma/hud/icons2d/karma_e2.png"]
         },
     },
     "Camille": { // 카밀
@@ -10013,7 +9949,6 @@ const customValues = {
             "cooldown": "200 / 180 / 160",
             "cost": "100",
             "stats": {
-                "사거리": "10000",
                 "효과 범위": "전역",
                 "시전시간": "0.25"
             }
@@ -10163,7 +10098,7 @@ const customValues = {
             "cost": "30",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kaisa/hud/icons2d/kaisa_e2.png"],
             "stats": {
-                "시전시간": "1.5"
+                "시전시간": "1.2 ~ 0.6 (공격 속도에 따라)"
             }
         },
         "R": {
@@ -10351,7 +10286,6 @@ const customValues = {
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
             "cost": "30",
             "stats": {
-                "사거리": "1000",
                 "효과 범위": "1100",
                 "시전시간": "0.25"
             }
@@ -10396,7 +10330,6 @@ const customValues = {
             "cooldown": "13 / 11.25 / 9.5 / 7.75 / 6",
             "cost": "40",
             "stats": {
-                "사거리": "725",
                 "효과 범위": "775",
                 "시전시간": "0.25"
             }
@@ -10503,7 +10436,7 @@ const customValues = {
                 "사거리": "3500",
                 "스킬 폭": "80",
                 "시전시간": "0.375",
-                "투사체 속도": "1500"
+                "투사체 속도": "3200"
             }
         },
     },
@@ -10690,10 +10623,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "17",
-            "cost": "40",
-            "stats": {
-                "사거리": "530"
-            }
+            "cost": "40"
         },
         "E": {
             "p1": "70 / 110 / 150 / 190 / 230 (+ 주문력의 65%)", // TotalDamage
@@ -10761,7 +10691,6 @@ const customValues = {
                 "사거리": "600",
                 "효과 범위": "200",
                 "스킬 폭": "320",
-                "투사체 속도": "700",
                 "돌진 속도": "650"
             }
         },
@@ -11039,7 +10968,7 @@ const customValues = {
             "p4": "20", // FalloffPerMissile*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "3",
+            "cooldown": "재장전 대기시간 18 / 16 / 14 / 12 / 10초 (재사용 3초)",
             "cost": "-",
             "name": "빵야!",
             "form": "스카를 하차",
@@ -11186,7 +11115,6 @@ const customValues = {
             "cooldown": "160 / 140 / 120",
             "cost": "100",
             "stats": {
-                "사거리": "500",
                 "효과 범위": "535",
                 "시전시간": "0.25"
             }
@@ -11275,7 +11203,7 @@ const customValues = {
             "cost": "40",
             "stats": {
                 "사거리": "575",
-                "투사체 속도": "2000"
+                "돌진 속도": "2000"
             }
         },
         "W": {
@@ -11421,7 +11349,7 @@ const customValues = {
                 "사거리": "900",
                 "스킬 폭": "140",
                 "시전시간": "0.25",
-                "투사체 속도": "2000"
+                "투사체 속도": "2800"
             }
         },
         "W": {
@@ -11608,7 +11536,7 @@ const customValues = {
             "p1": "20 / 35 / 50 / 65 / 80", // MaximumBonusAD
             "p2": "30 / 40 / 50 / 60 / 70 (+ 주문력의 30%)", // BaseHeal
             "p3": "0.5 / 0.95 / 1.4 / 1.85 / 2.3 (+ 주문력의 1.2%)", // HealPerFury
-            "p4": "30 / 40 / 50 / 60 / 70 (+ 주문력의 30% + 최대 마나의 100% x (0.5 / 0.95 / 1.4 / 1.85 / 2.3 + 주문력의 1.2%))", // MaximumHeal
+            "p4": "80 / 135 / 190 / 245 / 300 (+ 주문력의 150%)", // MaximumHeal
             "p5": "10", // RemainingHealthThreshold*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -11653,10 +11581,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 100 / 80",
-            "cost": "-",
-            "stats": {
-                "사거리": "400"
-            }
+            "cost": "-"
         },
     },
     "TwistedFate": { // 트위스티드 페이트
@@ -11744,7 +11669,7 @@ const customValues = {
                 "사거리": "950",
                 "효과 범위": "300",
                 "시전시간": "0.25",
-                "투사체 속도": "1750"
+                "투사체 속도": "1400"
             }
         },
         "E": {
@@ -11818,10 +11743,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "0",
-            "cost": "-",
-            "stats": {
-                "사거리": "680"
-            }
+            "cost": "-"
         },
         "R": {
             "p1": "4", // DebuffDuration
@@ -11876,10 +11798,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "14 / 13 / 12 / 11 / 10",
-            "cost": "65",
-            "stats": {
-                "사거리": "600"
-            }
+            "cost": "65"
         },
         "E": {
             "p1": "1.25 (+ 물리 관통력의 1%)", // StunDuration
@@ -12283,7 +12202,6 @@ const customValues = {
             "cooldown": "4",
             "cost": "28 / 26 / 24 / 22 / 20",
             "stats": {
-                "사거리": "350",
                 "효과 범위": "375"
             }
         },

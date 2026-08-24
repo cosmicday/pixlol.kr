@@ -151,8 +151,8 @@ const KNOWN_OK = new Map([
     ['하이머딩거 W', '투사체 나무위키 1200 (계열 750 은 다른 값)'],
     ['헤카림 R', '롤위키 300-1000 = bin MaxDashRange'],
     ['세트 W', '롤위키 Range -25 - 720'],
-    ['자헨 Q', '나무위키 200 = 기본 공격 175 + QBonusRange 25'],
-    ['진 R', '사거리 롤위키 3500 · 투사체 나무위키 3000'],
+    // 자헨 Q 항목은 지웠다 (2026-08-24) — 기본 공격 강화 스킬이라 사거리 칸 자체를 뺐다 (8/24 "사거리 칸 제거 46자리" 부류)
+    // 진 R 항목도 지웠다 (2026-08-24) — 투사체를 5000(bin JhinRShotMis spec = 롤위키)으로 정정하니 계열 일치로 더 안 걸린다
 
     // --- 라이엇 데이터가 원래 그런 자리 ---
     ['암베사 P', '패시브에 쿨타임이 **없는** 스킬이다 (롤위키·나무위키 둘 다 명시). bin 에 keyCooldown 키만 남아 있고 문장은 빈 문자열'],
@@ -298,13 +298,22 @@ for (const [ddId, champ] of Object.entries(cv)) {
         if (ms != null && ms !== '' && !fromWiki('투사체 속도')) {
             const our = Number(toNums(ms)[0]);
             const bodySpeed = (bin && paths[slot] && bin[paths[slot]].mSpell.missileSpeed) || 0;
+            // ★ 본체 자신의 mMissileSpec 속도도 정당한 출처다 (2026-08-24, fill_values 의 spec 우선 규칙).
+            //   legacy(missileSpeed)와 spec 이 갈리는 본체 20자리 전부에서 롤위키가 spec 과 일치했다.
+            const bodySpecSpeed = (() => {
+                try {
+                    const mc = bin && paths[slot] && bin[paths[slot]].mSpell.mMissileSpec
+                        && bin[paths[slot]].mSpell.mMissileSpec.movementComponent;
+                    return mc ? ((typeof mc.mSpeed === 'number' && mc.mSpeed) || (typeof mc.mInitialSpeed === 'number' && mc.mInitialSpeed) || 0) : 0;
+                } catch (e) { return 0; }
+            })();
             if (our <= 20) {
                 R.missileDummy.push(`${tag} = ${ms}`);
             } else if (Math.abs(our - 347.8) < 0.05 || our >= 100000) {
                 // 347.8 = 라이엇 엔진의 기본 공격 기본값 / 10억 = "즉시 도달".
                 //   둘 다 "값을 안 정했다" 는 뜻이라 투사체가 없는 스킬이다.
                 R.missileEngine.push(`${tag} = ${ms}`);
-            } else if (Math.abs(bodySpeed - our) > 0.05 && !familySpeeds(slot).has(our)) {
+            } else if (Math.abs(bodySpeed - our) > 0.05 && Math.abs(bodySpecSpeed - our) > 0.05 && !familySpeeds(slot).has(our)) {
                 // ★ 본체가 틀값(1200·902·828.5·779.9·8700)이면 fill_values.js 가 계열 미사일 객체의
                 //   mMissileSpec.movementComponent.mSpeed 를 쓴다 (2026-08-23). 그 값이면 정상이다.
                 const fromBA = baSpeeds.has(Math.round(our * 10) / 10);
