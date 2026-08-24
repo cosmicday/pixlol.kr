@@ -37,10 +37,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "8",
-            "cost": "-",
-            "stats": {
-                "사거리": "300"
-            }
+            "cost": "-"
         },
         "W": {
             "p1": "0.2 (중첩당)", // ResistsForTooltip
@@ -662,10 +659,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7.5 / 6.5 / 5.5 / 4.5 / 3.5",
-            "cost": "20",
-            "stats": {
-                "사거리": "255"
-            }
+            "cost": "20"
         },
         "W": {
             "p1": "35", // SlowBase
@@ -818,7 +812,6 @@ const customValues = {
             "cooldown": "12",
             "cost": "60",
             "stats": {
-                "사거리": "350",
                 "효과 범위": "250"
             }
         },
@@ -1267,7 +1260,6 @@ const customValues = {
             "cooldown": "5",
             "cost": "40",
             "stats": {
-                "사거리": "300",
                 "시전시간": "0.367"
             }
         },
@@ -1385,10 +1377,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "12 / 11 / 10 / 9 / 8",
-            "cost": "45",
-            "stats": {
-                "사거리": "300"
-            }
+            "cost": "45"
         },
         "W": {
             "p1": "50 / 55 / 60 / 65 / 70", // Temp_MSMod
@@ -1896,10 +1885,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "16 / 14 / 12 / 10 / 8",
-            "cost": "-",
-            "stats": {
-                "사거리": "300"
-            }
+            "cost": "-"
         },
         "E": {
             "p1": "40 / 70 / 100 / 130 / 160 (+ 추가 공격력의 90%)", // BasicDamage
@@ -1952,7 +1938,6 @@ const customValues = {
             "cooldown": "5",
             "cost": "30 / 35 / 40 / 45 / 50",
             "stats": {
-                "사거리": "100",
                 "시전시간": "0.25"
             }
         },
@@ -2031,7 +2016,6 @@ const customValues = {
             "cost": "-",
             "form1": "돌출 상태",
             "stats": {
-                "사거리": "1650",
                 "효과 범위": "1500"
             }
         },
@@ -2191,10 +2175,7 @@ const customValues = {
             "v2": "",
             "cooldown": "6 / 5.5 / 5 / 4.5 / 4",
             "cost": "야성 1회 중첩",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/rengar/hud/icons2d/rengarqemp.png"],
-            "stats": {
-                "사거리": "450"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/rengar/hud/icons2d/rengarqemp.png"]
         },
         "W": {
             "p1": "50 / 80 / 110 / 140 / 170 (+ 주문력의 80%)", // TotalDamage
@@ -3043,10 +3024,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "10 / 9.5 / 9 / 8.5 / 8",
-            "cost": "30 / 35 / 40 / 45 / 50",
-            "stats": {
-                "사거리": "400"
-            }
+            "cost": "30 / 35 / 40 / 45 / 50"
         },
         "E": {
             "p1": "60 / 95 / 130 / 165 / 200 (+ 방어력의 40% + 주문력의 60%)", // EDamageCalc
@@ -3619,10 +3597,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "40",
-            "cost": "-",
-            "stats": {
-                "사거리": "750"
-            }
+            "cost": "-"
         },
         "E": {
             "p1": "60 / 90 / 120 / 150 / 180 (+ 추가 공격력의 90%)", // TotalDamage
@@ -3700,7 +3675,6 @@ const customValues = {
             "cooldown": "1",
             "cost": "26 / 32 / 38 / 44 / 50",
             "stats": {
-                "사거리": "400",
                 "효과 범위": "600"
             }
         },
@@ -4092,7 +4066,6 @@ const customValues = {
             "cooldown": "12 / 11.5 / 11 / 10.5 / 10",
             "cost": "50",
             "stats": {
-                "사거리": "300",
                 "효과 범위": "2000"
             }
         },
@@ -5512,7 +5485,6 @@ const customValues = {
             "cooldown": "16 / 14.5 / 13 / 11.5 / 10",
             "cost": "40",
             "stats": {
-                "사거리": "400",
                 "효과 범위": "350"
             }
         },
@@ -5948,10 +5920,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7 / 6.5 / 6 / 5.5 / 5",
-            "cost": "30",
-            "stats": {
-                "사거리": "375"
-            }
+            "cost": "30"
         },
         "W": {
             "p1": "30 / 40 / 50 / 60 / 70 (+ 총 공격력의 30%)", // SlashDamage
@@ -7154,10 +7123,7 @@ const customValues = {
             "v2": "",
             "cooldown": "0",
             "cost": "30",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/ashe/hud/icons2d/ashe_q_active.png"],
-            "stats": {
-                "사거리": "400"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/ashe/hud/icons2d/ashe_q_active.png"]
         },
         "W": {
             "p1": "7 / 8 / 9 / 10 / 11", // NumberOfArrowsTooltip
@@ -7962,7 +7928,6 @@ const customValues = {
             "cooldown": "6",
             "cost": "20",
             "stats": {
-                "사거리": "600",
                 "효과 범위": "450"
             }
         },
@@ -7991,10 +7956,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "6",
-            "cost": "40 ~ 23 (레벨에 따라)",
-            "stats": {
-                "사거리": "600"
-            }
+            "cost": "40 ~ 23 (레벨에 따라)"
         },
         "R": {
             "p1": "4", // BuffDuration
@@ -8558,7 +8520,6 @@ const customValues = {
             "cooldown": "4",
             "cost": "30",
             "stats": {
-                "사거리": "400",
                 "돌진 속도": "600"
             }
         },
@@ -8697,7 +8658,6 @@ const customValues = {
             "cooldown": "18 / 17 / 16 / 15 / 14",
             "cost": "60 / 55 / 50 / 45 / 40",
             "stats": {
-                "사거리": "1000",
                 "시전시간": "0.25",
                 "투사체 속도": "3000"
             }
@@ -8901,10 +8861,7 @@ const customValues = {
             "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "25",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zaahen/hud/icons2d/zaahenq2.png"],
-            "stats": {
-                "사거리": "200"
-            }
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zaahen/hud/icons2d/zaahenq2.png"]
         },
         "W": {
             "p1": "40 / 60 / 80 / 100 / 120 (+ 추가 공격력의 50%)", // InitialDamage
@@ -9051,10 +9008,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
-            "cost": "30",
-            "stats": {
-                "사거리": "300"
-            }
+            "cost": "30"
         },
         "E": {
             "p1": "2", // DodgeDuration
@@ -9362,10 +9316,7 @@ const customValues = {
             "v2": "",
             "cooldown": "6",
             "cost": "-",
-            "form1": "망치 형태",
-            "stats": {
-                "사거리": "600"
-            }
+            "form1": "망치 형태"
         },
         "Q2": {
             "p1": "80 / 121 / 162 / 203 / 244 / 285 (+ 추가 공격력의 130%)", // spell.JayceShockBlast:Damage
@@ -9711,7 +9662,6 @@ const customValues = {
             "cost": "로켓 1발당 마나 20",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/jinx/hud/icons2d/jinx_q2.png"],
             "stats": {
-                "사거리": "600",
                 "효과 범위": "250"
             }
         },
@@ -9921,7 +9871,6 @@ const customValues = {
             "cost": "25",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/camille/hud/icons2d/camille_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/camille/hud/icons2d/camille_q3.png"],
             "stats": {
-                "사거리": "325",
                 "시전시간": "0.25"
             }
         },
@@ -10718,7 +10667,6 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayle/hud/icons2d/kayle_e2.png"],
             "stats": {
-                "사거리": "550",
                 "효과 범위": "350"
             }
         },
@@ -11570,10 +11518,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "3.5",
-            "cost": "20",
-            "stats": {
-                "사거리": "300"
-            }
+            "cost": "20"
         },
         "W": {
             "p1": "8", // Duration
@@ -11773,7 +11718,6 @@ const customValues = {
             "cost": "50 / 55 / 60 / 65 / 70",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/twistedfate/hud/icons2d/cardmaster_blue.png", "https://raw.communitydragon.org/latest/game/assets/characters/twistedfate/hud/icons2d/cardmaster_red.png", "https://raw.communitydragon.org/latest/game/assets/spells/icons2d/cardmaster_gold.png"],
             "stats": {
-                "사거리": "200",
                 "효과 범위": "325"
             }
         },
@@ -12200,10 +12144,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "11 / 10 / 9 / 8 / 7",
-            "cost": "40",
-            "stats": {
-                "사거리": "425"
-            }
+            "cost": "40"
         },
         "R": {
             "p1": "30 / 40 / 50", // PercentMS*100
@@ -12252,10 +12193,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
-            "cost": "30 / 40 / 50 / 60 / 70",
-            "stats": {
-                "사거리": "600"
-            }
+            "cost": "30 / 40 / 50 / 60 / 70"
         },
         "E": {
             "p1": "80 / 130 / 180 / 230 / 280 (+ 주문력의 95%)", // EDamage
@@ -12404,10 +12342,7 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "20 / 19 / 18 / 17 / 16",
-            "cost": "60",
-            "stats": {
-                "사거리": "300"
-            }
+            "cost": "60"
         },
         "R": {
             "p1": "150 / 250 / 350 (+ 주문력의 100%)", // DamageDone
