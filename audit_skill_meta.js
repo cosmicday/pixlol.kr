@@ -149,7 +149,7 @@ const KNOWN_OK = new Map([
     ['아트록스 E', '롤위키 75-300 = bin EMaxRange'],
     // 2026-08-23 롤위키 전수 대조에서 잡은 자리
     ['하이머딩거 W', '투사체 나무위키 1200 (계열 750 은 다른 값)'],
-    ['헤카림 R', '롤위키 300-1000 = bin MaxDashRange'],
+    ['헤카림 R', '사거리: 롤위키 300-1000 = bin MaxDashRange · 폭 480: 롤위키 `80 기수 하나 | 480 전체` 의 전체 폭 손표 (wiki_stats 는 첫 숫자 80)'],
     ['세트 W', '롤위키 Range -25 - 720'],
     // 자헨 Q 항목은 지웠다 (2026-08-24) — 기본 공격 강화 스킬이라 사거리 칸 자체를 뺐다 (8/24 "사거리 칸 제거 46자리" 부류)
     // 진 R 항목도 지웠다 (2026-08-24) — 투사체를 5000(bin JhinRShotMis spec = 롤위키)으로 정정하니 계열 일치로 더 안 걸린다
@@ -330,7 +330,7 @@ for (const [ddId, champ] of Object.entries(cv)) {
             const bodyW = ((bin && paths[slot] && bin[paths[slot]].mSpell.mLineWidth) || 0) * 2;
             // ★ 롤위키 WIDTH 가 mLineWidth 와 같으면 fill_values 가 2배를 안 한다 (2026-08-24, 요네 R 인게임 확인) — 그 값도 정당하다
             const halfOk = bodyW && Math.abs(bodyW / 2 - our) < 0.05 && wk['스킬 폭'] !== undefined && Math.abs(parseFloat(wk['스킬 폭']) - our) < 0.5;
-            if (Math.abs(bodyW - our) > 0.05 && !halfOk) R.widthDirty.push(`${tag} = ${w}  (본체x2 ${bodyW || '없음'})`);
+            if (Math.abs(bodyW - our) > 0.05 && !halfOk) pushHit(R.widthDirty, tag, `${tag} = ${w}  (본체x2 ${bodyW || '없음'})`);
         }
 
         // 시전시간
