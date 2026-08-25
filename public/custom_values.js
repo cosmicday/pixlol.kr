@@ -110,7 +110,7 @@ const customValues = {
                 "효과 범위": "150",
                 "스킬 폭": "120",
                 "시전시간": "0.25",
-                "투사체 속도": "1300"
+                "투사체 속도": "1400"
             }
         },
         "W": {
@@ -1643,7 +1643,7 @@ const customValues = {
                 "효과 범위": "110",
                 "스킬 폭": "220",
                 "시전시간": "0.25",
-                "투사체 속도": "2200"
+                "투사체 속도": "2400"
             }
         },
         "E": {
@@ -3755,7 +3755,7 @@ const customValues = {
                 "사거리": "550",
                 "스킬 폭": "160",
                 "시전시간": "0.25",
-                "투사체 속도": "1200"
+                "투사체 속도": "2200"
             }
         },
         "R": {
@@ -5527,7 +5527,7 @@ const customValues = {
                 "효과 범위": "150",
                 "스킬 폭": "120",
                 "시전시간": "0.25",
-                "투사체 속도": "1500"
+                "투사체 속도": "1600<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>용 형태 1575</div></span></span>"
             }
         },
         "R": {
@@ -5813,7 +5813,7 @@ const customValues = {
                 "사거리": "1200",
                 "스킬 폭": "180",
                 "시전시간": "0.25 ~ 0.1<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 100%당 50% 감소, 최대 60%</div></span></span>",
-                "투사체 속도": "1350"
+                "투사체 속도": "1450<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>돌아올 때 1200</div></span></span>"
             }
         },
         "W": {
@@ -6155,7 +6155,7 @@ const customValues = {
                 "효과 범위": "100",
                 "스킬 폭": "200",
                 "시전시간": "0.25",
-                "투사체 속도": "1100"
+                "투사체 속도": "1550"
             }
         },
         "W": {
@@ -9414,7 +9414,7 @@ const customValues = {
                 "사거리": "5000",
                 "효과 범위": "525",
                 "시전시간": "0.375",
-                "투사체 속도": "1750"
+                "투사체 속도": "2250"
             }
         },
     },
