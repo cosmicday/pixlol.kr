@@ -190,18 +190,45 @@ async function getJson(url) {
     });
 
     // ── 소환사 주문
+    //
+    // ★★ "다른 모드에서 못 쓴다" 를 같이 담는다 (2026-08-25).
+    //   주문 상세가 도감에서 제일 휑한 자리였는데(카드 720px 에 글자 233자),
+    //   **시연 영상은 라이엇이 안 만들어서 넣을 수가 없다** (조사 결과는 CLAUDE.md 도감 절).
+    //   대신 `modes` 에 실제 정보가 있다 — 강타는 칼바람에서 못 쓰고 순간이동은 셋에서 못 쓴다.
+    //
+    // ★ 추가 요청 0 이다. **DD `modes` 와 CD `gameModes` 가 9/9 바이트까지 같은 것을 확인했고**
+    //   DD summoner.json 은 이미 받고 있다. CD 를 또 받을 이유가 없다.
+    //
+    // ★ 모드 코드 → 한글은 우리가 잇지만 **이름 자체는 라이엇 것**이다
+    //   (CD `queues.json` 의 큐 이름: 3200번대 "칼바람 나락" · 1200 "돌격! 넥서스" ·
+    //    480 "신속 대전" · 1020 "단일 챔피언" · 1700 "아레나").
+    //   `queues.json` 에는 gameMode 필드가 없어서 코드↔이름을 직접 잇지는 못한다.
+    //
+    // ★ 아레나(CHERRY)는 뺐다 — 협곡 주문 9개가 **전부** 못 쓴다(별도 주문 체계다).
+    //   9개 전부에 같은 딱지가 붙으면 정보가 아니라 잡음이다.
+    const MAIN_MODES = [
+        ['ARAM', '칼바람 나락'],
+        ['URF', 'U.R.F.'],
+        ['NEXUSBLITZ', '돌격! 넥서스'],
+        ['SWIFTPLAY', '신속 대전'],
+        ['ONEFORALL', '단일 챔피언']
+    ];
+
     const spells = {};
     Object.values(ddSumm.data)
         .filter(s => s.modes.includes('CLASSIC'))
         .sort((a, b) => Number(a.key) - Number(b.key))
         .forEach(s => {
+            // 못 쓰는 주요 모드만 담는다 — 다 쓸 수 있으면 빈 배열이라 화면에 아무것도 안 뜬다
+            const no = MAIN_MODES.filter(([code]) => !s.modes.includes(code)).map(([, kor]) => kor);
             spells[s.key] = {
                 n: s.name,
                 d: s.description,
                 cd: s.cooldownBurn,
                 r: s.rangeBurn,
                 lv: s.summonerLevel,
-                i: s.image.full
+                i: s.image.full,
+                ...(no.length ? { no } : {})
             };
         });
 
@@ -244,6 +271,8 @@ const codexData = ${body};
     console.log(`  줄 배치: ${Object.values(styles).map(st => st.n + ' ' + st.sl.map(r => r.length).join('-')).join(' / ')} / 파편 ${shardRows.map(r => r.length).join('-')}`);
     if (oddStyle) console.log(`  ★ 파편 줄이 계열마다 다르다 (${oddStyle.name}) — 도감 파편 격자를 계열별로 갈라야 한다`);
     console.log(`소환사 주문 ${Object.keys(spells).length}개 (전체 ${Object.keys(ddSumm.data).length}개 중)`);
+    const noList = Object.values(spells).filter(s => s.no);
+    console.log(`  다른 모드에서 못 쓰는 주문: ${noList.length}개 — ${noList.map(s => `${s.n}(${s.no.join('·')})`).join(' / ') || '없음'}`);
     console.log(`\n크기 ${(Buffer.byteLength(out) / 1024).toFixed(0)}KB  gzip ${(zlib.gzipSync(Buffer.from(out), { level: 9 }).length / 1024).toFixed(0)}KB  brotli ${(zlib.brotliCompressSync(Buffer.from(out)).length / 1024).toFixed(0)}KB`);
 
     // 이름 표는 별도 파일이다 — 통계 탭이 도감 데이터 160KB 를 받게 할 수는 없다.

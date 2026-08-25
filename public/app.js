@@ -3376,8 +3376,18 @@ async function showCodex(target) {
         <div class="codex-desc is-plain">${r.d ? withRuneGraphs(e.id, r.d) : '<span class="codex-dim">설명이 없습니다.</span>'}</div>`;
     }
 
+    // ★★ 사거리 20000 이상은 **"표시할 값 없음" 더미**다 — 스킬 탭이 쓰는 그 규칙과 같다.
+    //   `audit_skill_meta.js` 가 "협곡이 약 15000 유닛이라 그보다 크면 맵 전체" 로 경계를 잡는다.
+    //   순간이동이 DD·bin 둘 다 25000 이라 **기계 대조로는 불일치 0** 이 나오는 자리다
+    //   (docs/스킬데이터.md 의 그 함정). 실제로는 맵 어디든 아군 구조물·와드로 간다.
+    const spellRangeText = (r) => Number(r) >= 20000 ? '전역' : (r === '0' ? '자신' : r);
+
     function spellDetailHtml(e) {
         const s = e.raw;
+        // ★ `no` = 주요 모드 중 **못 쓰는 곳** (build_codex_data.js 의 MAIN_MODES).
+        //   지금은 강타(칼바람)·순간이동(칼바람·U.R.F.·돌격! 넥서스) 둘뿐이고
+        //   나머지 일곱은 필드 자체가 없어 아무것도 안 뜬다 — 다 쓸 수 있다는 뜻이다.
+        //   ★ 아레나는 협곡 주문 9개가 전부 못 써서(별도 주문 체계) 목록에서 뺐다.
         return `
         <div class="codex-detail-head">
             <img class="codex-detail-img" src="${codexSpellIcon(s.i)}" alt="">
@@ -3385,9 +3395,10 @@ async function showCodex(target) {
                 <div class="codex-detail-name">${s.n}</div>
                 <div class="codex-detail-meta">
                     <span class="codex-badge">재사용 ${s.cd}초</span>
-                    <span class="codex-badge">사거리 ${s.r === '0' ? '자신' : s.r}</span>
+                    <span class="codex-badge">사거리 ${spellRangeText(s.r)}</span>
                     <span class="codex-dim">소환사 레벨 ${s.lv} 해금</span>
                 </div>
+                ${s.no ? `<div class="codex-plain">${s.no.join(' · ')}에서는 쓸 수 없습니다</div>` : ''}
             </div>
         </div>
         <div class="codex-desc">${s.d}</div>`;
