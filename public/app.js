@@ -2882,40 +2882,49 @@ const CODEX_DEPTH_CATS = [
     { key: 'etc', name: '상위', test: it => ![0, 1, 4, 5].includes(it.ep) }
 ];
 
-// 소모품(물약·와드)과 장신구는 다른 계열 검사보다 **먼저** 걸러낸다 —
-// 체력 물약이 "방어"(HealthRegen)에, 와드가 "기타" 에 겹쳐 나오면 목록이 지저분해진다.
-//   ★ 둘을 나눠 뒀다. 장신구는 소모되는 물건이 아니라서 "소모품" 에 넣으면 말이 안 맞는다.
-//     소모품 9개(물약·영약·제어 와드·칼리스타의 창) / 장신구 4개(투명 와드·렌즈·허수아비).
-const isConsumable = it => it.g2.includes('Consumable');
-const isTrinket = it => it.g2.includes('Trinket');
-const isUtility = it => isConsumable(it) || isTrinket(it);
+// ★★★ 예전 "분류" 7칸(공격·주문·방어·신발·소모품·장신구·기타)을 걷어냈다 (2026-08-25).
+//   **묶는 기준도 칸 이름도 우리가 지어낸 것**이었다 — 라이엇에 대응하는 이름이 아예 없었다.
+//   지금은 둘 다 라이엇 것으로 바꿨다:
+//     · 역할군(`CODEX_ROLES`)   게임 bin `mItemAttributes` + stringtable `shop_filter_*_tooltip`
+//     · 스탯(`CODEX_STATS`)     DD `tags` + stringtable `stats_filter_*`
+//   **라이엇 인게임 상점이 정확히 이 두 축으로 나눈다** — 위가 "유형:", 왼쪽이 스탯 목록이다.
 
-// ★★ 신발 판정은 태그만으로 부족하다 — **`건메탈 군화`에 `Boots` 태그가 없다** (2026-08-16).
-//   광전사의 군화로 만드는 신발 업그레이드인데 라이엇 데이터에 태그가 빠져 있어서
-//   "공격"(AttackSpeed)에만 나오고 신발 분류에서 통째로 빠졌다.
-//   재료를 타고 올라가 신발이 섞였는지 보면 잡힌다. **전수로 확인했고 이 하나만 추가되며
-//   오탐은 0이다** (신발로 만드는 신발 아닌 아이템이 없다).
-const isBoots = (it, all) => {
-    if (it.g2.includes('Boots')) return true;
-    const seen = new Set();
-    const walk = (x) => (x.f || []).some(f => {
-        if (seen.has(f)) return false;
-        seen.add(f);
-        const p = all[f];
-        return p ? (p.g2.includes('Boots') || walk(p)) : false;
-    });
-    return walk(it);
-};
+// ★ 역할군. bin `mItemAttributes` 의 **비트 플래그**이고 아이템 하나가 여럿에 들어간다(정상).
+//   이름은 stringtable `shop_filter_*_tooltip` 그대로다. 순서도 비트 순(라이엇이 정한 순서).
+//   ★ 어느 비트가 무엇인지는 전설급만 보면 갈린다 — 근거는 build_codex_data.js 의 `rolesOf` 주석.
+const CODEX_ROLES = [
+    { key: 'all', name: '전체', bit: 0 },
+    { key: '1', name: '전사', bit: 1 },
+    { key: '2', name: '원거리 딜러', bit: 2 },
+    { key: '4', name: '암살자', bit: 4 },
+    { key: '8', name: '탱커', bit: 8 },
+    { key: '16', name: '마법사', bit: 16 },
+    { key: '32', name: '서포터', bit: 32 }
+];
 
-const CODEX_ITEM_CATS = [
-    { key: 'all', name: '전체', test: () => true },
-    { key: 'ad', name: '공격', test: (it, all) => !isUtility(it) && !isBoots(it, all) && it.g2.some(t => ['Damage', 'CriticalStrike', 'AttackSpeed', 'ArmorPenetration', 'LifeSteal', 'OnHit'].includes(t)) },
-    { key: 'ap', name: '주문', test: (it, all) => !isUtility(it) && !isBoots(it, all) && it.g2.some(t => ['SpellDamage', 'MagicPenetration', 'Mana', 'ManaRegen', 'SpellVamp'].includes(t)) },
-    { key: 'tank', name: '방어', test: (it, all) => !isUtility(it) && !isBoots(it, all) && it.g2.some(t => ['Health', 'Armor', 'SpellBlock', 'HealthRegen', 'Tenacity'].includes(t)) },
-    { key: 'boots', name: '신발', test: (it, all) => isBoots(it, all) },
-    { key: 'consum', name: '소모품', test: isConsumable },
-    { key: 'trinket', name: '장신구', test: isTrinket },
-    { key: 'etc', name: '기타', test: (it, all) => !isUtility(it) && !isBoots(it, all) && it.g2.some(t => ['Vision', 'Jungle', 'Lane', 'GoldPer', 'Aura', 'Active'].includes(t)) }
+// ★ 스탯. 인게임 상점 **왼쪽 세로 목록**이고 이름은 stringtable `stats_filter_*` 그대로다.
+//   ★ `tags` 는 DD 것이고 **bin `mCategories` 와 215개 전부 같다**(2026-08-25 전수 확인).
+//   ★ 태그↔칸 연결은 우리가 잇는다 — 열다섯 중 열은 1:1 이고 다섯만 둘씩 묶인다
+//     (스킬 가속·마나·체력·마법 저항력·이동 속도). 라이엇이 그 대응표를 데이터로 주지는 않는다.
+//   ★ 순서는 인게임 상점 차례를 따랐다 (공격 → 주문 → 방어 → 유틸).
+//   ★ 남는 태그 열하나(Lane·Active·Vision·Consumable·Tenacity·Jungle·GoldPer·Slow·Aura·
+//     Trinket·Stealth)는 스탯이 아니라 성격 태그라 목록에 없다 — 인게임 상점에도 없다.
+const CODEX_STATS = [
+    { key: 'physical_damage', name: '공격력', tags: ['Damage'] },
+    { key: 'critical_strike', name: '치명타', tags: ['CriticalStrike'] },
+    { key: 'attack_speed', name: '공격 속도', tags: ['AttackSpeed'] },
+    { key: 'on_hit', name: '적중 시 효과', tags: ['OnHit'] },
+    { key: 'armor_penetration', name: '방어구 관통력', tags: ['ArmorPenetration'] },
+    { key: 'ability_power', name: '주문력', tags: ['SpellDamage'] },
+    { key: 'magic_penetration', name: '마법 관통력', tags: ['MagicPenetration'] },
+    { key: 'ability_haste', name: '스킬 가속', tags: ['AbilityHaste', 'CooldownReduction'] },
+    { key: 'mana', name: '마나 및 재생', tags: ['Mana', 'ManaRegen'] },
+    { key: 'health', name: '체력 및 재생', tags: ['Health', 'HealthRegen'] },
+    { key: 'armor', name: '방어력', tags: ['Armor'] },
+    { key: 'magic_resistance', name: '마법 저항력', tags: ['SpellBlock', 'MagicResist'] },
+    { key: 'movespeed', name: '이동 속도', tags: ['NonbootsMovement', 'Boots'] },
+    { key: 'vamp', name: '생명력 흡수 및 모든 피해 흡혈', tags: ['LifeSteal'] },
+    { key: 'spellvamp', name: '생명력 흡수 및 주문 흡혈', tags: ['SpellVamp'] }
 ];
 
 const CODEX_TABS = [
@@ -2972,7 +2981,8 @@ async function showCodex(target) {
     }
 
     let curTab = CODEX_TABS.some(t => t.key === target) ? target : 'item';
-    let curCat = 'all';     // 아이템 계열 (공격·주문·방어·신발·소모품·기타)
+    let curRole = 'all';    // 아이템 역할군 (전사·원거리 딜러·암살자·탱커·마법사·서포터 — bin mItemAttributes)
+    let curStat = 'all';    // 아이템 스탯 (인게임 상점 왼쪽 목록 — DD tags)
     let curDepth = 'all';   // 아이템 등급 (기본·시작·서사급·전설급·상위)
     let curStyle = 'all';   // 룬 계열 (정밀·지배·마법·영감·결의·파편)
     let runeView = 'tree';  // 룬 탭 보기: 'tree'(인게임 자리) | 'list'(평평한 목록)
@@ -2997,7 +3007,12 @@ async function showCodex(target) {
             <div class="codex-left">
                 <input type="text" class="codex-search" id="codex-search" placeholder="이름 검색 (초성 · 별명)">
                 <div class="codex-cats" id="codex-cats"></div>
-                <div class="codex-list" id="codex-list"></div>
+                <!-- ★ 아이템 탭만 왼쪽에 스탯 목록이 붙는다 (인게임 상점과 같은 자리).
+                     룬·주문 탭에서는 statbar 를 숨겨 목록이 폭을 다 쓴다. -->
+                <div class="codex-left-body">
+                    <div class="codex-statbar" id="codex-statbar"></div>
+                    <div class="codex-list" id="codex-list"></div>
+                </div>
             </div>
             <div class="codex-detail" id="codex-detail"></div>
         </div>
@@ -3108,7 +3123,7 @@ async function showCodex(target) {
         let html = '';
         if (curTab === 'item') {
             html = catRowHtml('등급', CODEX_DEPTH_CATS, curDepth, 'depth')
-                + catRowHtml('분류', CODEX_ITEM_CATS, curCat, 'cat');
+                + catRowHtml('유형', CODEX_ROLES, curRole, 'role');
         } else if (curTab === 'rune') {
             html = catRowHtml('계열', runeStyleCats(), curStyle, 'style', runeViewToggleHtml());
         }
@@ -3118,7 +3133,7 @@ async function showCodex(target) {
         el.querySelectorAll('.codex-cat').forEach(b => b.addEventListener('click', () => {
             const g = b.dataset.group, k = b.dataset.key;
             if (g === 'depth') curDepth = k;
-            else if (g === 'cat') curCat = k;
+            else if (g === 'role') curRole = k;
             else curStyle = k;
             renderCats(); renderList();
         }));
@@ -3127,16 +3142,54 @@ async function showCodex(target) {
             runeView = b.dataset.view;
             renderCats(); renderList();
         }));
+
+        renderStatBar();
+    }
+
+    // ★ 인게임 상점 왼쪽의 스탯 목록. **아이템 탭에서만** 나온다.
+    //   ★ 개수를 같이 적는다 — 0 개인 칸을 눌러 빈 목록을 보게 되는 걸 막는다.
+    //     개수는 **등급·유형 필터가 걸린 뒤 기준**이라 필터를 바꾸면 같이 바뀐다.
+    function renderStatBar() {
+        const el = document.getElementById('codex-statbar');
+        if (!el) return;
+        if (curTab !== 'item') { el.style.display = 'none'; el.innerHTML = ''; return; }
+        el.style.display = '';
+
+        // 스탯을 뺀 나머지 조건만 걸어 둔 모집단에서 센다
+        const dep = CODEX_DEPTH_CATS.find(c => c.key === curDepth) || CODEX_DEPTH_CATS[0];
+        const roleBit = (CODEX_ROLES.find(r => r.key === curRole) || {}).bit || 0;
+        const pool = Object.values(D.items).filter(it => dep.test(it) && (!roleBit || (it.ra & roleBit)));
+        const countOf = (tags) => pool.filter(it => tags.some(t => it.g2.includes(t))).length;
+
+        const rows = [{ key: 'all', name: '전체', n: pool.length }]
+            .concat(CODEX_STATS.map(s => ({ key: s.key, name: s.name, n: countOf(s.tags) })));
+
+        el.innerHTML = `
+            <div class="codex-statbar-label">스탯</div>
+            ${rows.map(r => `
+                <button class="codex-stat${r.key === curStat ? ' active' : ''}${r.n ? '' : ' is-empty'}" data-stat="${r.key}">
+                    <span class="codex-stat-name">${r.name}</span><span class="codex-stat-n">${r.n}</span>
+                </button>`).join('')}`;
+
+        el.querySelectorAll('.codex-stat').forEach(b => b.addEventListener('click', () => {
+            // ★ 누른 칸을 다시 누르면 풀린다 — 세로 목록이라 '전체' 로 되돌아가기가 번거롭다
+            curStat = (curStat === b.dataset.stat) ? 'all' : b.dataset.stat;
+            renderStatBar(); renderList();
+        }));
     }
 
     function visible() {
         const cands = query.trim() ? koCandidates(query.trim().toLowerCase()) : [];
-        const cat = CODEX_ITEM_CATS.find(c => c.key === curCat) || CODEX_ITEM_CATS[0];
         const dep = CODEX_DEPTH_CATS.find(c => c.key === curDepth) || CODEX_DEPTH_CATS[0];
+        // ★ 역할군은 bin 비트, 스탯은 DD 태그다. 셋(등급·유형·스탯)을 AND 로 건다.
+        const roleBit = (CODEX_ROLES.find(r => r.key === curRole) || {}).bit || 0;
+        const statTags = (CODEX_STATS.find(s => s.key === curStat) || {}).tags || null;
         return entries()
-            // 아이템은 등급 · 계열 두 조건을 AND 로 건다.
-            // 계열 검사는 재료를 되짚어야 해서(신발 판정) 아이템 표를 같이 넘긴다.
-            .filter(e => curTab !== 'item' || (dep.test(e.raw) && cat.test(e.raw, D.items)))
+            .filter(e => curTab !== 'item' || (
+                dep.test(e.raw)
+                && (!roleBit || (e.raw.ra & roleBit))
+                && (!statTags || statTags.some(t => e.raw.g2.includes(t)))
+            ))
             // 룬은 계열 하나. 'shard' 는 스탯 파편만 (계열이 없는 항목이다)
             .filter(e => curTab !== 'rune' || curStyle === 'all'
                 || (curStyle === 'shard' ? !!e.shard : (!e.shard && String(e.raw.st) === curStyle)))
@@ -3274,7 +3327,8 @@ async function showCodex(target) {
             const id = b.dataset.id;
             if (!D.items[id]) return;
             // 등급·분류·검색 때문에 목록에 없을 수 있으니 전부 풀어 준다
-            curCat = 'all';
+            curRole = 'all';
+            curStat = 'all';
             curDepth = 'all';
             query = '';
             document.getElementById('codex-search').value = '';
@@ -3413,7 +3467,8 @@ async function showCodex(target) {
         document.querySelectorAll('.codex-tab').forEach(x => x.classList.remove('active'));
         b.classList.add('active');
         curTab = b.dataset.tab;
-        curCat = 'all';
+        curRole = 'all';
+        curStat = 'all';
         curDepth = 'all';
         curStyle = 'all';
         query = '';

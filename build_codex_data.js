@@ -101,6 +101,23 @@ async function getJson(url) {
         return e.epicness || 0;
     };
 
+    // ★★ 역할군은 게임 bin 의 `mItemAttributes` 다 — **비트 플래그 6개**이고
+    //   라이엇 인게임 상점의 "유형:" 필터 6칸과 정확히 대응한다 (2026-08-25 신설).
+    //   DD 에도 CD `items.json` 에도 없어서 등급(`epicness`)과 마찬가지로 bin 에서 온다.
+    //
+    //   ★ 어느 비트가 무엇인지는 **전설급만 걸러 보면 한눈에 갈린다** (기본 재료는
+    //     여러 비트에 겹쳐 있어서 안 갈린다):
+    //       1  전사      삼위일체 · 스테락의 도전 · 굶주린 히드라 · 몰락한 왕의 검
+    //       2  원거리 딜러 무한의 대검 · 유령 무희 · 루난의 허리케인 · 고속 연사포
+    //       4  암살자     요우무의 유령검 · 그림자 검 · 밤의 끝자락 · 독사의 송곳니
+    //       8  탱커      태양불꽃 방패 · 워모그의 갑옷 · 란두인의 예언 · 강철심장
+    //      16  마법사     라바돈의 죽음모자 · 리치베인 · 공허의 지팡이 · 존야의 모래시계
+    //      32  서포터     구원 · 미카엘의 축복 · 불타는 향로 · 제국의 명령 · 헬리아의 메아리
+    //
+    //   ★ 비트를 **합쳐서 하나의 수로** 담는다 (예: 서포터+마법사 = 48). 화면은 `ra & 32` 로 본다.
+    //   ★ 아이템 하나가 여러 역할군에 들어가는 게 정상이다 — 인게임 상점도 그렇다.
+    const rolesOf = (id) => (itemBin['Items/' + id]?.mItemAttributes || []).reduce((a, b) => a | b, 0);
+
     // ★★ `requiredChampion` 은 **영문 키**다 — 그대로 담으면 화면에 `Kalista 전용` 이 나간다
     //   (2026-08-25 정정. 이름이 같은 칼리스타 창 3599/3600 을 가르는 뱃지라 제일 눈에 띄는 자리였다).
     // ★ champion.json 의 키와 **대소문자가 어긋나는 자리가 있다** — 아이템 쪽은 `FiddleSticks` 인데
@@ -130,8 +147,11 @@ async function getJson(url) {
             // **표에 없는 id 는 버린다** (다른 모드 전용 상위 아이템이 딸려올 수 있다).
             f: (x.from || []).map(Number).filter(id => liveIds.includes(String(id))),
             t: (x.into || []).map(Number).filter(id => liveIds.includes(String(id))),
+            // ★ DD `tags` 와 bin `mCategories` 는 **215개 전부 같다**(2026-08-25 전수 확인).
+            //   그래서 스탯 필터도 이 배열 하나로 충분하다 — bin 을 또 읽을 이유가 없다.
             g2: x.tags || [],
             ep: epicnessOf(i),
+            ra: rolesOf(i),
             // 검색 별칭. 라이엇이 넣어 둔 것이라 "인피"·"똥신" 같은 별명이 그대로 있다
             c: (x.colloq || '').split(';').filter(Boolean).join(' '),
             // ★ 챔피언 전용 아이템(오른 등)만 채운다. 칼리스타의 칠흑의 창은
@@ -260,6 +280,15 @@ const codexData = ${body};
     if (unknownEp.length) console.log(`  ★ 처음 보는 epicness: ${unknownEp.join(', ')} — app.js 의 CODEX_EPICNESS 를 고칠 것`);
     if (noBin.length) console.log(`  ★ bin 에 없는 아이템 ${noBin.length}개(등급 0 으로 처리): ${noBin.join(', ')}`);
     console.log(`  조합 재료 누락: ${brokenFrom}건`);
+    // ★ 역할군 분포. 겹치는 게 정상이라 합계가 215 를 넘는다.
+    //   0 인 아이템(어느 역할군에도 없음)이 몇 개인지가 볼 값이다 — 화면에서 '전체' 로만 찾을 수 있다.
+    const ROLE_NAME = { 1: '전사', 2: '원거리 딜러', 4: '암살자', 8: '탱커', 16: '마법사', 32: '서포터' };
+    const roleCount = Object.entries(ROLE_NAME)
+        .map(([bit, nm]) => `${nm} ${Object.values(items).filter(x => x.ra & Number(bit)).length}`).join(' / ');
+    const noRole = Object.values(items).filter(x => !x.ra);
+    console.log(`  역할군(bin mItemAttributes): ${roleCount}`);
+    if (noRole.length) console.log(`  ★ 역할군이 없는 아이템 ${noRole.length}개: ${noRole.map(x => x.n).slice(0, 12).join(', ')}${noRole.length > 12 ? ' …' : ''}`);
+
     const rcList = Object.entries(items).filter(([, x]) => x.rc);
     console.log(`  챔피언 전용: ${rcList.length}개 — ${rcList.map(([id, x]) => `${x.n}(${id}) ${x.rc}`).join(' / ') || '없음'}`);
     // ★ 한글로 못 바꾼 자리. 화면에 영문이 그대로 나가므로 champion.json 쪽 키를 확인할 것
