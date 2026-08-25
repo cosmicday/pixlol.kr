@@ -58,7 +58,7 @@
 ## ★★ dogu.gg 공통 UI 적용 (2026-08-22 · 커밋·배포됨)
 
 `DOGU_UI_PLAN.md` 2단계의 pixlol 몫. **`public/dogu-ui.css` · `public/dogu-header.js` 는 복사본이라
-여기서 고치지 말 것** (원본 `dogu_er/dogu-ui/`, 손대기 전 5곳 md5 확인 — `DOGU_UI.md` 11-0). 사양은 `dogu_er/dogu-ui/DOGU_UI.md`. 데이터 로직은 안 건드렸다.
+여기서 고치지 말 것** (원본 `dogu_template/dogu-ui/`, 손대기 전 5곳 md5 확인 — `DOGU_UI.md` 11-0). 사양은 `dogu_template/dogu-ui/DOGU_UI.md`. 데이터 로직은 안 건드렸다.
 
 - **`#hero` 는 `main` 밖(헤더와 `main` 사이)에 있다.** `.main-search-section` 안에 두면 모바일 좌우 28px 패딩 때문에
   검색창이 552px 로 좁아져 다른 사이트와 어긋났다 (실측 후 옮김). 홈이 아닐 땐 공통 CSS 가 `body.dogu-home` 기준으로 숨기므로
@@ -615,7 +615,7 @@ tidy 에 |차이|<0.018 & ≥1 스냅, 현재 파일에서 이 넷만 걸리는 
   내용 길이 무관하게 상자가 일정하다는 지적
 - **폰 전용 4건**: ① 스킬 메타(쿨·소모·스탯)를 항상 이름 아래 줄로 (`flex-basis:100%`)
   ② 랭킹·챔피언·도감 검색칸 16px (iOS 포커스 확대 방지) ③④ 는 아래 공통 헤더
-- **★★ dogu 공통 헤더를 원본(`dogu_er/dogu-ui/`)에서 고쳐 복사했다** (규칙대로 md5 동기 확인):
+- **★★ dogu 공통 헤더를 원본(`dogu_template/dogu-ui/`)에서 고쳐 복사했다** (규칙대로 md5 동기 확인):
   ① 모바일 스위처 목록에 게임명 표시 (버튼만 아이콘) ② **`gamesOrigin` 옵션 신설** —
   GAMES 내부 주소(`/er`)가 dogu.gg 기준 상대 경로라 pixlol 에서 "다른 게임을 눌러도
   pixlol.kr/er 로 가서 제자리" 였다. pixlol `mountHeader` 에 `gamesOrigin: 'https://dogu.gg'`
@@ -639,7 +639,9 @@ tidy 에 |차이|<0.018 & ≥1 스냅, 현재 파일에서 이 넷만 걸리는 
 
 ### 다른 레포에 넘길 것 (오늘 생긴 빚)
 
-- **`dogu_er/dogu-ui/` 원본 변경이 그 레포에서 커밋 안 됐다** — 게임명 표시·`gamesOrigin`·모바일 햄버거 (`DOGU_UI.md` 에 적어 둠).
+> **2026-08-25 해결**: 원본을 `dogu_template/dogu-ui/` 로 옮기고 5개 사이트 전부 `sync-ui.ps1` 로 동기화·커밋했다. 아래 두 항목은 끝난 일.
+
+- **`dogu_template/dogu-ui/` 원본 변경이 그 레포에서 커밋 안 됐다** — 게임명 표시·`gamesOrigin`·모바일 햄버거 (`DOGU_UI.md` 에 적어 둠).
   **er·maple·loa·tft 의 복사본도 옛 판** — 각 레포 `public/` 에 다시 복사해야 폰 헤더가 같아진다 (그쪽은 `gamesOrigin` 안 줘도 됨)
 
 ### 인게임으로만 갈리는 것 (PC 앉을 때 · `인게임확인_20260824_전수점검.md`)
@@ -692,8 +694,10 @@ tidy 에 |차이|<0.018 & ≥1 스냅, 현재 파일에서 이 넷만 걸리는 
 
 ### 손 안 댄 변경이 작업 트리에 있다
 
+> **2026-08-25**: 그 변경은 원본과 같은 내용이었고 이미 커밋돼 있다. 끝난 일.
+
 `public/dogu-header.js` · `public/dogu-ui.css` 에 **자동완성 기능이 추가된 변경**이 커밋 안 된 채 있다.
-**내가 한 게 아니고** 이 둘은 `dogu_er/dogu-ui/` 의 복사본이라 여기서 고치면 안 되는 파일이다
+**내가 한 게 아니고** 이 둘은 `dogu_template/dogu-ui/` 의 복사본이라 여기서 고치면 안 되는 파일이다
 (위 "dogu.gg 공통 UI" 절). 원본 쪽에서 온 것으로 보이니 그쪽 상태를 먼저 볼 것.
 
 ## 2026-08-21 세션 (지난 기록)
