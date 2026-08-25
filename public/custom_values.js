@@ -5136,7 +5136,7 @@ const customValues = {
             "cost": "60",
             "stats": {
                 "사거리": "600",
-                "스킬 폭": "260",
+                "스킬 폭": "150",
                 "시전시간": "1"
             }
         },
@@ -6907,7 +6907,7 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "사거리": "1250",
-                "스킬 폭": "30",
+                "스킬 폭": "130",
                 "시전시간": "0.7"
             }
         },
@@ -7701,8 +7701,8 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yone/hud/icons2d/yoneq3.png"],
             "stats": {
                 "사거리": "450<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>회오리 1050</div></span></span>",
-                "스킬 폭": "30",
-                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[3]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
+                "스킬 폭": "80<span class='custom-footnote'>[3]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>회오리 160</div></span></span>",
+                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[4]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
                 "투사체 속도": "1500",
                 "돌진 속도": "1500"
             }
@@ -8190,7 +8190,7 @@ const customValues = {
             "cost": "100",
             "stats": {
                 "사거리": "1100",
-                "스킬 폭": "200",
+                "스킬 폭": "450",
                 "투사체 속도": "3000"
             }
         },
@@ -9049,7 +9049,7 @@ const customValues = {
             "cost": "80 / 90 / 100 / 110 / 120",
             "stats": {
                 "사거리": "750",
-                "스킬 폭": "200"
+                "스킬 폭": "145"
             }
         },
         "W": {
@@ -9118,7 +9118,7 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "사거리": "700",
-                "스킬 폭": "30",
+                "스킬 폭": "80",
                 "투사체 속도": "2600"
             }
         },
