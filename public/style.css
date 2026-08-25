@@ -7589,3 +7589,9 @@ main {
     /* 수집 시각은 오른쪽 끝으로 밀면 줄이 넘치므로 흐름대로 둔다 */
     .mshop-collected { margin-left: 0; }
 }
+
+/* 모바일 입력창 확대 방지 (2026-08-25). iOS 사파리는 포커스한 input/select/textarea 글자가 16px 미만이면 화면을 확대한다.
+   공용 검색창은 dogu-ui.css 가 처리하고, 이 사이트 고유 입력창은 여기서 잡는다. 위쪽 개별 규칙(특이도 높음)을 이기려고 !important */
+@media (max-width: 768px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea { font-size: 16px !important; }
+}
