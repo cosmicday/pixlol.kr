@@ -570,6 +570,7 @@ function mountDoguUI() {
     }));
 
     DoguUI.mountHero('#hero', Object.assign({}, DOGU_BRAND, {
+        mascot: '/favicon_lol_180.png',         // 히어로 로고 왼쪽 마스코트 (공통 옵션)
         search: {
             placeholder,
             button: DoguUI.TEXT.searchIcon,         // ★ pixlol 만 돋보기 (다른 사이트는 .GG 글자)
