@@ -328,7 +328,9 @@ for (const [ddId, champ] of Object.entries(cv)) {
             const our = Number(toNums(w)[0]);
             // ★ mLineWidth 는 반지름이라 화면에는 2배(전체 폭)로 나간다 (2026-08-23, fill_values.js 참고)
             const bodyW = ((bin && paths[slot] && bin[paths[slot]].mSpell.mLineWidth) || 0) * 2;
-            if (Math.abs(bodyW - our) > 0.05) R.widthDirty.push(`${tag} = ${w}  (본체x2 ${bodyW || '없음'})`);
+            // ★ 롤위키 WIDTH 가 mLineWidth 와 같으면 fill_values 가 2배를 안 한다 (2026-08-24, 요네 R 인게임 확인) — 그 값도 정당하다
+            const halfOk = bodyW && Math.abs(bodyW / 2 - our) < 0.05 && wk['스킬 폭'] !== undefined && Math.abs(parseFloat(wk['스킬 폭']) - our) < 0.5;
+            if (Math.abs(bodyW - our) > 0.05 && !halfOk) R.widthDirty.push(`${tag} = ${w}  (본체x2 ${bodyW || '없음'})`);
         }
 
         // 시전시간

@@ -843,7 +843,8 @@ const dashMulti = [];             // 돌진 속도 후보가 둘 이상이라 �
 const missileSelfDropped = [];    // 자기 대상 스킬이라 투사체 속도를 뺀 곳
 const missileFamilyFix = [];      // 본체 틀값을 계열 미사일 객체 값으로 바꾼 곳 (2026-08-23)
 const missileFamilyMulti = [];    // 계열 후보가 여럿이라 못 고른 곳
-const widthSelfDropped = [];      // 자기 대상 스킬이라 스킬 폭을 뺀 곳
+const widthSelfDropped = [];
+const widthNoDouble = [];   // 위키 폭 = mLineWidth 라 2배를 안 한 자리 (2026-08-24)      // 자기 대상 스킬이라 스킬 폭을 뺀 곳
 let spellIndex = {};              // 지금 처리 중인 챔피언의 스펠 객체 색인 (buildSpellIndex)
 
 // 툴팁 철자와 bin 철자가 어긋난 자리를 기록한다.
@@ -3200,6 +3201,17 @@ async function main() {
             //   되돌리려면 아래 `* 2` 하나만 지우면 된다.
             let lineWidth = (spell && typeof spell.mLineWidth === 'number' && spell.mLineWidth > 0)
                 ? tidy(spell.mLineWidth * 2) : null;
+            // ★★ 예외: 롤위키 WIDTH 가 bin mLineWidth 와 **그대로** 같으면 그 자리는 이미 전체 폭이다 —
+            //   2배를 하면 이중 적용이 된다 (2026-08-24 인게임 확인: 요네 R 은 위키 225 가 맞고 우리 450 은
+            //   Q 조준 길이의 절반이었다). 같은 모양 4자리(요네 R·빅토르 E·로크 Q·크산테 Q).
+            //   63자리는 위키가 정확히 2배라 기본 규칙(x2)은 그대로다 — 둘은 구성상 겹치지 않는다.
+            {
+                const wikiW = parseFloat((((WIKI_STATS[DD_ID[alias] || alias] || {})[key] || {})['스킬 폭']));
+                if (lineWidth && isFinite(wikiW) && Math.abs(spell.mLineWidth - wikiW) < 0.5) {
+                    widthNoDouble.push(`${c.name} ${key}: mLineWidth ${tidy(spell.mLineWidth)} = 롤위키 → 2배 안 함 (x2 였으면 ${lineWidth})`);
+                    lineWidth = tidy(spell.mLineWidth);
+                }
+            }
             if (lineWidth && selfOnly && !hasMissile) {
                 lineWidth = null;
                 widthSelfDropped.push(`${c.name} ${key} (${ttype})`);
@@ -3691,6 +3703,11 @@ async function main() {
     if (widthSelfDropped.length) {
         console.log(`\n[자기 대상 스킬의 스킬 폭 제거] ${widthSelfDropped.length}자리:`);
         console.log('  ' + widthSelfDropped.join(', '));
+    }
+    if (widthNoDouble.length) {
+        console.log(`
+[스킬 폭 2배 안 함] ${widthNoDouble.length}자리 — 롤위키 WIDTH 가 mLineWidth 와 같은 자리 (이중 적용 방지):`);
+        widthNoDouble.forEach(x => console.log('  ' + x));
     }
 
     if (dashMulti.length) {

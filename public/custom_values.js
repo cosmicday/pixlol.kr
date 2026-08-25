@@ -2229,7 +2229,7 @@ const customValues = {
             "cost": "70",
             "stats": {
                 "사거리": "950",
-                "스킬 폭": "200",
+                "스킬 폭": "100",
                 "시전시간": "0.25",
                 "투사체 속도": "1650"
             }
@@ -4567,7 +4567,7 @@ const customValues = {
             "stats": {
                 "사거리": "525",
                 "효과 범위": "500",
-                "스킬 폭": "180",
+                "스킬 폭": "90",
                 "투사체 속도": "1050"
             }
         },
@@ -7748,7 +7748,7 @@ const customValues = {
             "cost": "-",
             "stats": {
                 "사거리": "1000",
-                "스킬 폭": "450",
+                "스킬 폭": "225",
                 "시전시간": "0.75",
                 "투사체 속도": "1500"
             }
@@ -10816,7 +10816,7 @@ const customValues = {
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/ksante/hud/icons2d/icons_ksante_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/ksante/hud/icons2d/icons_ksante_q3.png"],
             "stats": {
                 "사거리": "450 (강화 930)",
-                "스킬 폭": "200",
+                "스킬 폭": "100",
                 "시전시간": "0.35"
             }
         },
