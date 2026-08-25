@@ -3056,9 +3056,18 @@ async function showCodex(target) {
 
     // ★ 검색은 챔피언·랭킹과 같은 헬퍼를 쓴다 (초성 · 영타). 표를 두 벌 두면 어긋난다.
     //   아이템은 여기에 **라이엇이 넣어 둔 별명(colloq)** 까지 더한다 — "인피"·"똥신" 같은 것들.
+    // ★★ 공백을 지운 판을 **같이** 담는다 (2026-08-25). 안 그러면 초성 검색이 통째로 죽는다 —
+    //   `getChosung('무한의 대검')` 이 `ㅁㅎㅇ ㄷㄱ` 라 공백까지 쳐야 걸렸다.
+    //   도감 항목은 **아이템 184/215 · 룬 46/62 · 파편 6/7 이 이름에 공백이 있다.**
+    //   챔피언 검색(`champSearchKey`)은 원래 `name.replace(/\s+/g,'')` 로 지우고 있었고
+    //   **도감만 그 규칙에서 빠져 있었다.**
+    //   ★ 원본도 남긴다 — `무한의 대검` 처럼 공백째로 치는 사람이 있다. 지운 판만 두면 그게 죽는다.
     function matches(e, cands) {
         if (!cands.length) return true;
-        const hay = (e.name + '|' + getChosung(e.name) + '|' + (e.raw.c || '')).toLowerCase();
+        const flat = e.name.replace(/\s+/g, '');
+        const hay = (e.name + '|' + getChosung(e.name)
+            + '|' + flat + '|' + getChosung(flat)
+            + '|' + (e.raw.c || '')).toLowerCase();
         return cands.some(c => hay.includes(c));
     }
 

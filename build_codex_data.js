@@ -53,9 +53,11 @@ async function getJson(url) {
     DD_VER = await ddVersion({ withCD: true });
     DD = `https://ddragon.leagueoflegends.com/cdn/${DD_VER}/data/ko_KR`;
 
-    const [ddItem, ddSumm, perks, perkStyles, itemBin] = await Promise.all([
+    const [ddItem, ddSumm, ddChamp, perks, perkStyles, itemBin] = await Promise.all([
         getJson(`${DD}/item.json`),
         getJson(`${DD}/summoner.json`),
+        // 챔피언 전용 아이템의 `requiredChampion` 을 한글 이름으로 바꾸는 데만 쓴다 (아래 korRc)
+        getJson(`${DD}/champion.json`),
         getJson(`${CD}/perks.json`),
         getJson(`${CD}/perkstyles.json`),
         getJson(CD_ITEM_BIN)
@@ -99,6 +101,22 @@ async function getJson(url) {
         return e.epicness || 0;
     };
 
+    // ★★ `requiredChampion` 은 **영문 키**다 — 그대로 담으면 화면에 `Kalista 전용` 이 나간다
+    //   (2026-08-25 정정. 이름이 같은 칼리스타 창 3599/3600 을 가르는 뱃지라 제일 눈에 띄는 자리였다).
+    // ★ champion.json 의 키와 **대소문자가 어긋나는 자리가 있다** — 아이템 쪽은 `FiddleSticks` 인데
+    //   champion.json 은 `Fiddlesticks` 다. 정확히 찾으면 못 찾으므로 **소문자로 맞춰 찾는다.**
+    // ★ 못 찾으면 영문을 그대로 남기고 경고를 찍는다 — 조용히 빈칸이 되면 칼리스타 창 두 개를
+    //   구분할 길이 사라진다. **빈칸보다 영문이 낫다.**
+    const korChamp = {};
+    Object.values(ddChamp.data).forEach(c => { korChamp[c.id.toLowerCase()] = c.name; });
+    const rcMissed = [];
+    const korRc = (key) => {
+        if (!key) return '';
+        const kor = korChamp[key.toLowerCase()];
+        if (!kor) { rcMissed.push(key); return key; }
+        return kor;
+    };
+
     const items = {};
     liveIds.forEach(i => {
         const x = all[i];
@@ -118,7 +136,8 @@ async function getJson(url) {
             c: (x.colloq || '').split(';').filter(Boolean).join(' '),
             // ★ 챔피언 전용 아이템(오른 등)만 채운다. 칼리스타의 칠흑의 창은
             //   칼리스타용(3599)과 실라스용(3600)이 **이름이 같아서** 이게 없으면 구분이 안 된다.
-            rc: x.requiredChampion || ''
+            //   ★ 화면에 그대로 나가는 값이라 **한글 이름으로 담는다** (위 korRc 주석 참고).
+            rc: korRc(x.requiredChampion)
         };
     });
 
@@ -214,6 +233,10 @@ const codexData = ${body};
     if (unknownEp.length) console.log(`  ★ 처음 보는 epicness: ${unknownEp.join(', ')} — app.js 의 CODEX_EPICNESS 를 고칠 것`);
     if (noBin.length) console.log(`  ★ bin 에 없는 아이템 ${noBin.length}개(등급 0 으로 처리): ${noBin.join(', ')}`);
     console.log(`  조합 재료 누락: ${brokenFrom}건`);
+    const rcList = Object.entries(items).filter(([, x]) => x.rc);
+    console.log(`  챔피언 전용: ${rcList.length}개 — ${rcList.map(([id, x]) => `${x.n}(${id}) ${x.rc}`).join(' / ') || '없음'}`);
+    // ★ 한글로 못 바꾼 자리. 화면에 영문이 그대로 나가므로 champion.json 쪽 키를 확인할 것
+    if (rcMissed.length) console.log(`  ★ 한글 이름을 못 찾은 requiredChampion: ${[...new Set(rcMissed)].join(', ')} — champion.json 에 그 키가 없다`);
     const tagCount = {};
     Object.values(items).forEach(x => x.g2.forEach(t => tagCount[t] = (tagCount[t] || 0) + 1));
     console.log(`  태그: ${Object.entries(tagCount).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ':' + v).join(' ')}`);
