@@ -86,8 +86,18 @@ async function getJson(url) {
         return m['11'] && !Object.entries(m).some(([k, v]) => k !== '11' && v);
     };
 
+    // ★★ 칼바람 나락 전용 "수호자" 아이템 4종이 딸려 온다 (2026-08-25, 사용자 지적).
+    //   **`maps` 로는 못 거른다** — 수호자의 뿔피리도 `maps['11'] = true` 다.
+    //   가르는 건 게임 bin 의 `mItemGroups` 에 있는 **`Items/ItemGroups/GuardianItems`** 다.
+    //   협곡 215개 중 넷이 걸린다: 수호자의 뿔피리 · 보주 · 검 · 망치 (전부 950G · 상위 아이템 없음).
+    //   ★ `MythicItems` 그룹은 **빼면 안 된다** — 옛 이름일 뿐이고 `사라진 양피지`(3802)가
+    //     거기 속하는데 대천사의 지팡이·루덴의 메아리·악의로 조합되는 **협곡 아이템**이다.
+    const isAramGuardian = (i) =>
+        (itemBin['Items/' + i]?.mItemGroups || []).includes('Items/ItemGroups/GuardianItems');
+
     const liveIds = Object.keys(all).filter(i =>
-        all[i].maps?.['11'] && all[i].gold?.purchasable !== false && !isOtherModeClone(i));
+        all[i].maps?.['11'] && all[i].gold?.purchasable !== false
+        && !isOtherModeClone(i) && !isAramGuardian(i));
 
     // ★★ 등급은 게임 bin 의 `epicness` 다 (위 머리주석 참고). 값을 합치거나 다시 매기지 않고
     //   **그대로 담는다** — 화면(app.js 의 CODEX_EPICNESS)이 이름만 붙인다.

@@ -2909,6 +2909,11 @@ const CODEX_ROLES = [
 //   ★ 순서는 인게임 상점 차례를 따랐다 (공격 → 주문 → 방어 → 유틸).
 //   ★ 남는 태그 열하나(Lane·Active·Vision·Consumable·Tenacity·Jungle·GoldPer·Slow·Aura·
 //     Trinket·Stealth)는 스탯이 아니라 성격 태그라 목록에 없다 — 인게임 상점에도 없다.
+//   ★★ 순서와 칸 수는 **인게임 화면을 보고 맞췄다** (2026-08-25, 사용자 확인).
+//     `스킬 가속` 은 마법 저항력 **뒤**고, 마지막 셋이 `스킬 가속 · 이동 속도 ·
+//     생명력 흡수 및 모든 피해 흡혈` 이다. 열넷이고 **`생명력 흡수 및 주문 흡혈` 칸은 없다** —
+//     stringtable 에 `stats_filter_spellvamp` 키가 있긴 하지만 협곡 상점 목록에는 안 쓴다.
+//     그래서 `SpellVamp` 태그는 `모든 피해 흡혈` 칸이 같이 받는다 (이름 그대로다).
 const CODEX_STATS = [
     { key: 'physical_damage', name: '공격력', tags: ['Damage'] },
     { key: 'critical_strike', name: '치명타', tags: ['CriticalStrike'] },
@@ -2917,14 +2922,13 @@ const CODEX_STATS = [
     { key: 'armor_penetration', name: '방어구 관통력', tags: ['ArmorPenetration'] },
     { key: 'ability_power', name: '주문력', tags: ['SpellDamage'] },
     { key: 'magic_penetration', name: '마법 관통력', tags: ['MagicPenetration'] },
-    { key: 'ability_haste', name: '스킬 가속', tags: ['AbilityHaste', 'CooldownReduction'] },
     { key: 'mana', name: '마나 및 재생', tags: ['Mana', 'ManaRegen'] },
     { key: 'health', name: '체력 및 재생', tags: ['Health', 'HealthRegen'] },
     { key: 'armor', name: '방어력', tags: ['Armor'] },
     { key: 'magic_resistance', name: '마법 저항력', tags: ['SpellBlock', 'MagicResist'] },
+    { key: 'ability_haste', name: '스킬 가속', tags: ['AbilityHaste', 'CooldownReduction'] },
     { key: 'movespeed', name: '이동 속도', tags: ['NonbootsMovement', 'Boots'] },
-    { key: 'vamp', name: '생명력 흡수 및 모든 피해 흡혈', tags: ['LifeSteal'] },
-    { key: 'spellvamp', name: '생명력 흡수 및 주문 흡혈', tags: ['SpellVamp'] }
+    { key: 'vamp', name: '생명력 흡수 및 모든 피해 흡혈', tags: ['LifeSteal', 'SpellVamp'] }
 ];
 
 const CODEX_TABS = [
