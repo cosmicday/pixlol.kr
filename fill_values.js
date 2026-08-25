@@ -304,7 +304,7 @@ const STAT_MANUAL = {
     '아트록스 E': { '사거리': '300' },  // 롤위키 `75 - 300` · bin DataValue `EMaxRange` 300
     '오른 W': { '사거리': '500' },      // 롤위키 `500 • 560` (bin 계열 override 2500 은 취약 효과 범위였다)
     '바드 Q': { '사거리': '850' },      // 롤위키 850 (bin 계열은 950·525 로 둘 다 달랐다)
-    '헤카림 R': { '사거리': '1000' },   // 롤위키 `300 - 1000` · bin DataValue `MaxDashRange` 1000
+    '헤카림 R': { '사거리': '1000', '스킬 폭': '480' },   // 롤위키 `300 - 1000` · bin DataValue `MaxDashRange` 1000 · 폭 480 = 롤위키 전체(80 은 기수 하나) — 위키 우선 규칙이 첫 숫자를 집어 손표 (2026-08-24)
     '제리 E': { '사거리': '300' },      // 롤위키 `cast range 300` · bin DataValue `MaxDistance` 300 — 일치
     '세트 W': { '사거리': '720' },      // 롤위키 `Range: -25 - 720` / `Circle Radius: 720`
     '자헨 Q': { '사거리': '200' },      // 나무위키 200 (기본 공격 175 + bin DataValue `QBonusRange` 25)
@@ -448,7 +448,7 @@ const STAT_MANUAL = {
     '카이사 E': { '시전시간': '1.2 ~ 0.6 (공격 속도에 따라)' },
     // 투사체 1200(회오리): 본체 wrapper legacy 1500 은 근접 찌르기(Q1·Q2, 투사체 없음)까지 뭉뚱그린 틀값이고,
     //   진짜 투사체는 Q3 회오리뿐 — bin `YasuoQ3Mis` spec 1200 = 롤위키 `Whirlwind missile speed` 1200 (2026-08-24)
-    '야스오 Q': { '사거리': '475 (회오리 1150)', '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)', '투사체 속도': '1200 (회오리)' },
+    '야스오 Q': { '사거리': '475 (회오리 1150)', '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)', '투사체 속도': '1200 (회오리)', '스킬 폭': '80 (회오리 180)' },   // 폭: 롤위키 찌르기 80·회오리 180 (요네 Q 와 같은 꼴, 2026-08-24)
     // 요네 Q 는 롤위키 range 칸에 값이 셋이다 — 450(찌르기) · 450(3타 돌진 거리) · 1050(회오리 전체)
     '요네 Q': { '사거리': '450 (회오리 1050)', '시전시간': '0.35 ~ 0.175 (추가 공격 속도 24%당 0.035초 감소, 최대 50%)', '스킬 폭': '80 (회오리 160)' },   // 폭: bin mLineWidth 15 는 자리값. 롤위키 찌르기 80·회오리 160, 인게임 확인 (2026-08-24)
     '요네 W': { '시전시간': '0.5 ~ 0.19 (추가 공격 속도 1.68%당 1% 감소, 최대 62.5%)' },
@@ -470,7 +470,7 @@ const STAT_MANUAL = {
     '오리아나 Q': { '투사체 속도': '1400' },   // 본체(Command) 1200 틀값 / 공 객체 OrianaIzuna 1400 = 롤위키 1400
     '오리아나 E': { '투사체 속도': '1850' },   // 본체(Command) 1200 틀값 / 공 객체 OrianaRedact 1850 = 롤위키 1850
     '브라움 R': { '투사체 속도': '1400' },     // 본체 wrapper 1200 틀값 / BraumRMissile 1400 = 롤위키 1400
-    '애니비아 Q': { '투사체 속도': '950' },
+    '애니비아 Q': { '투사체 속도': '950' },    // 본체 wrapper(FlashFrost) legacy 850 / 진짜 미사일 FlashFrostSpell spec 950 = 롤위키 950
     // --- 스킬 폭: 인게임 확인으로 롤위키가 맞은 자리 (2026-08-24 밤, 사용자 확인) ---
     //   bin mLineWidth(x2)가 판정 폭이 아닌 자리들 — 바루스 R 450x2=900 은 덩굴 퍼짐, 럭스 R 190x2=380,
     //   사미라 E 50x2=100 은 돌진 이펙트 폭. 위키 폭이 인게임과 일치했다
@@ -483,7 +483,7 @@ const STAT_MANUAL = {
     '제라스 Q': { '스킬 폭': '145' },
     '암베사 R': { '스킬 폭': '130' },
     '제리 Q': { '스킬 폭': '80' },
-    '유미 R': { '스킬 폭': '450' },    // 본체 wrapper(FlashFrost) legacy 850 / 진짜 미사일 FlashFrostSpell spec 950 = 롤위키 950
+    '유미 R': { '스킬 폭': '450' },
     // 본체 legacy 가 틀값(1200)인데 계열 객체도 없는 자리 — 롤위키 값을 쓴다 (속도 40/47 검증된 소스)
     '벨코즈 W': { '투사체 속도': '1700' },     // 본체 1200 틀값 · 롤위키 1700 (Ripple missile speed)
     '벨코즈 Q': { '투사체 속도': '1300' },     // 본체 1200 틀값 · 롤위키 1300 (Primary missile speed)
@@ -580,6 +580,17 @@ const WIKI_STATS = (() => {
 const wikiStatUsed = [];           // 위키 값으로 채운 자리
 // ★ 순서는 "공간(사거리·효과 범위·스킬 폭) → 시간(시전시간·투사체·돌진)" 이다 (2026-08-23 결정)
 const STAT_ORDER = ['사거리', '효과 범위', '스킬 폭', '시전시간', '투사체 속도', '돌진 속도'];
+
+// ★ 스킬 폭 위키 우선 규칙의 예외 — 위키 WIDTH 칸이 전체 판정 폭이 아닌 자리 (2026-08-24).
+//   렝가 R 때의 "값이 여럿인데 첫 숫자만 잘라 옴" 함정과 같다. 여기 있으면 bin(x2)을 유지한다.
+const WIDTH_KEEP_BIN = new Set([
+    '그웬 Q',        // 사다리꼴 75(안쪽)~360(바깥쪽)·안쪽 직사각형 25 — 한 숫자가 아니다
+    '루시안 R',      // 220 "individual missile widthoffset, see notes" — 뜻이 불분명
+    '미스 포츈 R',   // 40 = 탄줄 하나의 폭. 전체는 원뿔(효과 범위)
+    '비에고 E',      // 500 "estimated"
+    '아칼리 Q',      // 350 "Maximum width. Estimated."
+]);
+const widthWikiFirst = [];   // 위키 폭으로 바꾼 자리 (실행 때 찍는다)
 
 const STAT_DROP = {
     // 위키로 "투사체가 아니다" 를 확인한 자리
@@ -3482,6 +3493,14 @@ async function main() {
                 if (dropStat.includes(name)) return;
                 if (selfRadiusDup(name, val)) return;
                 let v = manualStat[name] !== undefined ? manualStat[name] : val;
+                // ★★ 스킬 폭만 **위키 우선** (2026-08-24, 사용자 확정). 인게임 확인 13/13 에서 롤위키 WIDTH 가 맞았고
+                //   bin mLineWidth 는 이펙트 폭·자리값(15)인 자리가 많다. 위키 값이 "부분" 인 자리(WIDTH_KEEP_BIN)와
+                //   손표(STAT_MANUAL)는 예외. 위키에 폭이 없으면 예전처럼 bin(x2)이다
+                if (name === '스킬 폭' && manualStat[name] === undefined && wikiStat[name] !== undefined
+                    && !WIDTH_KEEP_BIN.has(`${c.name} ${key}`) && v && String(wikiStat[name]) !== String(v)) {
+                    widthWikiFirst.push(`${c.name} ${key}: bin ${v} → 위키 ${wikiStat[name]}`);
+                    v = wikiStat[name];
+                }
                 // ★ bin 에 없으면 위키. 속도는 둘 중 하나라도 bin 에 있으면 위키를 안 본다 (같은 칸이다)
                 if (!v && wikiStat[name] !== undefined) {
                     const speedPair = (name === '투사체 속도' || name === '돌진 속도') && (missileSpeed || dashSpeed);
@@ -3721,6 +3740,11 @@ async function main() {
         console.log(`
 [스킬 폭 2배 안 함] ${widthNoDouble.length}자리 — 롤위키 WIDTH 가 mLineWidth 와 같은 자리 (이중 적용 방지):`);
         widthNoDouble.forEach(x => console.log('  ' + x));
+    }
+    if (widthWikiFirst.length) {
+        console.log(`
+[스킬 폭 위키 우선] ${widthWikiFirst.length}자리 — bin mLineWidth(x2) 대신 롤위키 WIDTH:`);
+        widthWikiFirst.forEach(x => console.log('  ' + x));
     }
 
     if (dashMulti.length) {
