@@ -3862,6 +3862,11 @@ function renderBuildPanel(data, lane) {
     const total = totals[pos] != null ? totals[pos] : 0;
 
     if (!total) {
+        // ★ 서버가 "재집계 중에 읽은 부분 결과" 라고 알려 주면 그렇게 말한다 (2026-08-26).
+        //   예전엔 이 경우도 "표본이 없습니다" 로 나가서 서폿 카밀이 통계가 없는 것처럼 보였다.
+        if (data.rebuilding) {
+            return `<div class="build-empty">통계를 다시 계산하는 중입니다. 잠시 뒤 새로고침해 주세요.</div>`;
+        }
         return `<div class="build-empty">${laneName
             ? laneName + ' 표본이 없습니다. 라인 필터를 전체로 바꿔 보세요.'
             : '이 챔피언은 아직 표본이 없습니다.'}</div>`;

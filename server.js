@@ -1526,6 +1526,21 @@ async function buildOneMatchupScope(scopeKey, matchCond) {
     return docs.length;
 }
 
+// ★★★ 집계는 `deleteMany → insertMany` 라 **도는 동안 컬렉션이 반쯤 빈다.**
+//   그 순간에 조회가 들어오면 부분 결과가 응답 캐시(10~30분)에 굳어서, 재집계가
+//   몇십 초 만에 끝나도 **그 챔피언만 오래 "표본이 없습니다"** 가 된다.
+//   2026-08-26 에 실제로 났다 — 서폿 카밀이 그랬고, DB 를 열어 보니 272줄 멀쩡한데
+//   API 캐시만 36줄(rune 까지만 들어간 순간)을 들고 있었다.
+//   ★ 그래서 사이클 끝에 통계 캐시를 통째로 비운다. 노출 창이 "재집계에 걸리는 시간" 으로 줄어든다.
+//   ★ `/api/champion-stats` 는 캐시를 안 쓰므로 여기 없다 (부분 결과가 보여도 다음 요청에 낫는다).
+const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'spellusage_'];
+
+function flushStatCaches() {
+    const keys = myCache.keys().filter(k => STAT_CACHE_PREFIXES.some(p => k.startsWith(p)));
+    if (keys.length) myCache.del(keys);
+    return keys.length;
+}
+
 async function buildChampStats() {
     if (isBuildingStats) return;
     isBuildingStats = true;
@@ -1573,6 +1588,9 @@ async function buildChampStats() {
     } catch (e) {
         console.error('[Stat] 집계 실패:', e.message);
     } finally {
+        // ★ 실패해도 비운다 — 중간까지 갈아엎힌 상태로 끝났을 수 있다
+        const dropped = flushStatCaches();
+        if (dropped) console.log(`[Stat] 응답 캐시 ${dropped}개 비움`);
         isBuildingStats = false;
     }
 }
@@ -2939,6 +2957,11 @@ app.get('/api/champion-builds', async (req, res) => {
             totals[pos] = r.games;
             totalWins[pos] = r.wins;
         });
+        // ★★ 줄은 있는데 `all` 이 하나도 없으면 **재집계 중에 읽은 것**이다 (위 flushStatCaches 주석).
+        //   그 부분 결과를 캐시에 넣으면 10분 동안 그 챔피언만 "표본이 없습니다" 가 된다.
+        //   ★ 표본이 진짜 0 인 챔피언과는 갈린다 — 그쪽은 `rows` 자체가 비어 있다.
+        const rebuilding = rows.length > 0 && !rows.some(r => r.type === 'all');
+
         const payload = {
             scope,
             champ,
@@ -2946,9 +2969,10 @@ app.get('/api/champion-builds', async (req, res) => {
             wins: totalWins[-1] || 0,
             totals,
             totalWins,
+            rebuilding: rebuilding || undefined,
             rows: rows.filter(r => r.type !== 'all')
         };
-        myCache.set(cacheKey, payload, 600);
+        if (!rebuilding) myCache.set(cacheKey, payload, 600);
         res.json(payload);
     } catch (e) {
         console.error('[API] 룬 빌드 실패:', e.message);
