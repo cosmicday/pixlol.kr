@@ -3800,13 +3800,13 @@ const MATCHUP_SIDE_N = 5;      // 한쪽에 몇 명씩
 //
 //  ★★ 색·크기·순서는 그쪽 DOM 에서 읽은 값이다 (눈대중 아님): 탭 바 활성 rgb(58,126,147) / 비활성 rgb(33,71,83) ·
 //    글자 12px · 라벨 회색 #bbb · 상자 테두리 #333 · 챔피언 아이콘 37px · 승률 초록/빨강 · 픽률 연보라.
-//    자리 순서도 그쪽과 같다: 헤더 → 탭 → 빌드(Highest Win / Most Common) → 추이 그래프 4개 → 상성(적 5줄 · 아군 4줄) →
+//    자리 순서도 그쪽과 같다 (★ 탭 줄·빌드 상자는 2026-08-27 사용자 요청으로 뺐다): 헤더 → 추이 그래프 4개 → 상성(적 5줄 · 아군 4줄) →
 //    소환사 주문 → 시작 아이템/세트 → 초반 아이템/세트 → 세트(2~5개) → 신발·1~5번째·인기·승률·전체 아이템 →
 //    스킬 우선순위(레벨 탭) → 룬 표(전체 / 승률 최고 페이지 / 인기 페이지).
 //  ★ 그쪽의 오른쪽 아래 상자들(Secure/Yield · 사분면 · Best on · Leaderboard)은 **넣지 않는다** (사용자 지시).
 //  ★★ 16.16 처럼 타임라인(`tlall`)이 없는 패치는 아이템 로그·스킬 로그 칸을 **통째로 안 그린다** (사용자 지시).
 //    빌드 상자엔 주문·룬만, 아래엔 상성·주문·최종 아이템·룬 표만 남는다.
-//  ★ 화면 함수: showChampStatPage → lxHeader / lxBuildBox / lxTrend / lxMatchups / lxLowerRows / lxSkillBox / lxRuneBox
+//  ★ 화면 함수: showChampStatPage → lxHeader / lxTrend / lxMatchups / lxLowerRows / lxSkillBox / lxRuneBox
 // ══════════════════════════════════════════════════════════════════════
 const LX_ROW_MAX = 18;          // 한 줄에 그릴 카드 수 (그쪽은 12장 + 오른쪽 상자, 우리는 그 자리까지 카드)
 const LX_WIN_MIN_SHARE = 0.1;   // "승률 최고" 를 고를 때 1위 판수의 이 비율 이상인 후보만 (1판짜리 100% 방지)
@@ -3942,10 +3942,6 @@ async function showChampStatPage(engId, laneKey) {
     box.innerHTML = `
     <div class="lx-page">
         ${lxHeader(ctx)}
-        <div class="lx-tabs">
-            <a href="#lx-build" class="lx-tab active" data-target="lx-build">${kor} 빌드</a>
-            <a href="#lx-counters" class="lx-tab" data-target="lx-counters">${kor} 상성</a>
-        </div>
         <div id="lx-body"><div class="build-loading">빌드를 불러오는 중...</div></div>
     </div>`;
 
@@ -3957,11 +3953,6 @@ async function showChampStatPage(engId, laneKey) {
     }));
     const sel = box.querySelector('#lx-scope');
     if (sel) sel.addEventListener('change', () => { window.statScope = sel.value; showChampStatPage(engId, laneKey); });
-    box.querySelectorAll('.lx-tab').forEach(a => a.addEventListener('click', (e) => {
-        e.preventDefault();
-        box.querySelectorAll('.lx-tab').forEach(x => x.classList.toggle('active', x === a));
-        document.getElementById(a.dataset.target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }));
 
     // ── 빌드·상성·추이
     const body = document.getElementById('lx-body');
@@ -3982,7 +3973,8 @@ async function showChampStatPage(engId, laneKey) {
         const B = lxBuildData(builds, main.pos);
         ctx.B = B;
         ctx.M = lxMatchupData(matchups, ctx);
-        body.innerHTML = lxBuildBox(ctx) + `<div id="lx-trend"></div>` + lxMatchups(ctx) + lxLowerRows(ctx) + lxSkillBox(ctx) + lxRuneBox(ctx);
+        // ★ 탭 줄과 빌드 상자(승률 최고 / 가장 많이 쓰는 빌드)는 2026-08-27 에 뺐다 (사용자 요청) — 헤더 바로 아래가 추이 그래프다
+        body.innerHTML = `<div id="lx-trend"></div>` + lxMatchups(ctx) + lxLowerRows(ctx) + lxSkillBox(ctx) + lxRuneBox(ctx);
         lxBindTabs(body, ctx);
         const trend = await trendP;
         document.getElementById('lx-trend').innerHTML = lxTrend(ctx, trend);
@@ -4106,92 +4098,6 @@ function lxSkill(c, n, small) {
     const L = 'QWER'[n - 1] || '';
     const u = c.skillIcons && c.skillIcons[L];
     return `<span class="lx-skl${small ? ' is-sm' : ''}">${u ? `<img src="${u}" alt="">` : ''}<i>${L}</i></span>`;
-}
-
-// "53.52% 승률 525판" — 그쪽이 블록마다 아래에 초록으로 적는 그 줄
-function lxUnder(B, type, r) {
-    if (!r) return '';
-    return `<div class="lx-under"><span class="${lxWr(r.wins, r.games)}">${lxPct(r.wins, r.games)}% 승률</span> <span class="lx-gray">${r.games}판</span></div>`;
-}
-
-// ── 빌드 상자 (Highest Win / Most Common) ─────────────────────────────
-function lxBuildBox(c) {
-    const B = c.B;
-    if (!B.has) return `<div class="lx-box" id="lx-build"><div class="lx-none">빌드를 불러오지 못했습니다.</div></div>`;
-    if (!B.total) {
-        return `<div class="lx-box" id="lx-build"><div class="lx-none">${B.rebuilding ? '통계를 다시 계산하는 중입니다. 잠시 뒤 새로고침해 주세요.' : (c.laneName + ' 표본이 없습니다.')}</div></div>`;
-    }
-    return `
-    <div class="lx-box" id="lx-build">
-        ${lxTabBar('build', [{ v: 'win', label: '승률 최고 빌드' }, { v: 'common', label: '가장 많이 쓰는 빌드' }], 'common')}
-        <div id="lx-build-body">${lxBuildBody(c, 'common')}</div>
-    </div>`;
-}
-
-function lxBuildBody(c, mode) {
-    const B = c.B;
-    const pri = B.pick('skillpri', mode), sp = B.pick('spell', mode), ord = B.pick('skillord', mode);
-    const rune = B.pick('rune', mode), shard = B.pick('shard', mode);
-    const st = B.pick('start', mode), core = B.pick('core', mode);
-    const hasTl = B.tl > 0;
-
-    const blk = (title, inner, cls) => `<div class="lx-blk${cls ? ' ' + cls : ''}"><div class="lx-blk-h">${title}</div>${inner}</div>`;
-    const none = `<div class="lx-none">표본 없음</div>`;
-
-    const priHtml = pri ? `<div class="lx-pri">${pri.key.map(n => lxSkill(c, n)).join('<span class="lx-arrow">›</span>')}</div>${lxUnder(B, 'skillpri', pri)}` : none;
-    const spHtml = sp ? `<div class="lx-spells">${sp.key.map(x => `<img src="${spellIcon(x)}" alt="" title="${spellName(x)}">`).join('')}</div>${lxUnder(B, 'spell', sp)}` : none;
-    const ordHtml = ord ? `
-        <div class="lx-so">${[1, 2, 3, 4].map(n => `
-            <div class="lx-so-row">${lxSkill(c, n, true)}${Array.from({ length: 18 }, (_, i) => ord.key[i] === n
-                ? `<span class="lx-so-cell on">${i + 1}</span>` : `<span class="lx-so-cell${i >= 15 ? ' is-off' : ''}"></span>`).join('')}</div>`).join('')}
-        </div>${lxUnder(B, 'skillord', ord)}` : none;
-
-    let runeHtml = none;
-    if (rune) {
-        const [ps, ks, m1, m2, m3, ss, s1, s2] = rune.key;
-        const shards = (shard || {}).key || [];
-        runeHtml = `
-        <div class="lx-runes">
-            <div class="lx-rune-col"><div class="lx-blk-h">주 룬</div>${lxRuneGrid(ps, [ks, m1, m2, m3], false)}</div>
-            <div class="lx-rune-col"><div class="lx-blk-h">보조</div>${lxRuneGrid(ss, [s1, s2], true)}</div>
-            <div class="lx-rune-col"><div class="lx-blk-h">스탯</div>${lxShardGrid(shards)}</div>
-        </div>${lxUnder(B, 'rune', rune)}`;
-    }
-
-    const item = id => `<img class="lx-item" src="${itemIconOf(id)}" alt="" title="${itemNameOf(id)}" loading="lazy">`;
-    const stHtml = st ? `<div class="lx-items">${st.key.map(item).join('')}</div>${lxUnder(B, 'start', st)}` : none;
-    const coreHtml = core ? `<div class="lx-items">${core.key.map(item).join('<span class="lx-arrow">›</span>')}</div>${lxUnder(B, 'core', core)}` : none;
-    const nth = type => {
-        const list = B.sorted(type, mode, 3);
-        if (!list.length) return none;
-        return `<div class="lx-or">${list.map(r => `
-            <div class="lx-or-opt">${item(r.key[0])}<div class="${lxWr(r.wins, r.games)}">${lxPct(r.wins, r.games)}%</div><div class="lx-gray">${r.games}</div></div>`).join('<span class="lx-or-sep">OR</span>')}</div>`;
-    };
-
-    if (!hasTl) {
-        // 16.16 처럼 로그가 없는 패치 — 주문과 룬만
-        return `
-        <div class="lx-build-r1 is-notl">
-            ${blk('소환사 주문', spHtml)}
-            ${blk('룬', runeHtml, 'lx-blk-rune')}
-        </div>`;
-    }
-    return `
-    <div class="lx-build-r1">
-        <div class="lx-blk">
-            <div class="lx-blk-h">스킬 우선순위</div>${priHtml}
-            <div class="lx-blk-h lx-gap">소환사 주문</div>${spHtml}
-        </div>
-        ${blk('스킬 순서', ordHtml, 'lx-blk-so')}
-        ${blk('룬', runeHtml, 'lx-blk-rune')}
-    </div>
-    <div class="lx-build-r2">
-        ${blk('시작 아이템', stHtml)}
-        ${blk('코어 빌드', coreHtml)}
-        ${blk('4번째 아이템', nth('item4'))}
-        ${blk('5번째 아이템', nth('item5'))}
-        ${blk('6번째 아이템', nth('item6'))}
-    </div>`;
 }
 
 // 룬 격자 — 인게임 배치 그대로 깔고 고른 것만 밝게. ★ 파편은 자리로 켠다 (같은 파편이 두 줄에 있다)
@@ -4456,7 +4362,6 @@ function lxRuneBody(c, v) {
 // ── 탭 바 동작 — 그룹마다 몸통을 다시 그린다 ─────────────────────────
 function lxBindTabs(root, c) {
     const handlers = {
-        'build': v => { document.getElementById('lx-build-body').innerHTML = lxBuildBody(c, v); },
         'mu-counter': v => { root.querySelectorAll('[data-group="mu-synergy"] .lx-tabbtn').forEach(b => b.classList.remove('active')); const el = document.getElementById('lx-mu-rows'); if (el) el.innerHTML = lxMatchupRows(c, 'counter', v); },
         'mu-synergy': v => { root.querySelectorAll('[data-group="mu-counter"] .lx-tabbtn').forEach(b => b.classList.remove('active')); const el = document.getElementById('lx-mu-rows'); if (el) el.innerHTML = lxMatchupRows(c, 'synergy', v); },
         'start': v => { document.getElementById('lx-start-body').innerHTML = lxStartBody(c, v); },

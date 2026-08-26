@@ -2645,20 +2645,6 @@ main {
 .lx-stat-v { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
 .lx-stat-k { font-size: 11px; color: var(--lx-gray); margin-top: 2px; }
 
-/* ── 탭 줄 (Build / Counters) */
-.lx-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--lx-bd); margin-bottom: 12px; }
-
-.lx-tab {
-    padding: 8px 12px;
-    font-size: 14px;
-    color: #ddd;
-    text-decoration: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-}
-
-.lx-tab.active { color: #fff; border-bottom-color: var(--lx-teal); }
-
 /* ── 상자와 두 칸(여러 칸) 탭 바 */
 .lx-box {
     background: var(--lx-box);
@@ -2687,59 +2673,11 @@ main {
 .lx-none { padding: 14px; font-size: 12px; color: var(--lx-gray); text-align: center; }
 .lx-foot { padding: 6px 10px 8px; font-size: 11px; color: #888; border-top: 1px solid #222; }
 
-/* ── 빌드 상자 몸통 */
-.lx-build-r1 {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 10px;
-    padding: 10px;
-}
-
-.lx-build-r1.is-notl { grid-template-columns: auto auto; justify-content: start; gap: 40px; }
-
-.lx-build-r2 {
-    display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
-    gap: 10px;
-    padding: 0 10px 12px;
-}
-
 .lx-blk { min-width: 0; }
 .lx-blk-h { font-size: 12px; font-weight: 700; color: #fff; text-align: center; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; }
 .lx-blk-h .lx-style { width: 16px; height: 16px; }
-.lx-gap { margin-top: 12px; }
-
-.lx-under { margin-top: 5px; font-size: 11px; text-align: center; white-space: nowrap; }
-
-.lx-pri { display: flex; align-items: center; justify-content: center; gap: 4px; }
 .lx-arrow { color: #fff; font-size: 18px; line-height: 1; padding: 0 2px; }
 .lx-arrow.is-sm { font-size: 13px; padding: 0 1px; }
-
-.lx-spells { display: flex; justify-content: center; gap: 4px; }
-.lx-spells img { width: 36px; height: 36px; border-radius: 3px; }
-
-/* 스킬 순서 격자 — 4줄 x 18칸 (15레벨 넘는 3칸은 흐리게). 폰에선 블록 안 가로 스크롤 */
-.lx-so { display: flex; flex-direction: column; gap: 3px; overflow-x: auto; }
-.lx-so-row { display: flex; align-items: center; gap: 2px; }
-.lx-so-row .lx-skl { margin-right: 3px; }
-
-.lx-so-cell {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-    box-sizing: border-box;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    font-size: 10px;
-    font-weight: 700;
-    color: #fff;
-}
-
-.lx-so-cell.on { background: var(--lx-teal); border-color: #4c97ad; }
-.lx-so-cell.is-off { opacity: 0.35; }
 
 .lx-runes { display: flex; justify-content: center; gap: 12px; }
 .lx-rune-col { min-width: 0; }
@@ -2749,13 +2687,6 @@ main {
 .lx-rg-row.is-key .lx-rg { width: 34px; height: 34px; }
 .lx-rg-row.is-key .lx-rg.on { box-shadow: 0 0 0 2px var(--lx-teal); }
 .lx-shard { border-radius: 4px; width: 22px; height: 22px; }
-
-.lx-items { display: flex; align-items: center; justify-content: center; gap: 3px; }
-.lx-item { width: 36px; height: 36px; border-radius: 3px; background: #000; }
-
-.lx-or { display: flex; align-items: flex-start; justify-content: center; gap: 4px; }
-.lx-or-opt { text-align: center; font-size: 11px; line-height: 1.3; }
-.lx-or-sep { font-size: 10px; color: var(--lx-gray); padding-top: 12px; }
 
 /* ── 범례 + 추이 그래프 4개 */
 .lx-legend {
@@ -3766,7 +3697,6 @@ main {
     .lx-hero-left { justify-content: center; }
     .lx-portrait-wrap, .lx-portrait { width: 100px; height: 100px; }
     .lx-statrow { grid-template-columns: repeat(2, 1fr); gap: 8px 0; }
-    .lx-build-r1, .lx-build-r2, .lx-build-r1.is-notl { grid-template-columns: 1fr; gap: 14px; }
     .lx-runes { flex-wrap: wrap; }
     .lx-graphs { grid-template-columns: repeat(2, 1fr); }
     .lx-mu-tabrow { flex-wrap: wrap; }
