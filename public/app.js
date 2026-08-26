@@ -4060,11 +4060,16 @@ async function showChampStatPage(engId, laneKey) {
         box.innerHTML = `<div class="stats-empty">${kor} 의 표본이 없습니다. <a href="/stats" class="stat-back">← 통계로</a></div>`;
         return;
     }
-    // 이 챔피언이 실제로 서는 라인들 (판수 순). 라인 전환 버튼도 이걸로 그린다
-    const byLane = mine.filter(r => r.pos >= 0 && r.games).sort((a, b) => b.games - a.games);
+    // 이 챔피언이 실제로 서는 라인들. 라인 전환 버튼도 이걸로 그린다.
+    //   ★★ 순서는 **탑 → 정글 → 미드 → 바텀 → 서포터 고정**이다 (2026-08-26).
+    //     판수 순으로 두면 챔피언마다 버튼 자리가 달라져서 눈이 매번 찾아야 한다 —
+    //     인게임·표 필터도 이 순서고, `STAT_POS` 의 `code` 가 곧 그 순서다.
+    //   ★ 주 라인(판수 최다)은 아래 `byGames` 로 따로 구한다 — 물러날 기본값에만 쓴다.
+    const byLane = mine.filter(r => r.pos >= 0 && r.games).sort((a, b) => a.pos - b.pos);
+    const byGames = [...byLane].sort((a, b) => b.games - a.games);
     // ★ 주소로 받은 라인을 먼저 쓰고, 없거나 표본이 없으면 주 라인으로 물러난다
     const wantPos = laneKey ? (STAT_POS.find(p => p.key === laneKey)?.code ?? -1) : -1;
-    const main = byLane.find(r => r.pos === wantPos) || byLane[0] || all;
+    const main = byLane.find(r => r.pos === wantPos) || byGames[0] || all;
     const curKey = STAT_POS.find(p => p.code === main.pos)?.key;
     const laneName = STAT_POS.find(p => p.code === main.pos)?.name || '';
     const laneRate = all.games ? main.games / all.games * 100 : 0;
