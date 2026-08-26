@@ -3499,14 +3499,14 @@ async function showCodex(target) {
             </div>
         </div>
         <div class="codex-desc">${withGraphNotes(s.g || [], s.dt || s.d)}</div>
-        ${s.up ? `
+        ${(s.up || []).map(u => `
             <div class="codex-upgrade">
                 <div class="codex-upgrade-head">
-                    <span class="codex-upgrade-name">${s.up.n}</span>
-                    ${s.up.w ? `<span class="codex-dim">${s.up.w}</span>` : ''}
+                    <span class="codex-upgrade-name">${u.n}</span>
+                    ${u.w ? `<span class="codex-dim">${u.w}</span>` : ''}
                 </div>
-                <div class="codex-desc">${withGraphNotes(s.up.g || [], s.up.d)}</div>
-            </div>` : ''}
+                <div class="codex-desc">${withGraphNotes(u.g || [], u.d)}</div>
+            </div>`).join('')}
         ${spellUsageHtml(e.id)}`;
     }
 

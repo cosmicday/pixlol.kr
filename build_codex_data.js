@@ -312,8 +312,17 @@ async function getJson(url) {
     //     툴팁이 `@spell.SummonerSmite:FirstPVPDamage@` 처럼 **다른 주문의 값을 참조**하는
     //     문법을 쓰고, 붉은 충전 강타는 `TooltipImmolatingBurnDamage` 를 못 채운다.
     //     그 자리는 화면에 `@이름@` 이 그대로 나가므로 참조 문법을 지원하기 전에는 넣으면 안 된다.
+    //   ★ 강타는 **정글 펫 3종**에 대응하는 변형이 있다. 이름이 셋 다 "원시의 강타" 라
+    //     펫 이름으로 갈라 준다 (툴팁 첫 문장도 펫 이름으로 시작한다).
+    //   ★ 옛 시즌의 `S5_SummonerSmitePlayerGanker`(강력 강타)·`S5_SummonerSmiteDuel`
+    //     (붉은 충전 강타)은 안 넣는다 — 지금 협곡의 강타 강화는 정글 펫 쪽이다.
     const SPELL_UPGRADE = {
-        '12': { obj: 'S12_SummonerTeleportUpgrade', tip: 's12_summonerteleportupgrade', when: '10분 이후' }
+        '12': [{ obj: 'S12_SummonerTeleportUpgrade', tip: 's12_summonerteleportupgrade', when: '10분 이후' }],
+        '11': [
+            { obj: 'SummonerSmiteAvatarOffensive', when: '새끼 화염발톱' },
+            { obj: 'SummonerSmiteAvatarDefensive', when: '새끼 이끼쿵쿵이' },
+            { obj: 'SummonerSmiteAvatarUtility', when: '새끼 바람돌이' }
+        ]
     };
 
     // 주문 하나의 본문 문장을 만든다. 못 채운 변수가 있으면 그 자리를 원문 그대로 남기고 경고한다.
@@ -325,14 +334,22 @@ async function getJson(url) {
         const raw = strings['generatedtip_summonerspell_' + (tipName || obj.toLowerCase()) + '_tooltip'];
         if (!sp || !raw) { spellMiss.push(`${obj} (bin ${!!sp} / tip ${!!raw})`); return null; }
 
-        const dv = {};
-        (sp.DataValues || []).forEach(d => { if (d.name) dv[d.name.toLowerCase()] = (d.values || [])[0]; });
-        const plain = {
-            cooldown: ((sp.Cooldown || {}).values || [])[0],
-            ammorechargetime: (sp.mAmmoRechargeTime || [])[0]
+        // 한 객체에서 값 표 셋을 뽑는다 (아래 참조 문법이 다른 객체에도 이걸 쓴다)
+        const tablesOf = (spell) => {
+            const dv = {};
+            (spell.DataValues || []).forEach(d => { if (d.name) dv[d.name.toLowerCase()] = (d.values || [])[0]; });
+            const calcs = {};
+            Object.entries(spell.mSpellCalculations || {}).forEach(([k, v]) => { calcs[k.toLowerCase()] = v; });
+            return {
+                dv, calcs,
+                plain: {
+                    cooldown: ((spell.Cooldown || {}).values || [])[0],
+                    ammorechargetime: (spell.mAmmoRechargeTime || [])[0]
+                }
+            };
         };
-        const calcs = {};
-        Object.entries(sp.mSpellCalculations || {}).forEach(([k, v]) => { calcs[k.toLowerCase()] = v; });
+        const self = tablesOf(sp);
+        const dv = self.dv, plain = self.plain, calcs = self.calcs;
 
         let body = (String(raw).match(/<mainText>([\s\S]*?)<\/mainText>/) || [, String(raw)])[1];
         // ★ 다른 툴팁을 끼워 넣는 `{{ ... }}` 는 뜻이 통하는 문장이 아니라 통째로 지운다
@@ -348,9 +365,22 @@ async function getJson(url) {
 
         const graphs = [];      // 레벨 스케일 자리 → 각주 그래프
         const missing = [];
-        const filled = body.replace(/@([A-Za-z0-9_.]+)(\*([0-9.]+))?@/g, (m, name, _x, mul) => {
+        // ★★ `@spell.<객체>:<변수>@` 는 **다른 주문의 값을 참조**하는 문법이다 (2026-08-26).
+        //   강타 변형들이 이걸 쓴다 — 자기 DataValues 는 비워 두고
+        //   `@spell.SummonerSmite:FirstPVPDamage@` 처럼 본체 값을 그대로 가져다 쓴다.
+        const filled = body.replace(/@(?:spell\.([A-Za-z0-9_]+):)?([A-Za-z0-9_.]+)(\*([0-9.]+))?@/g,
+            (m, ref, name, _x, mul) => {
             const lc = name.toLowerCase();
             const factor = mul ? Number(mul) : 1;
+
+            // 참조가 있으면 그 객체의 표를 쓴다. 없는 객체면 못 채운 자리로 둔다.
+            let T = self;
+            if (ref) {
+                const other = (sharedBin['Shared/Spells/' + ref] || {}).mSpell;
+                if (!other) { missing.push(`spell.${ref}:${name}`); return m; }
+                T = tablesOf(other);
+            }
+            const dv = T.dv, plain = T.plain, calcs = T.calcs;
 
             let v = dv[lc];
             if (v === undefined) v = plain[lc];
@@ -370,7 +400,9 @@ async function getJson(url) {
         });
 
         if (missing.length) spellMiss.push(`${obj}: ${[...new Set(missing)].join(', ')}`);
-        return { text: filled, graphs };
+        // ★★ 못 채운 자리가 있으면 **그 문장을 안 쓴다.** 화면에 `@이름@` 이 그대로 나가느니
+        //   변형 칸을 통째로 빼는 게 낫다 (본체는 `d` 로 물러난다).
+        return { text: filled, graphs, ok: !missing.length };
     }
 
     const spells = {};
@@ -382,15 +414,14 @@ async function getJson(url) {
             const no = MAIN_MODES.filter(([code]) => !s.modes.includes(code)).map(([, kor]) => kor);
             // ★ 수치가 든 본문. 못 만들면 `dt` 를 안 담고 화면이 DD 의 짧은 설명(`d`)으로 물러난다.
             const tip = spellTooltip(s.key);
-            // 변형(강력 순간이동 등). 이름은 stringtable 의 displayname 을 그대로 쓴다.
-            const upSpec = SPELL_UPGRADE[s.key];
-            const upTip = upSpec && spellTooltip(s.key, upSpec.obj, upSpec.tip);
-            const up = upTip && upTip.text ? {
-                n: strings['generatedtip_summonerspell_' + upSpec.tip + '_displayname'] || upSpec.obj,
-                w: upSpec.when,
-                d: upTip.text,
-                ...(upTip.graphs.length ? { g: upTip.graphs } : {})
-            } : null;
+            // 변형(강력 순간이동 · 원시의 강타 3종). 이름은 stringtable 의 displayname 그대로다.
+            //   ★ 못 채운 변수가 있는 변형은 뺀다 ( 가 false) — 화면에  이 나가면 안 된다.
+            const up = (SPELL_UPGRADE[s.key] || []).map(spec => {
+                const t = spellTooltip(s.key, spec.obj, spec.tip);
+                if (!t || !t.text || !t.ok) return null;
+                const dn = strings['generatedtip_summonerspell_' + (spec.tip || spec.obj.toLowerCase()) + '_displayname'];
+                return { n: dn || spec.obj, w: spec.when, d: t.text, ...(t.graphs.length ? { g: t.graphs } : {}) };
+            }).filter(Boolean);
             spells[s.key] = {
                 n: s.name,
                 d: s.description,
@@ -401,7 +432,7 @@ async function getJson(url) {
                 ...(no.length ? { no } : {}),
                 ...(tip && tip.text ? { dt: tip.text } : {}),
                 ...(tip && tip.graphs.length ? { g: tip.graphs } : {}),
-                ...(up ? { up } : {})
+                ...(up.length ? { up } : {})
             };
         });
 
@@ -460,7 +491,7 @@ const codexData = ${body};
     console.log(`  수치가 든 본문: ${withTip}/${Object.keys(spells).length}개 (레벨 그래프 ${withGraph}개)`);
     // ★ 못 채운 변수가 있으면 그 자리가 화면에 `@이름@` 으로 그대로 나간다 — 반드시 볼 것
     const upList=Object.values(spells).filter(s=>s.up);
-    if (upList.length) console.log(`  변형: ${upList.map(s=>s.n+" → "+s.up.n).join(" / ")}`);
+    if (upList.length) console.log(`  변형: ${upList.map(s=>s.n+" → "+s.up.map(u=>u.n+(u.w?"("+u.w+")":"")).join("·")).join(" / ")}`);
     if (spellMiss.length) console.log(`  ★★ 주문 변수를 못 채웠다: ${spellMiss.join(' / ')}`);
     console.log(`\n크기 ${(Buffer.byteLength(out) / 1024).toFixed(0)}KB  gzip ${(zlib.gzipSync(Buffer.from(out), { level: 9 }).length / 1024).toFixed(0)}KB  brotli ${(zlib.brotliCompressSync(Buffer.from(out)).length / 1024).toFixed(0)}KB`);
 
