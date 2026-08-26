@@ -586,7 +586,7 @@
  "ambessa": {
   "P": {
    "{57d26a55}": {
-    "spell": "{3f70c67a}",
+    "spell": "AmbessaPassive",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -614,7 +614,7 @@
     ]
    },
    "Calc_OnHit_Damage_Flat": {
-    "spell": "{3f70c67a}",
+    "spell": "AmbessaPassive",
     "kind": "interpolation(직선)",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -642,7 +642,7 @@
     ]
    },
    "Calc_OnHit_Energy_Refund": {
-    "spell": "{3f70c67a}",
+    "spell": "AmbessaPassive",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -670,7 +670,7 @@
     ]
    },
    "{01a5d393}": {
-    "spell": "{3f70c67a}",
+    "spell": "AmbessaPassive",
     "kind": "interpolation(직선)(참조 Calc_OnHit_Damage_Flat)",
     "위치": "ref:Calc_OnHit_Damage_Flat",
     "min": 5,
@@ -1710,7 +1710,7 @@
  "aurora": {
   "P": {
    "MoveSpeedCalc": {
-    "spell": "{55fe4142}",
+    "spell": "AuroraPassive",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -1738,7 +1738,7 @@
     ]
    },
    "HealCalc": {
-    "spell": "{55fe4142}",
+    "spell": "AuroraPassive",
     "kind": "interpolation(직선)",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -1766,7 +1766,7 @@
     ]
    },
    "{394d1781}": {
-    "spell": "{55fe4142}",
+    "spell": "AuroraPassive",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -2553,11 +2553,9 @@
      0.38,
      0.4
     ]
-   }
-  },
-  "?": {
+   },
    "TotalMovementSpeed": {
-    "spell": "{2b50ca69}",
+    "spell": "CassiopeiaPassive_Feats",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -2585,7 +2583,7 @@
     ]
    },
    "BonusAbilityPower": {
-    "spell": "{2b50ca69}",
+    "spell": "CassiopeiaPassive_Feats",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -3541,7 +3539,7 @@
   "P": {
    "HealCooldown": {
     "spell": "GragasPassive",
-    "kind": "breakpoints",
+    "kind": "breakpoints(DataValue)",
     "위치": "mFormulaParts[0]",
     "_root": true,
     "min": 12,
@@ -3897,7 +3895,7 @@
  "hwei": {
   "P": {
    "TotalDamage": {
-    "spell": "{1f86669b}",
+    "spell": "HweiPassive",
     "kind": "interpolation(직선)",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -5313,9 +5311,9 @@
     ]
    }
   },
-  "?": {
+  "W": {
    "{98da435c}": {
-    "spell": "{7ac3757c}",
+    "spell": "KSanteW_AllOut",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -5343,7 +5341,7 @@
     ]
    },
    "MaxMonsterDamage": {
-    "spell": "{7ac3757c}",
+    "spell": "KSanteW_AllOut",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -5761,7 +5759,7 @@
   },
   "P": {
    "MinOnHitDamage": {
-    "spell": "{7531bb00}",
+    "spell": "LockePassive",
     "kind": "interpolation(DataValue)",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -5789,7 +5787,7 @@
     ]
    },
    "MaxOnHitDamage": {
-    "spell": "{7531bb00}",
+    "spell": "LockePassive",
     "kind": "interpolation(DataValue)",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -6213,7 +6211,7 @@
  "mel": {
   "P": {
    "PassiveBonusMissileDamage": {
-    "spell": "{64e86cf4}",
+    "spell": "MelPassive",
     "kind": "interpolation(직선)",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -6245,10 +6243,10 @@
  "milio": {
   "P": {
    "ADBurstRatio": {
-    "spell": "{3e27cfac}",
+    "spell": "MilioPassive",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
-    "_root": false,
+    "_root": true,
     "min": 0.07,
     "max": 0.15,
     "values": [
@@ -6273,10 +6271,10 @@
     ]
    },
    "BurnDamage": {
-    "spell": "{3e27cfac}",
+    "spell": "MilioPassive",
     "kind": "interpolation(DataValue)",
     "위치": "mFormulaParts[0]",
-    "_root": false,
+    "_root": true,
     "min": 10,
     "max": 50,
     "values": [
@@ -6892,27 +6890,27 @@
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": true,
-    "min": 12,
-    "max": 24,
+    "min": 10,
+    "max": 20,
     "values": [
-     12,
-     12,
-     12,
-     12,
-     12,
-     12,
-     18,
-     18,
-     18,
-     18,
-     18,
-     18,
-     24,
-     24,
-     24,
-     24,
-     24,
-     24
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     15,
+     15,
+     15,
+     15,
+     15,
+     15,
+     20,
+     20,
+     20,
+     20,
+     20,
+     20
     ]
    }
   }
@@ -9916,7 +9914,7 @@
  "teemo": {
   "P": {
    "BonusAttackSpeed": {
-    "spell": "{5a629d30}",
+    "spell": "TeemoPassive",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -12217,7 +12215,7 @@
  "zaahen": {
   "P": {
    "ReviveCooldownCalc": {
-    "spell": "{4c6e6c43}",
+    "spell": "ZaahenPassive",
     "kind": "breakpoints",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -12245,7 +12243,7 @@
     ]
    },
    "RevivePercentCalc": {
-    "spell": "{4c6e6c43}",
+    "spell": "ZaahenPassive",
     "kind": "breakpoints(DataValue)",
     "위치": "mFormulaParts[0]",
     "_root": false,
@@ -12273,7 +12271,7 @@
     ]
    },
    "PercentBonusADCalc": {
-    "spell": "{4c6e6c43}",
+    "spell": "ZaahenPassive",
     "kind": "interpolation(DataValue)",
     "위치": "mFormulaParts[0]",
     "_root": false,

@@ -1,5 +1,5 @@
 // 이 파일은 build_champion_data.js 가 생성했습니다.
-// 생성 시각: 2026-08-12T23:31:56.952Z
+// 생성 시각: 2026-08-26T06:55:02.352Z
 // 문장은 CommunityDragon 에서 가져왔고, {p1} {p2} 자리는 직접 채워야 합니다.
 
 const customTemplates = {
@@ -1215,7 +1215,7 @@ const customTemplates = {
         "R_rules": "<rules><status>기절</status> 효과는 최소 {p3}초 지속됩니다.</rules>", // 구분선 아래 회색 글씨
     },
     "Yasuo": { // 야스오
-        "P": "<passive>결의:</passive> 이동 시 <keywordmajor>기류</keywordmajor>가 발생하여 야스오의 자원이 채워지며, 빠르게 움직일수록 <keywordmajor>기류</keywordmajor>가 더 빠르게 오릅니다. <keywordmajor>기류</keywordmajor>가 가득 차면 챔피언이나 몬스터에게서 피해를 입을 경우 잠시 <shield>{p1}의 피해를 흡수하는 보호막</shield>이 생성됩니다.<br><br><passive>의지:</passive> 야스오의 치명타 확률이 {p2}% 증가하지만, 치명타 피해량이 {p3}까지 감소합니다. 100%를 초과하는 치명타 확률 1%당 <physicaldamage>{p4}의 추가 공격력</physicaldamage>을 얻습니다.", // 낭인의 길 — stringtable
+        "P": "<passive>결의:</passive> 이동 시 <keywordmajor>기류</keywordmajor>가 발생하여 야스오의 자원이 채워지며, 빠르게 움직일수록 <keywordmajor>기류</keywordmajor>가 더 빠르게 오릅니다. <keywordmajor>기류</keywordmajor>가 가득 차면 챔피언이나 몬스터에게서 피해를 입을 경우 잠시 <shield>{p1}의 피해를 흡수하는 보호막</shield>이 생성됩니다.<br><br><passive>의지:</passive> 야스오의 치명타 확률이 {p2}% 증가하지만, 치명타 피해량이 {p3} 감소합니다. 100%를 초과하는 치명타 확률 1%당 <physicaldamage>{p4}의 추가 공격력</physicaldamage>을 얻습니다.", // 낭인의 길 — stringtable
         "Q": "야스오가 검을 내질러 <physicaldamage>{p1}의 물리 피해</physicaldamage>를 입힙니다. 적중 시 {p2}초간 1회 중첩됩니다. 2회 중첩 시 이 스킬을 다시 사용하면 회오리바람을 날려 동일한 피해를 입히고 {p3}초 동안 <status>띄워 올립니다</status>.<br><br>돌진 도중 이 스킬을 사용할 경우 원형으로 타격합니다.", // 강철 폭풍
         "Q_rules": "<rules>이 스킬은 기본 공격으로 간주되어 치명타로 <physicaldamage>{p4}의 물리 피해</physicaldamage>를 입힐 수 있고 처음 맞힌 적에게 <onhit>적중 시</onhit> 효과와 생명력 흡수를 적용합니다. 또한 군중 제어기에 방해를 받으며 <attackspeed>공격 속도</attackspeed>로 재사용 대기시간과 시전 소요 시간을 단축할 수 있습니다.</rules>", // 구분선 아래 회색 글씨
         "W": "4초간 모든 적의 투사체를 막아주는 바람의 벽을 생성합니다.", // 바람 장막
@@ -1298,7 +1298,7 @@ const customTemplates = {
         "R": "<passive>기본 지속 효과:</passive> 올라프의 <scalearmor>방어력이 {p1}</scalearmor>, <scalemr>마법 저항력이 {p1}</scalemr> 증가합니다.<br><br><active>사용 시: </active>올라프가 자신에게 걸린 모든 <status>이동 불가</status> 및 <status>방해</status> 효과를 정화하고 {p2}초 동안 해당 효과에 면역 상태가 됩니다. 활성화 중 올라프가 <scalead>{p3}의 공격력</scalead>을 얻습니다. 기본 공격이나 <spellname>무모한 강타</spellname>로 챔피언을 적중하면 이 스킬의 지속시간을 {p4}초 연장합니다.<br><br>또한 {p5}초 동안 적 챔피언을 향해 이동할 때 <speed>이동 속도가 {p6}%</speed> 증가합니다.", // 라그나로크
     },
     "Yone": { // 요네
-        "P": "<passive>강철과 영혼:</passive> 두 자루의 검을 다루는 요네는 두 번째 공격을 할 때마다 <magicdamage>{p1}%의 마법 피해</magicdamage>를 입힙니다.<br><br><passive>의지:</passive> 요네의 치명타 확률이 {p2}% 증가하지만, 치명타 피해량이 {p3}까지 감소합니다. 100%를 초과하는 치명타 확률 1%당 <physicaldamage>{p4}의 추가 공격력</physicaldamage>을 얻습니다.", // 사냥꾼의 길 — stringtable
+        "P": "<passive>강철과 영혼:</passive> 두 자루의 검을 다루는 요네는 두 번째 공격을 할 때마다 <magicdamage>{p1}%의 마법 피해</magicdamage>를 입힙니다.<br><br><passive>의지:</passive> 요네의 치명타 확률이 {p2}% 증가하지만, 치명타 피해량이 {p3} 감소합니다. 100%를 초과하는 치명타 확률 1%당 <physicaldamage>{p4}의 추가 공격력</physicaldamage>을 얻습니다.", // 사냥꾼의 길 — stringtable
         // ★ 배열 = 하위 스킬을 파트로 쪼개 눈 것. app.js 가 아이콘 + 구분선으로 나눠 그린다.
         //   0번은 스킬 본체(기본 아이콘), 1번부터 values.icons[i-1] 과 짝이 된다.
         "Q": [

@@ -320,6 +320,12 @@ function convertWithBelow(raw, below, alias) {
 //   자동 판별이 불가능하다(CD 원문과 다르다는 것만으로는 "손작업" 인지 알 수 없다).
 //   그래서 표로 박는다. **문장을 손으로 고치면 여기에 반드시 추가할 것.**
 const KEEP_TEXT = {
+    //   ★★ 야스오·요네 P — 클라 원문이 `치명타 피해량이 @CurrentCritDamage@**까지** 감소합니다`
+    //     인데 그 변수가 "지금 이 유닛의 치명타 피해량" 을 읽는 **동적 참조**라 정적으로는 못 채운다.
+    //     그래서 `치명타 피해량의 100%까지 감소합니다` 라는 말이 안 되는 문장이 나가고 있었다.
+    //     bin `CritDamageMod = 0.95`(5% 감소)를 fill_values MANUAL 로 넣고 **"까지" 를 뺐다.**
+    //     **MANUAL 과 한 쌍이라 한쪽만 되돌리면 문장이 다시 깨진다** (2026-08-26).
+    Yasuo: ['P'], Yone: ['P'],
     Garen: ['E'], Gangplank: ['Q'], Bard: ['W'], Belveth: ['E'], Sett: ['W'],
     Smolder: ['P', 'Q', 'W', 'E'], Swain: ['P'], XinZhao: ['E'], AurelionSol: ['P', 'R_rules'],
     Aphelios: ['P', 'Q', 'W', 'E', 'R'], Ornn: ['P'], Zilean: ['P'],

@@ -321,8 +321,8 @@ const customValues = {
             }
         },
         "Q": {
-            "p1": "50 / 75 / 100 / 125 / 150 (+ 추가 공격력의 65%)", // TotalDamage
-            "p2": "80 / 125 / 170 / 215 / 260 (+ 추가 공격력의 55 / 70 / 85 / 100 / 115%)", // TotalDetonationDamage
+            "p1": "50 / 75 / 100 / 125 / 150 (+ 추가 공격력의 55%)", // TotalDamage
+            "p2": "80 / 125 / 170 / 215 / 260 (+ 추가 공격력의 45 / 60 / 75 / 90 / 105%)", // TotalDetonationDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "13 / 11.25 / 9.5 / 7.75 / 6",
@@ -644,7 +644,7 @@ const customValues = {
     },
     "Nasus": { // 나서스
         "P": {
-            "p1": "12 ~ 24 (레벨에 따라)", // Spell.NasusPassive:LifestealTooltip
+            "p1": "10 ~ 20 (레벨에 따라)", // Spell.NasusPassive:LifestealTooltip
             "cooldown": "-",
             "cost": "-"
         },
@@ -2275,6 +2275,7 @@ const customValues = {
             "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/locke/hud/icons2d/locke_r_buff.png"],
             "stats": {
                 "사거리": "1000",
                 "효과 범위": "400",
@@ -2445,7 +2446,7 @@ const customValues = {
             }
         },
         "W": {
-            "p1": "75 / 115 / 155 / 195 / 235 (+ 주문력의 80%)", // TotalDamage
+            "p1": "75 / 115 / 155 / 195 / 235 (+ 주문력의 90%)", // TotalDamage
             "p2": "4", // SnapbackTimeAllowed
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -2477,7 +2478,7 @@ const customValues = {
         "R": {
             "p1": "70 / 150 / 230 (+ 주문력의 40%)", // RQ1Damage
             "p2": "140 / 300 / 460 (+ 주문력의 80%)", // RQ2Damage
-            "p3": "150 / 315 / 480 (+ 주문력의 80%)", // RWDamage
+            "p3": "150 / 315 / 480 (+ 주문력의 90%)", // RWDamage
             "p4": "70 / 150 / 230 (+ 주문력의 40%)", // RE1Damage
             "p5": "140 / 300 / 460 (+ 주문력의 85%)", // RE2Damage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -3728,15 +3729,15 @@ const customValues = {
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "6 / 5 / 4 / 3 / 2",
-            "cost": "30",
+            "cost": "46 / 42 / 38 / 34 / 30",
             "stats": {
                 "사거리": "300",
                 "스킬 폭": "100"
             }
         },
         "W": {
-            "p1": "6 / 7 / 8 / 9 / 10%", // TotalDamage
-            "p2": "50 / 65 / 80 / 95 / 110", // DamageFloor
+            "p1": "4 / 5.5 / 7 / 8.5 / 10%", // TotalDamage
+            "p2": "40 / 55 / 70 / 85 / 100", // DamageFloor
             "p3": "140 / 155 / 170 / 185 / 200", // DamageVsMonsters
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -3950,6 +3951,7 @@ const customValues = {
             "v2": "",
             "cooldown": "7",
             "cost": "40 / 45 / 50 / 55 / 60",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/velkoz/hud/icons2d/velkoz_q2.png"],
             "stats": {
                 "사거리": "1050",
                 "스킬 폭": "100",
@@ -4533,7 +4535,7 @@ const customValues = {
             "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
             "cost": "45 / 50 / 55 / 60 / 65",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_q2.png"],
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_q_buff.png", "https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_q2.png"],
             "stats": {
                 "사거리": "600",
                 "시전시간": "0.25",
@@ -4582,7 +4584,7 @@ const customValues = {
             "v2": "",
             "cooldown": "120 / 100 / 80",
             "cost": "100",
-            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_r2.png"],
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_r_guide.png", "https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_r_guide2.png", "https://raw.communitydragon.org/latest/game/assets/characters/viktor/hud/icons2d/viktor_r2.png"],
             "stats": {
                 "사거리": "700",
                 "효과 범위": "325",
@@ -5486,6 +5488,7 @@ const customValues = {
             "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
             "cost": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/shyvana/hud/icons2d/shyvana_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/shyvana/hud/icons2d/shyvana_q3.png"],
             "stats": {
                 "효과 범위": "275"
             }
@@ -5503,6 +5506,7 @@ const customValues = {
             "v2": "",
             "cooldown": "13 / 12.25 / 11.5 / 10.75 / 10",
             "cost": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/shyvana/hud/icons2d/shyvana_w2.png"],
             "stats": {
                 "효과 범위": "350"
             }
@@ -5746,6 +5750,7 @@ const customValues = {
             "v2": "",
             "cooldown": "8 / 6.75 / 5.5 / 4.25 / 3",
             "cost": "30",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/skarner/hud/icons2d/skarner_q_throw.png"],
             "stats": {
                 "사거리": "400"
             }
@@ -5774,6 +5779,7 @@ const customValues = {
             "v2": "",
             "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "50 / 55 / 60 / 65 / 70",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/skarner/hud/icons2d/skarner_charge_cancel.png"],
             "stats": {
                 "사거리": "1700"
             }
@@ -6108,7 +6114,7 @@ const customValues = {
             "p2": "1.7 (중첩당) (+ 총 공격력의 90 / 120 / 150 / 180 / 210%)", // PAttackDamageMax
             "p3": "1", // SlowDuration
             "p4": "20 / 25 / 30 / 35 / 40", // ActiveSlowPercentage
-            "p5": "75 / 120 / 165 / 210 / 255 (+ 주문력의 70%)", // TotalDamage
+            "p5": "65 / 110 / 155 / 200 / 245 (+ 주문력의 60%)", // TotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "13 / 12.25 / 11.5 / 10.75 / 10",
@@ -6285,12 +6291,12 @@ const customValues = {
             "p5": "0.031 (중첩당)%", // BurstBonusTrueDamageToChamps
             "p6": "2", // QMassStolen
             "p7": "750 ~ 920 (레벨에 따라)", // LevelBasedRangeScaling
-            "p8": "35 / 40 / 45 / 50 / 55", // ManaCostPerSecond
+            "p8": "30 / 35 / 40 / 45 / 50", // ManaCostPerSecond
             "p9": "300", // MonsterDamageCap
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "3",
-            "cost": "초당 마나 35 / 40 / 45 / 50 / 55",
+            "cost": "초당 마나 30 / 35 / 40 / 45 / 50",
             "stats": {
                 "사거리": "750",
                 "투사체 속도": "1500"
@@ -6303,7 +6309,7 @@ const customValues = {
             "p4": "340 (+ 이동 속도의 100%)", // DashSpeed
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "22 / 20.5 / 19 / 17.5 / 16",
+            "cooldown": "22 / 20 / 18 / 16 / 14",
             "cost": "50 / 55 / 60 / 65 / 70",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/aurelionsol/hud/icons2d/aurelionsolw2.png"],
             "stats": {
@@ -6749,6 +6755,7 @@ const customValues = {
             "v2": "",
             "cooldown": "0",
             "cost": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/aphelios/hud/icons2d/calibrum_m.png"],
             "stats": {
                 "사거리": "1000",
                 "시전시간": "0.5"
@@ -7111,7 +7118,7 @@ const customValues = {
         "P": {
             "p1": "125 ~ 600 (레벨에 따라)", // ShieldValue
             "p2": "100", // CritChanceMultiplier*100
-            "p3": "치명타 피해량의 100%", // CurrentCritDamage
+            "p3": "5%", // CurrentCritDamage
             "p4": "0.5", // YasuoCritToAD*.01
             "cooldown": "-",
             "cost": "-"
@@ -7424,6 +7431,7 @@ const customValues = {
             "v2": "",
             "cooldown": "9 / 8.5 / 8 / 7.5 / 7",
             "cost": "60",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/aurora/hud/icons2d/auroraq2.png"],
             "stats": {
                 "사거리": "900<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>표식 대상 재사용은 전역</div></span></span>",
                 "스킬 폭": "180",
@@ -7684,7 +7692,7 @@ const customValues = {
         "P": {
             "p1": "50", // MagicDamageSplit*100
             "p2": "100", // CritChanceMultiplier*100
-            "p3": "치명타 피해량의 100%", // CurrentCritDamage
+            "p3": "5%", // CurrentCritDamage
             "p4": "0.5", // YoneCritToAD*.01
             "cooldown": "-",
             "cost": "-"
@@ -8205,9 +8213,9 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
-            "p1": "5 / 25 / 45 / 65 / 85 (+ 총 공격력의 70%)", // ChampionDamage
+            "p1": "5 / 25 / 45 / 65 / 85 (+ 총 공격력의 80%)", // ChampionDamage
             "p2": "총 공격력의 9 / 10 / 11 / 12 / 13%", // HealAmount
-            "p3": "5 / 25 / 45 / 65 / 85 (+ 50 ~ 237 (레벨에 따라) + 총 공격력의 70%)", // MinionDamage
+            "p3": "5 / 25 / 45 / 65 / 85 (+ 50 ~ 237 (레벨에 따라) + 총 공격력의 80%)", // MinionDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "10 / 9 / 8 / 7 / 6",
@@ -8219,8 +8227,8 @@ const customValues = {
         },
         "W": {
             "p1": "1.5", // MaxDuration
-            "p2": "40 ~ 70 (레벨에 따라) (+ 주문력의 7%)", // FinalPhysicalDR
-            "p3": "20 ~ 35 (레벨에 따라) (+ 주문력의 3.5%)", // FinalMagicDR
+            "p2": "40 ~ 70 (레벨에 따라) (+ 주문력의 8%)", // FinalPhysicalDR
+            "p3": "20 ~ 35 (레벨에 따라) (+ 주문력의 4%)", // FinalMagicDR
             "p4": "10 / 20 / 30 / 40 / 50 (+ 총 공격력의 40% + 주문력의 50%)", // MinDamageCalc
             "p5": "30 / 60 / 90 / 120 / 150 (+ 총 공격력의 120% + 주문력의 150%)", // MaxDamageCalc
             "p6": "0.75", // ChargeTimeForMax
@@ -8252,10 +8260,10 @@ const customValues = {
             }
         },
         "R": {
-            "p1": "125 / 200 / 275 (+ 주문력의 70%)", // MissileDamage
+            "p1": "125 / 200 / 275 (+ 주문력의 100%)", // MissileDamage
             "p2": "5", // MarkDuration
             "p3": "2.5", // ZoneDuration
-            "p4": "125 / 200 / 275 (+ 주문력의 70%)", // ZoneDamage
+            "p4": "125 / 200 / 275 (+ 주문력의 100%)", // ZoneDamage
             "p5": "1.5", // CCDuration
             "p6": "90", // SlowAmount
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -9042,7 +9050,7 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
-            "p1": "75 / 115 / 155 / 195 / 235 (+ 주문력의 90%)", // TooltipTotalDamage
+            "p1": "70 / 110 / 150 / 190 / 230 (+ 주문력의 90%)", // TooltipTotalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "9 / 8 / 7 / 6 / 5",
@@ -9661,7 +9669,7 @@ const customValues = {
             }
         },
         "E": {
-            "p1": "20 / 40 / 60 / 80 / 100 (+ 주문력의 30%)", // FlatDamageCalc
+            "p1": "30 / 50 / 70 / 90 / 110 (+ 주문력의 30%)", // FlatDamageCalc
             "p2": "2.5 / 2.85 / 3.2 / 3.55 / 3.9% (+ 0.5 (중첩당))", // MaxHealthPercentCalc
             "p3": "30 / 35 / 40 / 45 / 50", // SlowAmountPercentage
             "p4": "1.5", // SlowDuration
@@ -10976,14 +10984,14 @@ const customValues = {
             "cost": "-"
         },
         "Q": {
-            "p1": "70 / 100 / 130 / 160 / 190 (+ 추가 공격력의 85%)", // VanillaDamage
+            "p1": "80 / 110 / 140 / 170 / 200 (+ 추가 공격력의 90%)", // VanillaDamage
             "p2": "1", // SlowDuration
             "p3": "20", // SlowPotency*-100
             "p4": "50", // CritThreshold*100
             "p5": "52.5 / 75 / 97.5 / 120 / 142.5 (+ 추가 공격력의 63.75%)", // TremorDamage
             "p6": "20", // Haste*100
             "p7": "75%", // FalloffDamage
-            "p8": "175", // JungleDamageAmp*100
+            "p8": "160", // JungleDamageAmp*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7",
@@ -11417,7 +11425,7 @@ const customValues = {
         "W": {
             "p1": "8", // Duration
             "p2": "20 / 28 / 36 / 44 / 52", // MSBonus*100
-            "p3": "30 / 45 / 60 / 75 / 90", // ASBonus*100
+            "p3": "30 / 50 / 70 / 90 / 110", // ASBonus*100
             "p4": "25", // HealingBonus*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -11703,6 +11711,7 @@ const customValues = {
             "p2": "5", // AttackSpeedDuration
             "p3": "20 ~ 80% (레벨에 따라)", // BonusAttackSpeed
             "cooldown": "-",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/teemo/hud/icons2d/teemopassive_buff.png"],
             "cost": "-"
         },
         "Q": {
@@ -11750,6 +11759,7 @@ const customValues = {
             "v2": "",
             "cooldown": "0.25",
             "cost": "75 / 55 / 35",
+            "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/teemo/hud/icons2d/teemo_r.png"],
             "stats": {
                 "사거리": "600 / 750 / 900",
                 "효과 범위": "450",
