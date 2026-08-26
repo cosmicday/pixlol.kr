@@ -3521,7 +3521,32 @@ async function showCodex(target) {
             ${champs ? `
                 <div class="codex-usage-sub">채택률 TOP5</div>
                 <div class="codex-usage-champs">${champs}</div>` : ''}
+            ${laneHtml(u)}
         </div>`;
+    }
+
+    // ★ 라인별 채택률. 분모가 **그 라인의 픽 합계**라 "탑에서 순간이동 46%" 로 읽힌다
+    //   (전체 픽으로 나누면 라인 하나가 5분의 1이라 값이 찌그러진다 — 서버 주석 참고).
+    //   ★ 0% 라인도 남긴다 — "강타는 정글만 100%, 나머지 0%" 가 곧 정보다.
+    //   ★ 라인 아이콘은 통계 탭과 같은 표(STAT_LANE_ICON)를 쓴다. 두 벌 두면 어긋난다.
+    function laneHtml(u) {
+        if (!u.pos || !Object.keys(u.pos).length) return '';
+        const rows = STAT_POS.map(p => {
+            const r = u.pos[p.code];
+            if (r == null) return '';
+            const pct = Math.round(r * 100);
+            return `
+                <div class="codex-lane-row">
+                    <img class="codex-lane-icon" src="${STAT_LANE_ICON[p.key]}" alt="" title="${p.name}">
+                    <span class="codex-lane-name">${p.name}</span>
+                    <span class="codex-lane-bar"><i style="width:${pct}%"></i></span>
+                    <span class="codex-lane-pct${pct ? '' : ' is-zero'}">${pct}%</span>
+                </div>`;
+        }).join('');
+        if (!rows.trim()) return '';
+        return `
+            <div class="codex-usage-sub">라인별 채택률</div>
+            <div class="codex-lanes">${rows}</div>`;
     }
 
     // ── 컨트롤

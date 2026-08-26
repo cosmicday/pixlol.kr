@@ -2895,34 +2895,54 @@ app.get('/api/spell-usage', async (req, res) => {
         const hit = myCache.get(cacheKey);
         if (hit) return res.json(hit);
 
-        // pos:-1 = 라인 무관 전체. 라인별로 나눌 수도 있지만 도감은 주문 하나를 보는 자리라
-        // 전체만 쓴다 (라인별이 필요해지면 pos 를 그대로 group 에 넣으면 된다).
+        // ★ pos 를 조건에서 빼고 통째로 받는다 — `-1`(라인 무관 전체)과 `0~4`(라인별)를
+        //   한 번에 세려는 것이다. 행 수가 얼마 안 돼서 두 번 조회할 이유가 없다.
         const [spellRows, allRows] = await Promise.all([
-            ChampBuild.find({ scope, type: 'spell', pos: -1 }).select('-_id champ key games wins').lean(),
-            ChampBuild.find({ scope, type: 'all', pos: -1 }).select('-_id champ games').lean()
+            ChampBuild.find({ scope, type: 'spell' }).select('-_id champ pos key games wins').lean(),
+            ChampBuild.find({ scope, type: 'all' }).select('-_id champ pos games').lean()
         ]);
 
         // 박제된 패치는 champbuilds 행이 없다 (champion-builds 와 같은 판별)
         if (!spellRows.length) return res.json({ ready: false, scope, spells: {}, picks: 0 });
 
-        const totalByChamp = {};
-        allRows.forEach(r => { totalByChamp[r.champ] = r.games; });
-        const picks = allRows.reduce((a, r) => a + r.games, 0);
+        // ★ 분모는 두 벌이다 — 전체(-1)와 라인별(0~4).
+        //   **라인별 분모를 전체로 쓰면 안 된다** — 탑 픽은 전체의 5분의 1쯤이라
+        //   "탑에서 순간이동 89%" 가 18% 로 찌그러진다.
+        const totalByChamp = {};      // 전체(-1) 기준 챔피언별 판수 — champs top 의 분모
+        const picksByPos = {};        // 라인별 픽 합계 — 라인 채택률의 분모
+        allRows.forEach(r => {
+            const pos = r.pos == null ? -1 : r.pos;
+            if (pos === -1) totalByChamp[r.champ] = r.games;
+            picksByPos[pos] = (picksByPos[pos] || 0) + r.games;
+        });
+        const picks = picksByPos[-1] || 0;
 
         // 주문 하나가 조합의 양쪽에 나오므로 key 를 펼쳐서 센다
         const agg = {};
-        spellRows.forEach(r => (r.key || []).forEach(id => {
-            const s = agg[id] || (agg[id] = { games: 0, wins: 0, byChamp: {} });
-            s.games += r.games;
-            s.wins += r.wins;
-            s.byChamp[r.champ] = (s.byChamp[r.champ] || 0) + r.games;
-        }));
+        spellRows.forEach(r => {
+            const pos = r.pos == null ? -1 : r.pos;
+            (r.key || []).forEach(id => {
+                const s = agg[id] || (agg[id] = { games: 0, wins: 0, byChamp: {}, byPos: {} });
+                s.byPos[pos] = (s.byPos[pos] || 0) + r.games;
+                if (pos !== -1) return;          // 아래 합계·챔피언 top 은 전체 기준이다
+                s.games += r.games;
+                s.wins += r.wins;
+                s.byChamp[r.champ] = (s.byChamp[r.champ] || 0) + r.games;
+            });
+        });
 
         const spells = {};
         Object.entries(agg).forEach(([id, s]) => {
+            // 라인별 채택률. 그 라인 픽이 없으면 칸을 안 만든다
+            const pos = {};
+            for (let p = 0; p <= 4; p++) {
+                if (!picksByPos[p]) continue;
+                pos[p] = Math.round((s.byPos[p] || 0) / picksByPos[p] * 1000) / 1000;
+            }
             spells[id] = {
                 games: s.games,
                 wins: s.wins,
+                pos,
                 champs: Object.entries(s.byChamp)
                     .filter(([c]) => (totalByChamp[c] || 0) >= SPELL_CHAMP_MIN)
                     .map(([c, g]) => ({ c: Number(c), g, r: g / totalByChamp[c] }))
@@ -2932,7 +2952,7 @@ app.get('/api/spell-usage', async (req, res) => {
             };
         });
 
-        const payload = { ready: true, scope, picks, spells };
+        const payload = { ready: true, scope, picks, picksByPos, spells };
         myCache.set(cacheKey, payload, 1800);   // 집계가 매시간이라 30분
         res.json(payload);
     } catch (e) {
