@@ -2938,6 +2938,28 @@ const CODEX_TABS = [
     { key: 'spell', name: '소환사 주문' }
 ];
 
+// ★★ 소환사 주문 채택률 (2026-08-26). 도감에서 **유일하게 런타임 API 를 부르는 자리**다.
+//   도감은 "codex_data.js 한 파일 · 런타임 의존 0" 이 원칙인데, 통계는 매시간 바뀌어서
+//   파일에 구울 수가 없다. 그래서 여기만 예외다 — **실패해도 화면은 그대로**고
+//   주문 상세에서 그 칸만 안 나온다 (아래 catch 가 조용히 넘긴다).
+//   ★ 한 번만 받는다. 도감 주문 탭에 들어갈 때 부르고 그 뒤로는 캐시를 쓴다.
+//   ★ 서버가 무엇을 세는지는 `/api/spell-usage` 주석 참고 (챔피언 픽 합계가 분모라 합이 200%).
+let spellUsage = null;
+let spellUsageTried = false;
+async function ensureSpellUsage(onLoad) {
+    if (spellUsageTried) return;
+    spellUsageTried = true;
+    try {
+        // 챔피언 아이콘·한글 이름이 필요하다. 이미 받아 뒀으면 재요청하지 않는다.
+        await fetchChampionMap();
+        const res = await fetch('/api/spell-usage');
+        const j = await res.json();
+        if (j && j.ready && j.picks) { spellUsage = j; if (onLoad) onLoad(); }
+    } catch (e) {
+        // 곁가지라 조용히 넘긴다 — 주문 상세의 나머지는 그대로 나온다
+    }
+}
+
 // 아이콘 주소
 const codexItemIcon = id => `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${id}.png`;
 const codexSpellIcon = f => `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/${f}`;
@@ -3323,6 +3345,9 @@ async function showCodex(target) {
         const el = document.getElementById('codex-detail');
         const e = visible().find(x => x.id === selected);
         if (!e) { el.innerHTML = ''; return; }
+        // ★ 주문 탭에 들어왔을 때만 채택률을 받는다 (한 번만 — 안쪽 가드).
+        //   받고 나면 지금 보고 있는 상세를 다시 그려 칸이 채워진다.
+        if (curTab === 'spell') ensureSpellUsage(() => { if (curTab === 'spell') renderDetail(); });
         el.innerHTML = curTab === 'item' ? itemDetailHtml(e)
             : curTab === 'rune' ? runeDetailHtml(e)
                 : spellDetailHtml(e);
@@ -3460,7 +3485,40 @@ async function showCodex(target) {
                 ${s.no ? `<div class="codex-plain">${s.no.join(' · ')}에서는 쓸 수 없습니다</div>` : ''}
             </div>
         </div>
-        <div class="codex-desc">${s.d}</div>`;
+        <div class="codex-desc">${s.d}</div>
+        ${spellUsageHtml(e.id)}`;
+    }
+
+    // ★ 채택률 칸. 데이터가 아직 없거나 실패했으면 **아무것도 안 그린다** (칸이 통째로 없다).
+    function spellUsageHtml(id) {
+        const u = spellUsage && spellUsage.spells[id];
+        if (!u || !u.games) return '';
+        const pct = (u.games / spellUsage.picks * 100).toFixed(1);
+        const wr = (u.wins / u.games * 100).toFixed(1);
+        const champs = (u.champs || []).map(x => {
+            const eng = championIdMap[x.c];
+            if (!eng) return '';                       // 신챔 등 아직 표에 없는 경우
+            const kor = (window.korChampMap || {})[eng] || eng;
+            return `
+                <div class="codex-usage-champ" title="${kor} ${Math.round(x.r * 100)}%">
+                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${eng}.png" alt="" loading="lazy">
+                    <span class="codex-usage-name">${kor}</span>
+                    <span class="codex-usage-rate">${Math.round(x.r * 100)}%</span>
+                </div>`;
+        }).join('');
+
+        return `
+        <div class="codex-usage">
+            <div class="codex-usage-head">
+                <span class="codex-usage-label">채택률</span>
+                <span class="codex-usage-big">${pct}%</span>
+                <span class="codex-dim">승률 ${wr}%</span>
+                <span class="codex-usage-scope">마스터+ · ${spellUsage.scope.replace('p:', '')} 패치</span>
+            </div>
+            ${champs ? `
+                <div class="codex-usage-sub">이 주문을 많이 드는 챔피언 <span class="codex-dim">(그 챔피언 판수 대비)</span></div>
+                <div class="codex-usage-champs">${champs}</div>` : ''}
+        </div>`;
     }
 
     // ── 컨트롤

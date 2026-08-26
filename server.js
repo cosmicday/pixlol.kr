@@ -2707,6 +2707,36 @@ app.get('/api/suggest', async (req, res) => {
 //   ★ 라인별까지 통째로 내려보낸다 (최대 1,000행쯤). 라인 필터를 누를 때마다
 //     다시 부르면 느리고, 어차피 한 번에 받아도 100KB 안쪽이다.
 // ==========================================
+// ★★ scope 목록·기본값 고르기. **`/api/champion-stats` 와 `/api/spell-usage` 가 같이 쓴다**
+//   (2026-08-26에 함수로 뺐다 — 표를 두 벌 두면 어긋난다).
+//   ★ 기본값이 "그냥 최신 패치" 가 아닌 이유: 수요일에 패치가 나오면 그 패치 표본이
+//     몇 판뿐이라 **패치 당일마다 화면이 텅 빈다.** 그래서 `MIN_SCOPE_GAMES` 를 넘긴
+//     가장 최신 패치를 고르고, 그것도 없으면(수집 초기) 표본이 가장 많은 패치로 물러난다.
+const MIN_SCOPE_GAMES = 300;
+function pickStatScope(scopes, requested) {
+    // ★ 패치는 **숫자로** 정렬해야 한다. 문자열로 하면 "16.9" > "16.16" 이 된다.
+    const patchKeys = [...new Set(scopes.filter(s => s.scope.startsWith('p:')).map(s => s.scope))]
+        .sort((a, b) => {
+            const pa = a.slice(2).split('.').map(Number), pb = b.slice(2).split('.').map(Number);
+            return (pb[0] - pa[0]) || (pb[1] - pa[1]);
+        });
+    const dayKeys = [...new Set(scopes.filter(s => s.scope.startsWith('d:')).map(s => s.scope))]
+        .sort().reverse();
+    const scopeKeys = [...patchKeys, ...dayKeys];
+
+    // scope 별 총 경기 수 (밴드 합산)
+    const gamesOf = {};
+    scopes.forEach(s => { gamesOf[s.scope] = (gamesOf[s.scope] || 0) + s.games; });
+
+    const scope = scopeKeys.includes(requested)
+        ? requested
+        : (patchKeys.find(k => gamesOf[k] >= MIN_SCOPE_GAMES)
+            || [...patchKeys].sort((a, b) => gamesOf[b] - gamesOf[a])[0]
+            || scopeKeys[0]);
+
+    return { scope, scopeKeys, gamesOf };
+}
+
 app.get('/api/champion-stats', async (req, res) => {
     try {
         const scopes = await StatScope.find({}).lean();
@@ -2714,31 +2744,7 @@ app.get('/api/champion-stats', async (req, res) => {
             return res.json({ ready: false, scopes: [], rows: [], totals: {} });
         }
 
-        // ★ 패치는 **숫자로** 정렬해야 한다. 문자열로 하면 "16.9" > "16.16" 이 된다.
-        const patchKeys = [...new Set(scopes.filter(s => s.scope.startsWith('p:')).map(s => s.scope))]
-            .sort((a, b) => {
-                const pa = a.slice(2).split('.').map(Number), pb = b.slice(2).split('.').map(Number);
-                return (pb[0] - pa[0]) || (pb[1] - pa[1]);
-            });
-        const dayKeys = [...new Set(scopes.filter(s => s.scope.startsWith('d:')).map(s => s.scope))]
-            .sort().reverse();
-        const scopeKeys = [...patchKeys, ...dayKeys];
-
-        // scope 별 총 경기 수 (밴드 합산)
-        const gamesOf = {};
-        scopes.forEach(s => { gamesOf[s.scope] = (gamesOf[s.scope] || 0) + s.games; });
-
-        // ★ 기본값은 "표본이 어느 정도 쌓인 가장 최신 패치" 다.
-        //   그냥 최신 패치를 쓰면 **패치 당일마다 화면이 텅 빈다** — 수요일에 패치가 나오면
-        //   그 패치 표본이 몇 판뿐이라 전 챔피언이 표본 미달(회색)로 나온다.
-        //   그것도 없으면(수집 초기) **표본이 가장 많은 패치**로 물러난다.
-        const MIN_SCOPE_GAMES = 300;
-        const requested = req.query.scope;
-        const scope = scopeKeys.includes(requested)
-            ? requested
-            : (patchKeys.find(k => gamesOf[k] >= MIN_SCOPE_GAMES)
-                || [...patchKeys].sort((a, b) => gamesOf[b] - gamesOf[a])[0]
-                || scopeKeys[0]);
+        const { scope, scopeKeys } = pickStatScope(scopes, req.query.scope);
 
         const [rows, totalRows] = await Promise.all([
             ChampStat.find({ scope }).select('-_id -__v').lean(),
@@ -2858,6 +2864,80 @@ app.get('/api/champion-builds', async (req, res) => {
     } catch (e) {
         console.error('[API] 룬 빌드 실패:', e.message);
         res.status(500).json({ error: '룬 통계를 불러오지 못했습니다.' });
+    }
+});
+
+// ==========================================
+// 소환사 주문 채택률 (2026-08-26 신설) — 도감 주문 탭이 읽는다
+//
+//   ★★ `champbuilds` 의 `type:'spell'` 을 **주문 기준으로 뒤집기만 한다.**
+//     통계 탭은 "이 챔피언이 뭘 드나"(챔피언 → 주문)인데 여기는 "이 주문을 누가 드나" 다.
+//     **수집·집계에 더한 게 없다** — 이미 있는 줄을 다르게 세는 것이라 지난 원본도 그대로 소급된다.
+//
+//   ★ 분모는 `type:'all'` 의 합, 즉 **"챔피언 픽 합계(명)"** 다. 경기 수가 아니다 —
+//     한 경기에 10명이 있고 한 사람이 주문을 2개 드니 **채택률 합이 200% 가 된다.**
+//     실측(16.16): 점멸 97.4% · 순간이동 21.4% · 점화 21.3% · 강타 20.0% …
+//     강타가 정확히 20% 인 건 팀당 정글러 1명이라는 뜻이라 값이 맞다는 방증이다.
+//
+//   ★ `champs` 는 **그 챔피언 판수 대비 채택률** 순이다 (판수 순이 아니다).
+//     판수 순으로 하면 인기 챔피언만 나와서 "강타 = 리 신·그레이브즈" 처럼 뻔해진다.
+//     비율 순이면 "헤카림 100% · 릴리아 100%" 처럼 **그 주문을 반드시 드는 챔피언**이 나온다.
+//   ★ 표본이 적으면 비율이 튄다 — `SPELL_CHAMP_MIN` 판 미만은 뺀다.
+const SPELL_CHAMP_MIN = 30;   // 챔피언 top 목록에 들 최소 표본
+const SPELL_CHAMP_TOP = 6;
+app.get('/api/spell-usage', async (req, res) => {
+    try {
+        const scopes = await StatScope.find({}).lean();
+        if (!scopes.length) return res.json({ ready: false, spells: {} });
+
+        const { scope } = pickStatScope(scopes, req.query.scope);
+        const cacheKey = `spellusage_${scope}`;
+        const hit = myCache.get(cacheKey);
+        if (hit) return res.json(hit);
+
+        // pos:-1 = 라인 무관 전체. 라인별로 나눌 수도 있지만 도감은 주문 하나를 보는 자리라
+        // 전체만 쓴다 (라인별이 필요해지면 pos 를 그대로 group 에 넣으면 된다).
+        const [spellRows, allRows] = await Promise.all([
+            ChampBuild.find({ scope, type: 'spell', pos: -1 }).select('-_id champ key games wins').lean(),
+            ChampBuild.find({ scope, type: 'all', pos: -1 }).select('-_id champ games').lean()
+        ]);
+
+        // 박제된 패치는 champbuilds 행이 없다 (champion-builds 와 같은 판별)
+        if (!spellRows.length) return res.json({ ready: false, scope, spells: {}, picks: 0 });
+
+        const totalByChamp = {};
+        allRows.forEach(r => { totalByChamp[r.champ] = r.games; });
+        const picks = allRows.reduce((a, r) => a + r.games, 0);
+
+        // 주문 하나가 조합의 양쪽에 나오므로 key 를 펼쳐서 센다
+        const agg = {};
+        spellRows.forEach(r => (r.key || []).forEach(id => {
+            const s = agg[id] || (agg[id] = { games: 0, wins: 0, byChamp: {} });
+            s.games += r.games;
+            s.wins += r.wins;
+            s.byChamp[r.champ] = (s.byChamp[r.champ] || 0) + r.games;
+        }));
+
+        const spells = {};
+        Object.entries(agg).forEach(([id, s]) => {
+            spells[id] = {
+                games: s.games,
+                wins: s.wins,
+                champs: Object.entries(s.byChamp)
+                    .filter(([c]) => (totalByChamp[c] || 0) >= SPELL_CHAMP_MIN)
+                    .map(([c, g]) => ({ c: Number(c), g, r: g / totalByChamp[c] }))
+                    .sort((a, b) => b.r - a.r || b.g - a.g)
+                    .slice(0, SPELL_CHAMP_TOP)
+                    .map(x => ({ c: x.c, r: Math.round(x.r * 1000) / 1000 }))
+            };
+        });
+
+        const payload = { ready: true, scope, picks, spells };
+        myCache.set(cacheKey, payload, 1800);   // 집계가 매시간이라 30분
+        res.json(payload);
+    } catch (e) {
+        console.error('[API] 주문 채택률 실패:', e.message);
+        res.status(500).json({ error: '주문 통계를 불러오지 못했습니다.' });
     }
 });
 

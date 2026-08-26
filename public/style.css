@@ -6910,6 +6910,81 @@ main {
     padding: 16px;
 }
 
+/* ★★ 소환사 주문 채택률 (2026-08-26). 주문 상세가 도감에서 제일 휑해서 그 자리를 채운다.
+   ★ 데이터가 없으면 이 상자 자체가 안 그려진다 (spellUsageHtml 이 빈 문자열을 낸다) —
+     통계 API 가 실패해도 화면이 비어 보이지 않는다. */
+.codex-usage {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.codex-usage-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.codex-usage-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.codex-usage-big {
+    font-size: 20px;
+    font-weight: 700;
+    color: #a78bfa;
+}
+
+/* 표본 출처. 오른쪽 끝으로 밀어 값과 떨어뜨린다 */
+.codex-usage-scope {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-faint);
+}
+
+.codex-usage-sub {
+    margin: 12px 0 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.codex-usage-champs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.codex-usage-champ {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #14142a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 5px 9px 5px 5px;
+}
+
+.codex-usage-champ img {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.codex-usage-name {
+    font-size: 12px;
+    color: var(--text-bright);
+    white-space: nowrap;
+}
+
+.codex-usage-rate {
+    font-size: 12px;
+    font-weight: 700;
+    color: #a78bfa;
+}
+
 .codex-detail-head {
     display: flex;
     gap: 14px;
