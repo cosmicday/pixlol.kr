@@ -2807,6 +2807,7 @@ main {
 .lx-pk.is-none { opacity: 0.35; }
 /* 승률 최고 · 픽률 최고 탭 — 줄에서 뽑힌 칸만 밝고 나머지는 어둡게 (2026-08-27) */
 .lx-pk.is-dim { opacity: 0.22; filter: grayscale(1); }
+.lx-pk-page { padding: 8px 12px 0; font-size: 12px; color: #ddd; }
 .lx-pk.is-best img { box-shadow: 0 0 0 2px var(--lx-teal); }
 
 /* 같은 이름을 예전 화면이 쓰던 규칙 — 승률 색 (전적 카드 등) */
