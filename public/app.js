@@ -3179,6 +3179,9 @@ async function showCodex(target) {
     function renderStatBar() {
         const el = document.getElementById('codex-statbar');
         if (!el) return;
+        // ★ 탭을 몸통에 적어 둔다 — CSS 가 룬·주문 탭의 왼쪽 칸을 좁히는 데 쓴다
+        //   (`.codex-body[data-tab="rune"] .codex-left`). 여기가 탭을 보는 유일한 자리다.
+        el.closest('.codex-body')?.setAttribute('data-tab', curTab);
         if (curTab !== 'item') { el.style.display = 'none'; el.innerHTML = ''; return; }
         el.style.display = '';
 
@@ -3516,7 +3519,7 @@ async function showCodex(target) {
                 <span class="codex-usage-scope">마스터+ · ${spellUsage.scope.replace('p:', '')} 패치</span>
             </div>
             ${champs ? `
-                <div class="codex-usage-sub">이 주문을 많이 드는 챔피언 <span class="codex-dim">(그 챔피언 판수 대비)</span></div>
+                <div class="codex-usage-sub">채택률 TOP5</div>
                 <div class="codex-usage-champs">${champs}</div>` : ''}
         </div>`;
     }

@@ -2884,7 +2884,7 @@ app.get('/api/champion-builds', async (req, res) => {
 //     비율 순이면 "헤카림 100% · 릴리아 100%" 처럼 **그 주문을 반드시 드는 챔피언**이 나온다.
 //   ★ 표본이 적으면 비율이 튄다 — `SPELL_CHAMP_MIN` 판 미만은 뺀다.
 const SPELL_CHAMP_MIN = 30;   // 챔피언 top 목록에 들 최소 표본
-const SPELL_CHAMP_TOP = 6;
+const SPELL_CHAMP_TOP = 5;   // 화면 문구가 "채택률 TOP5" 라 다섯이다 (2026-08-26)
 app.get('/api/spell-usage', async (req, res) => {
     try {
         const scopes = await StatScope.find({}).lean();
