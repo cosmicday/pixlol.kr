@@ -1369,6 +1369,114 @@ const ITEM_CONSUMABLES = [
 // 아이템은 조합이 아니라 낱개라 가짓수가 적다. 화면이 8개를 쓰므로 15면 넉넉하다.
 const ITEM_TOP_N = 15;
 
+// ★★ 타임라인 집계 7종 (2026-08-26 신설) — 슬림 문서의 `sk`(스킬 순서)·`it`(구매) 에서 센다.
+//   같은 컬렉션(champbuilds)에 type 만 다르게 담는다. 화면(챔피언 통계 상세 페이지)이
+//   lolalytics 처럼 "스킬 우선순위 · 스킬 순서 · 시작 아이템 · 코어 빌드 · 4/5/6번째 아이템" 을 그린다.
+//
+//   ★ `sk`/`it` 는 2026-08-26 부터 쌓인다 — 그 전 판은 `sk` 가 없어 `$match` 에서 빠진다.
+//     그래서 표본이 룬·아이템보다 한동안 훨씬 적다 (분모 `all` 은 그대로 전체 판수라
+//     화면의 픽률이 낮게 나온다 — 화면은 이 type 들의 픽률을 "타임라인 있는 판" 기준으로 따로 센다).
+//   ★ 한 판의 `sk[i]`·`it` 의 참가자 번호 i 는 `p[i]` 와 같은 사람이다 (둘 다 participantId-1 순서).
+//
+//   | type     | key                               | 뜻 |
+//   |----------|-----------------------------------|----|
+//   | skillord | 스킬 순서 (Q1 W2 E3 R4, **15레벨까지**) | lolalytics 의 Skill Order 격자. 18까지 담으면 길이가 판마다 달라 조합이 더 잘게 갈린다 |
+//   | skillpri | 선마 순서 3개 (Q/W/E)              | "5번째 포인트를 찍은 레벨" 이 빠른 순, 같으면 포인트 많은 순. 9포인트 미만 판은 안 센다 |
+//   | start    | 시작 아이템 (90초 안 구매, id 정렬)  | 물약·와드는 수집 때 이미 뺐다 (TL_SKIP_ITEMS) — 도란검만 남는다 |
+//   | core     | 완성 아이템 첫 3개 (구매 순서)        | 완성 = DD item.json 에서 **더 조합되지 않고 1000G 이상** (아래 loadCompletedItems) |
+//   | item4~6  | 4·5·6번째 완성 아이템 (낱개)         | lolalytics 의 Item 4/5/6 |
+//
+//   ★ 1판짜리 조합은 저장 단계에서 뺀다 (`$match games >= 2`) — 스킬 순서·시작템·코어는 조합
+//     가짓수가 룬 페이지보다도 많아서 1판 꼬리가 컬렉션을 덮는다. skillpri·item4~6 은 가짓수가
+//     적어 그대로 둔다.
+const TL_TYPES = ['skillord', 'skillpri', 'start', 'core', 'item4', 'item5', 'item6'];
+const TL_START_SEC = 90;          // 이 초 안에 산 것이 시작 아이템
+const TL_SKILL_ORDER_LEVELS = 15; // 스킬 순서 조합 키 길이
+const TL_COMPLETE_GOLD = 1000;    // 완성 아이템 하한 (도란 450 · 1단계 장화 300 은 밑, 2단계 장화 1000~ 은 위)
+
+// ★★ "완성 아이템" 목록은 DD item.json 에서 만든다 (버전마다 한 번, 메모리 캐시).
+//   규칙: 협곡(maps 11) · 구매 가능 · 소모품 아님 · 1000G 이상 · **더 조합되는 곳이 없다**.
+//   ★ `into` 를 그대로 보면 안 된다 — 삼위일체 같은 전설급이 오른 장인 아이템·아레나 사본으로
+//     `into` 가 있을 수 있고, **2단계 장화는 상위 장화(건메탈 군화 등)로 조합돼 `into` 가 있다.**
+//     그래서 `into` 는 "협곡에서 살 수 있는 것" 만 세고, 장화(tags Boots)는 into 가 있어도 완성으로 친다.
+//   실측(16.17.1): 153개. 삼위일체·판금 장화·거대한 히드라·건메탈 군화 포함, 도란검·장화·서폿 퀘스트템 제외.
+let completedItemCache = { ver: null, ids: null };
+async function loadCompletedItems() {
+    if (completedItemCache.ver === currentVersion && completedItemCache.ids) return completedItemCache.ids;
+    const res = await axios.get(`https://ddragon.leagueoflegends.com/cdn/${currentVersion}/data/ko_KR/item.json`, { timeout: 20000 });
+    const data = res.data?.data || {};
+    const realInto = it => (it.into || []).filter(x => {
+        const t = data[x];
+        return t && t.maps?.['11'] && t.gold?.purchasable && !t.requiredAlly;
+    });
+    const ids = [];
+    for (const [id, it] of Object.entries(data)) {
+        const n = Number(id);
+        if (!it.maps?.['11'] || !it.gold?.purchasable || it.requiredAlly) continue;
+        if (ITEM_CONSUMABLES.includes(n) || (it.gold.total || 0) < TL_COMPLETE_GOLD) continue;
+        if (realInto(it).length && !(it.tags || []).includes('Boots')) continue;
+        ids.push(n);
+    }
+    completedItemCache = { ver: currentVersion, ids };
+    console.log(`[Stat] 완성 아이템 목록 ${ids.length}개 (DD ${currentVersion})`);
+    return ids;
+}
+
+// 타임라인 갈래 — buildOneBuildScope 의 facet 과 같은 모양(`_id: {c, pos, k}, games, wins`)으로 돌려준다.
+async function buildTimelineFacet(matchCond) {
+    const complete = await loadCompletedItems();
+    const at = (arr, i) => ({ $arrayElemAt: [arr, i] });
+    // 스킬 L 의 포인트 수(n)와 5번째 포인트를 찍은 자리(at, 없으면 99)
+    const maxAt = L => ({ $reduce: {
+        input: { $range: [0, { $strLenCP: '$sk' }] }, initialValue: { n: 0, at: 99 },
+        in: { $cond: [
+            { $eq: [{ $substrCP: ['$sk', '$$this', 1] }, L] },
+            { n: { $add: ['$$value.n', 1] }, at: { $cond: [{ $eq: ['$$value.n', 4] }, '$$this', '$$value.at'] } },
+            '$$value'
+        ] }
+    } });
+    const grp = k => ({ $group: { _id: { c: '$c', pos: '$pos', k }, games: { $sum: 1 }, wins: { $sum: '$w' } } });
+    const min2 = { $match: { games: { $gte: 2 } } };
+    const nth = i => [{ $match: { [`comp.${i}`]: { $exists: true } } }, grp([at('$comp', i)])];
+
+    const rows = await MatchStat.aggregate([
+        { $match: { ...matchCond, sk: { $exists: true } } },
+        { $project: { p: 1, sk: 1, it: { $ifNull: ['$it', []] } } },
+        // 참가자 10명을 한 줄씩으로. `it` 는 [초, 참가자, 아이템] 이 평평하게 이어진 배열이라 3칸씩 끊는다.
+        { $project: { rows: { $map: { input: { $range: [0, 10] }, as: 'i', in: {
+            c: at(at('$p', '$$i'), 0), pos: at(at('$p', '$$i'), 1), w: at(at('$p', '$$i'), 2),
+            sk: { $ifNull: [at('$sk', '$$i'), ''] },
+            buys: { $map: {
+                input: { $filter: { input: { $range: [0, { $size: '$it' }, 3] }, as: 'j', cond: { $eq: [at('$it', { $add: ['$$j', 1] }), '$$i'] } } },
+                as: 'j', in: { t: at('$it', '$$j'), id: at('$it', { $add: ['$$j', 2] }) }
+            } }
+        } } } } },
+        { $unwind: '$rows' }, { $replaceRoot: { newRoot: '$rows' } },
+        { $project: {
+            c: 1, pos: 1, w: 1,
+            ord: { $slice: [
+                { $map: { input: { $range: [0, { $strLenCP: '$sk' }] }, as: 'i', in: { $add: [{ $indexOfCP: ['QWER', { $substrCP: ['$sk', '$$i', 1] }] }, 1] } } },
+                TL_SKILL_ORDER_LEVELS
+            ] },
+            pri: { $map: { input: { $sortArray: { input: [
+                { $mergeObjects: [{ l: 1 }, maxAt('Q')] }, { $mergeObjects: [{ l: 2 }, maxAt('W')] }, { $mergeObjects: [{ l: 3 }, maxAt('E')] }
+            ], sortBy: { at: 1, n: -1, l: 1 } } }, as: 's', in: '$$s.l' } },
+            start: { $sortArray: { input: { $map: { input: { $filter: { input: '$buys', as: 'b', cond: { $lte: ['$$b.t', TL_START_SEC] } } }, as: 'b', in: '$$b.id' } }, sortBy: 1 } },
+            comp: { $map: { input: { $filter: { input: '$buys', as: 'b', cond: { $in: ['$$b.id', complete] } } }, as: 'b', in: '$$b.id' } }
+        } },
+        { $facet: {
+            skillord: [{ $match: { 'ord.0': { $exists: true } } }, grp('$ord'), min2],
+            skillpri: [{ $match: { 'ord.8': { $exists: true } } }, grp('$pri')],
+            start: [{ $match: { 'start.0': { $exists: true } } }, grp('$start'), min2],
+            core: [{ $match: { 'comp.2': { $exists: true } } }, grp({ $slice: ['$comp', 3] }), min2],
+            item4: nth(3), item5: nth(4), item6: nth(5),
+            // 타임라인이 있는 판의 참가자 수 — 위 type 들의 픽률 분모 (화면은 `tlall` 로 받는다)
+            tlall: [grp([])]
+        } }
+    ]).allowDiskUse(true);
+    return rows[0] || {};
+}
+
 // 챔피언별 룬·주문 빌드 집계. **패치 scope 에만 부른다** (champBuildSchema 주석 참고)
 async function buildOneBuildScope(scopeKey, matchCond) {
     const P = i => ({ $arrayElemAt: ['$p', i] });
@@ -1435,8 +1543,16 @@ async function buildOneBuildScope(scopeKey, matchCond) {
     const f = rows[0];
     if (!f) return 0;
 
+    // ★ 타임라인 갈래(스킬·시작템·코어)는 `sk` 가 있는 판만 세므로 따로 돈다 (위 buildTimelineFacet).
+    //   실패해도 룬·아이템 집계는 살린다 — DD item.json 을 못 받는 날 빌드 전체가 비면 손해가 크다.
+    try {
+        Object.assign(f, await buildTimelineFacet(matchCond));
+    } catch (e) {
+        console.error(`[Stat] 타임라인 집계 실패 (${scopeKey}):`, e.message);
+    }
+
     const docs = [];
-    for (const type of ['rune', 'keystone', 'spell', 'shard', 'item', 'all']) {
+    for (const type of ['rune', 'keystone', 'spell', 'shard', 'item', 'all', ...TL_TYPES, 'tlall']) {
         // ★ (챔피언 x 라인) 칸과 (챔피언 x 전체) 칸을 같이 만든다.
         //   top N 은 **칸마다 따로** 잘라야 한다 — 전체에서 자른 뒤 라인으로 나누면
         //   그 라인에서만 많이 쓰는 룬이 통째로 빠진다.
@@ -1458,7 +1574,7 @@ async function buildOneBuildScope(scopeKey, matchCond) {
             if (pos >= 0) put(c, pos, key, r.games, r.wins);   // 라인별 (판정 실패는 제외)
             put(c, -1, key, r.games, r.wins);                  // 라인 무관 전체 (전원)
         });
-        const topN = type === 'all' ? Infinity : (type === 'item' ? ITEM_TOP_N : BUILD_TOP_N);
+        const topN = (type === 'all' || type === 'tlall') ? Infinity : (type === 'item' ? ITEM_TOP_N : BUILD_TOP_N);
         cells.forEach(bucket => {
             const list = [...bucket.values()].sort((a, b) => b.games - a.games);
             docs.push(...list.slice(0, topN));
