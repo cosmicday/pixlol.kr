@@ -307,12 +307,22 @@ async function getJson(url) {
 
     const numText = (v) => String(Math.round(v * 1000) / 1000);
 
+    // ★★ 주문의 **변형**. 지금은 순간이동 하나뿐이다 (2026-08-26).
+    //   ★ 강타에도 셋이 있는데(강력 강타·붉은 충전 강타·원시의 강타) **안 넣었다** —
+    //     툴팁이 `@spell.SummonerSmite:FirstPVPDamage@` 처럼 **다른 주문의 값을 참조**하는
+    //     문법을 쓰고, 붉은 충전 강타는 `TooltipImmolatingBurnDamage` 를 못 채운다.
+    //     그 자리는 화면에 `@이름@` 이 그대로 나가므로 참조 문법을 지원하기 전에는 넣으면 안 된다.
+    const SPELL_UPGRADE = {
+        '12': { obj: 'S12_SummonerTeleportUpgrade', tip: 's12_summonerteleportupgrade', when: '10분 이후' }
+    };
+
     // 주문 하나의 본문 문장을 만든다. 못 채운 변수가 있으면 그 자리를 원문 그대로 남기고 경고한다.
-    function spellTooltip(key) {
-        const obj = SPELL_OBJ[key];
+    //   `objName`/`tipName` 을 주면 그 객체로 만든다 (변형용). 안 주면 주문 본체다.
+    function spellTooltip(key, objName, tipName) {
+        const obj = objName || SPELL_OBJ[key];
         if (!obj) return null;
         const sp = (sharedBin['Shared/Spells/' + obj] || {}).mSpell;
-        const raw = strings['generatedtip_summonerspell_' + obj.toLowerCase() + '_tooltip'];
+        const raw = strings['generatedtip_summonerspell_' + (tipName || obj.toLowerCase()) + '_tooltip'];
         if (!sp || !raw) { spellMiss.push(`${obj} (bin ${!!sp} / tip ${!!raw})`); return null; }
 
         const dv = {};
@@ -372,6 +382,15 @@ async function getJson(url) {
             const no = MAIN_MODES.filter(([code]) => !s.modes.includes(code)).map(([, kor]) => kor);
             // ★ 수치가 든 본문. 못 만들면 `dt` 를 안 담고 화면이 DD 의 짧은 설명(`d`)으로 물러난다.
             const tip = spellTooltip(s.key);
+            // 변형(강력 순간이동 등). 이름은 stringtable 의 displayname 을 그대로 쓴다.
+            const upSpec = SPELL_UPGRADE[s.key];
+            const upTip = upSpec && spellTooltip(s.key, upSpec.obj, upSpec.tip);
+            const up = upTip && upTip.text ? {
+                n: strings['generatedtip_summonerspell_' + upSpec.tip + '_displayname'] || upSpec.obj,
+                w: upSpec.when,
+                d: upTip.text,
+                ...(upTip.graphs.length ? { g: upTip.graphs } : {})
+            } : null;
             spells[s.key] = {
                 n: s.name,
                 d: s.description,
@@ -381,7 +400,8 @@ async function getJson(url) {
                 i: s.image.full,
                 ...(no.length ? { no } : {}),
                 ...(tip && tip.text ? { dt: tip.text } : {}),
-                ...(tip && tip.graphs.length ? { g: tip.graphs } : {})
+                ...(tip && tip.graphs.length ? { g: tip.graphs } : {}),
+                ...(up ? { up } : {})
             };
         });
 
@@ -439,6 +459,8 @@ const codexData = ${body};
     const withGraph = Object.values(spells).filter(s => s.g).length;
     console.log(`  수치가 든 본문: ${withTip}/${Object.keys(spells).length}개 (레벨 그래프 ${withGraph}개)`);
     // ★ 못 채운 변수가 있으면 그 자리가 화면에 `@이름@` 으로 그대로 나간다 — 반드시 볼 것
+    const upList=Object.values(spells).filter(s=>s.up);
+    if (upList.length) console.log(`  변형: ${upList.map(s=>s.n+" → "+s.up.n).join(" / ")}`);
     if (spellMiss.length) console.log(`  ★★ 주문 변수를 못 채웠다: ${spellMiss.join(' / ')}`);
     console.log(`\n크기 ${(Buffer.byteLength(out) / 1024).toFixed(0)}KB  gzip ${(zlib.gzipSync(Buffer.from(out), { level: 9 }).length / 1024).toFixed(0)}KB  brotli ${(zlib.brotliCompressSync(Buffer.from(out)).length / 1024).toFixed(0)}KB`);
 

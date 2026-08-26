@@ -6934,6 +6934,26 @@ main {
     padding: 16px;
 }
 
+/* ★ 주문의 변형 (강력 순간이동). 본문과 채택률 사이에 한 덩어리로 들어간다. */
+.codex-upgrade {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.codex-upgrade-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.codex-upgrade-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #a78bfa;
+}
+
 /* ★★ 소환사 주문 채택률 (2026-08-26). 주문 상세가 도감에서 제일 휑해서 그 자리를 채운다.
    ★ 데이터가 없으면 이 상자 자체가 안 그려진다 (spellUsageHtml 이 빈 문자열을 낸다) —
      통계 API 가 실패해도 화면이 비어 보이지 않는다. */
