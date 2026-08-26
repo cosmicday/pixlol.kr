@@ -258,9 +258,14 @@ const ChampBuild = mongoose.model('ChampBuild', champBuildSchema);
 //     (줄 수가 그만큼 줄고, 어차피 상성은 라인 안에서만 뜻이 있다).
 const champMatchupSchema = new mongoose.Schema({
     scope: { type: String, required: true },
-    pos: { type: Number, required: true },     // 0~4 라인
+    pos: { type: Number, required: true },     // 0~4 내 라인
     champ: { type: Number, required: true },   // 나
-    foe: { type: Number, required: true },     // 상대
+    foe: { type: Number, required: true },     // 상대 (아군이면 그 아군)
+    // ★★ 2026-08-26 밤 — "같은 라인 상대" 만 세던 것을 **한 판의 나머지 9명 전부**로 넓혔다 (lolalytics 의
+    //   Counter 5줄 + Synergy 4줄). fpos = 그 사람의 라인, rel = 0 적 / 1 아군. 옛 뜻(같은 라인 적)은
+    //   `rel: 0, fpos == pos` 줄이다. 실측(16.16, 5판 이상): 11,778 → 105,872행 (15초)
+    fpos: { type: Number, default: -1 },
+    rel: { type: Number, default: 0 },
     games: { type: Number, default: 0 },
     wins: { type: Number, default: 0 }
 });
@@ -1201,7 +1206,10 @@ async function fetchMatchStats() {
                     //   ★ **실패해도 detail 은 살린다** — 타임라인은 곁가지라 그것 때문에
                     //     통계 본체를 버리면 손해가 크다. 그 판은 `sk`/`it` 이 없을 뿐이다.
                     //   ★ 호출이 판당 2회가 된다 (분당 10 → 20). 순간 최대 22/50 라 여유가 있다.
-                    try {
+                    //   ★★ **16.17 패치부터만 받는다** (2026-08-26 밤, 사용자 지시 — 16.16 은 아이템·스킬 로그 없이 간다).
+                    //     낮에 켤 때 버전을 안 가려서 16.16 판 1,032개에 이미 들어갔는데, 집계(`TL_MIN_PATCH`)가
+                    //     16.16 을 건너뛰므로 화면엔 안 나온다.
+                    if (patchAtLeast(slim.v, TL_MIN_PATCH)) try {
                         const tl = await riotApi.get(
                             `https://asia.api.riotgames.com/lol/match/v5/matches/${t.matchId}/timeline`
                         );
@@ -1369,30 +1377,46 @@ const ITEM_CONSUMABLES = [
 // 아이템은 조합이 아니라 낱개라 가짓수가 적다. 화면이 8개를 쓰므로 15면 넉넉하다.
 const ITEM_TOP_N = 15;
 
-// ★★ 타임라인 집계 7종 (2026-08-26 신설) — 슬림 문서의 `sk`(스킬 순서)·`it`(구매) 에서 센다.
-//   같은 컬렉션(champbuilds)에 type 만 다르게 담는다. 화면(챔피언 통계 상세 페이지)이
-//   lolalytics 처럼 "스킬 우선순위 · 스킬 순서 · 시작 아이템 · 코어 빌드 · 4/5/6번째 아이템" 을 그린다.
+// ★★ 타임라인 집계 — 슬림 문서의 `sk`(스킬 순서)·`it`(구매) 에서 센다 (2026-08-26 신설, 같은 날 밤 확장).
+//   같은 컬렉션(champbuilds)에 type 만 다르게 담는다. 화면(챔피언 통계 상세 페이지)이 lolalytics 와
+//   같은 자리(Skill Priority · Skill Order · Starting · Early · Sets · Boots · Item 1~6)를 그린다.
 //
-//   ★ `sk`/`it` 는 2026-08-26 부터 쌓인다 — 그 전 판은 `sk` 가 없어 `$match` 에서 빠진다.
-//     그래서 표본이 룬·아이템보다 한동안 훨씬 적다 (분모 `all` 은 그대로 전체 판수라
-//     화면의 픽률이 낮게 나온다 — 화면은 이 type 들의 픽률을 "타임라인 있는 판" 기준으로 따로 센다).
+//   ★★ **16.17 패치부터만 센다** (`TL_MIN_PATCH`, 사용자 지시). 16.16 은 아이템·스킬 로그 없이 간다 —
+//     오늘 낮에 켠 타임라인 수집이 버전을 안 가려서 16.16 판 1,032개에 로그가 들어갔지만, 집계도 수집도
+//     16.17 미만은 건너뛴다 (수집 쪽은 fetchMatchStats 의 `patchAtLeast` 가드). 화면은 `tlall` 줄이 없으면
+//     그 칸들을 통째로 안 그린다.
 //   ★ 한 판의 `sk[i]`·`it` 의 참가자 번호 i 는 `p[i]` 와 같은 사람이다 (둘 다 participantId-1 순서).
 //
-//   | type     | key                               | 뜻 |
-//   |----------|-----------------------------------|----|
-//   | skillord | 스킬 순서 (Q1 W2 E3 R4, **15레벨까지**) | lolalytics 의 Skill Order 격자. 18까지 담으면 길이가 판마다 달라 조합이 더 잘게 갈린다 |
-//   | skillpri | 선마 순서 3개 (Q/W/E)              | "5번째 포인트를 찍은 레벨" 이 빠른 순, 같으면 포인트 많은 순. 9포인트 미만 판은 안 센다 |
-//   | start    | 시작 아이템 (90초 안 구매, id 정렬)  | 물약·와드는 수집 때 이미 뺐다 (TL_SKIP_ITEMS) — 도란검만 남는다 |
-//   | core     | 완성 아이템 첫 3개 (구매 순서)        | 완성 = DD item.json 에서 **더 조합되지 않고 1000G 이상** (아래 loadCompletedItems) |
-//   | item4~6  | 4·5·6번째 완성 아이템 (낱개)         | lolalytics 의 Item 4/5/6 |
+//   | type        | key                                  | 뜻 |
+//   |-------------|--------------------------------------|----|
+//   | skillord    | 스킬 순서 (Q1 W2 E3 R4) **15레벨까지**   | Skill Order 격자. 18까지 담으면 길이가 판마다 달라 조합이 더 잘게 갈린다 |
+//   | skillord6/10| 같은 것을 6·10레벨까지                  | Skill Priority 표의 Level 6+/10+ 탭 |
+//   | skillpri    | 선마 순서 3개 (Q/W/E)                  | "5번째 포인트를 찍은 레벨" 이 빠른 순, 같으면 포인트 많은 순. 9포인트 미만 판은 안 센다 |
+//   | start       | 시작 아이템 (90초 안 구매, id 정렬)      | 물약·와드는 수집 때 이미 뺐다 (TL_SKIP_ITEMS) — 도란검만 남는다 |
+//   | early       | 초반 아이템 (90초~10분 구매, 낱개)        | Early Items. 시작템은 뺀다 |
+//   | earlyset    | 초반 아이템 세트 (같은 구간, id 정렬)     | Early Item Sets |
+//   | boots       | 처음 산 2단계 이상 장화 (낱개)            | Boots |
+//   | core        | 완성 아이템 첫 3개 (구매 순서)            | Core Build. 완성 = 아래 loadCompletedItems |
+//   | set2/4/5    | 완성 아이템 첫 2·4·5개 (구매 순서)        | Sets (3개는 core) |
+//   | item1~6     | n번째 완성 아이템 (낱개)                 | Item 1~6 |
+//   | tlall       | []                                   | 타임라인 있는 판의 참가자 수 — 위 전부의 픽률 분모 |
 //
-//   ★ 1판짜리 조합은 저장 단계에서 뺀다 (`$match games >= 2`) — 스킬 순서·시작템·코어는 조합
-//     가짓수가 룬 페이지보다도 많아서 1판 꼬리가 컬렉션을 덮는다. skillpri·item4~6 은 가짓수가
-//     적어 그대로 둔다.
-const TL_TYPES = ['skillord', 'skillpri', 'start', 'core', 'item4', 'item5', 'item6'];
+//   ★ 1판짜리 조합은 저장 단계에서 뺀다 (`$match games >= 2`, 조합 type) — 조합 가짓수가 룬 페이지보다도
+//     많아서 1판 꼬리가 컬렉션을 덮는다. 낱개 type(skillpri·item1~6·boots·early)은 가짓수가 적어 그대로 둔다.
+const TL_TYPES = ['skillord', 'skillord6', 'skillord10', 'skillpri', 'start', 'early', 'earlyset', 'boots',
+    'core', 'set2', 'set4', 'set5', 'item1', 'item2', 'item3', 'item4', 'item5', 'item6'];
+const TL_MIN_PATCH = [16, 17];    // 이 패치부터 타임라인을 받고·센다
 const TL_START_SEC = 90;          // 이 초 안에 산 것이 시작 아이템
+const TL_EARLY_SEC = 600;         // 이 초 안(시작 구간 뒤)에 산 것이 초반 아이템
 const TL_SKILL_ORDER_LEVELS = 15; // 스킬 순서 조합 키 길이
 const TL_COMPLETE_GOLD = 1000;    // 완성 아이템 하한 (도란 450 · 1단계 장화 300 은 밑, 2단계 장화 1000~ 은 위)
+
+// "16.16" 같은 게임 버전 문자열이 [16, 17] 이상인가. 문자열 비교는 안 된다 ("16.9" > "16.17")
+function patchAtLeast(v, min) {
+    const [a, b] = String(v || '').split('.').map(Number);
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
+    return a > min[0] || (a === min[0] && b >= min[1]);
+}
 
 // ★★ "완성 아이템" 목록은 DD item.json 에서 만든다 (버전마다 한 번, 메모리 캐시).
 //   규칙: 협곡(maps 11) · 구매 가능 · 소모품 아님 · 1000G 이상 · **더 조합되는 곳이 없다**.
@@ -1400,31 +1424,34 @@ const TL_COMPLETE_GOLD = 1000;    // 완성 아이템 하한 (도란 450 · 1단
 //     `into` 가 있을 수 있고, **2단계 장화는 상위 장화(건메탈 군화 등)로 조합돼 `into` 가 있다.**
 //     그래서 `into` 는 "협곡에서 살 수 있는 것" 만 세고, 장화(tags Boots)는 into 가 있어도 완성으로 친다.
 //   실측(16.17.1): 153개. 삼위일체·판금 장화·거대한 히드라·건메탈 군화 포함, 도란검·장화·서폿 퀘스트템 제외.
-let completedItemCache = { ver: null, ids: null };
+//   ★ 장화 목록(`boots`)도 같이 돌려준다 — Boots 줄이 "처음 산 2단계 이상 장화" 를 세는 데 쓴다.
+let completedItemCache = { ver: null, data: null };
 async function loadCompletedItems() {
-    if (completedItemCache.ver === currentVersion && completedItemCache.ids) return completedItemCache.ids;
+    if (completedItemCache.ver === currentVersion && completedItemCache.data) return completedItemCache.data;
     const res = await axios.get(`https://ddragon.leagueoflegends.com/cdn/${currentVersion}/data/ko_KR/item.json`, { timeout: 20000 });
     const data = res.data?.data || {};
     const realInto = it => (it.into || []).filter(x => {
         const t = data[x];
         return t && t.maps?.['11'] && t.gold?.purchasable && !t.requiredAlly;
     });
-    const ids = [];
+    const complete = [], boots = [];
     for (const [id, it] of Object.entries(data)) {
         const n = Number(id);
         if (!it.maps?.['11'] || !it.gold?.purchasable || it.requiredAlly) continue;
         if (ITEM_CONSUMABLES.includes(n) || (it.gold.total || 0) < TL_COMPLETE_GOLD) continue;
-        if (realInto(it).length && !(it.tags || []).includes('Boots')) continue;
-        ids.push(n);
+        const isBoots = (it.tags || []).includes('Boots');
+        if (realInto(it).length && !isBoots) continue;
+        complete.push(n);
+        if (isBoots) boots.push(n);
     }
-    completedItemCache = { ver: currentVersion, ids };
-    console.log(`[Stat] 완성 아이템 목록 ${ids.length}개 (DD ${currentVersion})`);
-    return ids;
+    completedItemCache = { ver: currentVersion, data: { complete, boots } };
+    console.log(`[Stat] 완성 아이템 목록 ${complete.length}개 · 장화 ${boots.length}개 (DD ${currentVersion})`);
+    return completedItemCache.data;
 }
 
 // 타임라인 갈래 — buildOneBuildScope 의 facet 과 같은 모양(`_id: {c, pos, k}, games, wins`)으로 돌려준다.
 async function buildTimelineFacet(matchCond) {
-    const complete = await loadCompletedItems();
+    const { complete, boots } = await loadCompletedItems();
     const at = (arr, i) => ({ $arrayElemAt: [arr, i] });
     // 스킬 L 의 포인트 수(n)와 5번째 포인트를 찍은 자리(at, 없으면 99)
     const maxAt = L => ({ $reduce: {
@@ -1438,6 +1465,10 @@ async function buildTimelineFacet(matchCond) {
     const grp = k => ({ $group: { _id: { c: '$c', pos: '$pos', k }, games: { $sum: 1 }, wins: { $sum: '$w' } } });
     const min2 = { $match: { games: { $gte: 2 } } };
     const nth = i => [{ $match: { [`comp.${i}`]: { $exists: true } } }, grp([at('$comp', i)])];
+    const firstN = n => [{ $match: { [`comp.${n - 1}`]: { $exists: true } } }, grp({ $slice: ['$comp', n] }), min2];
+    const ordTo = n => [{ $match: { [`ord.${n - 1}`]: { $exists: true } } }, grp({ $slice: ['$ord', n] }), min2];
+    const ids = arr => ({ $map: { input: arr, as: 'b', in: '$$b.id' } });
+    const inWindow = (lo, hi) => ({ $filter: { input: '$buys', as: 'b', cond: { $and: [{ $gt: ['$$b.t', lo] }, { $lte: ['$$b.t', hi] }] } } });
 
     const rows = await MatchStat.aggregate([
         { $match: { ...matchCond, sk: { $exists: true } } },
@@ -1461,15 +1492,20 @@ async function buildTimelineFacet(matchCond) {
             pri: { $map: { input: { $sortArray: { input: [
                 { $mergeObjects: [{ l: 1 }, maxAt('Q')] }, { $mergeObjects: [{ l: 2 }, maxAt('W')] }, { $mergeObjects: [{ l: 3 }, maxAt('E')] }
             ], sortBy: { at: 1, n: -1, l: 1 } } }, as: 's', in: '$$s.l' } },
-            start: { $sortArray: { input: { $map: { input: { $filter: { input: '$buys', as: 'b', cond: { $lte: ['$$b.t', TL_START_SEC] } } }, as: 'b', in: '$$b.id' } }, sortBy: 1 } },
-            comp: { $map: { input: { $filter: { input: '$buys', as: 'b', cond: { $in: ['$$b.id', complete] } } }, as: 'b', in: '$$b.id' } }
+            start: { $sortArray: { input: ids(inWindow(-1, TL_START_SEC)), sortBy: 1 } },
+            early: ids(inWindow(TL_START_SEC, TL_EARLY_SEC)),
+            comp: ids({ $filter: { input: '$buys', as: 'b', cond: { $in: ['$$b.id', complete] } } }),
+            boots: { $slice: [ids({ $filter: { input: '$buys', as: 'b', cond: { $in: ['$$b.id', boots] } } }), 1] }
         } },
         { $facet: {
-            skillord: [{ $match: { 'ord.0': { $exists: true } } }, grp('$ord'), min2],
+            skillord: ordTo(TL_SKILL_ORDER_LEVELS), skillord6: ordTo(6), skillord10: ordTo(10),
             skillpri: [{ $match: { 'ord.8': { $exists: true } } }, grp('$pri')],
             start: [{ $match: { 'start.0': { $exists: true } } }, grp('$start'), min2],
-            core: [{ $match: { 'comp.2': { $exists: true } } }, grp({ $slice: ['$comp', 3] }), min2],
-            item4: nth(3), item5: nth(4), item6: nth(5),
+            early: [{ $unwind: '$early' }, grp(['$early'])],
+            earlyset: [{ $match: { 'early.0': { $exists: true } } }, grp({ $sortArray: { input: '$early', sortBy: 1 } }), min2],
+            boots: [{ $match: { 'boots.0': { $exists: true } } }, grp('$boots')],
+            core: firstN(3), set2: firstN(2), set4: firstN(4), set5: firstN(5),
+            item1: nth(0), item2: nth(1), item3: nth(2), item4: nth(3), item5: nth(4), item6: nth(5),
             // 타임라인이 있는 판의 참가자 수 — 위 type 들의 픽률 분모 (화면은 `tlall` 로 받는다)
             tlall: [grp([])]
         } }
@@ -1511,6 +1547,9 @@ async function buildOneBuildScope(scopeKey, matchCond) {
                 },
                 keystone: [P(17), P(18)],
                 shard: [P(25), P(26), P(27)],
+                // ★ 룬 낱개 (2026-08-26 밤 신설) — 룬 6개 + 파편 3개를 하나씩 센다 (최종 아이템을 낱개로 세는 것과 같다).
+                //   lolalytics Runes 표(룬마다 픽률·승률)의 자료. 조합(`rune`) 상위 12개에서 되짚으면 잘린 꼬리 때문에 틀린다.
+                perk: [P(18), P(19), P(20), P(21), P(23), P(24), P(25), P(26), P(27)],
                 // 최종 아이템 6칸 (9~14). 아래 facet 에서 한 번 더 펼쳐 낱개로 센다.
                 item: [P(9), P(10), P(11), P(12), P(13), P(14)],
                 // 같은 이유로 주문도 작은 id 를 앞으로. 점멸/점화와 점화/점멸이 갈리면
@@ -1532,6 +1571,11 @@ async function buildOneBuildScope(scopeKey, matchCond) {
                     { $match: { item: { $gt: 0, $nin: ITEM_CONSUMABLES } } },
                     { $group: { _id: { c: '$c', pos: '$pos', k: ['$item'] }, games: { $sum: 1 }, wins: { $sum: '$w' } } }
                 ],
+                perk: [
+                    { $unwind: '$perk' },
+                    { $match: { perk: { $gt: 0 } } },
+                    { $group: { _id: { c: '$c', pos: '$pos', k: ['$perk'] }, games: { $sum: 1 }, wins: { $sum: '$w' } } }
+                ],
                 // ★ 챔피언 총 판수. top N 으로 자르고 나면 줄을 더해도 총합이 안 나오므로
                 //   분모를 따로 담아야 한다. champstats 에서 가져오면 될 것 같지만
                 //   거기는 kb 로 쪼개져 있고 화면의 밴드 필터에 따라 값이 달라진다.
@@ -1545,14 +1589,17 @@ async function buildOneBuildScope(scopeKey, matchCond) {
 
     // ★ 타임라인 갈래(스킬·시작템·코어)는 `sk` 가 있는 판만 세므로 따로 돈다 (위 buildTimelineFacet).
     //   실패해도 룬·아이템 집계는 살린다 — DD item.json 을 못 받는 날 빌드 전체가 비면 손해가 크다.
-    try {
-        Object.assign(f, await buildTimelineFacet(matchCond));
-    } catch (e) {
-        console.error(`[Stat] 타임라인 집계 실패 (${scopeKey}):`, e.message);
+    //   ★★ 16.17 미만 패치는 아예 안 돈다 (`TL_MIN_PATCH`) — 16.16 은 아이템·스킬 로그 없이 간다 (사용자 지시)
+    if (scopeKey.startsWith('p:') && patchAtLeast(scopeKey.slice(2), TL_MIN_PATCH)) {
+        try {
+            Object.assign(f, await buildTimelineFacet(matchCond));
+        } catch (e) {
+            console.error(`[Stat] 타임라인 집계 실패 (${scopeKey}):`, e.message);
+        }
     }
 
     const docs = [];
-    for (const type of ['rune', 'keystone', 'spell', 'shard', 'item', 'all', ...TL_TYPES, 'tlall']) {
+    for (const type of ['rune', 'keystone', 'spell', 'shard', 'item', 'perk', 'all', ...TL_TYPES, 'tlall']) {
         // ★ (챔피언 x 라인) 칸과 (챔피언 x 전체) 칸을 같이 만든다.
         //   top N 은 **칸마다 따로** 잘라야 한다 — 전체에서 자른 뒤 라인으로 나누면
         //   그 라인에서만 많이 쓰는 룬이 통째로 빠진다.
@@ -1574,7 +1621,8 @@ async function buildOneBuildScope(scopeKey, matchCond) {
             if (pos >= 0) put(c, pos, key, r.games, r.wins);   // 라인별 (판정 실패는 제외)
             put(c, -1, key, r.games, r.wins);                  // 라인 무관 전체 (전원)
         });
-        const topN = (type === 'all' || type === 'tlall') ? Infinity : (type === 'item' ? ITEM_TOP_N : BUILD_TOP_N);
+        // ★ perk 는 한 칸에 룬 60여 개 + 파편 9개가 전부 들어가야 표가 된다 — 안 자른다
+        const topN = (type === 'all' || type === 'tlall' || type === 'perk') ? Infinity : (type === 'item' ? ITEM_TOP_N : BUILD_TOP_N);
         cells.forEach(bucket => {
             const list = [...bucket.values()].sort((a, b) => b.games - a.games);
             docs.push(...list.slice(0, topN));
@@ -1595,37 +1643,30 @@ const MATCHUP_MIN = 5;
 
 // 라인 상성 집계. **패치 scope 에만 부른다** (하루치는 칸마다 한두 판이라 뜻이 없다)
 async function buildOneMatchupScope(scopeKey, matchCond) {
-    const P = i => ({ $arrayElemAt: ['$p', i] });
+    const at = (arr, i) => ({ $arrayElemAt: [arr, i] });
+    const P = (i, j) => at(at('$p', i), j);
 
+    // ★★ 한 판의 나 x 나머지 9명 (2026-08-26 밤). 예전엔 같은 라인 둘만 짝지었는데($group by {m, pos} → $size 2),
+    //   lolalytics 처럼 적 5라인·아군 4라인을 다 보려면 9명 전부가 필요하다.
+    //   ★ 라인 판정 실패(-1)한 사람은 짝을 지을 수 없어 뺀다 — 실측 197,370명 중 7명이라 손실이 없다.
     const rows = await MatchStat.aggregate([
         { $match: matchCond },
         { $project: { p: 1 } },
-        { $unwind: '$p' },
-        { $project: { pos: P(1), team: P(3), c: P(0), w: P(2) } },
-        // 라인 판정이 실패한 참가자(-1)는 짝을 지을 수 없다
-        { $match: { pos: { $gte: 0 } } },
-        // 한 판의 한 라인에 모인 사람들. 정상이면 양 팀에서 한 명씩 둘이다.
-        { $group: { _id: { m: '$_id', pos: '$pos' }, s: { $push: { t: '$team', c: '$c', w: '$w' } } } },
-        { $match: { s: { $size: 2 } } },
-        { $project: { pos: '$_id.pos', a: { $arrayElemAt: ['$s', 0] }, b: { $arrayElemAt: ['$s', 1] } } },
-        // ★ 같은 팀 둘이 한 라인에 잡힌 판은 버린다 (상성이 아니다)
-        { $match: { $expr: { $ne: ['$a.t', '$b.t'] } } },
-        // ★ 양방향으로 두 줄을 만든다
-        {
-            $project: {
-                pos: 1,
-                pair: [
-                    { c: '$a.c', f: '$b.c', w: '$a.w' },
-                    { c: '$b.c', f: '$a.c', w: '$b.w' }
-                ]
-            }
-        },
-        { $unwind: '$pair' },
+        { $project: { rows: { $map: { input: { $range: [0, 10] }, as: 'i', in: {
+            c: P('$$i', 0), pos: P('$$i', 1), w: P('$$i', 2),
+            o: { $map: {
+                input: { $filter: { input: { $range: [0, 10] }, as: 'j', cond: { $ne: ['$$j', '$$i'] } } },
+                as: 'j',
+                in: { f: P('$$j', 0), fpos: P('$$j', 1), rel: { $cond: [{ $eq: [P('$$j', 3), P('$$i', 3)] }, 1, 0] } }
+            } }
+        } } } } },
+        { $unwind: '$rows' }, { $unwind: '$rows.o' },
+        { $match: { 'rows.pos': { $gte: 0 }, 'rows.o.fpos': { $gte: 0 } } },
         {
             $group: {
-                _id: { pos: '$pos', c: '$pair.c', f: '$pair.f' },
+                _id: { pos: '$rows.pos', c: '$rows.c', f: '$rows.o.f', fpos: '$rows.o.fpos', rel: '$rows.o.rel' },
                 games: { $sum: 1 },
-                wins: { $sum: '$pair.w' }
+                wins: { $sum: '$rows.w' }
             }
         },
         { $match: { games: { $gte: MATCHUP_MIN } } }
@@ -1633,7 +1674,7 @@ async function buildOneMatchupScope(scopeKey, matchCond) {
 
     const docs = rows
         .filter(r => r._id.c > 0 && r._id.f > 0)
-        .map(r => ({ scope: scopeKey, pos: r._id.pos, champ: r._id.c, foe: r._id.f, games: r.games, wins: r.wins }));
+        .map(r => ({ scope: scopeKey, pos: r._id.pos, champ: r._id.c, foe: r._id.f, fpos: r._id.fpos, rel: r._id.rel, games: r.games, wins: r.wins }));
 
     // champstats·champbuilds 와 같은 이유로 통째로 갈아 끼운다 —
     // $set 으로 덮으면 이번에 안 나온 칸이 옛 숫자를 들고 남는다.
@@ -3041,6 +3082,40 @@ app.get('/api/champion-matchups', async (req, res) => {
     } catch (e) {
         console.error('[API] 상성 조회 실패:', e.message);
         res.status(500).json({ error: '상성 통계를 불러오지 못했습니다.' });
+    }
+});
+
+// ★ 챔피언 x 라인의 일별 추이 (2026-08-26 밤 신설) — lolalytics 의 Win Rate / Pick Rate / Game Count / Ban Rate 그래프.
+//   이미 있는 일별 scope(`d:YYYY-MM-DD`, 최근 7일)의 champstats 를 날짜순으로 돌려줄 뿐이라 집계 추가 0.
+//   밴은 라인 개념이 없어 pos -1 줄에서, 분모는 statscopes 의 그날 판수.
+app.get('/api/champion-trend', async (req, res) => {
+    try {
+        const champ = Number(req.query.champ);
+        const pos = Number(req.query.pos);
+        if (!Number.isFinite(champ) || !Number.isFinite(pos)) return res.status(400).json({ error: '잘못된 요청입니다.' });
+        const cacheKey = `trend_${champ}_${pos}`;
+        const hit = myCache.get(cacheKey);
+        if (hit) return res.json(hit);
+
+        const [rows, scopes] = await Promise.all([
+            ChampStat.find({ scope: /^d:/, champ, pos: { $in: [pos, -1] } }).select('-_id scope pos games wins bans').lean(),
+            StatScope.find({ scope: /^d:/ }).select('-_id scope games').lean()
+        ]);
+        const total = {};
+        scopes.forEach(s => { total[s.scope] = (total[s.scope] || 0) + s.games; });
+        const byDay = {};
+        rows.forEach(r => {
+            const d = byDay[r.scope] || (byDay[r.scope] = { day: r.scope.slice(2), games: 0, wins: 0, bans: 0, total: total[r.scope] || 0 });
+            if (r.pos === pos) { d.games += r.games; d.wins += r.wins; }
+            if (r.pos === -1) d.bans += r.bans || 0;
+        });
+        const days = Object.values(byDay).sort((a, b) => a.day.localeCompare(b.day));
+        const payload = { champ, pos, days };
+        myCache.set(cacheKey, payload, 600);
+        res.json(payload);
+    } catch (e) {
+        console.error('[API] 추이 조회 실패:', e.message);
+        res.status(500).json({ error: '추이를 불러오지 못했습니다.' });
     }
 });
 

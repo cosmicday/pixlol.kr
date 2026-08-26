@@ -47,7 +47,8 @@ const KB_LIST = ['5-7', '8-10'];
 //   ★ 새 type 은 **반드시 맨 뒤에** 붙일 것. 앞에 끼우면 이미 만든 박제 파일의 숫자가
 //     통째로 다른 뜻이 된다 (파일에는 이름이 아니라 이 배열의 자리 번호가 들어간다).
 const TYPE_LIST = ['rune', 'keystone', 'spell', 'shard', 'all', 'item',
-    'skillord', 'skillpri', 'start', 'core', 'item4', 'item5', 'item6', 'tlall'];   // 타임라인 8종은 2026-08-26 에 맨 뒤에 붙였다
+    'skillord', 'skillpri', 'start', 'core', 'item4', 'item5', 'item6', 'tlall',   // 타임라인 8종은 2026-08-26 에 맨 뒤에 붙였다
+    'skillord6', 'skillord10', 'early', 'earlyset', 'boots', 'set2', 'set4', 'set5', 'item1', 'item2', 'item3', 'perk'];   // 같은 날 밤 12종 더
 
 const OUT_DIR = path.join(__dirname, 'public', 'stats_archive');
 const fileNameOf = (scope) => scope.replace(/:/g, '_') + '.js';
@@ -104,7 +105,8 @@ const KB = (b) => (b / 1024).toFixed(1) + 'KB';
         //   ★ 안 담으면 패치가 은퇴할 때 상성이 통째로 사라진다. 원본(matchstats)이
         //     TTL 로 없어진 뒤에는 다시 만들 수 없다.
         //   ★ app.js 의 expandStatsArchive() 와 자리가 같아야 한다 — **둘을 같이 고칠 것.**
-        m: cm.map(x => [x.pos, x.champ, x.foe, x.games, x.wins])
+        //   ★ fpos(상대 라인)·rel(0 적/1 아군)은 2026-08-26 밤에 **뒤에** 붙였다 — 옛 파일은 이 두 칸이 없고 화면이 같은 라인 적으로 읽는다
+        m: cm.map(x => [x.pos, x.champ, x.foe, x.games, x.wins, x.fpos == null ? x.pos : x.fpos, x.rel || 0])
     };
 
     const body = JSON.stringify(archive);

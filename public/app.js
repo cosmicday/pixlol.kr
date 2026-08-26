@@ -3640,7 +3640,8 @@ function loadStatsArchive(scope, version) {
 const ARCHIVE_KB = ['5-7', '8-10'];
 // ★ build_stats_archive.js 의 TYPE_LIST 와 **자리가 같아야 한다.** 새 type 은 맨 뒤에.
 const ARCHIVE_TYPE = ['rune', 'keystone', 'spell', 'shard', 'all', 'item',
-    'skillord', 'skillpri', 'start', 'core', 'item4', 'item5', 'item6', 'tlall'];   // 타임라인 8종은 2026-08-26 에 맨 뒤에 붙였다
+    'skillord', 'skillpri', 'start', 'core', 'item4', 'item5', 'item6', 'tlall',   // 타임라인 8종은 2026-08-26 에 맨 뒤에 붙였다
+    'skillord6', 'skillord10', 'early', 'earlyset', 'boots', 'set2', 'set4', 'set5', 'item1', 'item2', 'item3', 'perk'];   // 같은 날 밤 12종 더
 
 function expandStatsArchive(a) {
     // champstats 행 — API 의 rows 와 **같은 모양**이라 renderStatsTable() 은 안 바뀐다
@@ -3663,7 +3664,8 @@ function expandStatsArchive(a) {
     const matchups = {};
     (a.m || []).forEach(x => {
         const champ = x[1];
-        (matchups[champ] || (matchups[champ] = [])).push({ pos: x[0], foe: x[2], games: x[3], wins: x[4] });
+        // fpos·rel 은 2026-08-26 밤에 뒤에 붙었다 — 옛 파일(5칸)은 같은 라인 적으로 읽는다
+        (matchups[champ] || (matchups[champ] = [])).push({ pos: x[0], foe: x[2], games: x[3], wins: x[4], fpos: x[5] == null ? x[0] : x[5], rel: x[6] || 0 });
     });
     return { rows, builds, matchups };
 }
@@ -3777,340 +3779,23 @@ const BUILD_MIN_GAMES = 5;
 const MATCHUP_SHOW_MIN = 10;   // 순위에 올릴 최소 표본
 const MATCHUP_SIDE_N = 5;      // 한쪽에 몇 명씩
 
-// ★ 카드 한 줄 — lolalytics 의 "왼쪽 라벨 칸 + 카드 나열" 꼴 (2026-08-26).
-//   라벨 칸이 위에 제목, 아래에 지표 이름(승률·픽률·판수…)을 세로로 적고, 카드마다 같은 순서로
-//   값이 내려온다. 라벨의 첫 칸 높이와 카드의 아이콘+이름 높이를 CSS 에서 같게 맞춰 줄이 맞는다.
-//   ★ 카드 아이콘이 여럿(주문 2개·시작템 2개·코어 3개)이면 `icons` 배열로, 룬 페이지처럼
-//     모양이 특이하면 `top` 에 HTML 을 통째로 준다.
-function cardRowHtml(label, cards, opts = {}) {
-    const head = `
-        <div class="cb-cardlabel">
-            <div class="cb-cardlabel-top">${label.icon ? `<img src="${label.icon}" alt="">` : ''}<span>${label.title}</span></div>
-            ${label.metrics.map(m => `<div class="cb-cardlabel-k">${m}</div>`).join('')}
-        </div>`;
-    const body = cards.length ? cards.map(c => `
-        <div class="cb-card${c.dim ? ' is-dim' : ''}${c.cls ? ' ' + c.cls : ''}${(c.icons || []).length > 1 ? ' is-wide' : ''}"${c.title ? ` title="${c.title}"` : ''}>
-            <div class="cb-card-top">${c.top || (c.icons || []).map(u => `<img src="${u}" alt="" loading="lazy">`).join(c.sep || '')}</div>
-            <div class="cb-card-name">${c.name || ''}</div>
-            ${c.vals.map(v => `<div class="cb-card-v ${v.cls || ''}">${v.v}</div>`).join('')}
-        </div>`).join('') : `<div class="build-none">${opts.empty || '표본 없음'}</div>`;
-    return `<div class="cb-cardrow${opts.cls ? ' ' + opts.cls : ''}">${head}<div class="cb-cards">${body}</div></div>`;
-}
-
-const MATCHUP_CARD_N = 24;     // 카드로 보여줄 상대 수 (1000px 에 한 줄 12장 → 두 줄)
-
-// ★★ 상성 패널 — lolalytics Counters 꼴로 다시 그렸다 (2026-08-26).
-//   예전엔 약한 상대 5 / 강한 상대 5 를 목록으로 뒀는데, 지금은 **상대 카드를 가로로 깔고**
-//   위 탭(흔한 상대 · 강한 상대 · 약한 상대)으로 정렬만 바꾼다. 카드 값은 승률 · 델타(이 챔피언의
-//   라인 승률 대비) · 픽률(이 라인 판 중 그 상대를 만난 비율) · 판수.
-//   ★ 탭을 누르면 `matchupCardsHtml()` 이 카드만 다시 그린다 — 데이터는 `window.csMatchup` 에 둔다.
-//   ★ 서버는 5판 이상만 저장한다(`MATCHUP_MIN`). 화면은 10판 이상을 우선하고, 그것도 2명이 안 되면
-//     있는 대로 보여주되 흐리게 둔다 (예전 규칙 그대로).
-function renderMatchupPanel(mdata, lane, ctx = {}) {
-    if (!mdata) return '';
-    const bar = (note) => `<div class="cb-bar"><span class="cb-bar-title">상성</span>${note}</div>`;
-    if (mdata.archived) {
-        return `<div class="cb-box" id="cs-counters">${bar('')}<div class="mu-empty">박제된 패치라 상성 통계가 없습니다.</div></div>`;
-    }
-
-    const pos = (lane == null || lane === 'all') ? -1 : Number(lane);
-    const laneKey = STAT_POS.find(p => p.code === pos)?.key;
-    const laneName = pos < 0 ? '' : (STAT_POS.find(p => p.code === pos)?.name || '');
-
-    // ★ 라인 무관(-1) 줄은 서버가 안 만든다 — 화면에서 라인별 줄을 더해서 쓴다.
-    let rows;
-    if (pos < 0) {
-        const sum = new Map();
-        (mdata.rows || []).forEach(r => {
-            const cur = sum.get(r.foe) || { foe: r.foe, games: 0, wins: 0 };
-            cur.games += r.games; cur.wins += r.wins;
-            sum.set(r.foe, cur);
-        });
-        rows = [...sum.values()];
-    } else {
-        rows = (mdata.rows || []).filter(r => r.pos === pos);
-    }
-
-    if (!rows.length) {
-        return `<div class="cb-box" id="cs-counters">${bar('')}
-            <div class="mu-empty">${laneName ? laneName + ' 상성 표본이 없습니다.' : '표본이 없습니다.'}</div></div>`;
-    }
-
-    const thick = rows.filter(r => r.games >= MATCHUP_SHOW_MIN);
-    const pool = thick.length >= 2 ? thick : rows;      // 두꺼운 게 거의 없으면 있는 대로
-    window.csMatchup = { rows: pool, ctx: { ...ctx, laneKey, laneName } };
-
-    const laneTag = laneName ? `<span class="build-lane">${laneName}</span>` : '';
-    const thin = thick.length < 2 ? `<span class="build-thin">표본이 적어 참고용입니다</span>` : '';
-    return `
-    <div class="cb-box" id="cs-counters">
-        <div class="cb-bar">
-            <span class="cb-bar-title">상성</span>
-            <div class="cb-tabs" id="cs-mu-tabs">
-                <button class="cb-tab active" data-sort="common">흔한 상대</button>
-                <button class="cb-tab" data-sort="strong">강한 상대</button>
-                <button class="cb-tab" data-sort="weak">약한 상대</button>
-            </div>
-            <span class="cb-bar-note">${laneTag}상대 ${rows.length}명 · 같은 라인에서 마주친 판만 · ${MATCHUP_SHOW_MIN}판 미만은 흐리게 ${thin}</span>
-        </div>
-        <div id="cs-mu-cards">${matchupCardsHtml('common')}</div>
-        <div class="cb-foot">델타 = 그 상대를 만났을 때 승률 − 이 챔피언의 라인 승률 · 픽률 = 이 라인 판 중 그 상대를 만난 비율</div>
-    </div>`;
-}
-
-function matchupCardsHtml(sort) {
-    const { rows, ctx } = window.csMatchup || { rows: [], ctx: {} };
-    const wr = r => r.wins / r.games;
-    const list = [...rows];
-    // ★ "강한 상대" = **이 챔피언이** 잘 이기는 상대다 (승률 높은 순). "약한 상대" 는 그 반대.
-    if (sort === 'strong') list.sort((a, b) => wr(b) - wr(a) || b.games - a.games);
-    else if (sort === 'weak') list.sort((a, b) => wr(a) - wr(b) || b.games - a.games);
-    else list.sort((a, b) => b.games - a.games);
-
-    const myWr = ctx.myWr || 0;               // 이 챔피언의 라인 승률 (0~1)
-    const laneGames = ctx.laneGames || 0;     // 이 챔피언의 라인 판수 (픽률 분모)
-    const cards = list.slice(0, MATCHUP_CARD_N).map(r => {
-        const eng = championIdMap[r.foe];
-        const name = (window.korChampMap && window.korChampMap[eng]) || eng || r.foe;
-        const w = wr(r) * 100;
-        const d = w - myWr * 100;
-        return {
-            icons: [champIconUrl(eng)],
-            name,
-            dim: r.games < MATCHUP_SHOW_MIN,
-            title: `${name} · ${r.games}판 · 승률 ${w.toFixed(1)}%`,
-            vals: [
-                { v: w.toFixed(1) + '%', cls: 'cb-wr ' + (r.games < BUILD_MIN_GAMES ? 'build-wr-dim' : (w >= 50 ? 'build-wr-up' : 'build-wr-down')) },
-                { v: (d >= 0 ? '+' : '') + d.toFixed(1), cls: d >= 0 ? 'build-wr-up' : 'build-wr-down' },
-                { v: laneGames ? (r.games / laneGames * 100).toFixed(1) + '%' : '-' },
-                { v: r.games, cls: 'cb-games' }
-            ]
-        };
-    });
-    return cardRowHtml({ icon: ctx.laneKey ? STAT_LANE_ICON[ctx.laneKey] : '', title: '상대', metrics: ['승률', '델타', '픽률', '판수'] }, cards);
-}
-
-// ★★ 빌드 패널 — lolalytics 의 Build 상자 꼴 (2026-08-26 재작성).
-//   위 상자 한 칸에 [스킬 우선순위 + 소환사 주문 | 스킬 순서 격자 | 룬 격자(주·보조·파편)] 한 줄,
-//   그 아래 [시작 아이템 | 코어 빌드 | 4번째 | 5번째 | 6번째] 한 줄. 전부 **가장 많이 쓰는 것 하나**다.
-//   그 아래는 카드 줄들(핵심 룬 · 소환사 주문 · 시작 아이템 · 코어 빌드 · 최종 아이템 · 룬 페이지) —
-//   lolalytics 가 Counters 아래에 Summoner Spells / Starting Items / Sets 를 카드로 깔아 둔 그 자리다.
-//
-//   ★ 스킬·시작템·코어·4~6번째는 **타임라인(sk·it) 이 있는 판만** 센다 (2026-08-26 부터 쌓인다).
-//     그래서 분모가 다르다 — `tlall` 줄이 그 분모이고, 그쪽 픽률은 그걸로 나눈다. 룬·주문·최종템의
-//     픽률은 예전처럼 `all` 로 나눈다. 두 분모를 섞으면 "시작 아이템 도란검 1.2%" 같은 값이 나간다.
-//   ★ ctx.skillIcons = { P, Q, W, E, R } (DD champion json). 못 받으면 글자 배지로 물러난다.
-function renderBuildPanel(data, lane, ctx = {}) {
-    const pos = (lane == null || lane === 'all') ? -1 : Number(lane);
-    const laneName = pos < 0 ? '' : (STAT_POS.find(p => p.code === pos)?.name || '');
-
-    // 옛 응답(라인 없음)이면 totals 가 없다 — 그때는 전체 값 하나로 물러난다
-    const totals = data.totals || { '-1': data.total || 0 };
-    const total = totals[pos] != null ? totals[pos] : 0;
-
-    if (!total) {
-        // ★ 서버가 "재집계 중에 읽은 부분 결과" 라고 알려 주면 그렇게 말한다 (2026-08-26).
-        if (data.rebuilding) {
-            return `<div class="build-empty">통계를 다시 계산하는 중입니다. 잠시 뒤 새로고침해 주세요.</div>`;
-        }
-        return `<div class="build-empty">${laneName
-            ? laneName + ' 표본이 없습니다. 라인 필터를 전체로 바꿔 보세요.'
-            : '이 챔피언은 아직 표본이 없습니다.'}</div>`;
-    }
-
-    const rowsOf = type => data.rows.filter(r => r.type === type && (r.pos == null ? -1 : r.pos) === pos);
-    // 타임라인이 있는 판의 수 — 스킬·시작템·코어의 픽률 분모
-    const tlTotal = (rowsOf('tlall')[0] || {}).games || 0;
-
-    const pct = g => (g / total * 100).toFixed(1);
-    const pctTl = g => tlTotal ? (g / tlTotal * 100).toFixed(1) : '-';
-    const wr = (w, g) => (w / g * 100).toFixed(1);
-    // ★ 1판짜리 조합은 뺀다 — 다만 **전부 1판이면 그 한 줄은 남긴다** (비우면 고장으로 보인다)
-    const top = (type, n) => {
-        const all = rowsOf(type).sort((a, b) => b.games - a.games);
-        const kept = all.filter(r => r.games >= 2);
-        return (kept.length ? kept : all.slice(0, 1)).slice(0, n);
-    };
-    const wrClass = (w, g) => (g < BUILD_MIN_GAMES ? 'build-wr-dim' : (w / g >= 0.5 ? 'build-wr-up' : 'build-wr-down'));
-    // "53.5% 승률 · 525판" — lolalytics 가 블록마다 아래에 적는 그 한 줄
-    const metaLine = (r, tl) => `<div class="cb-meta"><b class="${wrClass(r.wins, r.games)}">${wr(r.wins, r.games)}%</b> 승률 · ${tl ? pctTl(r.games) : pct(r.games)}% · ${r.games}판</div>`;
-    const noTl = `<div class="cb-none">타임라인 표본을 모으는 중</div>`;
-
-    // ── 스킬 배지 (아이콘 + 글자). 아이콘을 못 받았으면 글자만
-    const icons = ctx.skillIcons || {};
-    const skillBadge = (n, small) => {
-        const L = 'QWER'[n - 1] || '';
-        return `<span class="cb-skill${small ? ' is-sm' : ''}">${icons[L] ? `<img src="${icons[L]}" alt="">` : ''}<i>${L}</i></span>`;
-    };
-
-    // ── 스킬 우선순위 (선마 순서)
-    const pri = top('skillpri', 1)[0];
-    const priHtml = pri
-        ? `<div class="cb-skillpri">${pri.key.map(n => skillBadge(n)).join('<span class="cb-arrow">›</span>')}</div>${metaLine(pri, true)}`
-        : noTl;
-
-    // ── 소환사 주문 (가장 많이 드는 조합)
-    const sp = top('spell', 1)[0];
-    const spHtml = sp
-        ? `<div class="cb-spells">${sp.key.map(x => `<img src="${spellIcon(x)}" alt="" title="${spellName(x)}">`).join('')}</div>${metaLine(sp, false)}`
-        : `<div class="cb-none">표본 없음</div>`;
-
-    // ── 스킬 순서 격자 (4줄 x 15레벨). 찍은 자리에 레벨 숫자
-    const ord = top('skillord', 1)[0];
-    const ordHtml = ord ? `
-        <div class="cb-skillord">
-            ${[1, 2, 3, 4].map(n => `
-            <div class="cb-so-row">
-                ${skillBadge(n, true)}
-                ${Array.from({ length: 15 }, (_, i) => ord.key[i] === n
-                    ? `<span class="cb-so-cell on">${i + 1}</span>` : `<span class="cb-so-cell"></span>`).join('')}
-            </div>`).join('')}
-        </div>${metaLine(ord, true)}` : noTl;
-
-    // ── 룬 격자 — 인게임 룬 페이지 배치, 고른 것만 밝게 (2026-08-26). 자리는 perkData.slots / shardRows.
-    //   ★★ 파편은 자리로 켠다 (`shards[i]` 가 i번째 줄) — 같은 파편이 두 줄에 있어 id 로 켜면 두 칸이 켜진다.
-    const rune = top('rune', 1)[0];
-    const shards = (top('shard', 1)[0] || {}).key || [];
-    const runeGrid = (styleId, picked, skipKey) => (perkData.slots[styleId] || []).slice(skipKey ? 1 : 0).map((row, i) => `
-        <div class="bg-row${!skipKey && i === 0 ? ' is-key' : ''}">
-            ${row.map(id => `<img class="bg-perk${picked.includes(id) ? ' on' : ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`).join('')}
-        </div>`).join('');
-    let runeHtml = `<div class="cb-none">표본 없음</div>`;
-    if (rune) {
-        const [ps, ks, m1, m2, m3, ss, s1, s2] = rune.key;
-        runeHtml = `
-        <div class="cb-runes">
-            <div class="bg-col">
-                <div class="bg-title"><img src="${perkIcon(ps)}" alt="">${perkName(ps)}</div>
-                ${runeGrid(ps, [ks, m1, m2, m3])}
-            </div>
-            <div class="bg-col">
-                <div class="bg-title"><img src="${perkIcon(ss)}" alt="">${perkName(ss)}</div>
-                ${runeGrid(ss, [s1, s2], true)}
-            </div>
-            <div class="bg-col">
-                <div class="bg-title">스탯 파편</div>
-                ${(perkData.shardRows || []).map((row, ri) => `
-                <div class="bg-row bg-row-shard">
-                    ${row.map(id => `<img class="bg-perk bg-shard${shards[ri] === id ? ' on' : ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`).join('')}
-                </div>`).join('')}
-            </div>
-        </div>${metaLine(rune, false)}`;
-    }
-
-    // ── 아이템 블록들
-    const itemImg = id => `<img class="cb-item" src="${itemIconOf(id)}" alt="${itemNameOf(id)}" title="${itemNameOf(id)}" loading="lazy">`;
-    const st = top('start', 1)[0];
-    const stHtml = st ? `<div class="cb-items">${st.key.map(itemImg).join('')}</div>${metaLine(st, true)}` : noTl;
-    const core = top('core', 1)[0];
-    const coreHtml = core ? `<div class="cb-items">${core.key.map(itemImg).join('<span class="cb-arrow">›</span>')}</div>${metaLine(core, true)}` : noTl;
-    // 4·5·6번째: 후보 셋을 OR 로 나란히, 각각 아래에 승률·판수
-    const nthHtml = type => {
-        const list = top(type, 3);
-        if (!list.length) return noTl;
-        return `<div class="cb-or">${list.map(r => `
-            <div class="cb-or-opt">
-                ${itemImg(r.key[0])}
-                <div class="cb-or-wr ${wrClass(r.wins, r.games)}">${wr(r.wins, r.games)}%</div>
-                <div class="cb-or-g">${r.games}</div>
-            </div>`).join('<span class="cb-or-sep">OR</span>')}</div>`;
-    };
-
-    // ── 아래 카드 줄들 (lolalytics 하단의 Summoner Spells / Starting Items / Sets 자리)
-    const vals3 = (r, tl) => [
-        { v: wr(r.wins, r.games) + '%', cls: 'cb-wr ' + wrClass(r.wins, r.games) },
-        { v: (tl ? pctTl(r.games) : pct(r.games)) + '%' },
-        { v: r.games, cls: 'cb-games' }
-    ];
-    const M3 = ['승률', '픽률', '판수'];
-    const ksCards = top('keystone', 6).map(r => ({ icons: [perkIcon(r.key[1])], name: perkName(r.key[1]), cls: 'is-round', vals: vals3(r) }));
-    const spCards = top('spell', 5).map(r => ({ icons: r.key.map(spellIcon), name: r.key.map(spellName).join(' + '), vals: vals3(r) }));
-    const stCards = top('start', 6).map(r => ({ icons: r.key.map(itemIconOf), name: r.key.map(itemNameOf).join(' + '), vals: vals3(r, true) }));
-    const coreCards = top('core', 5).map(r => ({ icons: r.key.map(itemIconOf), sep: '<span class="cb-arrow">›</span>', name: r.key.map(itemNameOf).join(' › '), vals: vals3(r, true) }));
-    const itemCards = top('item', 14).map(r => ({ icons: [itemIconOf(r.key[0])], name: itemNameOf(r.key[0]), vals: vals3(r) }));
-    const runeCards = top('rune', 3).map(r => {
-        const [ps, ks, m1, m2, m3, ss, s1, s2] = r.key;
-        const sec = perksBySlot(ss, [s1, s2]);
-        const img = (id, cls) => `<img class="build-perk ${cls || ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}">`;
-        return {
-            cls: 'is-wide',
-            top: `<div class="build-runes">
-                <img class="build-style" src="${perkIcon(ps)}" alt="" title="${perkName(ps)}">
-                ${img(ks, 'build-perk-key')}${[m1, m2, m3].map(x => img(x)).join('')}
-                <span class="build-div"></span>
-                <img class="build-style" src="${perkIcon(ss)}" alt="" title="${perkName(ss)}">
-                ${sec.map(x => img(x)).join('')}
-            </div>`,
-            name: `${perkName(ks)} · ${perkName(ss)}`,
-            vals: vals3(r)
-        };
-    });
-
-    const thin = total < 30 ? `<span class="build-thin">표본이 적어 참고용입니다</span>` : '';
-    const laneTag = laneName ? `<span class="build-lane">${laneName}</span>` : '';
-    const tlNote = tlTotal
-        ? `스킬·시작템·코어는 타임라인 있는 ${tlTotal.toLocaleString()}판 기준`
-        : `스킬·시작템·코어는 타임라인 표본을 모으는 중`;
-
-    return `
-    <div class="cb-box" id="cs-build">
-        <div class="cb-bar">
-            <span class="cb-bar-title">가장 많이 쓰는 빌드</span>
-            <span class="cb-bar-note">${laneTag}${total.toLocaleString()}판 기준 · ${tlNote} ${thin}</span>
-        </div>
-        <div class="cb-r1">
-            <div class="cb-blk">
-                <div class="cb-h">스킬 우선순위</div>${priHtml}
-                <div class="cb-h cb-h-gap">소환사 주문</div>${spHtml}
-            </div>
-            <div class="cb-blk cb-blk-so">
-                <div class="cb-h">스킬 순서</div>${ordHtml}
-            </div>
-            <div class="cb-blk cb-blk-rune">
-                <div class="cb-h">룬</div>${runeHtml}
-            </div>
-        </div>
-        <div class="cb-r2">
-            <div class="cb-blk"><div class="cb-h">시작 아이템</div>${stHtml}</div>
-            <div class="cb-blk"><div class="cb-h">코어 빌드</div>${coreHtml}</div>
-            <div class="cb-blk"><div class="cb-h">4번째 아이템</div>${nthHtml('item4')}</div>
-            <div class="cb-blk"><div class="cb-h">5번째 아이템</div>${nthHtml('item5')}</div>
-            <div class="cb-blk"><div class="cb-h">6번째 아이템</div>${nthHtml('item6')}</div>
-        </div>
-    </div>
-
-    <div class="cb-box">
-        <div class="cb-bar"><span class="cb-bar-title">룬 · 주문 · 아이템 통계</span><span class="cb-bar-note">${laneTag}많이 쓰는 순 · 픽률은 그 라인 판 기준</span></div>
-        ${cardRowHtml({ title: '핵심 룬', metrics: M3 }, ksCards)}
-        ${cardRowHtml({ title: '룬 페이지', metrics: M3 }, runeCards)}
-        ${cardRowHtml({ title: '소환사 주문', metrics: M3 }, spCards)}
-        ${cardRowHtml({ title: '시작 아이템', metrics: M3 }, stCards, { empty: '타임라인 표본을 모으는 중' })}
-        ${cardRowHtml({ title: '코어 빌드', metrics: M3 }, coreCards, { empty: '타임라인 표본을 모으는 중' })}
-        ${cardRowHtml({ title: '최종 아이템', metrics: M3 }, itemCards)}
-        <div class="cb-foot">최종 아이템은 낱개로 세어 픽률 합이 100% 를 넘는다 · 시작 아이템은 물약·와드를 뺀 것 · 코어 빌드는 완성 아이템 첫 3개의 구매 순서</div>
-    </div>`;
-}
-
-
 // ══════════════════════════════════════════════════════════════════════
-//  챔피언 통계 상세 페이지 — `/stats/<영문키>` (2026-08-26 신설)
+//  챔피언 통계 상세 페이지 — lolalytics 챔피언 빌드 페이지를 그대로 옮긴 판 (2026-08-26 밤, 사용자 요청)
 //
-//  ★★ 예전엔 표에서 줄을 누르면 그 아래가 펼쳐졌는데, 페이지로 뗐다.
-//    펼침은 표 폭(1000px) 안에 갇혀서 룬·아이템·상성을 한 줄로 욱여넣어야 했고,
-//    정렬이나 필터를 누르면 그냥 닫혔다 (표를 다시 그리니까).
-//
-//  ★ 주소가 남아서 링크를 보낼 수 있다. 챔피언 탭이 `/champions/Garen` 이라 통계는 `/stats/Garen`.
-//  ★ **진입은 `pushState`** 라 뒤로가기 한 번에 표로 돌아온다 (도감 탭과 같은 규칙).
-//
-//  ★ 시작 아이템·코어 순서·스킬 순서는 **아직 없다** — 타임라인 수집을 2026-08-26에 켰고
-//    표본이 며칠 쌓여야 한다. 그때 이 페이지에 칸을 더하면 된다.
+//  ★★ 색·크기·순서는 그쪽 DOM 에서 읽은 값이다 (눈대중 아님): 탭 바 활성 rgb(58,126,147) / 비활성 rgb(33,71,83) ·
+//    글자 12px · 라벨 회색 #bbb · 상자 테두리 #333 · 챔피언 아이콘 37px · 승률 초록/빨강 · 픽률 연보라.
+//    자리 순서도 그쪽과 같다: 헤더 → 탭 → 빌드(Highest Win / Most Common) → 추이 그래프 4개 → 상성(적 5줄 · 아군 4줄) →
+//    소환사 주문 → 시작 아이템/세트 → 초반 아이템/세트 → 세트(2~5개) → 신발·1~5번째·인기·승률·전체 아이템 →
+//    스킬 우선순위(레벨 탭) → 룬 표(전체 / 승률 최고 페이지 / 인기 페이지).
+//  ★ 그쪽의 오른쪽 아래 상자들(Secure/Yield · 사분면 · Best on · Leaderboard)은 **넣지 않는다** (사용자 지시).
+//  ★★ 16.16 처럼 타임라인(`tlall`)이 없는 패치는 아이템 로그·스킬 로그 칸을 **통째로 안 그린다** (사용자 지시).
+//    빌드 상자엔 주문·룬만, 아래엔 상성·주문·최종 아이템·룬 표만 남는다.
+//  ★ 화면 함수: showChampStatPage → lxHeader / lxBuildBox / lxTrend / lxMatchups / lxLowerRows / lxSkillBox / lxRuneBox
 // ══════════════════════════════════════════════════════════════════════
-//  ★★ 라인은 주소에 담는다 — `/stats/Camille/top` (2026-08-26 수정).
-//    안 담으면 **탑 카밀을 눌러도 판수가 제일 많은 라인(서폿)이 뜬다.**
-//    챔피언 하나가 여러 라인에 걸치는 게 흔해서(표도 라인별로 줄이 나뉜다) 반드시 필요하다.
-//    ★ 라인을 안 주면 주 라인(판수 최다)으로 물러난다 — `/stats/Camille` 도 열린다.
-// 챔피언 스킬 아이콘 (P·Q·W·E·R) — DD champion json 한 번. 헤더의 스킬 줄과 빌드 상자의 스킬 배지가 쓴다.
-//   ★ 전적 카드가 쓰는 `champDetailCache` 는 spells 만 담아서(패시브 없음) 따로 둔다.
+const LX_ROW_MAX = 18;          // 한 줄에 그릴 카드 수 (그쪽은 12장 + 오른쪽 상자, 우리는 그 자리까지 카드)
+const LX_WIN_MIN_SHARE = 0.1;   // "승률 최고" 를 고를 때 1위 판수의 이 비율 이상인 후보만 (1판짜리 100% 방지)
+
+// 챔피언 스킬 아이콘 (P·Q·W·E·R) — DD champion json 한 번. 전적 카드의 `champDetailCache` 는 패시브가 없어 따로 둔다.
 async function loadChampSpellIcons(eng) {
     window.csSpellIcons = window.csSpellIcons || {};
     if (window.csSpellIcons[eng]) return window.csSpellIcons[eng];
@@ -4125,11 +3810,37 @@ async function loadChampSpellIcons(eng) {
     } catch (e) { return null; }
 }
 
-// ★★ lolalytics 의 챔피언 페이지 꼴로 다시 그렸다 (2026-08-26, 사용자 요청).
-//   헤더: 왼쪽 큰 초상화(라인·티어 배지 + 라인 비율 도넛) / 오른쪽 제목 · 스킬 아이콘 줄 · 라인 버튼 ·
-//   한 문단 요약 · 수치 상자 두 줄 [승률 · 승률 델타 · 라인 평균 승률 · 픽률] [티어 · 순위 · 밴률 · 판수].
-//   아래: 탭 줄(빌드 · 상성) → 빌드 상자(renderBuildPanel) → 상성 상자(renderMatchupPanel).
-//   ★ 그쪽의 오른쪽 아래 상자들(Secure/Yield · 사분면 · Best on · Leaderboard)은 **일부러 안 넣었다** (요청).
+// 승률 색 — 그쪽은 50% 기준 초록/빨강. 표본 5판 미만은 회색
+const lxWr = (w, g) => (g < BUILD_MIN_GAMES ? 'lx-dim' : (w / g >= 0.5 ? 'lx-green' : 'lx-red'));
+const lxPct = (a, b) => (b ? (a / b * 100) : 0).toFixed(2);
+const lxSigned = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+const lxDeltaCls = v => (v >= 0 ? 'lx-green' : 'lx-red');
+
+// 두 칸 탭 바 (그쪽의 "Highest Win Build | Most Common Build"). data-group 으로 묶고 data-val 로 고른다
+function lxTabBar(group, tabs, active) {
+    return `<div class="lx-tabbar" data-group="${group}">${tabs.map(t =>
+        `<button class="lx-tabbtn${t.v === active ? ' active' : ''}" data-val="${t.v}">${t.label}</button>`).join('')}</div>`;
+}
+
+// ★ 카드 줄 — 왼쪽 라벨 칸(제목 + 지표 이름 세로) + 카드 나열. 그쪽 Counter/Summoner Spells/Items 줄 전부 이 모양이다.
+//   라벨의 첫 칸 높이 = 카드 윗부분(아이콘) 높이 (`--lx-top`), 지표 줄은 16px 씩.
+//   cards[i] = { icons: [url] | top: html, name?, dim?, title?, vals: [{ v, cls }] }
+function lxRow(label, cards, opts = {}) {
+    const topH = opts.topH || 41;
+    const head = `
+        <div class="lx-row-label">
+            <div class="lx-row-head">${label.icon ? `<img src="${label.icon}" alt="">` : ''}<span>${label.title}</span></div>
+            ${label.metrics.map(m => `<div class="lx-row-k ${m.cls || ''}">${m.t || m}</div>`).join('')}
+        </div>`;
+    const body = cards.length ? cards.map(c => `
+        <div class="lx-card${c.dim ? ' is-dim' : ''}${c.cls ? ' ' + c.cls : ''}"${c.title ? ` title="${c.title}"` : ''}>
+            <div class="lx-card-top${opts.stack ? ' is-stack' : ''}">${c.top || (c.icons || []).map(u => `<img src="${u}" alt="" loading="lazy">`).join('')}</div>
+            ${c.vals.map(v => `<div class="lx-v ${v.cls || ''}">${v.v}</div>`).join('')}
+        </div>`).join('') : `<div class="lx-none">${opts.empty || '표본 없음'}</div>`;
+    return `<div class="lx-row${opts.cls ? ' ' + opts.cls : ''}" style="--lx-top:${topH}px">${head}<div class="lx-cards">${body}</div></div>`;
+}
+
+// ── 페이지 본체 ───────────────────────────────────────────────────────
 async function showChampStatPage(engId, laneKey) {
     hideAllContainers();
     setActiveNav('nav-stats');
@@ -4138,7 +3849,6 @@ async function showChampStatPage(engId, laneKey) {
     box.innerHTML = `<div class="stats-empty">불러오는 중입니다...</div>`;
 
     await fetchChampionMap();
-    // 영문 키 → 숫자 키. 대소문자가 어긋날 수 있어 소문자로 맞춰 찾는다 (도감 rc 와 같은 함정)
     const champ = Number(Object.keys(championIdMap)
         .find(k => String(championIdMap[k]).toLowerCase() === String(engId).toLowerCase()));
     if (!Number.isFinite(champ)) {
@@ -4148,7 +3858,7 @@ async function showChampStatPage(engId, laneKey) {
     const eng = championIdMap[champ];
 
     let data;
-    const iconsP = loadChampSpellIcons(eng);      // 통계와 같이 받는다 (기다리지 않는다)
+    const iconsP = loadChampSpellIcons(eng);
     try {
         const res = await fetch(`/api/champion-stats${window.statScope ? `?scope=${encodeURIComponent(window.statScope)}` : ''}`);
         data = await res.json();
@@ -4168,138 +3878,77 @@ async function showChampStatPage(engId, laneKey) {
         box.innerHTML = `<div class="stats-empty">통계를 불러오지 못했습니다.</div>`;
         return;
     }
+    window.statScope = data.scope;
 
     const kor = window.korChampMap[eng] || engId;
     const total = (data.totals && (data.totals.all ?? Object.values(data.totals)[0])) || 0;
     const patch = String(data.scope || '').replace('p:', '');
 
-    // ★ 표와 **같은 방식으로** 줄을 만든다 — 여기서 따로 계산하면 표와 숫자가 어긋난다.
-    //   `pos: -1` 이 라인 무관 전체, 0~4 가 라인별이다.
+    // ★ 표와 같은 방식으로 줄을 만든다 (`pos: -1` 전체 · 0~4 라인별)
     const mine = (data.rows || []).filter(r => r.champ === champ);
     const all = mine.find(r => r.pos === -1) || mine[0];
     if (!all || !all.games) {
         box.innerHTML = `<div class="stats-empty">${kor} 의 표본이 없습니다. <a href="/stats" class="stat-back">← 통계로</a></div>`;
         return;
     }
-    // ★★ 라인 버튼 순서는 탑 → 정글 → 미드 → 바텀 → 서포터 고정 (판수 순이면 챔피언마다 자리가 달라진다)
     const byLane = mine.filter(r => r.pos >= 0 && r.games).sort((a, b) => a.pos - b.pos);
     const byGames = [...byLane].sort((a, b) => b.games - a.games);
-    // ★ 주소로 받은 라인을 먼저 쓰고, 없거나 표본이 없으면 주 라인으로 물러난다
     const wantPos = laneKey ? (STAT_POS.find(p => p.key === laneKey)?.code ?? -1) : -1;
     const main = byLane.find(r => r.pos === wantPos) || byGames[0] || all;
     const curKey = STAT_POS.find(p => p.code === main.pos)?.key;
     const laneName = STAT_POS.find(p => p.code === main.pos)?.name || '';
     const laneRate = all.games ? main.games / all.games * 100 : 0;
 
-    // ★★ 수치는 **그 라인 값**이다 (승률·판수). 밴은 라인별로 안 나뉘어 전체 값(`all`)을 쓴다.
     const wr = main.games ? main.wins / main.games * 100 : 0;
     const pick = total ? main.games / total * 100 : 0;
     const ban = total ? (all.bans || 0) / total * 100 : 0;
 
-    // ★ 라인 평균 승률 — 같은 라인에서 표본 30판을 넘는 챔피언들의 판수 가중 평균 (티어 계산의 p0 와 같은 값).
-    //   lolalytics 의 "Game Avg WR" 자리이고, 승률 델타는 이 값과의 차이다.
-    const pool = (data.rows || []).filter(r => r.pos === main.pos && r.games >= STAT_MIN_GAMES);
-    const poolG = pool.reduce((a, r) => a + r.games, 0);
-    const laneAvg = poolG ? pool.reduce((a, r) => a + r.wins, 0) / poolG * 100 : 50;
-    const delta = wr - laneAvg;
+    // 라인별 평균 승률(판수 가중, 30판 이상) 과 챔피언x라인 승률 표 — 헤더의 Game Avg WR 와 상성의 Delta 2 가 쓴다
+    const laneAvg = {}, laneWr = {};
+    STAT_POS.forEach(p => {
+        const pool = (data.rows || []).filter(r => r.pos === p.code && r.games >= STAT_MIN_GAMES);
+        const g = pool.reduce((a, r) => a + r.games, 0);
+        laneAvg[p.code] = g ? pool.reduce((a, r) => a + r.wins, 0) / g * 100 : 50;
+    });
+    (data.rows || []).forEach(r => { if (r.pos >= 0 && r.games) laneWr[`${r.champ}|${r.pos}`] = r.wins / r.games * 100; });
+    const avgWr = laneAvg[main.pos] ?? 50;
+    const delta = wr - avgWr;
 
-    // ★ 순위는 "같은 라인 안에서 티어 점수 순" — 표와 같은 `computeLaneTiers` 를 쓴다
     const tierInfo = computeLaneTiers(data.rows || [], total);
     const myTier = tierInfo.get(`${champ}|${main.pos}`);
-    const sameLane = [...tierInfo.entries()]
-        .filter(([k]) => k.endsWith(`|${main.pos}`))
-        .map(([, v]) => v.score)
-        .sort((a, b) => b - a);
+    const sameLane = [...tierInfo.entries()].filter(([k]) => k.endsWith(`|${main.pos}`)).map(([, v]) => v.score).sort((a, b) => b - a);
     const rank = myTier ? sameLane.indexOf(myTier.score) + 1 : 0;
 
     const skillIcons = await iconsP;
-    const stat = (label, val, cls, tip) => `
-        <div class="cs-stat"${tip ? ` data-tooltip="${tip}"` : ''}><div class="cs-stat-val ${cls || ''}">${val}</div><div class="cs-stat-key">${label}</div></div>`;
-    const tierCls = myTier ? `tier-${myTier.tier.toLowerCase()}` : '';
-    const sign = v => (v >= 0 ? '+' : '') + v.toFixed(1);
-
-    // 라인 비율 도넛 (SVG 원 하나에 stroke-dasharray). lolalytics 의 초상화 옆 62% 그것.
-    const R = 26, C = 2 * Math.PI * R;
-    const donut = `
-        <div class="cs-donut" data-tooltip="${kor} 판 중 ${laneName} 비율">
-            <svg viewBox="0 0 64 64" width="64" height="64">
-                <circle cx="32" cy="32" r="${R}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="7"/>
-                <circle cx="32" cy="32" r="${R}" fill="none" stroke="#a78bfa" stroke-width="7"
-                    stroke-dasharray="${(C * laneRate / 100).toFixed(1)} ${C.toFixed(1)}" stroke-linecap="butt" transform="rotate(-90 32 32)"/>
-            </svg>
-            <span class="cs-donut-val">${laneRate.toFixed(0)}%</span>
-        </div>`;
-
-    const desc = `<b>${kor}</b>${laneName ? `(${laneName})` : ''}은 마스터+ 솔로랭크 <b>${patch} 패치</b>에서 승률 <b>${wr.toFixed(1)}%</b>`
-        + (rank ? `, 같은 라인 ${sameLane.length}명 중 <b>${rank}위</b>로 <b>${myTier.tier} 티어</b>입니다.` : `입니다.`)
-        + ` 라인 평균 승률(${laneAvg.toFixed(1)}%)보다 <b>${Math.abs(delta).toFixed(1)}%p ${delta >= 0 ? '높' : '낮'}습니다</b>.`
-        + ` 아래는 이 라인의 룬 · 스킬 · 아이템 빌드와 상성 통계입니다.`;
+    const ctx = { champ, eng, kor, pos: main.pos, laneName, curKey, patch, total, main, all, byLane, laneRate,
+        wr, pick, ban, avgWr, delta, laneAvg, laneWr, myTier, rank, sameLane, skillIcons, data, engId };
 
     box.innerHTML = `
-    <div class="cs-page">
-        <a href="/stats" class="cs-back">← 챔피언 통계</a>
-        <div class="cs-hero">
-            <div class="cs-hero-left">
-                <div class="cs-portrait-wrap">
-                    <img class="cs-portrait" src="${champIconUrl(eng)}" alt="">
-                    ${curKey ? `<span class="cs-badge cs-badge-lane" title="${laneName}"><img src="${STAT_LANE_ICON[curKey]}" alt=""></span>` : ''}
-                    ${myTier ? `<span class="cs-badge cs-badge-tier ${tierCls}">${myTier.tier}</span>` : ''}
-                </div>
-                ${donut}
-            </div>
-            <div class="cs-hero-main">
-                <h1 class="cs-title">${kor} 빌드 · 룬 · 상성${laneName ? ` <span class="cs-title-lane">${laneName}</span>` : ''}</h1>
-                ${skillIcons ? `<div class="cs-skills">${['P', 'Q', 'W', 'E', 'R'].map(k => skillIcons[k]
-                    ? `<span class="cs-skill"><img src="${skillIcons[k]}" alt=""><i>${k}</i></span>` : '').join('')}</div>` : ''}
-                <div class="cs-lanes">
-                    ${STAT_POS.map(p => {
-                        const r = byLane.find(x => x.pos === p.code);
-                        const rate = r && all.games ? r.games / all.games * 100 : 0;
-                        const on = r && r.pos === main.pos;
-                        return `<button class="cs-lane-btn${on ? ' active' : ''}${r ? '' : ' is-none'}" data-lane="${p.key}"${r ? '' : ' disabled'} data-tooltip="${p.name}">
-                            <img src="${STAT_LANE_ICON[p.key]}" alt=""><span class="cs-lane-btn-rate">${rate.toFixed(1)}%</span>
-                        </button>`;
-                    }).join('')}
-                </div>
-                <p class="cs-desc">${desc}</p>
-                <div class="cs-statrow">
-                    ${stat('승률', wr.toFixed(1) + '%', wr >= laneAvg ? 'is-up' : 'is-down')}
-                    ${stat('승률 델타', sign(delta) + '%p', delta >= 0 ? 'is-up' : 'is-down', '라인 평균 승률과의 차이')}
-                    ${stat('라인 평균 승률', laneAvg.toFixed(1) + '%', '', `${laneName} 표본 ${STAT_MIN_GAMES}판 이상 챔피언의 판수 가중 평균`)}
-                    ${stat('픽률', pick.toFixed(1) + '%')}
-                </div>
-                <div class="cs-statrow">
-                    ${stat('티어', myTier ? `<span class="stats-tier ${tierCls}">${myTier.tier}</span>` : '-')}
-                    ${stat('순위', rank ? `${rank} / ${sameLane.length}` : '-', '', '같은 라인 안에서 티어 점수 순')}
-                    ${stat('밴률', ban.toFixed(1) + '%')}
-                    ${stat('판수', main.games.toLocaleString())}
-                </div>
-                <div class="cs-scope">마스터+ 솔로랭크 · ${patch} 패치 · 전체 ${total.toLocaleString()}판 · 밴률은 챔피언 전체 기준</div>
-            </div>
+    <div class="lx-page">
+        ${lxHeader(ctx)}
+        <div class="lx-tabs">
+            <a href="#lx-build" class="lx-tab active" data-target="lx-build">${kor} 빌드</a>
+            <a href="#lx-counters" class="lx-tab" data-target="lx-counters">${kor} 상성</a>
         </div>
-        <div class="cs-tabs">
-            <a href="#cs-build" class="cs-tab active" data-target="cs-build">${kor} 빌드</a>
-            <a href="#cs-counters" class="cs-tab" data-target="cs-counters">${kor} 상성</a>
-        </div>
-        <div class="cs-body" id="cs-body"><div class="build-loading">빌드를 불러오는 중...</div></div>
+        <div id="lx-body"><div class="build-loading">빌드를 불러오는 중...</div></div>
     </div>`;
 
-    // ── 라인 전환. 주소도 같이 바꾸되 **이력은 안 쌓는다**(`replaceState`) — 라인을 셋 훑어본 사람이
-    //   표로 돌아가려고 뒤로가기를 세 번 누르게 하면 안 된다 (도감 탭·챔피언 탭과 같은 규칙).
-    box.querySelectorAll('.cs-lane-btn:not([disabled])').forEach(b => b.addEventListener('click', () => {
+    // 라인 전환 — 주소는 바꾸되 이력은 안 쌓는다 (replaceState). 버전 전환도 같은 함수로 다시 그린다
+    box.querySelectorAll('.lx-lane:not([disabled])').forEach(b => b.addEventListener('click', () => {
         const k = b.dataset.lane;
         window.history.replaceState({ page: 'stats', champ: engId, lane: k }, '', `/stats/${engId}/${k}`);
         showChampStatPage(engId, k);
     }));
-    // ── 탭은 같은 페이지 안의 상자로 내려가는 것뿐이다. 주소에 `#` 을 남기지 않는다 (이력이 쌓인다)
-    box.querySelectorAll('.cs-tab').forEach(a => a.addEventListener('click', (e) => {
+    const sel = box.querySelector('#lx-scope');
+    if (sel) sel.addEventListener('change', () => { window.statScope = sel.value; showChampStatPage(engId, laneKey); });
+    box.querySelectorAll('.lx-tab').forEach(a => a.addEventListener('click', (e) => {
         e.preventDefault();
-        box.querySelectorAll('.cs-tab').forEach(x => x.classList.toggle('active', x === a));
+        box.querySelectorAll('.lx-tab').forEach(x => x.classList.toggle('active', x === a));
         document.getElementById(a.dataset.target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }));
 
-    // ── 빌드·상성
-    const body = document.getElementById('cs-body');
+    // ── 빌드·상성·추이
+    const body = document.getElementById('lx-body');
     try {
         await loadPerkData();
         let builds, matchups;
@@ -4307,23 +3956,511 @@ async function showChampStatPage(engId, laneKey) {
             builds = archivedBuildsFor(data.scope, champ);
             matchups = archivedMatchupsFor(data.scope, champ);
         } else {
-            const [b, m] = await Promise.all([
+            [builds, matchups] = await Promise.all([
                 fetch(`/api/champion-builds?scope=${encodeURIComponent(data.scope)}&champ=${champ}`).then(r => r.ok ? r.json() : null),
                 fetch(`/api/champion-matchups?scope=${encodeURIComponent(data.scope)}&champ=${champ}`).then(r => r.ok ? r.json() : null).catch(() => null)
             ]);
-            builds = b; matchups = m;
         }
-        const lane = main.pos >= 0 ? String(main.pos) : 'all';
-        body.innerHTML = (builds ? renderBuildPanel(builds, lane, { skillIcons }) : `<div class="build-empty">빌드를 불러오지 못했습니다.</div>`)
-            + renderMatchupPanel(matchups, lane, { myWr: main.games ? main.wins / main.games : 0, laneGames: main.games });
-        // 상성 정렬 탭 — 카드만 다시 그린다
-        body.querySelectorAll('#cs-mu-tabs .cb-tab').forEach(t => t.addEventListener('click', () => {
-            body.querySelectorAll('#cs-mu-tabs .cb-tab').forEach(x => x.classList.toggle('active', x === t));
-            document.getElementById('cs-mu-cards').innerHTML = matchupCardsHtml(t.dataset.sort);
-        }));
+        const trendP = fetch(`/api/champion-trend?champ=${champ}&pos=${main.pos}`).then(r => r.ok ? r.json() : null).catch(() => null);
+
+        const B = lxBuildData(builds, main.pos);
+        ctx.B = B;
+        ctx.M = lxMatchupData(matchups, ctx);
+        body.innerHTML = lxBuildBox(ctx) + `<div id="lx-trend"></div>` + lxMatchups(ctx) + lxLowerRows(ctx) + lxSkillBox(ctx) + lxRuneBox(ctx);
+        lxBindTabs(body, ctx);
+        const trend = await trendP;
+        document.getElementById('lx-trend').innerHTML = lxTrend(ctx, trend);
     } catch (e) {
+        console.error(e);
         body.innerHTML = `<div class="build-empty">빌드를 불러오지 못했습니다.</div>`;
     }
+}
+
+// ── 헤더 ─────────────────────────────────────────────────────────────
+function lxHeader(c) {
+    const stat = (val, label, cls, tip) => `<div class="lx-stat"${tip ? ` title="${tip}"` : ''}><div class="lx-stat-v ${cls || ''}">${val}</div><div class="lx-stat-k">${label}</div></div>`;
+    const tierCls = c.myTier ? `tier-${c.myTier.tier.toLowerCase()}` : '';
+    const R = 30, C = 2 * Math.PI * R;
+    const scopes = (c.data.scopes || []).map(s => `<option value="${s}"${s === c.data.scope ? ' selected' : ''}>${statScopeLabel(s)}</option>`).join('');
+    const desc = `<b>${c.kor}</b> ${c.laneName}은 마스터+ 솔로랭크 ${c.patch} 패치에서 승률 <b>${c.wr.toFixed(1)}%</b>`
+        + (c.rank ? `, 같은 라인 ${c.sameLane.length}명 중 <b>${c.rank}위</b>로 <b>${c.myTier.tier} 티어</b>입니다.` : '입니다.')
+        + ` 라인 평균 승률(${c.avgWr.toFixed(2)}%)보다 ${Math.abs(c.delta).toFixed(2)}%p ${c.delta >= 0 ? '높' : '낮'}습니다.`
+        + ` 아래는 ${c.kor}의 빌드 · 룬 · 상성을 자세히 나눈 것입니다.`;
+    return `
+    <div class="lx-toolbar">
+        <img class="lx-toolbar-portrait" src="${champIconUrl(c.eng)}" alt="">
+        ${STAT_POS.map(p => {
+            const r = c.byLane.find(x => x.pos === p.code);
+            const rate = r && c.all.games ? r.games / c.all.games * 100 : 0;
+            return `<button class="lx-lane${r && r.pos === c.pos ? ' active' : ''}${r ? '' : ' is-none'}" data-lane="${p.key}"${r ? '' : ' disabled'} title="${p.name}">
+                <img src="${STAT_LANE_ICON[p.key]}" alt=""><span>${p.name}</span><b>${rate.toFixed(1)}%</b></button>`;
+        }).join('')}
+        <label class="lx-chip lx-chip-select">패치<select id="lx-scope">${scopes}</select></label>
+        <span class="lx-chip"><b>랭크</b>솔로/듀오</span>
+        <span class="lx-chip"><b>마스터+</b>KR</span>
+        <span class="lx-toolbar-note">${c.laneName} 평균 승률 ${c.avgWr.toFixed(2)}%<br>전체 ${c.total.toLocaleString()}판</span>
+    </div>
+    <div class="lx-crumb"><a href="/stats">챔피언 통계</a> / ${c.kor} 빌드</div>
+    <div class="lx-hero">
+        <div class="lx-hero-left">
+            <div class="lx-portrait-wrap">
+                <img class="lx-portrait" src="${champIconUrl(c.eng)}" alt="">
+                ${c.curKey ? `<span class="lx-badge lx-badge-lane"><img src="${STAT_LANE_ICON[c.curKey]}" alt=""></span>` : ''}
+                ${c.myTier ? `<span class="lx-badge lx-badge-tier ${tierCls}">${c.myTier.tier}</span>` : ''}
+            </div>
+            <div class="lx-donut" title="${c.kor} 판 중 ${c.laneName} 비율">
+                <svg viewBox="0 0 80 80" width="80" height="80">
+                    <circle cx="40" cy="40" r="${R}" fill="none" stroke="#333" stroke-width="10"/>
+                    <circle cx="40" cy="40" r="${R}" fill="none" stroke="#3a7e93" stroke-width="10" stroke-dasharray="${(C * c.laneRate / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 40 40)"/>
+                </svg>
+                <span>${c.laneRate.toFixed(0)}%</span>
+            </div>
+        </div>
+        <div class="lx-hero-main">
+            <h1 class="lx-title">${c.kor} 빌드, 룬 &amp; 상성 — ${c.laneName} ${c.kor}</h1>
+            ${c.skillIcons ? `<div class="lx-skills">${['P', 'Q', 'W', 'E', 'R'].map(k => c.skillIcons[k]
+                ? `<span class="lx-skill"><img src="${c.skillIcons[k]}" alt=""><i>${k}</i></span>` : '').join('')}</div>` : ''}
+            <p class="lx-desc">${desc}</p>
+            <div class="lx-statrow">
+                ${stat(c.wr.toFixed(1) + '%', '승률', lxDeltaCls(c.delta))}
+                ${stat(lxSigned(c.delta) + '%', '승률 델타', lxDeltaCls(c.delta), '라인 평균 승률과의 차이')}
+                ${stat(c.avgWr.toFixed(2) + '%', '라인 평균 승률', '', `${c.laneName} 표본 ${STAT_MIN_GAMES}판 이상 챔피언의 판수 가중 평균`)}
+                ${stat(c.pick.toFixed(2) + '%', '픽률')}
+            </div>
+            <div class="lx-statrow">
+                ${stat(c.myTier ? `<span class="${tierCls}">${c.myTier.tier}</span>` : '-', '티어')}
+                ${stat(c.rank ? `${c.rank} / ${c.sameLane.length}` : '-', '순위', '', '같은 라인 안에서 티어 점수 순')}
+                ${stat(c.ban.toFixed(2) + '%', '밴률')}
+                ${stat(c.main.games.toLocaleString(), '판수')}
+            </div>
+        </div>
+    </div>`;
+}
+
+// ── 빌드 자료 정리 ─────────────────────────────────────────────────────
+//   B.rows(type) = 그 라인의 줄들(판수 내림차순, 1판짜리 제외 — 전부 1판이면 한 줄), B.pick(type, mode) = 대표 하나
+//   B.total = all 분모, B.tl = tlall 분모 (타임라인 있는 판). tl 이 0 이면 그 패치는 로그가 없는 것이다.
+function lxBuildData(builds, pos) {
+    const rowsAll = (builds && builds.rows) || [];
+    const totals = (builds && builds.totals) || {};
+    const total = totals[pos] || 0;
+    const of = type => rowsAll.filter(r => r.type === type && (r.pos == null ? -1 : r.pos) === pos);
+    const rows = type => {
+        const list = of(type).sort((a, b) => b.games - a.games);
+        const kept = list.filter(r => r.games >= 2);
+        return kept.length ? kept : list.slice(0, 1);
+    };
+    const tl = (of('tlall')[0] || {}).games || 0;
+    // ★ mode 'win' = 1위 판수의 10% 이상(최소 5판)인 후보 중 승률 최고. 아니면 100% 1판짜리가 뽑힌다
+    const pick = (type, mode) => {
+        const list = rows(type);
+        if (!list.length) return null;
+        if (mode !== 'win') return list[0];
+        const floor = Math.max(BUILD_MIN_GAMES, list[0].games * LX_WIN_MIN_SHARE);
+        const cand = list.filter(r => r.games >= floor);
+        return (cand.length ? cand : list).sort((a, b) => b.wins / b.games - a.wins / a.games || b.games - a.games)[0];
+    };
+    const sorted = (type, mode, n) => {
+        const list = rows(type);
+        if (mode === 'win') {
+            const floor = Math.max(BUILD_MIN_GAMES, (list[0]?.games || 0) * LX_WIN_MIN_SHARE);
+            return list.filter(r => r.games >= floor).sort((a, b) => b.wins / b.games - a.wins / a.games || b.games - a.games).slice(0, n);
+        }
+        return list.slice(0, n);
+    };
+    return { rows, pick, sorted, total, tl, rebuilding: builds && builds.rebuilding, archived: builds && builds.archived, has: !!builds };
+}
+
+// 픽률 분모: 타임라인 type 은 tl, 나머지는 total
+const LX_TL_TYPES = new Set(['skillord', 'skillord6', 'skillord10', 'skillpri', 'start', 'early', 'earlyset', 'boots', 'core', 'set2', 'set4', 'set5', 'item1', 'item2', 'item3', 'item4', 'item5', 'item6']);
+function lxDenom(B, type) { return LX_TL_TYPES.has(type) ? B.tl : B.total; }
+
+// 3칸 값 (승률 · 픽률 · 판수) — 카드 줄 공통
+function lxVals3(B, type, r) {
+    return [
+        { v: lxPct(r.wins, r.games) + '%', cls: lxWr(r.wins, r.games) },
+        { v: lxPct(r.games, lxDenom(B, type)) + '%', cls: 'lx-lav' },
+        { v: r.games, cls: 'lx-gray' }
+    ];
+}
+const LX_M3 = [{ t: '승률', cls: 'lx-green' }, { t: '픽률', cls: 'lx-lav' }, { t: '판수', cls: 'lx-gray' }];
+
+// 스킬 배지 (아이콘 + 글자)
+function lxSkill(c, n, small) {
+    const L = 'QWER'[n - 1] || '';
+    const u = c.skillIcons && c.skillIcons[L];
+    return `<span class="lx-skl${small ? ' is-sm' : ''}">${u ? `<img src="${u}" alt="">` : ''}<i>${L}</i></span>`;
+}
+
+// "53.52% 승률 525판" — 그쪽이 블록마다 아래에 초록으로 적는 그 줄
+function lxUnder(B, type, r) {
+    if (!r) return '';
+    return `<div class="lx-under"><span class="${lxWr(r.wins, r.games)}">${lxPct(r.wins, r.games)}% 승률</span> <span class="lx-gray">${r.games}판</span></div>`;
+}
+
+// ── 빌드 상자 (Highest Win / Most Common) ─────────────────────────────
+function lxBuildBox(c) {
+    const B = c.B;
+    if (!B.has) return `<div class="lx-box" id="lx-build"><div class="lx-none">빌드를 불러오지 못했습니다.</div></div>`;
+    if (!B.total) {
+        return `<div class="lx-box" id="lx-build"><div class="lx-none">${B.rebuilding ? '통계를 다시 계산하는 중입니다. 잠시 뒤 새로고침해 주세요.' : (c.laneName + ' 표본이 없습니다.')}</div></div>`;
+    }
+    return `
+    <div class="lx-box" id="lx-build">
+        ${lxTabBar('build', [{ v: 'win', label: '승률 최고 빌드' }, { v: 'common', label: '가장 많이 쓰는 빌드' }], 'common')}
+        <div id="lx-build-body">${lxBuildBody(c, 'common')}</div>
+    </div>`;
+}
+
+function lxBuildBody(c, mode) {
+    const B = c.B;
+    const pri = B.pick('skillpri', mode), sp = B.pick('spell', mode), ord = B.pick('skillord', mode);
+    const rune = B.pick('rune', mode), shard = B.pick('shard', mode);
+    const st = B.pick('start', mode), core = B.pick('core', mode);
+    const hasTl = B.tl > 0;
+
+    const blk = (title, inner, cls) => `<div class="lx-blk${cls ? ' ' + cls : ''}"><div class="lx-blk-h">${title}</div>${inner}</div>`;
+    const none = `<div class="lx-none">표본 없음</div>`;
+
+    const priHtml = pri ? `<div class="lx-pri">${pri.key.map(n => lxSkill(c, n)).join('<span class="lx-arrow">›</span>')}</div>${lxUnder(B, 'skillpri', pri)}` : none;
+    const spHtml = sp ? `<div class="lx-spells">${sp.key.map(x => `<img src="${spellIcon(x)}" alt="" title="${spellName(x)}">`).join('')}</div>${lxUnder(B, 'spell', sp)}` : none;
+    const ordHtml = ord ? `
+        <div class="lx-so">${[1, 2, 3, 4].map(n => `
+            <div class="lx-so-row">${lxSkill(c, n, true)}${Array.from({ length: 18 }, (_, i) => ord.key[i] === n
+                ? `<span class="lx-so-cell on">${i + 1}</span>` : `<span class="lx-so-cell${i >= 15 ? ' is-off' : ''}"></span>`).join('')}</div>`).join('')}
+        </div>${lxUnder(B, 'skillord', ord)}` : none;
+
+    let runeHtml = none;
+    if (rune) {
+        const [ps, ks, m1, m2, m3, ss, s1, s2] = rune.key;
+        const shards = (shard || {}).key || [];
+        runeHtml = `
+        <div class="lx-runes">
+            <div class="lx-rune-col"><div class="lx-blk-h">주 룬</div>${lxRuneGrid(ps, [ks, m1, m2, m3], false)}</div>
+            <div class="lx-rune-col"><div class="lx-blk-h">보조</div>${lxRuneGrid(ss, [s1, s2], true)}</div>
+            <div class="lx-rune-col"><div class="lx-blk-h">스탯</div>${lxShardGrid(shards)}</div>
+        </div>${lxUnder(B, 'rune', rune)}`;
+    }
+
+    const item = id => `<img class="lx-item" src="${itemIconOf(id)}" alt="" title="${itemNameOf(id)}" loading="lazy">`;
+    const stHtml = st ? `<div class="lx-items">${st.key.map(item).join('')}</div>${lxUnder(B, 'start', st)}` : none;
+    const coreHtml = core ? `<div class="lx-items">${core.key.map(item).join('<span class="lx-arrow">›</span>')}</div>${lxUnder(B, 'core', core)}` : none;
+    const nth = type => {
+        const list = B.sorted(type, mode, 3);
+        if (!list.length) return none;
+        return `<div class="lx-or">${list.map(r => `
+            <div class="lx-or-opt">${item(r.key[0])}<div class="${lxWr(r.wins, r.games)}">${lxPct(r.wins, r.games)}%</div><div class="lx-gray">${r.games}</div></div>`).join('<span class="lx-or-sep">OR</span>')}</div>`;
+    };
+
+    if (!hasTl) {
+        // 16.16 처럼 로그가 없는 패치 — 주문과 룬만
+        return `
+        <div class="lx-build-r1 is-notl">
+            ${blk('소환사 주문', spHtml)}
+            ${blk('룬', runeHtml, 'lx-blk-rune')}
+        </div>`;
+    }
+    return `
+    <div class="lx-build-r1">
+        <div class="lx-blk">
+            <div class="lx-blk-h">스킬 우선순위</div>${priHtml}
+            <div class="lx-blk-h lx-gap">소환사 주문</div>${spHtml}
+        </div>
+        ${blk('스킬 순서', ordHtml, 'lx-blk-so')}
+        ${blk('룬', runeHtml, 'lx-blk-rune')}
+    </div>
+    <div class="lx-build-r2">
+        ${blk('시작 아이템', stHtml)}
+        ${blk('코어 빌드', coreHtml)}
+        ${blk('4번째 아이템', nth('item4'))}
+        ${blk('5번째 아이템', nth('item5'))}
+        ${blk('6번째 아이템', nth('item6'))}
+    </div>`;
+}
+
+// 룬 격자 — 인게임 배치 그대로 깔고 고른 것만 밝게. ★ 파편은 자리로 켠다 (같은 파편이 두 줄에 있다)
+function lxRuneGrid(styleId, picked, skipKey) {
+    return (perkData.slots[styleId] || []).slice(skipKey ? 1 : 0).map((row, i) => `
+        <div class="lx-rg-row${!skipKey && i === 0 ? ' is-key' : ''}">
+            ${row.map(id => `<img class="lx-rg${picked.includes(id) ? ' on' : ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`).join('')}
+        </div>`).join('');
+}
+function lxShardGrid(shards) {
+    return (perkData.shardRows || []).map((row, ri) => `
+        <div class="lx-rg-row is-shard">
+            ${row.map(id => `<img class="lx-rg lx-shard${shards[ri] === id ? ' on' : ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`).join('')}
+        </div>`).join('');
+}
+
+// ── 추이 그래프 4개 (승률 · 픽률 · 판수 · 밴률, 최근 7일) ────────────────
+function lxTrend(c, trend) {
+    const days = (trend && trend.days) || [];
+    const graph = (title, cls, vals, fmt) => {
+        const W = 244, H = 150, L = 34, R = 8, T = 30, Bm = 26;
+        if (days.length < 2) return `<div class="lx-graph"><div class="lx-graph-t ${cls}">${title}</div><div class="lx-none">최근 7일 표본이 아직 없습니다</div></div>`;
+        let lo = Math.min(...vals), hi = Math.max(...vals);
+        if (hi === lo) { hi += 1; lo -= 1; }
+        const pad = (hi - lo) * 0.15; lo -= pad; hi += pad; if (lo < 0 && Math.min(...vals) >= 0) lo = 0;
+        const x = i => L + (i / (days.length - 1)) * (W - L - R);
+        const y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - Bm);
+        const pts = vals.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+        const ticks = [0, 0.5, 1].map(f => lo + (hi - lo) * f);
+        return `
+        <div class="lx-graph">
+            <div class="lx-graph-t ${cls}">${title}</div>
+            <svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
+                ${ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${y(t).toFixed(1)}" y2="${y(t).toFixed(1)}" stroke="#222"/><text x="${L - 4}" y="${(y(t) + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#bbb">${fmt(t)}</text>`).join('')}
+                <polyline points="${pts}" fill="none" class="lx-line ${cls}" stroke-width="1.5"/>
+                ${vals.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2" class="lx-dot ${cls}"><title>${days[i].day} · ${fmt(v)}</title></circle>`).join('')}
+                ${days.map((d, i) => `<text x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="middle" font-size="8" fill="#bbb">${d.day.slice(5)}</text>`).join('')}
+            </svg>
+        </div>`;
+    };
+    const wrV = days.map(d => d.games ? d.wins / d.games * 100 : 0);
+    const pkV = days.map(d => d.total ? d.games / d.total * 100 : 0);
+    const gV = days.map(d => d.games);
+    const bV = days.map(d => d.total ? d.bans / d.total * 100 : 0);
+    const p1 = v => v.toFixed(1);
+    return `
+    <div class="lx-legend"><b>범례:</b><span class="lx-legend-on">마스터+</span><span>솔로/듀오</span><span>KR</span><span class="lx-legend-on">최근 7일</span><span>일별</span></div>
+    <div class="lx-graphs">
+        ${graph(`${c.kor} 승률`, 'lx-green', wrV, p1)}
+        ${graph(`${c.kor} 픽률`, 'lx-blue', pkV, p1)}
+        ${graph(`${c.kor} 판수`, 'lx-white', gV, v => Math.round(v).toLocaleString())}
+        ${graph(`${c.kor} 밴률`, 'lx-red', bV, p1)}
+    </div>`;
+}
+
+// ── 상성 자료 정리 ──────────────────────────────────────────────────
+//   M.counter[L] = 적 L라인 상대들, M.synergy[L] = 아군 L라인 (내 라인 제외). 값: wr · delta1 · delta2 · pick · games
+//   delta1 = 승률 − 내 라인 승률. delta2 = 거기서 상대(아군) 챔피언 자체의 강함까지 뺀 것
+//   (적: + (상대 승률 − 그 라인 평균) / 아군: − (아군 승률 − 그 라인 평균)) — 그쪽의 Delta 2 자리
+function lxMatchupData(mdata, c) {
+    const out = { archived: !!(mdata && mdata.archived), counter: {}, synergy: {}, n: 0 };
+    const rows = (mdata && mdata.rows) || [];
+    const mine = rows.filter(r => r.pos === c.pos);
+    const myWr = c.main.games ? c.main.wins / c.main.games * 100 : 0;
+    const enrich = (r, ally) => {
+        const w = r.wins / r.games * 100;
+        const fw = c.laneWr[`${r.foe}|${r.fpos}`];
+        const adj = fw == null ? 0 : (fw - (c.laneAvg[r.fpos] ?? 50));
+        return { ...r, wr: w, d1: w - myWr, d2: w - myWr + (ally ? -adj : adj), pick: c.main.games ? r.games / c.main.games * 100 : 0 };
+    };
+    STAT_POS.forEach(p => {
+        out.counter[p.code] = mine.filter(r => (r.rel || 0) === 0 && (r.fpos == null ? r.pos : r.fpos) === p.code).map(r => enrich(r, false));
+        if (p.code !== c.pos) out.synergy[p.code] = mine.filter(r => r.rel === 1 && r.fpos === p.code).map(r => enrich(r, true));
+    });
+    out.n = mine.length;
+    return out;
+}
+
+function lxMatchups(c) {
+    const M = c.M;
+    const inner = M.archived
+        ? `<div class="lx-none">박제된 패치라 상성 통계가 없습니다.</div>`
+        : (!M.n ? `<div class="lx-none">${c.laneName} 상성 표본이 없습니다.</div>` : `<div id="lx-mu-rows">${lxMatchupRows(c, 'counter', 'common')}</div>`);
+    return `
+    <div class="lx-box" id="lx-counters">
+        <div class="lx-mu-tabs">
+            <div class="lx-mu-tabrow"><span class="lx-mu-tablabel">상성</span>
+                ${lxTabBar('mu-counter', [{ v: 'common', label: '흔한 상대' }, { v: 'strong', label: '강한 상대' }, { v: 'weak', label: '약한 상대' }, { v: 'delta', label: '델타' }], 'common')}</div>
+            <div class="lx-mu-tabrow"><span class="lx-mu-tablabel">시너지</span>
+                ${lxTabBar('mu-synergy', [{ v: 'common', label: '흔한 아군' }, { v: 'good', label: '좋은 시너지' }, { v: 'bad', label: '나쁜 시너지' }, { v: 'delta', label: '시너지 델타' }], '')}</div>
+        </div>
+        ${inner}
+        <div class="lx-foot">델타 1 = 그 상대(아군)와 만났을 때 승률 − 이 챔피언의 라인 승률 · 델타 2 = 거기서 상대(아군) 챔피언 자체의 강함(그 라인 평균 대비)을 뺀 값 · 픽률 = 이 라인 판 중 만난 비율 · ${MATCHUP_SHOW_MIN}판 미만은 흐리게</div>
+    </div>`;
+}
+
+function lxMatchupRows(c, group, sort) {
+    const M = c.M;
+    const sorters = {
+        common: (a, b) => b.games - a.games,
+        strong: (a, b) => b.wr - a.wr || b.games - a.games, good: (a, b) => b.wr - a.wr || b.games - a.games,
+        weak: (a, b) => a.wr - b.wr || b.games - a.games, bad: (a, b) => a.wr - b.wr || b.games - a.games,
+        delta: (a, b) => b.d2 - a.d2
+    };
+    const src = group === 'counter' ? M.counter : M.synergy;
+    const metrics = [{ t: '승률', cls: 'lx-green' }, { t: '델타 1', cls: 'lx-yellow' }, { t: '델타 2', cls: 'lx-yellow' }, { t: '픽률', cls: 'lx-lav' }, { t: '판수', cls: 'lx-gray' }];
+    return STAT_POS.filter(p => src[p.code]).map(p => {
+        const list = [...src[p.code]].sort(sorters[sort] || sorters.common).slice(0, LX_ROW_MAX);
+        const cards = list.map(r => {
+            const eng = championIdMap[r.foe];
+            const name = (window.korChampMap && window.korChampMap[eng]) || eng || r.foe;
+            return {
+                icons: [champIconUrl(eng)], dim: r.games < MATCHUP_SHOW_MIN, title: `${name} · ${r.games}판 · 승률 ${r.wr.toFixed(2)}%`,
+                vals: [
+                    { v: r.wr.toFixed(2), cls: lxWr(r.wins, r.games) },
+                    { v: lxSigned(r.d1), cls: lxDeltaCls(r.d1) },
+                    { v: lxSigned(r.d2), cls: lxDeltaCls(r.d2) },
+                    { v: r.pick.toFixed(2), cls: 'lx-lav' },
+                    { v: r.games, cls: 'lx-gray' }
+                ]
+            };
+        });
+        return lxRow({ icon: STAT_LANE_ICON[p.key], title: group === 'counter' ? '상대' : '아군', metrics }, cards, { empty: `${p.name} 표본 없음` });
+    }).join('');
+}
+
+// ── 아래 카드 줄들 (주문 · 시작 · 초반 · 세트 · 신발/1~5번째/인기/승률/전체) ───────
+function lxLowerRows(c) {
+    const B = c.B;
+    if (!B.has || !B.total) return '';
+    const hasTl = B.tl > 0;
+    const itemCards = (type, list) => list.map(r => ({ icons: [itemIconOf(r.key[0])], title: itemNameOf(r.key[0]), vals: lxVals3(B, type, r) }));
+    const setCards = (type, list) => list.map(r => ({ icons: r.key.map(itemIconOf), title: r.key.map(itemNameOf).join(' › '), vals: lxVals3(B, type, r) }));
+    const box = (id, tabbar, rowsHtml) => `<div class="lx-box" id="${id}">${tabbar || ''}<div class="lx-box-rows">${rowsHtml}</div></div>`;
+
+    // 소환사 주문 (아이콘 두 개를 세로로 쌓는다 — 그쪽과 같다)
+    const spells = box('lx-spells', '', lxRow({ title: '소환사 주문', metrics: LX_M3 },
+        B.rows('spell').slice(0, LX_ROW_MAX).map(r => ({ icons: r.key.map(spellIcon), title: r.key.map(spellName).join(' + '), vals: lxVals3(B, 'spell', r) })),
+        { stack: true, topH: 80 }));
+
+    // 최종 아이템 셋 — 인기(픽 순) · 승률(승률 순, 표본 하한) · 전체
+    const fin = B.rows('item');
+    const floor = Math.max(BUILD_MIN_GAMES, (fin[0]?.games || 0) * LX_WIN_MIN_SHARE);
+    const finalRows = lxRow({ title: '인기 아이템', metrics: LX_M3 }, itemCards('item', fin.slice(0, LX_ROW_MAX)))
+        + lxRow({ title: '승률 아이템', metrics: LX_M3 }, itemCards('item', fin.filter(r => r.games >= floor).sort((a, b) => b.wins / b.games - a.wins / a.games).slice(0, LX_ROW_MAX)))
+        + lxRow({ title: '전체 아이템', metrics: LX_M3 }, itemCards('item', fin.slice(0, 60)));
+
+    if (!hasTl) {
+        return spells + box('lx-items', '', finalRows);
+    }
+
+    const starting = box('lx-start',
+        lxTabBar('start', [{ v: 'item', label: '시작 아이템' }, { v: 'set', label: '시작 아이템 세트' }], 'set'),
+        `<div id="lx-start-body">${lxStartBody(c, 'set')}</div>`);
+    const early = box('lx-early',
+        lxTabBar('early', [{ v: 'item', label: '초반 아이템 (10분)' }, { v: 'set', label: '초반 아이템 세트 (10분)' }], 'item'),
+        `<div id="lx-early-body">${lxEarlyBody(c, 'item')}</div>`);
+    const sets = box('lx-sets',
+        lxTabBar('sets', [{ v: 'set2', label: '아이템 2개' }, { v: 'core', label: '아이템 3개' }, { v: 'set4', label: '아이템 4개' }, { v: 'set5', label: '아이템 5개' }], 'core'),
+        `<div id="lx-sets-body">${lxRow({ title: '세트', metrics: LX_M3 }, setCards('core', B.rows('core').slice(0, 12)), { empty: '타임라인 표본을 모으는 중' })}</div>`);
+    const items = box('lx-items', '',
+        lxRow({ title: '신발', metrics: LX_M3 }, itemCards('boots', B.rows('boots').slice(0, LX_ROW_MAX)), { empty: '타임라인 표본을 모으는 중' })
+        + ['item1', 'item2', 'item3', 'item4', 'item5'].map((t, i) => lxRow({ title: `${i + 1}번째 아이템`, metrics: LX_M3 }, itemCards(t, B.rows(t).slice(0, LX_ROW_MAX)), { empty: '타임라인 표본을 모으는 중' })).join('')
+        + finalRows);
+    return spells + starting + early + sets + items;
+}
+
+function lxStartBody(c, v) {
+    const B = c.B;
+    if (v === 'set') {
+        return lxRow({ title: '시작 세트', metrics: LX_M3 }, B.rows('start').slice(0, 12).map(r => ({ icons: r.key.map(itemIconOf), title: r.key.map(itemNameOf).join(' + '), vals: lxVals3(B, 'start', r) })), { empty: '타임라인 표본을 모으는 중' });
+    }
+    // 낱개 — 세트를 펼쳐서 아이템마다 합친다
+    const agg = new Map();
+    B.rows('start').forEach(r => r.key.forEach(id => { const cur = agg.get(id) || { key: [id], games: 0, wins: 0 }; cur.games += r.games; cur.wins += r.wins; agg.set(id, cur); }));
+    const list = [...agg.values()].sort((a, b) => b.games - a.games).slice(0, LX_ROW_MAX);
+    return lxRow({ title: '시작 아이템', metrics: LX_M3 }, list.map(r => ({ icons: [itemIconOf(r.key[0])], title: itemNameOf(r.key[0]), vals: lxVals3(B, 'start', r) })), { empty: '타임라인 표본을 모으는 중' });
+}
+function lxEarlyBody(c, v) {
+    const B = c.B;
+    const type = v === 'set' ? 'earlyset' : 'early';
+    return lxRow({ title: v === 'set' ? '초반 세트' : '초반 아이템', metrics: LX_M3 }, B.rows(type).slice(0, v === 'set' ? 12 : LX_ROW_MAX).map(r => ({ icons: r.key.map(itemIconOf), title: r.key.map(itemNameOf).join(' + '), vals: lxVals3(B, type, r) })), { empty: '타임라인 표본을 모으는 중' });
+}
+
+// ── 스킬 우선순위 상자 (전체 / 6 / 10 / 15레벨) ──────────────────────
+function lxSkillBox(c) {
+    const B = c.B;
+    if (!B.has || !B.total || !B.tl) return '';
+    return `<div class="lx-box" id="lx-skills">
+        ${lxTabBar('skill', [{ v: 'skillpri', label: '전체' }, { v: 'skillord6', label: '6레벨' }, { v: 'skillord10', label: '10레벨' }, { v: 'skillord', label: '15레벨' }], 'skillpri')}
+        <div class="lx-box-rows" id="lx-skill-body">${lxSkillBody(c, 'skillpri')}</div>
+    </div>`;
+}
+function lxSkillBody(c, type) {
+    const B = c.B;
+    if (type === 'skillpri') {
+        const cards = B.rows('skillpri').map(r => ({ top: r.key.map(n => lxSkill(c, n, true)).join('<span class="lx-arrow is-sm">›</span>'), title: r.key.map(n => 'QWER'[n - 1]).join(' > '), vals: lxVals3(B, 'skillpri', r) }));
+        return lxRow({ title: '스킬 우선순위', metrics: LX_M3 }, cards, { empty: '타임라인 표본을 모으는 중', topH: 30 });
+    }
+    // 레벨별 스킬 순서 — 세로로 한 줄씩 (순서 + 승률·픽률·판수)
+    const list = B.rows(type).slice(0, 8);
+    if (!list.length) return `<div class="lx-none">타임라인 표본을 모으는 중</div>`;
+    return `<div class="lx-seq-list">${list.map(r => `
+        <div class="lx-seq">
+            <div class="lx-seq-cells">${r.key.map((n, i) => `<span class="lx-seq-cell k${n}" title="${i + 1}레벨">${'QWER'[n - 1]}</span>`).join('')}</div>
+            <div class="lx-seq-vals"><span class="${lxWr(r.wins, r.games)}">${lxPct(r.wins, r.games)}%</span><span class="lx-lav">${lxPct(r.games, B.tl)}%</span><span class="lx-gray">${r.games}판</span></div>
+        </div>`).join('')}</div>`;
+}
+
+// ── 룬 상자 (전체 / 승률 최고 룬 페이지 / 인기 룬 페이지) ───────────────
+function lxRuneBox(c) {
+    const B = c.B;
+    if (!B.has || !B.total) return '';
+    return `<div class="lx-box" id="lx-runes">
+        ${lxTabBar('rune', [{ v: 'all', label: '전체' }, { v: 'win', label: '승률 최고 룬 페이지' }, { v: 'common', label: '인기 룬 페이지' }], 'all')}
+        <div id="lx-rune-body">${lxRuneBody(c, 'all')}</div>
+    </div>`;
+}
+function lxRuneBody(c, v) {
+    const B = c.B;
+    if (v === 'all') {
+        // 룬마다 픽률·승률 — 계열 5개를 인게임 배치로, 파편 3x3 까지
+        const perk = {};
+        B.rows('perk').forEach(r => { perk[r.key[0]] = r; });
+        const cell = id => {
+            const r = perk[id];
+            return `<div class="lx-pk${r ? '' : ' is-none'}">
+                <img src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">
+                <div class="lx-v lx-lav">${r ? lxPct(r.games, B.total) : '-'}</div>
+                <div class="lx-v ${r ? lxWr(r.wins, r.games) : 'lx-dim'}">${r ? lxPct(r.wins, r.games) : '-'}</div>
+            </div>`;
+        };
+        const styles = Object.keys(perkData.slots || {}).map(Number).sort((a, b) => a - b);
+        if (!Object.keys(perk).length) return `<div class="lx-none">룬별 통계는 다음 집계부터 나옵니다.</div>`;
+        return `<div class="lx-pk-trees">
+            ${styles.map(sid => `<div class="lx-pk-tree">
+                <div class="lx-pk-title"><img src="${perkIcon(sid)}" alt="">${perkName(sid)}</div>
+                ${(perkData.slots[sid] || []).map((row, i) => `<div class="lx-pk-row${i === 0 ? ' is-key' : ''}">${row.map(cell).join('')}</div>`).join('')}
+            </div>`).join('')}
+            <div class="lx-pk-tree lx-pk-shards">
+                <div class="lx-pk-title">스탯 파편</div>
+                ${(perkData.shardRows || []).map(row => `<div class="lx-pk-row is-shard">${row.map(cell).join('')}</div>`).join('')}
+            </div>
+        </div>
+        <div class="lx-foot">위 = 픽률(이 라인 판 중 그 룬을 든 비율) · 아래 = 승률. 파편은 같은 것이 두 줄에 있어 줄과 무관하게 합산한 값</div>`;
+    }
+    const mode = v === 'win' ? 'win' : 'common';
+    const list = B.sorted('rune', mode, 5);
+    if (!list.length) return `<div class="lx-none">표본 없음</div>`;
+    return `<div class="lx-rune-pages">${list.map(r => {
+        const [ps, ks, m1, m2, m3, ss, s1, s2] = r.key;
+        return `<div class="lx-rune-page">
+            <div class="lx-runes">
+                <div class="lx-rune-col"><div class="lx-blk-h"><img class="lx-style" src="${perkIcon(ps)}" alt="">${perkName(ps)}</div>${lxRuneGrid(ps, [ks, m1, m2, m3], false)}</div>
+                <div class="lx-rune-col"><div class="lx-blk-h"><img class="lx-style" src="${perkIcon(ss)}" alt="">${perkName(ss)}</div>${lxRuneGrid(ss, [s1, s2], true)}</div>
+            </div>
+            <div class="lx-seq-vals"><span class="${lxWr(r.wins, r.games)}">${lxPct(r.wins, r.games)}% 승률</span><span class="lx-lav">${lxPct(r.games, B.total)}% 픽률</span><span class="lx-gray">${r.games}판</span></div>
+        </div>`;
+    }).join('')}</div>`;
+}
+
+// ── 탭 바 동작 — 그룹마다 몸통을 다시 그린다 ─────────────────────────
+function lxBindTabs(root, c) {
+    const handlers = {
+        'build': v => { document.getElementById('lx-build-body').innerHTML = lxBuildBody(c, v); },
+        'mu-counter': v => { root.querySelectorAll('[data-group="mu-synergy"] .lx-tabbtn').forEach(b => b.classList.remove('active')); const el = document.getElementById('lx-mu-rows'); if (el) el.innerHTML = lxMatchupRows(c, 'counter', v); },
+        'mu-synergy': v => { root.querySelectorAll('[data-group="mu-counter"] .lx-tabbtn').forEach(b => b.classList.remove('active')); const el = document.getElementById('lx-mu-rows'); if (el) el.innerHTML = lxMatchupRows(c, 'synergy', v); },
+        'start': v => { document.getElementById('lx-start-body').innerHTML = lxStartBody(c, v); },
+        'early': v => { document.getElementById('lx-early-body').innerHTML = lxEarlyBody(c, v); },
+        'sets': v => {
+            const B = c.B;
+            document.getElementById('lx-sets-body').innerHTML = lxRow({ title: '세트', metrics: LX_M3 },
+                B.rows(v).slice(0, 12).map(r => ({ icons: r.key.map(itemIconOf), title: r.key.map(itemNameOf).join(' › '), vals: lxVals3(B, v, r) })), { empty: '타임라인 표본을 모으는 중' });
+        },
+        'skill': v => { document.getElementById('lx-skill-body').innerHTML = lxSkillBody(c, v); },
+        'rune': v => { document.getElementById('lx-rune-body').innerHTML = lxRuneBody(c, v); }
+    };
+    root.addEventListener('click', (e) => {
+        const btn = e.target.closest('.lx-tabbtn');
+        if (!btn) return;
+        const bar = btn.closest('.lx-tabbar');
+        const group = bar.dataset.group;
+        bar.querySelectorAll('.lx-tabbtn').forEach(b => b.classList.toggle('active', b === btn));
+        if (handlers[group]) handlers[group](btn.dataset.val);
+    });
 }
 
 
