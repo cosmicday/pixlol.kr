@@ -594,8 +594,24 @@ function mountDoguUI() {
     const ac = document.getElementById('autocomplete-dropdown');
     if (wrap && ac) wrap.appendChild(ac);
 
+    // ★ 「PC 버전」 스위치 (2026-08-26, 사용자 요청 — 폰 브라우저의 "데스크톱 사이트" 가 안 먹어서).
+    //   켜면 localStorage 에 적고 새로고침한다. 실제 뷰포트 전환은 index.html 머리의 인라인 스크립트가
+    //   CSS 보다 먼저 한다 (여기서 바꾸면 첫 그림이 폰 배치로 나갔다가 튄다).
+    //   터치 기기(pointer: coarse)이거나 이미 켜져 있을 때만 링크를 보인다 — PC 에서 "PC 버전" 은 뜻이 없다.
+    const pcOn = (() => { try { return localStorage.getItem('pixlol_pc') === '1'; } catch (e) { return false; } })();
+    const coarse = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || (navigator.maxTouchPoints > 0);
+    const pcLink = (pcOn || coarse) ? [{
+        id: 'pixlol-pcmode',
+        text: pcOn ? '모바일 버전' : 'PC 버전',
+        onClick: () => {
+            try { if (pcOn) localStorage.removeItem('pixlol_pc'); else localStorage.setItem('pixlol_pc', '1'); } catch (e) { }
+            location.reload();
+        }
+    }] : [];
+
     DoguUI.mountFooter(null, Object.assign({}, DOGU_BRAND, {
         links: { terms: '/terms', privacy: '/privacy' },
+        extraLinks: pcLink,
         notice: "pixlol.kr isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
         contact: '00.y4no@gmail.com'
     }));

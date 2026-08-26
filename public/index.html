@@ -7,6 +7,17 @@
          확대를 막고 있었고, iOS 사파리는 이 지시를 원래 무시해서 안드로이드에서만
          못 늘어나 동작도 갈렸다. 확대는 열어 두는 게 맞다. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ★ 「PC 버전」 스위치 (2026-08-26, 사용자 요청). 푸터의 링크가 localStorage 에 켜 두면
+         뷰포트를 1240px 로 잡아 폰에서도 PC 배치(768px 이하 규칙 안 탐)로 그린다. 브라우저의
+         "데스크톱 사이트" 가 사용자 폰에서 안 먹어서 사이트 쪽에 둔 것. CSS 보다 먼저 돌아야 해서 여기다 -->
+    <script>
+        try {
+            if (localStorage.getItem('pixlol_pc') === '1') {
+                document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1240');
+                document.documentElement.classList.add('pixlol-pc');
+            }
+        } catch (e) { }
+    </script>
     <!-- 모바일 브라우저 주소창(상태바) 색. 없으면 브라우저가 반투명 헤더 뒤 배경을
          제멋대로 밝게 잡는다 — 사이트 바탕(#1a1a2e 계열)과 같은 어두운 색으로 못 박는다 -->
     <meta name="theme-color" content="#16112a">
