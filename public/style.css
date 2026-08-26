@@ -2468,6 +2468,111 @@ main {
 
 .stats-panels .build-panel { flex: 1; min-width: 0; }
 
+/* ══════════════════════════════════════════════════════════════
+   챔피언 통계 상세 페이지 `/stats/<영문키>` (2026-08-26 신설)
+   ★ 표에서 줄을 펼치던 것을 페이지로 뗐다. 펼침은 표 폭(1000px) 안에 갇혔고
+     정렬·필터를 누르면 닫혔다. 페이지는 주소가 남아서 링크로도 보낼 수 있다.
+   ══════════════════════════════════════════════════════════════ */
+.cs-page {
+    max-width: 1000px;      /* ★ 통계 표와 같은 폭 — 오갈 때 좌우가 안 튄다 */
+    margin: 0 auto;
+    padding-bottom: 60px;
+}
+
+.cs-back {
+    display: inline-block;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+@media (hover: hover) {
+    .cs-back:hover { color: var(--text-bright); }
+}
+
+.cs-head {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+}
+
+.cs-portrait {
+    width: 84px;
+    height: 84px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.cs-head-main { min-width: 0; flex: 1; }
+
+.cs-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.cs-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-bright);
+}
+
+.cs-lane {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.cs-lane img { width: 16px; height: 16px; }
+
+/* 수치 블록 — 값이 위, 이름이 아래다 (값을 먼저 읽게) */
+.cs-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 26px;
+}
+
+.cs-stat-val {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.2;
+}
+
+.cs-stat-val.is-up { color: #4ade80; }
+.cs-stat-val.is-down { color: #f87171; }
+
+.cs-stat-key {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 2px;
+}
+
+.cs-scope {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--text-faint);
+}
+
+/* ★ 페이지에서는 룬·상성을 위아래로 쌓는다 — 표 안(가로 1000px)에 우겨넣던 제약이 없다.
+   ★ column 으로 바꿀 땐 `align-items` 를 stretch 로 같이 돌린다 (기본 규칙이 flex-start 다) */
+.cs-body .stats-panels {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.cs-body .mu-panel { width: auto; }
+
 .mu-panel {
     width: 300px;
     flex-shrink: 0;
@@ -3702,6 +3807,19 @@ main {
         align-items: stretch;
         gap: 12px;
     }
+
+    /* 챔피언 통계 상세 페이지 */
+    .cs-head {
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .cs-portrait { width: 60px; height: 60px; }
+    .cs-name { font-size: 18px; }
+
+    /* 수치 다섯 칸이 390px 에 한 줄로 안 들어간다 — 두 줄로 흐르게 두고 간격만 줄인다 */
+    .cs-stats { gap: 14px 18px; }
+    .cs-stat-val { font-size: 16px; }
 
     .mu-panel {
         width: auto;

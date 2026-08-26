@@ -326,7 +326,11 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (pathParts[1] === 'stats') {
         document.getElementById('stats-container').style.display = "block";
         document.getElementById('stats-container').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:#a79fbd;'>통계 데이터를 불러오는 중입니다...</div>";
-        showStats();
+        // ★ `/stats/<영문키>` 는 챔피언 상세 페이지다 (2026-08-26).
+        //   **popstate 쪽도 같이 고쳐야 한다** — 한쪽만 고치면 주소로 들어오는 것과
+        //   뒤로가기가 다르게 동작한다 (이 저장소에서 반복해서 겪은 함정이다).
+        if (pathParts[2]) showChampStatPage(decodeURIComponent(pathParts[2]));
+        else showStats();
         setActiveNav('nav-stats');
     } else if (pathParts[1] === 'codex') {
         // /codex 또는 /codex/rune 처럼 탭을 주소에 담을 수 있다
@@ -399,8 +403,11 @@ window.addEventListener('popstate', (event) => {
         showPrivacyPolicy();
     } else if (currentPath === '/terms') {
         showTerms();
-    } else if (currentPath === '/stats') {
-        showStats();
+    } else if (currentPath.startsWith('/stats')) {
+        // ★ 진입부(pathParts 분기)와 여기 두 곳을 항상 같이 고친다 — `/stats/<영문키>` 는 상세 페이지다
+        const seg = currentPath.split('/');
+        if (seg[2]) showChampStatPage(decodeURIComponent(seg[2]));
+        else showStats();
         setActiveNav('nav-stats');
     } else if (currentPath.startsWith('/codex')) {
         // ★ 진입부(pathParts 분기)와 여기 두 곳을 항상 같이 고친다. 한쪽만 고치면
@@ -3988,6 +3995,140 @@ function renderBuildPanel(data, lane) {
     </div>`;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+//  챔피언 통계 상세 페이지 — `/stats/<영문키>` (2026-08-26 신설)
+//
+//  ★★ 예전엔 표에서 줄을 누르면 그 아래가 펼쳐졌는데, 페이지로 뗐다.
+//    펼침은 표 폭(1000px) 안에 갇혀서 룬·아이템·상성을 한 줄로 욱여넣어야 했고,
+//    정렬이나 필터를 누르면 그냥 닫혔다 (표를 다시 그리니까).
+//
+//  ★ 주소가 남아서 링크를 보낼 수 있다. 챔피언 탭이 `/champions/Garen` 이라 통계는 `/stats/Garen`.
+//  ★ **진입은 `pushState`** 라 뒤로가기 한 번에 표로 돌아온다 (도감 탭과 같은 규칙).
+//
+//  ★ 시작 아이템·코어 순서·스킬 순서는 **아직 없다** — 타임라인 수집을 2026-08-26에 켰고
+//    표본이 며칠 쌓여야 한다. 그때 이 페이지에 칸을 더하면 된다.
+// ══════════════════════════════════════════════════════════════════════
+async function showChampStatPage(engId) {
+    hideAllContainers();
+    setActiveNav('nav-stats');
+    const box = document.getElementById('stats-container');
+    box.style.display = 'block';
+    box.innerHTML = `<div class="stats-empty">불러오는 중입니다...</div>`;
+
+    await fetchChampionMap();
+    // 영문 키 → 숫자 키. 대소문자가 어긋날 수 있어 소문자로 맞춰 찾는다 (도감 rc 와 같은 함정)
+    const champ = Number(Object.keys(championIdMap)
+        .find(k => String(championIdMap[k]).toLowerCase() === String(engId).toLowerCase()));
+    if (!Number.isFinite(champ)) {
+        box.innerHTML = `<div class="stats-empty">알 수 없는 챔피언입니다.</div>`;
+        return;
+    }
+
+    let data;
+    try {
+        const res = await fetch(`/api/champion-stats${window.statScope ? `?scope=${encodeURIComponent(window.statScope)}` : ''}`);
+        data = await res.json();
+        // ★ 박제된 패치는 행이 DB 가 아니라 정적 파일에 있다 — showStats() 와 같은 처리다
+        if (data.archived) {
+            const a = await loadStatsArchive(data.scope, data.updatedAt);
+            const ex = expandStatsArchive(a);
+            window.statsArchiveExpanded = window.statsArchiveExpanded || {};
+            window.statsArchiveExpanded[data.scope] = ex;
+            data.rows = ex.rows;
+            if (!Object.keys(data.totals || {}).length) {
+                data.totals = {};
+                a.t.forEach(t => { data.totals[ARCHIVE_KB[t[0]]] = t[1]; });
+            }
+        }
+    } catch (e) {
+        box.innerHTML = `<div class="stats-empty">통계를 불러오지 못했습니다.</div>`;
+        return;
+    }
+
+    const kor = window.korChampMap[championIdMap[champ]] || engId;
+    const total = (data.totals && (data.totals.all ?? Object.values(data.totals)[0])) || 0;
+
+    // ★ 표와 **같은 방식으로** 줄을 만든다 — 여기서 따로 계산하면 표와 숫자가 어긋난다.
+    //   `pos: -1` 이 라인 무관 전체, 0~4 가 라인별이다.
+    const mine = (data.rows || []).filter(r => r.champ === champ);
+    const all = mine.find(r => r.pos === -1) || mine[0];
+    if (!all || !all.games) {
+        box.innerHTML = `<div class="stats-empty">${kor} 의 표본이 없습니다. <a href="/stats" class="stat-back">← 통계로</a></div>`;
+        return;
+    }
+    // 주 라인 = 판수가 제일 많은 라인
+    const byLane = mine.filter(r => r.pos >= 0).sort((a, b) => b.games - a.games);
+    const main = byLane[0] || all;
+    const laneKey = STAT_POS.find(p => p.code === main.pos)?.key;
+    const laneName = STAT_POS.find(p => p.code === main.pos)?.name || '';
+    const laneRate = all.games ? main.games / all.games * 100 : 0;
+
+    const wr = all.wins / all.games * 100;
+    const pick = total ? all.games / total * 100 : 0;
+    const ban = total ? (all.bans || 0) / total * 100 : 0;
+
+    // ★ 순위는 "같은 라인 안에서 티어 점수 순" 이다. **표와 같은 `computeLaneTiers` 를 쓴다** —
+    //   여기서 따로 계산하면 "표에선 3번째인데 페이지엔 12위" 같은 어긋남이 생긴다.
+    const tierInfo = computeLaneTiers(data.rows || [], total);
+    const myTier = tierInfo.get(`${champ}|${main.pos}`);
+    const sameLane = [...tierInfo.entries()]
+        .filter(([k]) => k.endsWith(`|${main.pos}`))
+        .map(([, v]) => v.score)
+        .sort((a, b) => b - a);
+    const rank = myTier ? sameLane.indexOf(myTier.score) + 1 : 0;
+
+    const stat = (label, val, cls) => `
+        <div class="cs-stat"><div class="cs-stat-val ${cls || ''}">${val}</div><div class="cs-stat-key">${label}</div></div>`;
+
+    box.innerHTML = `
+    <div class="cs-page">
+        <a href="/stats" class="cs-back">← 챔피언 통계</a>
+        <div class="cs-head">
+            <img class="cs-portrait" src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${championIdMap[champ]}.png" alt="">
+            <div class="cs-head-main">
+                <div class="cs-title">
+                    <span class="cs-name">${kor}</span>
+                    ${laneKey ? `<span class="cs-lane"><img src="${STAT_LANE_ICON[laneKey]}" alt="">${laneName} ${laneRate.toFixed(0)}%</span>` : ''}
+                    ${myTier ? `<span class="stats-tier tier-${myTier.tier.toLowerCase()}">${myTier.tier}</span>` : ''}
+                </div>
+                <div class="cs-stats">
+                    ${stat('승률', wr.toFixed(1) + '%', wr >= 50 ? 'is-up' : 'is-down')}
+                    ${stat('픽률', pick.toFixed(1) + '%')}
+                    ${stat('밴률', ban.toFixed(1) + '%')}
+                    ${stat('판수', all.games.toLocaleString())}
+                    ${rank ? stat('순위', `${rank} / ${sameLane.length}`) : ''}
+                </div>
+                <div class="cs-scope">마스터+ 솔로랭크 · ${String(data.scope || '').replace('p:', '')} 패치 · 전체 ${total.toLocaleString()}판</div>
+            </div>
+        </div>
+        <div class="cs-body" id="cs-body"><div class="build-loading">빌드를 불러오는 중...</div></div>
+    </div>`;
+
+    // ── 빌드·상성은 표에서 쓰던 그 함수를 그대로 쓴다 (두 벌 두면 어긋난다)
+    const body = document.getElementById('cs-body');
+    try {
+        await loadPerkData();
+        let builds, matchups;
+        if (data.archived) {
+            builds = archivedBuildsFor(data.scope, champ);
+            matchups = archivedMatchupsFor(data.scope, champ);
+        } else {
+            const [b, m] = await Promise.all([
+                fetch(`/api/champion-builds?scope=${encodeURIComponent(data.scope)}&champ=${champ}`).then(r => r.ok ? r.json() : null),
+                fetch(`/api/champion-matchups?scope=${encodeURIComponent(data.scope)}&champ=${champ}`).then(r => r.ok ? r.json() : null).catch(() => null)
+            ]);
+            builds = b; matchups = m;
+        }
+        const lane = main.pos >= 0 ? String(main.pos) : 'all';
+        body.innerHTML = `<div class="stats-panels">`
+            + (builds ? renderBuildPanel(builds, lane) : `<div class="build-empty">빌드를 불러오지 못했습니다.</div>`)
+            + renderMatchupPanel(matchups, lane)
+            + `</div>`;
+    } catch (e) {
+        body.innerHTML = `<div class="build-empty">빌드를 불러오지 못했습니다.</div>`;
+    }
+}
+
 async function showStats() {
     if (window.location.pathname !== '/stats') window.history.pushState({ page: 'stats' }, '', '/stats');
     hideAllContainers();
@@ -4238,76 +4379,21 @@ async function showStats() {
 
     renderStatsTable();
 
-    // ── 줄을 누르면 룬 빌드가 펼쳐진다 (2026-08-16)
-    //   ★ tbody 에 한 번만 붙인다. renderStatsTable() 은 tbody 를 통째로 갈아 끼우는 게
-    //     아니라 innerHTML 만 바꾸므로 이 리스너는 살아남는다.
-    //     (랭킹 표는 표를 매번 새로 그려서 리스너도 매번 붙였다 — 구조가 다르다)
-    //   ★ 정렬·필터를 누르면 펼친 줄이 닫힌다. innerHTML 을 새로 그리니 당연한데,
-    //     "닫히지 말아야 한다" 고 보기도 어렵다 — 줄 순서가 통째로 바뀌기 때문이다.
-    const buildCache = new Map();
-    const matchupCache = new Map();   // 상성. 키는 빌드와 같은 `scope|champ` 다
-    document.getElementById('stats-tbody').addEventListener('click', async (e) => {
+    // ── 줄을 누르면 **챔피언 상세 페이지로 간다** (2026-08-26).
+    //   ★★ 예전엔 줄 아래가 펼쳐졌는데 페이지로 뗐다. 펼침은 표 폭(1000px) 안에 갇혀
+    //     룬·아이템·상성을 한 줄로 욱여넣어야 했고, 정렬·필터를 누르면 그냥 닫혔다
+    //     (표를 다시 그리니까). 페이지는 주소가 남아서 링크로 보낼 수도 있다.
+    //   ★ tbody 에 한 번만 붙인다 — renderStatsTable() 은 innerHTML 만 바꿔서 리스너가 살아남는다.
+    document.getElementById('stats-tbody').addEventListener('click', (e) => {
         const tr = e.target.closest('.stats-row');
         if (!tr) return;
-
-        // 이미 펼쳐져 있으면 접는다
-        const opened = tr.nextElementSibling;
-        if (opened && opened.classList.contains('stats-build-row')) {
-            opened.remove();
-            tr.classList.remove('is-open');
-            return;
-        }
-        // 다른 줄이 열려 있으면 닫는다 (한 번에 하나만)
-        document.querySelectorAll('.stats-build-row').forEach(r => r.remove());
-        document.querySelectorAll('.stats-row.is-open').forEach(r => r.classList.remove('is-open'));
-
-        const champ = Number(tr.dataset.champ);
-        tr.classList.add('is-open');
-        const row = document.createElement('tr');
-        row.className = 'stats-build-row';
-        row.innerHTML = `<td colspan="7"><div class="build-loading">룬 통계를 불러오는 중...</div></td>`;
-        tr.after(row);
-
-        const cacheKey = `${data.scope}|${champ}`;
-        try {
-            await loadPerkData();
-            // ★ 상성은 룬과 따로 받는다 — 실패해도 룬 패널은 떠야 하므로 catch 를 따로 둔다.
-            if (!matchupCache.has(cacheKey)) {
-                if (data.archived) {
-                    // 박제된 패치는 표를 그릴 때 파일을 이미 받아 뒀다. API 를 안 부른다.
-                    matchupCache.set(cacheKey, archivedMatchupsFor(data.scope, champ));
-                } else {
-                    try {
-                        const mres = await fetch(`/api/champion-matchups?scope=${encodeURIComponent(data.scope)}&champ=${champ}`);
-                        matchupCache.set(cacheKey, mres.ok ? await mres.json() : null);
-                    } catch (e) { matchupCache.set(cacheKey, null); }
-                }
-            }
-            if (!buildCache.has(cacheKey)) {
-                // ★ 박제된 패치는 표를 그릴 때 파일을 이미 받아 뒀다. API 를 안 부른다.
-                if (data.archived) {
-                    buildCache.set(cacheKey, archivedBuildsFor(data.scope, champ));
-                } else {
-                    const res = await fetch(`/api/champion-builds?scope=${encodeURIComponent(data.scope)}&champ=${champ}`);
-                    if (!res.ok) throw new Error('응답 오류');
-                    buildCache.set(cacheKey, await res.json());
-                }
-            }
-            // 불러오는 동안 사용자가 다시 눌러 닫았을 수 있다
-            if (!row.isConnected) return;
-            // ★ ALL 탭도 줄이 라인별이 되면서(2026-08-19) 패널은 **그 줄의 라인**을 따른다.
-            //   라인 필터가 켜져 있으면 어차피 둘이 같은 값이다.
-            const rowLane = tr.dataset.lane != null && Number(tr.dataset.lane) >= 0 ? tr.dataset.lane : 'all';
-            row.innerHTML = `<td colspan="7"><div class="stats-panels">`
-                + renderBuildPanel(buildCache.get(cacheKey), rowLane)
-                + renderMatchupPanel(matchupCache.get(cacheKey), rowLane)
-                + `</div></td>`;
-        } catch (err) {
-            if (row.isConnected) {
-                row.innerHTML = `<td colspan="7"><div class="build-empty">룬 통계를 불러오지 못했습니다.</div></td>`;
-            }
-        }
+        const eng = championIdMap[Number(tr.dataset.champ)];
+        if (!eng) return;
+        window.history.pushState({ page: 'stats', champ: eng }, '', `/stats/${eng}`);
+        showChampStatPage(eng);
     });
+
+    // (옛 펼침 코드 — 남겨 두면 위 리스너와 둘 다 돌아서 페이지 이동 뒤에 표가 다시 그려진다)
 
     // ── 컨트롤
     document.getElementById('stats-scope').addEventListener('change', (e) => {
