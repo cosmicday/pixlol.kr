@@ -3947,6 +3947,12 @@ function renderBuildPanel(data, lane) {
         }
         const picked = [ks, m1, m2, m3];
         const secPicked = [s1, s2];
+        // ★★ 파편은 `shards.includes(id)` 로 켜면 안 된다 — **같은 것이 두 줄에 나오기**
+        //   때문이다 (적응형 5008 = 1·2번째 줄, 체력 증가 5001 = 2·3번째 줄).
+        //   징크스가 실제로 1줄에 적응형+공격속도가 같이 켜지고 다른 줄이 비었다.
+        //   도감 룬 트리에서 겪은 그것과 같은 함정이다.
+        //   ★ 자리로 켠다 — 서버가 슬림 문서 25·26·27번 칸(공격/유연/방어 파편)을
+        //     **그 순서 그대로** 담으므로 `shards[i]` 가 곧 i번째 줄의 선택이다.
         const shards = (top('shard', 1)[0] || {}).key || [];
         return `
         <div class="build-grid-wrap">
@@ -3965,9 +3971,9 @@ function renderBuildPanel(data, lane) {
             </div>
             <div class="bg-col">
                 <div class="bg-title">스탯 파편</div>
-                ${(perkData.shardRows || []).map(row => `
+                ${(perkData.shardRows || []).map((row, ri) => `
                     <div class="bg-row bg-row-shard">
-                        ${row.map(id => `<img class="bg-perk bg-shard${shards.includes(id) ? ' on' : ''}"
+                        ${row.map(id => `<img class="bg-perk bg-shard${shards[ri] === id ? ' on' : ''}"
                             src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`).join('')}
                     </div>`).join('')}
             </div>
