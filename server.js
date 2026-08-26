@@ -26,7 +26,10 @@ const matchCacheSchema = new mongoose.Schema({
     // ★ 7일이다 (2026-08-15에 14일에서 줄였다). 검색 트래픽이 거의 없어서 원본을
     //   2주씩 들고 있을 이유가 적고, 통계 슬림(matchstats)에 자리를 내주기 위해서다.
     //   ※ expires 를 고쳐도 **이미 만들어진 TTL 인덱스는 안 바뀐다** — ensureStatIndexes() 참고
-    createdAt: { type: Date, expires: '7d', default: Date.now }
+    //   ★★ 2026-08-26: 7 → 3일. 타임라인 슬림(빌드 통계)에 자리를 내준다.
+    //     실측으로 이 컬렉션이 **3.0MB / 35건** 밖에 안 됐다 — 검색 트래픽이 거의 없어서
+    //     예상 평형(92MB)의 30분의 1이다. 줄여도 잃는 게 사실상 없다.
+    createdAt: { type: Date, expires: '3d', default: Date.now }
 });
 
 // ★ 폴백 조회용 인덱스 (puuid로 매치를 찾고 최신순 정렬)
@@ -142,10 +145,27 @@ const matchStatSchema = new mongoose.Schema({
     // 참가자 10명 x 28칸. 자리 뜻은 toSlimMatch() 주석 참고 (자리가 곧 의미다)
     p: { type: [[Number]], required: true },
     b: { type: [Number] },                 // 밴 (-1 = 밴 안 함은 제외하고 담는다)
+
+    // ★★ 타임라인 슬림 (2026-08-26 신설) — 시작 아이템 · 코어 빌드 순서 · 스킬 순서용.
+    //   ★ 원본 타임라인은 **판당 759KB** 라 통째로 담으면 안 된다 (2026-08-15에 173MB 먹은 전적).
+    //     필요한 이벤트만 뽑으면 3.4KB, 소모품까지 빼면 그 아래다 — 실측으로 확인했다.
+    //   ★ 못 받으면 두 필드가 없다. **집계가 있는 판만 세면 되므로 통계가 안 깨진다.**
+    //
+    //   sk  참가자 10명의 **스킬 레벨업 순서 문자열** (`"QEWQQRQEQEREEWWRWW"`).
+    //       배열 자리가 곧 참가자 번호다 (p 와 같은 순서). 최대 18자라 10명 190바이트.
+    //   it  아이템 구매를 **평평한 배열**로 `[초, 참가자(0~9), 아이템id, 초, 참가자, id, …]`.
+    //       ★ 3개씩 끊어 읽는다. 객체 배열로 담으면 키 이름이 매 건 반복돼 2배가 된다.
+    //       ★ 소모품·장신구는 뺀다 (`TL_SKIP_ITEMS`) — 물약·와드는 빌드가 아니라 잡음이고
+    //         구매 건수의 3분의 1을 차지한다.
+    sk: { type: [String] },
+    it: { type: [Number] },
     // ★ 30일이다 (2026-08-15에 룬·주문을 넣으면서 45 → 30). 한 건이 2.4KB 라
     //   하루 3,000판이면 7MB/일 → 정착점 213MB. 45일로 두면 320MB 가 되어
     //   matchcaches 와 합쳐 512MB 의 85%를 먹는다.
-    createdAt: { type: Date, expires: '30d', default: Date.now }
+    //   ★★ 2026-08-26: 30 → 21일. 타임라인 슬림(시작템·코어순서·스킬순서)을 같이 담기 위해서다.
+    //     ★ 줄이면 **박제 시한도 같이 당겨진다** — 첫 수집 8/16 + 21일 = **9/6 이 한계**다
+    //       (30일이면 9/14 였다). 그 전에 옛 패치를 박제하지 않으면 판수가 조용히 줄어든다.
+    createdAt: { type: Date, expires: '21d', default: Date.now }
 });
 // 집계는 "패치 + k" 로 훑는다. 원본은 재집계 대비용이라 90일이면 충분하다.
 matchStatSchema.index({ v: 1, k: 1 });
@@ -937,6 +957,54 @@ function perkValues(p) {
 //   ★ rankSet 은 **그 경기 날짜의 명단**이다 (2026-08-17). 예전엔 전역 rankPuuidSet
 //     ("지금 명단")을 직접 봤는데, 수집이 경기 다음 날 저녁이라 그 사이 강등된 사람이
 //     안 세어져 5명짜리가 4명으로 찍혔다. 부르는 쪽에서 날짜에 맞는 집합을 넘긴다.
+// ★★ 타임라인에서 **빌드에 쓰는 것만** 뽑는다 (2026-08-26 신설).
+//   원본이 판당 759KB 라 통째로는 못 담는다 — 실측 기준 이 함수가 3.4KB 로 줄인다.
+//
+//   ★ 소모품·장신구는 뺀다. 물약·와드는 "빌드" 가 아니라 잡음인데 **구매 건수의 3분의 1**을
+//     차지한다. 시작 아이템(도란검·롱소드)과 완성템은 그대로 남는다.
+//   ★ `ITEM_UNDO`(되사기 취소)는 **직전 구매를 지운다.** 안 지우면 "샀다 무른" 아이템이
+//     빌드에 섞인다 — 상점에서 잘못 눌렀다 무르는 일이 흔하다.
+const TL_SKIP_ITEMS = new Set([
+    2003, 2031, 2033, 2010,          // 체력 물약 · 충전형 물약 · 부패 물약 · 비스킷
+    2055,                            // 제어 와드
+    3340, 3363, 3364,                // 장신구 (투명 와드 · 망원형 개조 · 예언자의 렌즈)
+    2138, 2139, 2140,                // 영약 3종
+    2422, 2419                       // 잡화(추적자의 팔목 등 되팔리는 자리)
+]);
+
+function toSlimTimeline(timeline) {
+    const frames = timeline?.info?.frames;
+    if (!Array.isArray(frames)) return null;
+
+    const skills = {};           // 참가자 → 스킬 슬롯 배열
+    const buys = [];             // [초, 참가자0~9, 아이템id]
+
+    frames.forEach(f => (f.events || []).forEach(e => {
+        const pid = e.participantId;
+        if (!pid || pid < 1 || pid > 10) return;
+
+        if (e.type === 'SKILL_LEVEL_UP') {
+            const ch = 'QWER'[(e.skillSlot || 0) - 1];
+            if (ch) (skills[pid] || (skills[pid] = [])).push(ch);
+        } else if (e.type === 'ITEM_PURCHASED') {
+            if (TL_SKIP_ITEMS.has(e.itemId)) return;
+            buys.push([Math.round((e.timestamp || 0) / 1000), pid - 1, e.itemId]);
+        } else if (e.type === 'ITEM_UNDO') {
+            // 되무른 아이템을 뒤에서부터 하나 지운다 (같은 참가자의 마지막 구매)
+            const gone = e.beforeId;
+            if (!gone) return;
+            for (let i = buys.length - 1; i >= 0; i--) {
+                if (buys[i][1] === pid - 1 && buys[i][2] === gone) { buys.splice(i, 1); break; }
+            }
+        }
+    }));
+
+    // 참가자 순서대로 문자열 10칸. 없는 자리는 빈 문자열이라 자리는 유지된다.
+    const sk = Array.from({ length: 10 }, (_, i) => (skills[i + 1] || []).join(''));
+    if (!buys.length && sk.every(x => !x)) return null;
+    return { sk, it: buys.flat() };
+}
+
 function toSlimMatch(detail, rankSet) {
     const info = detail?.info;
     const meta = detail?.metadata;
@@ -1126,6 +1194,24 @@ async function fetchMatchStats() {
                 const slim = toSlimMatch(data, rankSet);
 
                 if (slim) {
+                    // ★★ 타임라인도 같이 받는다 (2026-08-26) — 시작템·코어순서·스킬순서용.
+                    //   ★ 별도 잡을 만들지 않은 이유: 이 루프가 이미 그 매치를 처리 중이고
+                    //     `MatchSeen.done` 도 여기서 찍는다. 잡을 나누면 "detail 은 받았는데
+                    //     타임라인은 못 받은" 상태를 따로 관리해야 한다.
+                    //   ★ **실패해도 detail 은 살린다** — 타임라인은 곁가지라 그것 때문에
+                    //     통계 본체를 버리면 손해가 크다. 그 판은 `sk`/`it` 이 없을 뿐이다.
+                    //   ★ 호출이 판당 2회가 된다 (분당 10 → 20). 순간 최대 22/50 라 여유가 있다.
+                    try {
+                        const tl = await riotApi.get(
+                            `https://asia.api.riotgames.com/lol/match/v5/matches/${t.matchId}/timeline`
+                        );
+                        const st = toSlimTimeline(tl.data);
+                        if (st) { slim.sk = st.sk; slim.it = st.it; statCounters.tl = (statCounters.tl || 0) + 1; }
+                    } catch (e) {
+                        if (e.response?.status === 429) throw e;   // 429 는 바깥에서 사이클을 끊는다
+                        statCounters.tlFail = (statCounters.tlFail || 0) + 1;
+                    }
+
                     await MatchStat.updateOne({ matchId: slim.matchId }, { $set: slim }, { upsert: true });
                     statCounters.save++;
                 } else {
@@ -1504,8 +1590,9 @@ async function buildChampStats() {
 async function ensureStatIndexes() {
     const want = [
         // TTL — 값이 다르면 collMod 로 갈아 끼운다
-        { col: 'matchcaches', key: { createdAt: 1 }, ttl: 7 * 86400 },
-        { col: 'matchstats', key: { createdAt: 1 }, ttl: 30 * 86400 },
+        // ★ 스키마의 `expires` 와 **같은 값이어야 한다** — 여기가 실제로 DB 에 반영하는 자리다
+        { col: 'matchcaches', key: { createdAt: 1 }, ttl: 3 * 86400 },
+        { col: 'matchstats', key: { createdAt: 1 }, ttl: 21 * 86400 },
         { col: 'matchseens', key: { createdAt: 1 }, ttl: 3 * 86400 },
         // 조회용 — 선언만 돼 있고 실제로 없던 것들
         { col: 'matchcaches', key: { 'detail.metadata.participants': 1, 'detail.info.gameEndTimestamp': -1 } },
@@ -1737,7 +1824,9 @@ async function startJobs() {
         if (c.scan || c.fetch) {
             const left = scanPending();
             const phase = left > 0 ? `순회 ${left}명 남음` : '수집';
-            console.log(`[Stat] 최근 10분(${phase}): 명단 ${c.scan}명 훑음 / 매치 ${c.seen}건 관측 / detail ${c.fetch}건 (저장 ${c.save} · 제외 ${c.skip})`);
+            // ★ 타임라인은 곁가지라 받은 수·실패 수를 따로 적는다 — 실패가 쌓이면 여기서 드러난다
+            const tl = (c.tl || c.tlFail) ? ` / 타임라인 ${c.tl || 0}건${c.tlFail ? ` (실패 ${c.tlFail})` : ''}` : '';
+            console.log(`[Stat] 최근 10분(${phase}): 명단 ${c.scan}명 훑음 / 매치 ${c.seen}건 관측 / detail ${c.fetch}건 (저장 ${c.save} · 제외 ${c.skip})${tl}`);
             statCounters = { scan: 0, seen: 0, fetch: 0, save: 0, skip: 0 };
         }
     }, 600 * 1000);
