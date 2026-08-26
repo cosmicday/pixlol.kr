@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // ★ `/stats/<영문키>` 는 챔피언 상세 페이지다 (2026-08-26).
         //   **popstate 쪽도 같이 고쳐야 한다** — 한쪽만 고치면 주소로 들어오는 것과
         //   뒤로가기가 다르게 동작한다 (이 저장소에서 반복해서 겪은 함정이다).
-        if (pathParts[2]) showChampStatPage(decodeURIComponent(pathParts[2]));
+        if (pathParts[2]) showChampStatPage(decodeURIComponent(pathParts[2]), pathParts[3] ? decodeURIComponent(pathParts[3]) : null);
         else showStats();
         setActiveNav('nav-stats');
     } else if (pathParts[1] === 'codex') {
@@ -406,7 +406,7 @@ window.addEventListener('popstate', (event) => {
     } else if (currentPath.startsWith('/stats')) {
         // ★ 진입부(pathParts 분기)와 여기 두 곳을 항상 같이 고친다 — `/stats/<영문키>` 는 상세 페이지다
         const seg = currentPath.split('/');
-        if (seg[2]) showChampStatPage(decodeURIComponent(seg[2]));
+        if (seg[2]) showChampStatPage(decodeURIComponent(seg[2]), seg[3] ? decodeURIComponent(seg[3]) : null);
         else showStats();
         setActiveNav('nav-stats');
     } else if (currentPath.startsWith('/codex')) {
@@ -4008,7 +4008,11 @@ function renderBuildPanel(data, lane) {
 //  ★ 시작 아이템·코어 순서·스킬 순서는 **아직 없다** — 타임라인 수집을 2026-08-26에 켰고
 //    표본이 며칠 쌓여야 한다. 그때 이 페이지에 칸을 더하면 된다.
 // ══════════════════════════════════════════════════════════════════════
-async function showChampStatPage(engId) {
+//  ★★ 라인은 주소에 담는다 — `/stats/Camille/top` (2026-08-26 수정).
+//    안 담으면 **탑 카밀을 눌러도 판수가 제일 많은 라인(서폿)이 뜬다.**
+//    챔피언 하나가 여러 라인에 걸치는 게 흔해서(표도 라인별로 줄이 나뉜다) 반드시 필요하다.
+//    ★ 라인을 안 주면 주 라인(판수 최다)으로 물러난다 — `/stats/Camille` 도 열린다.
+async function showChampStatPage(engId, laneKey) {
     hideAllContainers();
     setActiveNav('nav-stats');
     const box = document.getElementById('stats-container');
@@ -4056,15 +4060,20 @@ async function showChampStatPage(engId) {
         box.innerHTML = `<div class="stats-empty">${kor} 의 표본이 없습니다. <a href="/stats" class="stat-back">← 통계로</a></div>`;
         return;
     }
-    // 주 라인 = 판수가 제일 많은 라인
-    const byLane = mine.filter(r => r.pos >= 0).sort((a, b) => b.games - a.games);
-    const main = byLane[0] || all;
-    const laneKey = STAT_POS.find(p => p.code === main.pos)?.key;
+    // 이 챔피언이 실제로 서는 라인들 (판수 순). 라인 전환 버튼도 이걸로 그린다
+    const byLane = mine.filter(r => r.pos >= 0 && r.games).sort((a, b) => b.games - a.games);
+    // ★ 주소로 받은 라인을 먼저 쓰고, 없거나 표본이 없으면 주 라인으로 물러난다
+    const wantPos = laneKey ? (STAT_POS.find(p => p.key === laneKey)?.code ?? -1) : -1;
+    const main = byLane.find(r => r.pos === wantPos) || byLane[0] || all;
+    const curKey = STAT_POS.find(p => p.code === main.pos)?.key;
     const laneName = STAT_POS.find(p => p.code === main.pos)?.name || '';
     const laneRate = all.games ? main.games / all.games * 100 : 0;
 
-    const wr = all.wins / all.games * 100;
-    const pick = total ? all.games / total * 100 : 0;
+    // ★★ 수치는 **그 라인 값**이다 (승률·판수). 예전엔 전체(`pos:-1`)를 썼는데
+    //   그러면 탑 카밀을 눌러도 서폿까지 합친 승률이 떠서 표와 숫자가 달랐다.
+    //   ★ 밴은 라인별로 안 나뉜다 — 밴은 챔피언 단위라 전체 값(`all`)을 쓴다.
+    const wr = main.games ? main.wins / main.games * 100 : 0;
+    const pick = total ? main.games / total * 100 : 0;
     const ban = total ? (all.bans || 0) / total * 100 : 0;
 
     // ★ 순위는 "같은 라인 안에서 티어 점수 순" 이다. **표와 같은 `computeLaneTiers` 를 쓴다** —
@@ -4088,14 +4097,25 @@ async function showChampStatPage(engId) {
             <div class="cs-head-main">
                 <div class="cs-title">
                     <span class="cs-name">${kor}</span>
-                    ${laneKey ? `<span class="cs-lane"><img src="${STAT_LANE_ICON[laneKey]}" alt="">${laneName} ${laneRate.toFixed(0)}%</span>` : ''}
+                    ${curKey ? `<span class="cs-lane"><img src="${STAT_LANE_ICON[curKey]}" alt="">${laneName} ${laneRate.toFixed(0)}%</span>` : ''}
                     ${myTier ? `<span class="stats-tier tier-${myTier.tier.toLowerCase()}">${myTier.tier}</span>` : ''}
                 </div>
+                ${byLane.length > 1 ? `
+                <div class="cs-lanes">
+                    ${byLane.map(r => {
+                        const p = STAT_POS.find(x => x.code === r.pos);
+                        if (!p) return '';
+                        const rate = all.games ? r.games / all.games * 100 : 0;
+                        return `<button class="cs-lane-btn${r.pos === main.pos ? ' active' : ''}" data-lane="${p.key}">
+                            <img src="${STAT_LANE_ICON[p.key]}" alt="">${p.name}<span class="cs-lane-btn-rate">${rate.toFixed(0)}%</span>
+                        </button>`;
+                    }).join('')}
+                </div>` : ''}
                 <div class="cs-stats">
                     ${stat('승률', wr.toFixed(1) + '%', wr >= 50 ? 'is-up' : 'is-down')}
                     ${stat('픽률', pick.toFixed(1) + '%')}
                     ${stat('밴률', ban.toFixed(1) + '%')}
-                    ${stat('판수', all.games.toLocaleString())}
+                    ${stat('판수', main.games.toLocaleString())}
                     ${rank ? stat('순위', `${rank} / ${sameLane.length}`) : ''}
                 </div>
                 <div class="cs-scope">마스터+ 솔로랭크 · ${String(data.scope || '').replace('p:', '')} 패치 · 전체 ${total.toLocaleString()}판</div>
@@ -4103,6 +4123,15 @@ async function showChampStatPage(engId) {
         </div>
         <div class="cs-body" id="cs-body"><div class="build-loading">빌드를 불러오는 중...</div></div>
     </div>`;
+
+    // ── 라인 전환. 주소도 같이 바꾸되 **이력은 안 쌓는다**(`replaceState`) —
+    //   라인을 셋 훑어본 사람이 표로 돌아가려고 뒤로가기를 세 번 누르게 하면 안 된다
+    //   (도감 탭·챔피언 탭과 같은 규칙).
+    box.querySelectorAll('.cs-lane-btn').forEach(b => b.addEventListener('click', () => {
+        const k = b.dataset.lane;
+        window.history.replaceState({ page: 'stats', champ: engId, lane: k }, '', `/stats/${engId}/${k}`);
+        showChampStatPage(engId, k);
+    }));
 
     // ── 빌드·상성은 표에서 쓰던 그 함수를 그대로 쓴다 (두 벌 두면 어긋난다)
     const body = document.getElementById('cs-body');
@@ -4389,8 +4418,13 @@ async function showStats() {
         if (!tr) return;
         const eng = championIdMap[Number(tr.dataset.champ)];
         if (!eng) return;
-        window.history.pushState({ page: 'stats', champ: eng }, '', `/stats/${eng}`);
-        showChampStatPage(eng);
+        // ★★ 누른 줄의 라인을 같이 넘긴다 — 안 넘기면 **탑 카밀을 눌러도 서폿 카밀이 뜬다**
+        //   (판수가 제일 많은 라인으로 물러나므로). 표가 라인별로 줄이 나뉘어 있어서
+        //   `data-lane` 이 곧 그 줄의 라인이다. `-1`(라인 무관)이면 주소에 안 붙인다.
+        const lane = STAT_POS.find(p => p.code === Number(tr.dataset.lane))?.key;
+        const url = lane ? `/stats/${eng}/${lane}` : `/stats/${eng}`;
+        window.history.pushState({ page: 'stats', champ: eng, lane }, '', url);
+        showChampStatPage(eng, lane);
     });
 
     // (옛 펼침 코드 — 남겨 두면 위 리스너와 둘 다 돌아서 페이지 이동 뒤에 표가 다시 그려진다)

@@ -2535,6 +2535,47 @@ main {
 
 .cs-lane img { width: 16px; height: 16px; }
 
+/* ★ 라인 전환 버튼. 그 챔피언이 **두 라인 이상에 설 때만** 나온다
+   (카밀처럼 탑·서폿을 오가는 챔피언). 한 라인뿐이면 제목 옆 라인 표시로 충분하다. */
+.cs-lanes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.cs-lane-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 7px;
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.cs-lane-btn img { width: 15px; height: 15px; }
+
+.cs-lane-btn-rate {
+    font-size: 11px;
+    color: var(--text-faint);
+}
+
+@media (hover: hover) {
+    .cs-lane-btn:hover { color: var(--text-bright); }
+}
+
+.cs-lane-btn.active {
+    background: rgba(167, 139, 250, 0.15);
+    border-color: rgba(167, 139, 250, 0.5);
+    color: #a78bfa;
+}
+
+.cs-lane-btn.active .cs-lane-btn-rate { color: #a78bfa; }
+
 /* 수치 블록 — 값이 위, 이름이 아래다 (값을 먼저 읽게) */
 .cs-stats {
     display: flex;
