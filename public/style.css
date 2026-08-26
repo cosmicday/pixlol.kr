@@ -2535,6 +2535,94 @@ main {
 
 .cs-lane img { width: 16px; height: 16px; }
 
+/* ══════════════════════════════════════════════════════════════
+   룬 격자 — 인게임 룬 페이지와 같은 배치 (2026-08-26)
+   ★ 예전엔 아이콘을 한 줄로 늘어놨는데 뭐가 주 룬이고 보조인지 읽어야 알았다.
+     격자는 **전체를 다 그리고 고른 것만 밝게** 해서 보는 순간 룬 페이지가 보인다.
+   ★ 자리는 perkData.slots(계열별 4줄) · perkData.shardRows(3x3) 그대로다.
+   ══════════════════════════════════════════════════════════════ */
+.build-grid-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 22px;
+    flex-wrap: wrap;
+    padding: 4px 0 10px;
+}
+
+/* ★ 칸마다 상자를 준다 — lolalytics 처럼 "주 계열 / 보조 / 파편" 이 카드 셋으로 보인다.
+   상자가 없으면 격자 셋이 한 덩어리로 붙어 어디까지가 주 계열인지 안 갈린다. */
+.bg-col {
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 9px 12px 5px;
+}
+
+.bg-title {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 7px;
+    white-space: nowrap;
+}
+
+.bg-title img { width: 15px; height: 15px; }
+
+.bg-row {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+/* ★ 고르지 않은 룬은 어둡게 깔린다 — 격자 모양을 유지하면서 고른 것만 눈에 들어오게 */
+.bg-perk {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    opacity: 0.22;
+    filter: grayscale(1);
+    transition: none;
+}
+
+.bg-perk.on {
+    opacity: 1;
+    filter: none;
+}
+
+/* 키스톤 줄만 크게 — 인게임에서도 키스톤이 제일 크다 */
+.bg-row.is-key .bg-perk { width: 34px; height: 34px; }
+
+.bg-row.is-key .bg-perk.on {
+    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.65);
+}
+
+/* 파편은 원이 아니라 네모다 (인게임도 그렇다) */
+.bg-shard { border-radius: 6px; width: 22px; height: 22px; }
+
+/* ★ 승률·판수는 격자 오른쪽 끝에 붙인다. `align-self: center` 로 세로 가운데를 잡는데,
+   wrap 이 `align-items: flex-start` 라 이걸 안 주면 맨 윗줄에 붙어 떠 보인다. */
+/* ★ `margin-left: auto` 로 밀지 않는다 — 격자 셋이 폭을 다 안 쓰므로 밀면 숫자만
+   화면 끝에 홀로 떠서 어느 룬 페이지의 승률인지 안 읽힌다. 파편 칸 바로 옆에 붙인다. */
+.bg-meta {
+    align-self: center;
+    font-size: 13px;
+}
+
+/* ── 아래 2단: 왼쪽 룬 페이지(격자 + 2·3위) / 오른쪽 소환사 주문.
+   ★ 격자 셋이 폭을 다 안 쓰므로 오른쪽에 주문을 붙인다 — 안 그러면 룬 줄의
+     승률이 `space-between` 으로 화면 끝까지 밀려 아이콘과 멀어진다. */
+.build-lower {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 20px;
+    align-items: start;
+}
+
+.build-lower-main { min-width: 0; }
+
 /* ★ 라인 전환 버튼. 그 챔피언이 **두 라인 이상에 설 때만** 나온다
    (카밀처럼 탑·서폿을 오가는 챔피언). 한 라인뿐이면 제목 옆 라인 표시로 충분하다. */
 .cs-lanes {
@@ -2632,7 +2720,19 @@ main {
     margin-bottom: 10px;
 }
 
+/* ★ 챔피언 통계 페이지(`.cs-body`)에서만 약한/강한 상대를 가로 2단으로 (2026-08-26).
+   그 페이지는 상성이 폭 1000px 을 통째로 쓰는데 세로로 쌓으면 오른쪽 절반이 비었다.
+   ★ `.cs-body` 로 한정하는 게 핵심이다 — 같은 패널이 좁은 곁칸에도 들어간다. */
+.mu-cols { display: grid; }
+
 .mu-side + .mu-side { margin-top: 12px; }
+
+.cs-body .mu-cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 26px;
+}
+
+.cs-body .mu-side + .mu-side { margin-top: 0; }
 
 .mu-side-title {
     font-size: 11px;
@@ -2703,6 +2803,10 @@ main {
     flex-wrap: wrap;
     gap: 10px;
     margin: 8px 0 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 10px 12px;
 }
 
 .build-item-cell {
@@ -2767,9 +2871,11 @@ main {
 
 /* ── 핵심 룬 4개를 가로로. 지금 표본에서 믿을 수 있는 건 사실상 이 줄이다
    (룬 페이지 전체는 조합이 많아 top 조합도 한 자릿수 %가 나온다) */
+/* ★ `repeat(4, 1fr)` 이 아니라 auto-fit 이다 — 핵심 룬이 셋뿐인 챔피언(징크스)이 흔한데
+   4칸 고정이면 오른쪽 한 칸이 통째로 비어 줄이 잘린 것처럼 보인다. */
 .build-ks-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 10px;
     margin-bottom: 18px;
 }
@@ -3839,6 +3945,18 @@ main {
         grid-template-columns: 1fr;
         gap: 14px;
     }
+
+    /* 폰에서는 룬 격자 아래로 주문을 내린다 (2단을 390px 에 욱여넣을 수 없다) */
+    .build-lower {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    /* ★ `.cs-body` 를 같이 적어야 한다 — 데스크톱 규칙이 `.cs-body .mu-cols` 라
+       구체성이 높아서, 여기서 `.mu-cols` 만 쓰면 폰에서도 2단이 그대로 이긴다 */
+    .cs-body .mu-cols { grid-template-columns: 1fr; }
+
+    .cs-body .mu-side + .mu-side { margin-top: 12px; }
 
     /* ★ 상성 패널은 폰에서 룬 패널 아래로 내린다.
        stretch 를 같이 줘야 한다 — column 에 flex-start 가 남으면 자식이 내용 폭으로

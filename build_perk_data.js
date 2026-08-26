@@ -68,6 +68,16 @@ async function getJson(url) {
         slots[s.id] = (s.slots || []).filter(sl => sl.type !== 'kStatMod').map(sl => sl.perks);
     });
 
+    // ★★ 스탯 파편 3x3 (2026-08-26 추가). 통계 페이지가 룬을 **인게임 격자**로 그리는데
+    //   파편도 격자여야 모양이 맞는다 (고른 것만 밝게, 나머지는 어둡게).
+    //   ★ 파편 줄은 다섯 계열이 전부 같다 — 도감(codex_data)에서 이미 확인한 것이라 한 벌만 담는다.
+    //     달라지면 아래 경고가 뜬다.
+    const shardRows = ((styles.styles[0] || {}).slots || [])
+        .filter(sl => sl.type === 'kStatMod').map(sl => sl.perks);
+    const oddShard = styles.styles.find(s =>
+        JSON.stringify((s.slots || []).filter(sl => sl.type === 'kStatMod').map(sl => sl.perks)) !== JSON.stringify(shardRows));
+    if (oddShard) console.log(`  ★ 파편 줄이 계열마다 다르다 (${oddShard.id}) — 격자를 계열별로 갈라야 한다`);
+
     // ── 소환사 주문. 협곡에 나오는 것만 (모드 전용 주문까지 담을 이유가 없다)
     const spellMap = {};
     Object.values(summoner.data)
@@ -83,10 +93,12 @@ async function getJson(url) {
 //   spells 의 경로는 파일 이름뿐이라 Data Dragon 주소를 앞에 붙여 쓴다.
 //   slots 는 계열 id → 룬 슬롯 4개(파편 제외). [0] 이 키스톤이고,
 //   보조 룬 2개를 인게임과 같은 순서로 되돌릴 때 쓴다.
+//   shardRows 는 스탯 파편 3x3 (다섯 계열이 전부 같아서 한 벌만 담는다).
 const perkData = {
     perks: ${JSON.stringify(perkMap, null, 0)},
     styles: ${JSON.stringify(styleMap, null, 0)},
     slots: ${JSON.stringify(slots, null, 0)},
+    shardRows: ${JSON.stringify(shardRows, null, 0)},
     spells: ${JSON.stringify(spellMap, null, 0)}
 };
 `;

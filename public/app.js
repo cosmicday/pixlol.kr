@@ -3839,13 +3839,15 @@ function renderMatchupPanel(mdata, lane) {
             <h4 class="build-title">상성</h4>
             <span class="build-total">${laneTag}상대 ${rows.length}명 ${thin}</span>
         </div>
-        <div class="mu-side">
-            <div class="mu-side-title mu-weak">이 챔피언이 약한 상대</div>
-            ${weak.map(line).join('') || '<div class="build-none">표본 없음</div>'}
-        </div>
-        <div class="mu-side">
-            <div class="mu-side-title mu-strong">이 챔피언이 강한 상대</div>
-            ${strong.map(line).join('') || '<div class="build-none">표본 없음</div>'}
+        <div class="mu-cols">
+            <div class="mu-side">
+                <div class="mu-side-title mu-weak">이 챔피언이 약한 상대</div>
+                ${weak.map(line).join('') || '<div class="build-none">표본 없음</div>'}
+            </div>
+            <div class="mu-side">
+                <div class="mu-side-title mu-strong">이 챔피언이 강한 상대</div>
+                ${strong.map(line).join('') || '<div class="build-none">표본 없음</div>'}
+            </div>
         </div>
         <div class="mu-foot">같은 라인에서 마주친 판만 센다 · ${MATCHUP_SHOW_MIN}판 미만은 흐리게</div>
     </div>`;
@@ -3909,21 +3911,67 @@ function renderBuildPanel(data, lane) {
     }).join('');
 
     // ── 룬 페이지 전체
-    const runes = top('rune', 3).map(r => {
+    // ★★ 룬을 **인게임 룬 페이지 격자**로 그린다 (2026-08-26). 예전엔 아이콘을 한 줄로
+    //   늘어놨는데, 그러면 뭐가 주 룬이고 보조인지 읽어야 알 수 있었다.
+    //   격자는 **전체를 다 그리고 고른 것만 밝게** 하므로 보는 순간 룬 페이지가 보인다.
+    //   ★ 자리 정보는 `perkData.slots[계열]`(4줄) · `perkData.shardRows`(3x3) 다 —
+    //     둘 다 CD perkstyles 슬롯 순서 그대로라 인게임과 같은 배치다.
+    const runeGrid = (styleId, picked, rows) => {
+        const slots = (perkData.slots[styleId] || []).slice(0, rows === undefined ? 99 : rows);
+        return slots.map((row, i) => `
+            <div class="bg-row${i === 0 ? ' is-key' : ''}">
+                ${row.map(id => `<img class="bg-perk${picked.includes(id) ? ' on' : ''}"
+                    src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`).join('')}
+            </div>`).join('');
+    };
+
+    const runes = top('rune', 3).map((r, idx) => {
         const [ps, ks, m1, m2, m3, ss, s1, s2] = r.key;
-        const sec = perksBySlot(ss, [s1, s2]);
-        const img = (id, cls) => `<img class="build-perk ${cls || ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}">`;
+        // ★ 첫 줄(가장 많이 쓰는 룬 페이지)만 격자로 크게 보여준다 — 셋 다 격자면 세로가 3배가 된다.
+        //   나머지 둘은 예전처럼 한 줄로 요약한다.
+        if (idx > 0) {
+            const sec = perksBySlot(ss, [s1, s2]);
+            const img = (id, cls) => `<img class="build-perk ${cls || ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}">`;
+            return `
+            <div class="build-item">
+                <div class="build-runes">
+                    <img class="build-style" src="${perkIcon(ps)}" alt="" title="${perkName(ps)}">
+                    ${img(ks, 'build-perk-key')}
+                    ${[m1, m2, m3].map(x => img(x)).join('')}
+                    <span class="build-div"></span>
+                    <img class="build-style" src="${perkIcon(ss)}" alt="" title="${perkName(ss)}">
+                    ${sec.map(x => img(x)).join('')}
+                </div>
+                ${metaHtml(r)}
+            </div>`;
+        }
+        const picked = [ks, m1, m2, m3];
+        const secPicked = [s1, s2];
+        const shards = (top('shard', 1)[0] || {}).key || [];
         return `
-        <div class="build-item">
-            <div class="build-runes">
-                <img class="build-style" src="${perkIcon(ps)}" alt="" title="${perkName(ps)}">
-                ${img(ks, 'build-perk-key')}
-                ${[m1, m2, m3].map(x => img(x)).join('')}
-                <span class="build-div"></span>
-                <img class="build-style" src="${perkIcon(ss)}" alt="" title="${perkName(ss)}">
-                ${sec.map(x => img(x)).join('')}
+        <div class="build-grid-wrap">
+            <div class="bg-col">
+                <div class="bg-title"><img src="${perkIcon(ps)}" alt="">${perkName(ps)}</div>
+                ${runeGrid(ps, picked)}
             </div>
-            ${metaHtml(r)}
+            <div class="bg-col">
+                <div class="bg-title"><img src="${perkIcon(ss)}" alt="">${perkName(ss)}</div>
+                ${/* 보조는 키스톤 줄(0번)을 빼고 3줄만 고를 수 있다 */''}
+                ${(perkData.slots[ss] || []).slice(1).map(row => `
+                    <div class="bg-row">
+                        ${row.map(id => `<img class="bg-perk${secPicked.includes(id) ? ' on' : ''}"
+                            src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`).join('')}
+                    </div>`).join('')}
+            </div>
+            <div class="bg-col">
+                <div class="bg-title">스탯 파편</div>
+                ${(perkData.shardRows || []).map(row => `
+                    <div class="bg-row bg-row-shard">
+                        ${row.map(id => `<img class="bg-perk bg-shard${shards.includes(id) ? ' on' : ''}"
+                            src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`).join('')}
+                    </div>`).join('')}
+            </div>
+            <div class="bg-meta">${metaHtml(r)}</div>
         </div>`;
     }).join('') || `<div class="build-none">표본 없음</div>`;
 
@@ -3931,7 +3979,7 @@ function renderBuildPanel(data, lane) {
     //   ★ 조합이 아니라 **낱개**다. 한 판에서 6칸이 각각 세어지므로 픽률 합이 100%를 넘는다 —
     //     "이 챔피언 판의 몇 %에서 이 아이템이 마지막까지 남았나" 라는 뜻이다.
     //   ★ 소모품(제어 와드·충전형 물약)은 서버가 이미 뺐다. 안 빼면 1위가 제어 와드가 된다.
-    const items = top('item', 8).map(r => {
+    const items = top('item', 14).map(r => {
         const id = r.key[0];
         const nm = itemNameOf(id);
         return `
@@ -3978,18 +4026,14 @@ function renderBuildPanel(data, lane) {
         <h4 class="build-title build-title-gap">최종 아이템</h4>
         <div class="build-item-row">${items}</div>
 
-        <div class="build-cols">
-            <div class="build-col build-col-wide">
-                <h4 class="build-title">룬 페이지</h4>
+        <div class="build-lower">
+            <div class="build-lower-main">
+                <h4 class="build-title build-title-gap">룬 페이지</h4>
                 ${runes}
             </div>
-            <div class="build-col">
-                <h4 class="build-title">소환사 주문</h4>
+            <div class="build-lower-side">
+                <h4 class="build-title build-title-gap">소환사 주문</h4>
                 ${spells}
-            </div>
-            <div class="build-col">
-                <h4 class="build-title">스탯 파편</h4>
-                ${shards}
             </div>
         </div>
     </div>`;
