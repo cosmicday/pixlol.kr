@@ -4317,7 +4317,7 @@ function lxSkillBody(c, type) {
     const B = c.B;
     if (type === 'skillpri') {
         const cards = B.rows('skillpri').map(r => ({ top: r.key.map(n => lxSkill(c, n, true)).join('<span class="lx-arrow is-sm">›</span>'), title: r.key.map(n => 'QWER'[n - 1]).join(' > '), vals: lxVals3(B, 'skillpri', r) }));
-        return lxRow({ title: '스킬 우선순위', metrics: LX_M3 }, cards, { empty: '타임라인 표본을 모으는 중', topH: 30 });
+        return lxRow({ title: '우선순위', metrics: LX_M3 }, cards, { empty: '타임라인 표본을 모으는 중', topH: 34 });
     }
     // 레벨별 스킬 순서 — 세로로 한 줄씩 (순서 + 승률·픽률·판수)
     const list = B.rows(type).slice(0, 8);
