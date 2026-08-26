@@ -327,7 +327,14 @@ async function getJson(url) {
         let body = (String(raw).match(/<mainText>([\s\S]*?)<\/mainText>/) || [, String(raw)])[1];
         // ★ 다른 툴팁을 끼워 넣는 `{{ ... }}` 는 뜻이 통하는 문장이 아니라 통째로 지운다
         //   (`{{ Item_KeywordDefinition_Wounds }}` 같은 것 — 인게임에서 hover 로 뜨는 용어 설명이다).
-        body = body.replace(/\{\{[^}]*\}\}/g, '').trim();
+        body = body.replace(/\{\{[^}]*\}\}/g, '');
+        // ★★ 그러면 **그 앞의 `<br>` 이 남는다.** 개수가 주문마다 달라서 설명과 아래 구분선
+        //   사이 여백이 제각각이 됐다 (2026-08-26 지적 — 점화 4개 · 유체화 2개 · 나머지 0개).
+        //   끝의 줄바꿈을 자르고, 문장 중간에 3개 이상 연속된 것도 두 개로 줄인다.
+        body = body
+            .replace(/(?:\s|<br\s*\/?>)+$/gi, '')
+            .replace(/(?:<br\s*\/?>\s*){3,}/gi, '<br><br>')
+            .trim();
 
         const graphs = [];      // 레벨 스케일 자리 → 각주 그래프
         const missing = [];
