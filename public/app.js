@@ -3179,9 +3179,13 @@ async function showCodex(target) {
     function renderStatBar() {
         const el = document.getElementById('codex-statbar');
         if (!el) return;
-        // ★ 탭을 몸통에 적어 둔다 — CSS 가 룬·주문 탭의 왼쪽 칸을 좁히는 데 쓴다
-        //   (`.codex-body[data-tab="rune"] .codex-left`). 여기가 탭을 보는 유일한 자리다.
+        // ★ 탭을 몸통과 **통에도** 적어 둔다 — CSS 가 룬·주문 탭의 칸 폭을 줄이는 데 쓴다.
+        //   ★★ 통(`#codex-container`)에도 붙이는 이유: 상세만 줄이면 남는 폭이 오른쪽에
+        //     그대로 남아 **화면 전체가 왼쪽으로 치우친다.** 통의 max-width 를 같이 줄이면
+        //     `margin: auto` 가 살아나서 검색창·탭 줄까지 한꺼번에 가운데로 모인다.
+        //   여기가 탭을 보는 유일한 자리다.
         el.closest('.codex-body')?.setAttribute('data-tab', curTab);
+        document.getElementById('codex-container')?.setAttribute('data-tab', curTab);
         if (curTab !== 'item') { el.style.display = 'none'; el.innerHTML = ''; return; }
         el.style.display = '';
 
