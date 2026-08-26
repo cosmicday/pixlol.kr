@@ -4100,20 +4100,6 @@ function lxSkill(c, n, small) {
     return `<span class="lx-skl${small ? ' is-sm' : ''}">${u ? `<img src="${u}" alt="">` : ''}<i>${L}</i></span>`;
 }
 
-// 룬 격자 — 인게임 배치 그대로 깔고 고른 것만 밝게. ★ 파편은 자리로 켠다 (같은 파편이 두 줄에 있다)
-function lxRuneGrid(styleId, picked, skipKey) {
-    return (perkData.slots[styleId] || []).slice(skipKey ? 1 : 0).map((row, i) => `
-        <div class="lx-rg-row${!skipKey && i === 0 ? ' is-key' : ''}">
-            ${row.map(id => `<img class="lx-rg${picked.includes(id) ? ' on' : ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`).join('')}
-        </div>`).join('');
-}
-function lxShardGrid(shards) {
-    return (perkData.shardRows || []).map((row, ri) => `
-        <div class="lx-rg-row is-shard">
-            ${row.map(id => `<img class="lx-rg lx-shard${shards[ri] === id ? ' on' : ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`).join('')}
-        </div>`).join('');
-}
-
 // ── 추이 그래프 4개 (승률 · 픽률 · 판수 · 밴률, 최근 7일) ────────────────
 function lxTrend(c, trend) {
     const days = (trend && trend.days) || [];
@@ -4242,8 +4228,8 @@ function lxLowerRows(c) {
     const fin = B.rows('item');
     const floor = Math.max(BUILD_MIN_GAMES, (fin[0]?.games || 0) * LX_WIN_MIN_SHARE);
     const finalRows = lxRow({ title: '인기 아이템', metrics: LX_M3 }, itemCards('item', fin.slice(0, LX_ROW_MAX)))
-        + lxRow({ title: '승률 아이템', metrics: LX_M3 }, itemCards('item', fin.filter(r => r.games >= floor).sort((a, b) => b.wins / b.games - a.wins / a.games).slice(0, LX_ROW_MAX)))
-        + lxRow({ title: '전체 아이템', metrics: LX_M3 }, itemCards('item', fin.slice(0, 60)));
+        + lxRow({ title: '승률 아이템', metrics: LX_M3 }, itemCards('item', fin.filter(r => r.games >= floor).sort((a, b) => b.wins / b.games - a.wins / a.games).slice(0, LX_ROW_MAX)));
+    // ★ '전체 아이템' 줄은 2026-08-27 에 뺐다 (사용자 요청) — 인기 아이템과 같은 자료의 긴 판이었다
 
     if (!hasTl) {
         return spells + box('lx-items', '', finalRows);
@@ -4334,51 +4320,52 @@ function lxRuneBox(c) {
     const B = c.B;
     if (!B.has || !B.total) return '';
     return `<div class="lx-box" id="lx-runes">
-        ${lxTabBar('rune', [{ v: 'all', label: '전체' }, { v: 'win', label: '승률 최고 룬 페이지' }, { v: 'common', label: '인기 룬 페이지' }], 'all')}
+        ${lxTabBar('rune', [{ v: 'all', label: '전체' }, { v: 'win', label: '승률 최고' }, { v: 'common', label: '픽률 최고' }], 'all')}
         <div id="lx-rune-body">${lxRuneBody(c, 'all')}</div>
     </div>`;
 }
+// ★ 룬 표 — 계열 5개 + 파편을 인게임 배치로, 룬마다 픽률(위)·승률(아래).
+//   탭: 전체 = 다 밝게 / 승률 최고 · 픽률 최고 = **줄마다 그 값이 가장 높은 칸만 밝게**, 나머지는 어둡게 (2026-08-27, 사용자 요청).
+//   승률 최고는 표본이 얇은 칸이 100% 로 튀지 않게 "그 줄 1위 판수의 10% 이상(최소 5판)" 인 칸 중에서 고른다.
 function lxRuneBody(c, v) {
     const B = c.B;
-    if (v === 'all') {
-        // 룬마다 픽률·승률 — 계열 5개를 인게임 배치로, 파편 3x3 까지
-        const perk = {};
-        B.rows('perk').forEach(r => { perk[r.key[0]] = r; });
-        const cell = id => {
-            const r = perk[id];
-            return `<div class="lx-pk${r ? '' : ' is-none'}">
-                <img src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">
-                <div class="lx-v lx-lav">${r ? lxPct(r.games, B.total) : '-'}</div>
-                <div class="lx-v ${r ? lxWr(r.wins, r.games) : 'lx-dim'}">${r ? lxPct(r.wins, r.games) : '-'}</div>
-            </div>`;
-        };
-        const styles = Object.keys(perkData.slots || {}).map(Number).sort((a, b) => a - b);
-        if (!Object.keys(perk).length) return `<div class="lx-none">룬별 통계는 다음 집계부터 나옵니다.</div>`;
-        return `<div class="lx-pk-trees">
-            ${styles.map(sid => `<div class="lx-pk-tree">
-                <div class="lx-pk-title"><img src="${perkIcon(sid)}" alt="">${perkName(sid)}</div>
-                ${(perkData.slots[sid] || []).map((row, i) => `<div class="lx-pk-row${i === 0 ? ' is-key' : ''}">${row.map(cell).join('')}</div>`).join('')}
-            </div>`).join('')}
-            <div class="lx-pk-tree lx-pk-shards">
-                <div class="lx-pk-title">스탯 파편</div>
-                ${(perkData.shardRows || []).map(row => `<div class="lx-pk-row is-shard">${row.map(cell).join('')}</div>`).join('')}
-            </div>
-        </div>
-        <div class="lx-foot">위 = 픽률(이 라인 판 중 그 룬을 든 비율) · 아래 = 승률. 파편은 같은 것이 두 줄에 있어 줄과 무관하게 합산한 값</div>`;
-    }
-    const mode = v === 'win' ? 'win' : 'common';
-    const list = B.sorted('rune', mode, 5);
-    if (!list.length) return `<div class="lx-none">표본 없음</div>`;
-    return `<div class="lx-rune-pages">${list.map(r => {
-        const [ps, ks, m1, m2, m3, ss, s1, s2] = r.key;
-        return `<div class="lx-rune-page">
-            <div class="lx-runes">
-                <div class="lx-rune-col"><div class="lx-blk-h"><img class="lx-style" src="${perkIcon(ps)}" alt="">${perkName(ps)}</div>${lxRuneGrid(ps, [ks, m1, m2, m3], false)}</div>
-                <div class="lx-rune-col"><div class="lx-blk-h"><img class="lx-style" src="${perkIcon(ss)}" alt="">${perkName(ss)}</div>${lxRuneGrid(ss, [s1, s2], true)}</div>
-            </div>
-            <div class="lx-seq-vals"><span class="${lxWr(r.wins, r.games)}">${lxPct(r.wins, r.games)}% 승률</span><span class="lx-lav">${lxPct(r.games, B.total)}% 픽률</span><span class="lx-gray">${r.games}판</span></div>
+    const perk = {};
+    B.rows('perk').forEach(r => { perk[r.key[0]] = r; });
+    if (!Object.keys(perk).length) return `<div class="lx-none">룬별 통계는 다음 집계부터 나옵니다.</div>`;
+
+    // 줄에서 밝힐 칸 하나
+    const bestOf = row => {
+        if (v === 'all') return null;
+        const rs = row.map(id => perk[id]).filter(Boolean);
+        if (!rs.length) return null;
+        if (v === 'common') return rs.sort((x, y) => y.games - x.games)[0].key[0];
+        const floor = Math.max(BUILD_MIN_GAMES, Math.max(...rs.map(r => r.games)) * LX_WIN_MIN_SHARE);
+        const cand = rs.filter(r => r.games >= floor);
+        return (cand.length ? cand : rs).sort((x, y) => y.wins / y.games - x.wins / x.games || y.games - x.games)[0].key[0];
+    };
+    const cell = (id, best) => {
+        const r = perk[id];
+        const dim = v !== 'all' && id !== best;
+        return `<div class="lx-pk${r ? '' : ' is-none'}${dim ? ' is-dim' : ''}${best === id ? ' is-best' : ''}">
+            <img src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">
+            <div class="lx-v lx-lav">${r ? lxPct(r.games, B.total) : '-'}</div>
+            <div class="lx-v ${r ? lxWr(r.wins, r.games) : 'lx-dim'}">${r ? lxPct(r.wins, r.games) : '-'}</div>
         </div>`;
-    }).join('')}</div>`;
+    };
+    const rowHtml = (row, cls) => { const b = bestOf(row); return `<div class="lx-pk-row${cls}">${row.map(id => cell(id, b)).join('')}</div>`; };
+    const styles = Object.keys(perkData.slots || {}).map(Number).sort((a, b) => a - b);
+    const note = v === 'all' ? '' : (v === 'win' ? ' · 줄마다 승률이 가장 높은 칸만 밝게 (표본 하한 있음)' : ' · 줄마다 픽률이 가장 높은 칸만 밝게');
+    return `<div class="lx-pk-trees">
+        ${styles.map(sid => `<div class="lx-pk-tree">
+            <div class="lx-pk-title"><img src="${perkIcon(sid)}" alt="">${perkName(sid)}</div>
+            ${(perkData.slots[sid] || []).map((row, i) => rowHtml(row, i === 0 ? ' is-key' : '')).join('')}
+        </div>`).join('')}
+        <div class="lx-pk-tree lx-pk-shards">
+            <div class="lx-pk-title">스탯 파편</div>
+            ${(perkData.shardRows || []).map(row => rowHtml(row, ' is-shard')).join('')}
+        </div>
+    </div>
+    <div class="lx-foot">위 = 픽률(이 라인 판 중 그 룬을 든 비율) · 아래 = 승률. 파편은 같은 것이 두 줄에 있어 줄과 무관하게 합산한 값${note}</div>`;
 }
 
 // ── 탭 바 동작 — 그룹마다 몸통을 다시 그린다 ─────────────────────────

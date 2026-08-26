@@ -2805,10 +2805,9 @@ main {
 .lx-pk-row.is-shard .lx-pk img { border-radius: 4px; width: 22px; height: 22px; }
 .lx-pk .lx-v { height: 14px; line-height: 14px; font-size: 10px; }
 .lx-pk.is-none { opacity: 0.35; }
-
-.lx-rune-pages { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; }
-.lx-rune-page { border: 1px solid #222; padding: 8px; }
-.lx-rune-page .lx-seq-vals { justify-content: center; margin-top: 4px; }
+/* 승률 최고 · 픽률 최고 탭 — 줄에서 뽑힌 칸만 밝고 나머지는 어둡게 (2026-08-27) */
+.lx-pk.is-dim { opacity: 0.22; filter: grayscale(1); }
+.lx-pk.is-best img { box-shadow: 0 0 0 2px var(--lx-teal); }
 
 /* 같은 이름을 예전 화면이 쓰던 규칙 — 승률 색 (전적 카드 등) */
 .build-wr-up { color: #60a5fa; }
