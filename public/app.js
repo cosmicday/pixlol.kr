@@ -4285,12 +4285,34 @@ function lxEarlyBody(c, v) {
 // ── 스킬 우선순위 상자 (전체 / 6 / 10 / 15레벨) ──────────────────────
 function lxSkillBox(c) {
     const B = c.B;
-    if (!B.has || !B.total || !B.tl) return '';
+    if (!B.has || !B.total || !B.tl) return '';   // ★ 타임라인(스킬 로그)이 없는 패치(16.16)는 상자째 안 그린다
     return `<div class="lx-box" id="lx-skills">
+        ${lxSkillBuild(c)}
         ${lxTabBar('skill', [{ v: 'skillpri', label: '전체' }, { v: 'skillord6', label: '6레벨' }, { v: 'skillord10', label: '10레벨' }, { v: 'skillord', label: '15레벨' }], 'skillpri')}
         <div class="lx-box-rows" id="lx-skill-body">${lxSkillBody(c, 'skillpri')}</div>
     </div>`;
 }
+// ★ 스킬 빌드 — 가장 많이 쓰는 선마 순서(Q›E›W)와 스킬 순서 4x18 격자 (2026-08-27, 사용자 요청으로 아이템과 룬 사이에).
+//   빌드 상자를 뺄 때 같이 사라졌던 그 격자다. 찍은 칸에 레벨 숫자, 15레벨 뒤 3칸은 흐리게(집계가 15까지만 센다).
+function lxSkillBuild(c) {
+    const B = c.B;
+    const pri = B.pick('skillpri', 'common'), ord = B.pick('skillord', 'common');
+    const under = r => r ? `<div class="lx-under"><span class="${lxWr(r.wins, r.games)}">${lxPct(r.wins, r.games)}% 승률</span> <span class="lx-lav">${lxPct(r.games, B.tl)}% 픽률</span> <span class="lx-gray">${r.games}판</span></div>` : '';
+    const priHtml = pri
+        ? `<div class="lx-pri">${pri.key.map(n => lxSkill(c, n)).join('<span class="lx-arrow">›</span>')}</div>${under(pri)}`
+        : `<div class="lx-none">타임라인 표본을 모으는 중</div>`;
+    const ordHtml = ord ? `
+        <div class="lx-so">${[1, 2, 3, 4].map(n => `
+            <div class="lx-so-row">${lxSkill(c, n, true)}${Array.from({ length: 18 }, (_, i) => ord.key[i] === n
+                ? `<span class="lx-so-cell on">${i + 1}</span>` : `<span class="lx-so-cell${i >= 15 ? ' is-off' : ''}"></span>`).join('')}</div>`).join('')}
+        </div>${under(ord)}` : `<div class="lx-none">타임라인 표본을 모으는 중</div>`;
+    return `
+    <div class="lx-sb">
+        <div class="lx-sb-col"><div class="lx-blk-h">스킬 우선순위</div>${priHtml}</div>
+        <div class="lx-sb-col lx-sb-ord"><div class="lx-blk-h">스킬 순서</div>${ordHtml}</div>
+    </div>`;
+}
+
 function lxSkillBody(c, type) {
     const B = c.B;
     if (type === 'skillpri') {

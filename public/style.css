@@ -2771,6 +2771,18 @@ main {
 .lx-card-top img { width: 37px; height: 37px; border-radius: 4px; border: 1px solid #000; box-sizing: border-box; background: #000; }
 .lx-v { height: 16px; line-height: 16px; white-space: nowrap; }
 
+/* 스킬 빌드 — 우선순위(Q›E›W) + 스킬 순서 4x18 격자. 스킬 상자 맨 위 (2026-08-27) */
+.lx-sb { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px 24px; padding: 12px 14px; border-bottom: 1px solid var(--lx-bd); }
+.lx-sb-col { min-width: 0; }
+.lx-pri { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.lx-under { margin-top: 6px; font-size: 11px; text-align: center; white-space: nowrap; }
+.lx-so { display: flex; flex-direction: column; gap: 3px; overflow-x: auto; }
+.lx-so-row { display: flex; align-items: center; gap: 2px; }
+.lx-so-row .lx-skl { margin-right: 3px; }
+.lx-so-cell { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; box-sizing: border-box; background: #1a1a1a; border: 1px solid #2a2a2a; font-size: 10px; font-weight: 700; color: #fff; }
+.lx-so-cell.on { background: var(--lx-teal); border-color: #4c97ad; }
+.lx-so-cell.is-off { opacity: 0.35; }
+
 /* 스킬 우선순위 줄 — 레벨별 순서는 세로 목록 */
 .lx-seq-list { padding: 6px 10px; }
 .lx-seq { display: flex; align-items: center; gap: 12px; padding: 5px 0; border-bottom: 1px solid #1c1c1c; }
@@ -3699,6 +3711,7 @@ main {
     .lx-statrow { grid-template-columns: repeat(2, 1fr); gap: 8px 0; }
     .lx-runes { flex-wrap: wrap; }
     .lx-graphs { grid-template-columns: repeat(2, 1fr); }
+    .lx-sb { grid-template-columns: 1fr; }
     .lx-mu-tabrow { flex-wrap: wrap; }
     .lx-mu-tablabel { width: 100%; padding: 4px 0; border-right: 0; }
     .lx-mu-tabrow .lx-tabbar { flex-wrap: wrap; }
