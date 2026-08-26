@@ -2972,7 +2972,13 @@ const codexPerkIcon = p => cdAssetUrl(p);
 //   ★ 자리는 `a`(문장에 그대로 있는 문자열)로 찾는다. 패치로 문장이 바뀌면 **조용히 안 붙는다** —
 //     엉뚱한 자리에 붙는 것보다 낫고, 빌드 스크립트가 그때 경고를 찍는다.
 function withRuneGraphs(id, html) {
-    const list = (typeof runeGraphs !== 'undefined' && runeGraphs[id]) || [];
+    return withGraphNotes((typeof runeGraphs !== 'undefined' && runeGraphs[id]) || [], html);
+}
+
+// ★ 각주를 끼우는 알맹이. **룬(rune_graphs.js)과 소환사 주문(codex_data 의 `g`)이 같이 쓴다**
+//   — 둘 다 `{a: 붙일 문자열, t: 제목, c: 색, v: 1~18레벨 값}` 꼴이라 로직이 같다
+//   (2026-08-26에 함수로 뺐다. 표를 두 벌 두면 어긋난다).
+function withGraphNotes(list, html) {
     if (!list.length || typeof drawGraph !== 'function') return html;
 
     // ★ 자리를 **원문 기준으로 먼저 다 찾아 두고 뒤에서부터** 끼운다.
@@ -3492,7 +3498,7 @@ async function showCodex(target) {
                 ${s.no ? `<div class="codex-plain">${s.no.join(' · ')}에서는 쓸 수 없습니다</div>` : ''}
             </div>
         </div>
-        <div class="codex-desc">${s.d}</div>
+        <div class="codex-desc">${withGraphNotes(s.g || [], s.dt || s.d)}</div>
         ${spellUsageHtml(e.id)}`;
     }
 

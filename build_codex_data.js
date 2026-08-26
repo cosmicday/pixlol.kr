@@ -32,6 +32,7 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { loadStringTable } = require('./stringtable');
 
 // ★ DD 버전은 dd_version.js 가 정한다 (versions.json 최신 · DD_VER 환경변수가 이긴다).
 //   상수가 아니라 아래 IIFE 첫머리에서 채운다 — 받아오는 데 await 가 필요해서다.
@@ -40,6 +41,10 @@ let DD_VER, DD;
 const CD = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/ko_kr/v1';
 // 아이템 등급(`epicness`) 이 여기에만 있다. 15MB 라 빌드 때만 받는다 (런타임 의존 0).
 const CD_ITEM_BIN = 'https://raw.communitydragon.org/latest/game/items.cdtb.bin.json';
+// ★★ 소환사 주문의 **실제 수치**가 여기 있다 (2026-08-26). 8.6MB, 빌드 때만 받는다.
+//   DD `summoner.json` 은 `tooltip` 에 `{{ smitebasedamage }}` 같은 **변수 자리만** 주고
+//   `datavalues` 가 9개 전부 비어 있어서 채울 수가 없다. 게임 bin 에는 값이 그대로 있다.
+const CD_SHARED_BIN = 'https://raw.communitydragon.org/latest/game/shared.cdtb.bin.json';
 const WRITE = process.argv.includes('--write');
 
 async function getJson(url) {
@@ -53,14 +58,17 @@ async function getJson(url) {
     DD_VER = await ddVersion({ withCD: true });
     DD = `https://ddragon.leagueoflegends.com/cdn/${DD_VER}/data/ko_KR`;
 
-    const [ddItem, ddSumm, ddChamp, perks, perkStyles, itemBin] = await Promise.all([
+    const [ddItem, ddSumm, ddChamp, perks, perkStyles, itemBin, sharedBin, strings] = await Promise.all([
         getJson(`${DD}/item.json`),
         getJson(`${DD}/summoner.json`),
         // 챔피언 전용 아이템의 `requiredChampion` 을 한글 이름으로 바꾸는 데만 쓴다 (아래 korRc)
         getJson(`${DD}/champion.json`),
         getJson(`${CD}/perks.json`),
         getJson(`${CD}/perkstyles.json`),
-        getJson(CD_ITEM_BIN)
+        getJson(CD_ITEM_BIN),
+        // 소환사 주문 수치 + 그 툴팁 문장 (아래 spellTooltip)
+        getJson(CD_SHARED_BIN),
+        loadStringTable({ quiet: true })
     ]);
 
     // ── 아이템
@@ -244,6 +252,110 @@ async function getJson(url) {
         ['ONEFORALL', '단일 챔피언']
     ];
 
+    // ══════════════════════════════════════════════════════════════
+    //  ★★ 주문 상세 수치 (2026-08-26)
+    //
+    //  DD 는 `tooltip` 에 **변수 자리만** 주고(`{{ smitebasedamage }}`) `datavalues` 가
+    //  9개 전부 비어 있다. 진짜 값은 게임 bin(`Shared/Spells/<이름>`)에 있고,
+    //  **문장은 stringtable 의 `generatedtip_summonerspell_<이름>_tooltip`** 에 있다.
+    //  **구조가 챔피언 스킬과 똑같다** — `@변수@` 를 bin 값으로 갈아 끼우면 된다.
+    //
+    //  ★ 변수 출처 세 군데:
+    //     ① `DataValues` 의 `{name, values[]}`   — 대부분 (SmiteBaseDamage 등)
+    //     ② `mSpell` 의 직접 필드                 — Cooldown · AmmoRechargeTime
+    //     ③ `mSpellCalculations` 의 계산식        — **레벨에 따라 변하는 넷**
+    //        (회복 80→318 · 방어막 100→460 · 점화 70/+20/6렙부터 +25 · 유체화 이속)
+    //  ★ 이름 대소문자가 어긋나는 자리가 있다 — 툴팁은 `@MovespeedMod@` 인데 bin 은
+    //    `MoveSpeedMod` 다. **소문자로 맞춰 찾는다** (아이템 `FiddleSticks` 와 같은 함정).
+    const SPELL_OBJ = {
+        '1': 'SummonerBoost', '3': 'SummonerExhaust', '4': 'SummonerFlash',
+        '6': 'SummonerHaste', '7': 'SummonerHeal', '11': 'SummonerSmite',
+        '12': 'SummonerTeleport', '14': 'SummonerDot', '21': 'SummonerBarrier'
+    };
+    const spellMiss = [];
+
+    // 레벨 1~18 값을 뽑는다. 계산식 종류 둘 다 게임이 쓰는 그대로다.
+    //   ★★ `mDisplayAsPercent` 는 **라이엇이 "이건 퍼센트로 보여라" 고 적어 둔 것**이다.
+    //     유체화 이동 속도가 그 자리인데, 안 보면 화면에 `0.24 ~ 0.48` 이 나간다
+    //     (문장에 `%` 기호가 없어서 값 쪽에 붙여야 한다).
+    function levelValues(calc) {
+        const part = (calc && calc.mFormulaParts || [])[0];
+        if (!part) return null;
+        const t = part.__type || '';
+        const pct = !!calc.mDisplayAsPercent;
+        const done = (vals) => ({ vals, pct });
+
+        if (/ByCharLevelInterpolation/.test(t)) {
+            const a = part.mStartValue || 0, b = part.mEndValue || 0;
+            // 레벨 1 이 시작값, 레벨 18 이 끝값인 선형 보간
+            return done(Array.from({ length: 18 }, (_, i) => a + (b - a) * i / 17));
+        }
+        if (/ByCharLevelBreakpoints/.test(t)) {
+            // 레벨1 값에서 시작해 레벨마다 더한다. 중간에 증가폭이 바뀌는 지점(breakpoint)이 있다.
+            const out = [part.mLevel1Value || 0];
+            let step = part.mInitialBonusPerLevel || 0;
+            const bps = part.mBreakpoints || [];
+            for (let lv = 2; lv <= 18; lv++) {
+                const bp = bps.find(x => x.mLevel === lv);
+                if (bp) step = bp.mBonusPerLevelAtAndAfter;
+                out.push(out[out.length - 1] + step);
+            }
+            return done(out);
+        }
+        return null;
+    }
+
+    const numText = (v) => String(Math.round(v * 1000) / 1000);
+
+    // 주문 하나의 본문 문장을 만든다. 못 채운 변수가 있으면 그 자리를 원문 그대로 남기고 경고한다.
+    function spellTooltip(key) {
+        const obj = SPELL_OBJ[key];
+        if (!obj) return null;
+        const sp = (sharedBin['Shared/Spells/' + obj] || {}).mSpell;
+        const raw = strings['generatedtip_summonerspell_' + obj.toLowerCase() + '_tooltip'];
+        if (!sp || !raw) { spellMiss.push(`${obj} (bin ${!!sp} / tip ${!!raw})`); return null; }
+
+        const dv = {};
+        (sp.DataValues || []).forEach(d => { if (d.name) dv[d.name.toLowerCase()] = (d.values || [])[0]; });
+        const plain = {
+            cooldown: ((sp.Cooldown || {}).values || [])[0],
+            ammorechargetime: (sp.mAmmoRechargeTime || [])[0]
+        };
+        const calcs = {};
+        Object.entries(sp.mSpellCalculations || {}).forEach(([k, v]) => { calcs[k.toLowerCase()] = v; });
+
+        let body = (String(raw).match(/<mainText>([\s\S]*?)<\/mainText>/) || [, String(raw)])[1];
+        // ★ 다른 툴팁을 끼워 넣는 `{{ ... }}` 는 뜻이 통하는 문장이 아니라 통째로 지운다
+        //   (`{{ Item_KeywordDefinition_Wounds }}` 같은 것 — 인게임에서 hover 로 뜨는 용어 설명이다).
+        body = body.replace(/\{\{[^}]*\}\}/g, '').trim();
+
+        const graphs = [];      // 레벨 스케일 자리 → 각주 그래프
+        const missing = [];
+        const filled = body.replace(/@([A-Za-z0-9_.]+)(\*([0-9.]+))?@/g, (m, name, _x, mul) => {
+            const lc = name.toLowerCase();
+            const factor = mul ? Number(mul) : 1;
+
+            let v = dv[lc];
+            if (v === undefined) v = plain[lc];
+            if (v !== undefined) return numText(v * factor);
+
+            const lv = levelValues(calcs[lc]);
+            if (lv) {
+                // 퍼센트 자리면 100 을 곱하고 `%` 를 붙인다 (문장에 기호가 없다)
+                const k = factor * (lv.pct ? 100 : 1);
+                const scaled = lv.vals.map(x => Math.round(x * k * 100) / 100);
+                const label = `${numText(scaled[0])} ~ ${numText(scaled[17])}${lv.pct ? '%' : ''}`;
+                graphs.push({ a: label, t: '레벨별 값', c: '#a78bfa', v: scaled });
+                return label;
+            }
+            missing.push(name);
+            return m;
+        });
+
+        if (missing.length) spellMiss.push(`${obj}: ${[...new Set(missing)].join(', ')}`);
+        return { text: filled, graphs };
+    }
+
     const spells = {};
     Object.values(ddSumm.data)
         .filter(s => s.modes.includes('CLASSIC'))
@@ -251,6 +363,8 @@ async function getJson(url) {
         .forEach(s => {
             // 못 쓰는 주요 모드만 담는다 — 다 쓸 수 있으면 빈 배열이라 화면에 아무것도 안 뜬다
             const no = MAIN_MODES.filter(([code]) => !s.modes.includes(code)).map(([, kor]) => kor);
+            // ★ 수치가 든 본문. 못 만들면 `dt` 를 안 담고 화면이 DD 의 짧은 설명(`d`)으로 물러난다.
+            const tip = spellTooltip(s.key);
             spells[s.key] = {
                 n: s.name,
                 d: s.description,
@@ -258,7 +372,9 @@ async function getJson(url) {
                 r: s.rangeBurn,
                 lv: s.summonerLevel,
                 i: s.image.full,
-                ...(no.length ? { no } : {})
+                ...(no.length ? { no } : {}),
+                ...(tip && tip.text ? { dt: tip.text } : {}),
+                ...(tip && tip.graphs.length ? { g: tip.graphs } : {})
             };
         });
 
@@ -312,6 +428,11 @@ const codexData = ${body};
     console.log(`소환사 주문 ${Object.keys(spells).length}개 (전체 ${Object.keys(ddSumm.data).length}개 중)`);
     const noList = Object.values(spells).filter(s => s.no);
     console.log(`  다른 모드에서 못 쓰는 주문: ${noList.length}개 — ${noList.map(s => `${s.n}(${s.no.join('·')})`).join(' / ') || '없음'}`);
+    const withTip = Object.values(spells).filter(s => s.dt).length;
+    const withGraph = Object.values(spells).filter(s => s.g).length;
+    console.log(`  수치가 든 본문: ${withTip}/${Object.keys(spells).length}개 (레벨 그래프 ${withGraph}개)`);
+    // ★ 못 채운 변수가 있으면 그 자리가 화면에 `@이름@` 으로 그대로 나간다 — 반드시 볼 것
+    if (spellMiss.length) console.log(`  ★★ 주문 변수를 못 채웠다: ${spellMiss.join(' / ')}`);
     console.log(`\n크기 ${(Buffer.byteLength(out) / 1024).toFixed(0)}KB  gzip ${(zlib.gzipSync(Buffer.from(out), { level: 9 }).length / 1024).toFixed(0)}KB  brotli ${(zlib.brotliCompressSync(Buffer.from(out)).length / 1024).toFixed(0)}KB`);
 
     // 이름 표는 별도 파일이다 — 통계 탭이 도감 데이터 160KB 를 받게 할 수는 없다.
