@@ -4171,12 +4171,12 @@ function lxMatchups(c) {
     <div class="lx-box" id="lx-counters">
         <div class="lx-mu-tabs">
             <div class="lx-mu-tabrow"><span class="lx-mu-tablabel">상성</span>
-                ${lxTabBar('mu-counter', [{ v: 'common', label: '흔한 상대' }, { v: 'strong', label: '강한 상대' }, { v: 'weak', label: '약한 상대' }, { v: 'delta', label: '델타' }], 'common')}</div>
+                ${lxTabBar('mu-counter', [{ v: 'common', label: '자주 만나는 상대' }, { v: 'strong', label: '강한 상대 (간단)' }, { v: 'weak', label: '약한 상대 (간단)' }, { v: 'strong2', label: '강한 상대 (상세)' }, { v: 'weak2', label: '약한 상대 (상세)' }], 'common')}</div>
             <div class="lx-mu-tabrow"><span class="lx-mu-tablabel">시너지</span>
-                ${lxTabBar('mu-synergy', [{ v: 'common', label: '흔한 아군' }, { v: 'good', label: '좋은 시너지' }, { v: 'bad', label: '나쁜 시너지' }, { v: 'delta', label: '시너지 델타' }], '')}</div>
+                ${lxTabBar('mu-synergy', [{ v: 'common', label: '자주 만나는 아군' }, { v: 'strong', label: '좋은 시너지 (간단)' }, { v: 'weak', label: '나쁜 시너지 (간단)' }, { v: 'strong2', label: '좋은 시너지 (상세)' }, { v: 'weak2', label: '나쁜 시너지 (상세)' }], '')}</div>
         </div>
         ${inner}
-        <div class="lx-foot">델타 1 = 그 상대(아군)와 만났을 때 승률 − 이 챔피언의 라인 승률 · 델타 2 = 거기서 상대(아군) 챔피언 자체의 강함(그 라인 평균 대비)을 뺀 값 · 픽률 = 이 라인 판 중 만난 비율 · ${MATCHUP_SHOW_MIN}판 미만은 흐리게</div>
+        <div class="lx-foot">간단보정 = 그 상대(아군)와 만났을 때 승률 − 이 챔피언의 라인 승률 · 상세보정 = 거기서 상대(아군) 챔피언 자체의 강함(그 라인 평균 대비)을 뺀 값 · 픽률 = 이 라인 판 중 만난 비율 · ${MATCHUP_SHOW_MIN}판 미만은 흐리게</div>
     </div>`;
 }
 
@@ -4184,12 +4184,15 @@ function lxMatchupRows(c, group, sort) {
     const M = c.M;
     const sorters = {
         common: (a, b) => b.games - a.games,
-        strong: (a, b) => b.wr - a.wr || b.games - a.games, good: (a, b) => b.wr - a.wr || b.games - a.games,
-        weak: (a, b) => a.wr - b.wr || b.games - a.games, bad: (a, b) => a.wr - b.wr || b.games - a.games,
-        delta: (a, b) => b.d2 - a.d2
+        // ★ (간단) = 간단보정(d1) 순, (상세) = 상세보정(d2) 순 (2026-08-27, 사용자 요청 — "델타" 라는 말을 뺐다).
+        //   d1 은 승률 − 라인 승률이라 승률 순과 같은 순서다
+        strong: (a, b) => b.d1 - a.d1 || b.games - a.games,
+        weak: (a, b) => a.d1 - b.d1 || b.games - a.games,
+        strong2: (a, b) => b.d2 - a.d2 || b.games - a.games,
+        weak2: (a, b) => a.d2 - b.d2 || b.games - a.games
     };
     const src = group === 'counter' ? M.counter : M.synergy;
-    const metrics = [{ t: '승률', cls: 'lx-green' }, { t: '델타 1', cls: 'lx-yellow' }, { t: '델타 2', cls: 'lx-yellow' }, { t: '픽률', cls: 'lx-lav' }, { t: '판수', cls: 'lx-gray' }];
+    const metrics = [{ t: '승률', cls: 'lx-green' }, { t: '간단보정', cls: 'lx-yellow' }, { t: '상세보정', cls: 'lx-yellow' }, { t: '픽률', cls: 'lx-lav' }, { t: '판수', cls: 'lx-gray' }];
     return STAT_POS.filter(p => src[p.code]).map(p => {
         const list = [...src[p.code]].sort(sorters[sort] || sorters.common).slice(0, LX_ROW_MAX);
         const cards = list.map(r => {
