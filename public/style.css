@@ -6486,6 +6486,96 @@ main {
 }
 
 
+/* ============================================================
+   패치노트 탭 (2026-08-27) — 본서버 · PBE 목록
+   탭 줄은 도감과 같은 `.codex-tabs` 를 쓴다 (같은 모양이어야 메뉴를 옮겨도 안 튄다).
+   ============================================================ */
+#patch-container {
+    display: none;
+    max-width: 1000px;
+    margin: 40px auto;
+    padding-bottom: 50px;
+    animation: fadeIn 0.6s ease;
+    min-height: 100vh;
+}
+
+.patch-page-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.patch-page-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+@media (hover: hover) {
+    .patch-page-item:hover { background: #22203c; border-color: rgba(167, 139, 250, 0.45); }
+}
+
+/* 16:9 자리를 미리 잡아 둔다 — 그림이 늦게 와도 줄이 안 튄다 */
+.patch-page-thumb {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 160px;
+    height: 90px;
+    overflow: hidden;
+    background: #12122a;
+    border-radius: 8px;
+}
+
+.patch-page-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.patch-page-pbe-mark {
+    color: #a78bfa;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.patch-page-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.patch-page-title { color: var(--text-bright); font-size: 15px; font-weight: 700; }
+
+/* 요약은 한 줄까지만 — 길이가 제각각이라 두 줄이 되면 줄 높이가 들쭉날쭉해진다 */
+.patch-page-desc {
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-style: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.patch-page-date { color: var(--text-faint); font-size: 12px; }
+
+.patch-page-ver {
+    flex: none;
+    padding: 4px 10px;
+    background: rgba(167, 139, 250, 0.14);
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    border-radius: 6px;
+    color: #a78bfa;
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.patch-page-empty {
+    padding: 60px 20px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.9;
+}
+
 /* 홈 「오늘의 신화 상점」 제목 — 누르면 신화상점 탭으로 (2026-08-27) */
 .shop-title-link { color: inherit; text-decoration: none; }
 .shop-title-link:hover { color: var(--dogu-accent, #9b6be8); }
@@ -7448,6 +7538,14 @@ main {
        overflow-x: auto 가 제 폭에서 잘라 자기 가로 스크롤로 처리한다. */
     .codex-recipe { flex-direction: column; gap: 8px; align-items: stretch; }
     .codex-recipe-label { width: auto; padding-top: 0; }
+
+    /* 패치노트 목록 — 폰에서는 그림을 줄이고 요약 줄을 뺀다 (2026-08-27) */
+    #patch-container { margin: 20px auto; }
+    .patch-page-item { gap: 10px; padding: 10px 12px; }
+    .patch-page-thumb { width: 96px; height: 54px; }
+    .patch-page-title { font-size: 13.5px; }
+    .patch-page-desc { display: none; }
+    .patch-page-ver { padding: 3px 7px; font-size: 11.5px; }
 
     .codex-tabs { padding: 0; }
     .codex-tab { flex: 1; padding: 9px 6px; }

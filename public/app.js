@@ -353,6 +353,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.pendingChampView = { tab: pathParts[3] || null, skin: pathParts[4] || null };
         showChampions(requestedChamp, true);
         setActiveNav('nav-champions-classic');
+    } else if (pathParts[1] === 'patch') {
+        // /patch/live · /patch/pbe — 없으면 본서버 (2026-08-27)
+        document.getElementById('patch-container').style.display = "block";
+        showPatchNotes(pathParts[2] ? decodeURIComponent(pathParts[2]) : 'live');
     } else if (pathParts[1] === 'esports') {
         showEsports();
     } else if (pathParts[1] === 'broadcast') {
@@ -434,6 +438,9 @@ window.addEventListener('popstate', (event) => {
         window.pendingChampView = { tab: pathParts[3] || null, skin: pathParts[4] || null };
         showChampions(champId, true);
         setActiveNav('nav-champions-classic');
+    } else if (currentPath.startsWith('/patch')) {
+        // ★ 진입부와 여기 두 곳을 항상 같이 고친다
+        showPatchNotes(currentPath.split('/')[2] || 'live');
     } else if (currentPath.startsWith('/esports')) {
         showEsports();
     } else if (currentPath.startsWith('/broadcast')) {
@@ -532,9 +539,17 @@ let currentChampMode = 'normal';
 //     시점에 #dogu-search-input 에 리스너를 붙이므로 히어로가 그 전에 그려져 있어야 한다.
 // ==========================================
 const DOGU_NAV = [
-    { key: 'search',    navId: 'nav-search',    label: '전적검색', href: '/',          go: () => goLobby() },
+    // ★ 전적검색은 2026-08-27 부터 **헤더에 안 그린다** (요청). 표에서 지우면 안 된다 —
+    //   로고·⌂ 의 href '/' 와 /summoner 의 setActiveNav('nav-search') 가 이 줄을 찾는다.
+    //   hidden 은 mountHeader 로 넘길 때만 걸러진다
+    { key: 'search',    navId: 'nav-search',    label: '전적검색', href: '/',          go: () => goLobby(), hidden: true },
     { key: 'ranking',   navId: 'nav-ranking',   label: '랭킹',     href: '/ranking',   go: () => showRanking() },
     { key: 'stats',     navId: 'nav-stats',     label: '통계',     href: '/stats',     go: () => showStats() },
+    // 패치노트도 하위 메뉴만 가진 부모다 (도감과 같은 꼴 — href 가 없어 눌러도 안 움직인다)
+    { key: 'patch',     navId: 'nav-patch',     label: '패치노트', sub: [
+        { key: 'patch-live', navId: 'nav-patch-live', label: '본서버 패치노트', href: '/patch/live', go: () => showPatchNotes('live') },
+        { key: 'patch-pbe',  navId: 'nav-patch-pbe',  label: 'PBE 패치노트',   href: '/patch/pbe',  go: () => showPatchNotes('pbe') }
+    ] },
     // ★★ 도감은 하위 메뉴만 가진 부모다 (2026-08-27, 사용자 결정) — **href 가 없어서 눌러도 아무 데도 안 간다.**
     //    공통 헤더가 href 없는 부모를 <span> 으로 그려 하위만 연다. 4칸의 차례는 페이지 안 탭 줄(CODEX_NAV)과 같아야 한다
     { key: 'codex',     navId: 'nav-codex',     label: '도감', sub: [
@@ -598,7 +613,7 @@ function mountDoguUI() {
         // ★ 처음엔 아무 탭도 안 켠다 (2026-08-27). 홈에서는 공통 CSS 가 body.dogu-home 을 보고 ⌂ 에 밑줄을 준다 —
         //   예전처럼 여기서 search 를 켜 두면 홈에서 밑줄이 ⌂ 와 전적검색 둘이 된다.
         //   ★ 대신 라우터의 /summoner 분기가 setActiveNav('nav-search') 를 직접 불러야 한다 (기본 active 에 기대던 자리)
-        nav: DOGU_NAV.map(n => ({
+        nav: DOGU_NAV.filter(n => !n.hidden).map(n => ({
             key: n.key, label: n.label, href: n.href, active: false,
             sub: n.sub && n.sub.map(x => ({ key: x.key, label: x.label, href: x.href }))
         })),
@@ -662,6 +677,108 @@ function setActiveNav(navId) {
     // 탭 제목은 페이지와 무관하게 고정 — index.html <title> 과 같은 값 (2026-08-22 요청).
     // 사이트 이름은 .env 가 아니라 여기와 index.html 두 곳에 박혀 있다
     document.title = 'PIXLOL.KR: 리그오브레전드';
+}
+
+// ==========================================
+//  패치노트 탭 (2026-08-27 신설)
+// ==========================================
+//  본서버(공식 홈페이지 목록)와 PBE(RiotPhroxzon 의 Preview 글) 둘을 목록으로 쭉 보여준다.
+//  ★ 본문은 안 들여온다 — 제목을 누르면 원문(공식 페이지 / x.com)으로 나간다.
+//    공식 패치노트에는 상향·하향 마커가 없어서 우리가 옮기면 "10 → 8" 의 방향을 추측하게 된다
+//    (dogu_er 의 패치 페이지가 같은 이유로 목록만 싣는다).
+//  ★ 자료는 홈 위젯과 **같은 `/api/patch-notes`** 다 — 여기만 `limit=100` 으로 부른다.
+const PATCH_NAV = [
+    { key: 'live', name: '본서버 패치노트', href: '/patch/live', navId: 'nav-patch-live' },
+    { key: 'pbe',  name: 'PBE 패치노트',   href: '/patch/pbe',  navId: 'nav-patch-pbe' }
+];
+
+function patchTabsHtml(active) {
+    return `<div class="codex-tabs">${PATCH_NAV.map(t =>
+        `<button class="codex-tab${t.key === active ? ' active' : ''}" data-patch="${t.key}">${t.name}</button>`).join('')}</div>`;
+}
+
+// 페이지 안 2칸 줄 — 도감 4칸과 같이 **이력은 덮어쓴다**(replaceState)
+document.addEventListener('click', (e) => {
+    const b = e.target.closest('.codex-tab[data-patch]');
+    if (!b) return;
+    const t = PATCH_NAV.find(x => x.key === b.dataset.patch);
+    if (!t) return;
+    if (window.location.pathname !== t.href) window.history.replaceState({ page: 'patch' }, '', t.href);
+    showPatchNotes(t.key);
+});
+
+async function showPatchNotes(kind) {
+    const cur = PATCH_NAV.some(t => t.key === kind) ? kind : 'live';
+    if (!window.location.pathname.startsWith('/patch')) {
+        window.history.pushState({ page: 'patch' }, '', '/patch/' + cur);
+    }
+    hideAllContainers();
+    const box = document.getElementById('patch-container');
+    box.style.display = 'block';
+    setActiveNav(PATCH_NAV.find(t => t.key === cur).navId);
+
+    box.innerHTML = patchTabsHtml(cur) +
+        `<div class="patch-page-list" id="patch-page-list">
+            <div class="patch-page-empty">패치노트를 불러오는 중입니다...</div>
+        </div>`;
+
+    let data = null;
+    try {
+        const res = await fetch('/api/patch-notes?limit=100');
+        data = await res.json();
+    } catch (e) { /* 아래 폴백으로 */ }
+
+    // ★ 그리는 사이에 다른 화면으로 옮겼으면 버린다 (느린 응답이 새 화면을 덮어쓰지 않게)
+    if (!window.location.pathname.startsWith('/patch')) return;
+    const list = document.getElementById('patch-page-list');
+    if (!list) return;
+
+    const items = (cur === 'pbe' ? data && data.pbe : data && data.official) || [];
+    if (!items.length) {
+        const href = cur === 'pbe'
+            ? 'https://x.com/RiotPhroxzon'
+            : 'https://www.leagueoflegends.com/ko-kr/news/tags/patch-notes/';
+        const label = cur === 'pbe' ? 'X 프로필에서 보기 →' : '공식 홈페이지에서 보기 →';
+        list.innerHTML = `<div class="patch-page-empty">패치노트를 불러오지 못했습니다.<br>
+            <a class="patch-note-x-link" href="${href}" target="_blank" rel="noopener">${label}</a></div>`;
+        return;
+    }
+    list.innerHTML = items.map(n => cur === 'pbe' ? pbeNoteRowHtml(n) : patchNoteRowHtml(n)).join('');
+}
+
+// 본서버 — 썸네일 + 제목 + 한 줄 요약 + 날짜, 오른쪽에 패치 번호
+function patchNoteRowHtml(n) {
+    const thumb = n.thumb
+        ? `<img src="${escapeHtml(n.thumb)}" alt="" loading="lazy" onerror="this.remove()">`
+        : '';
+    const desc = n.desc ? `<em class="patch-page-desc">${escapeHtml(n.desc)}</em>` : '';
+    const ver = n.version ? `<span class="patch-page-ver">${escapeHtml(n.version)}</span>` : '';
+    return `<a class="patch-page-item" href="${escapeHtml(n.url)}" target="_blank" rel="noopener">
+        <span class="patch-page-thumb">${thumb}</span>
+        <span class="patch-page-info">
+            <b class="patch-page-title">${escapeHtml(n.title)}</b>
+            ${desc}
+            <span class="patch-page-date">${patchDateText(n.date)}</span>
+        </span>${ver}</a>`;
+}
+
+// PBE — 그림이 없다 (x.com 글이라). 그 자리엔 PBE 딱지를 둔다
+function pbeNoteRowHtml(n) {
+    const title = `PBE 서버 ${n.patch} 패치 [${n.detail ? '상세' : '간단'}]`;
+    return `<a class="patch-page-item is-pbe" href="${escapeHtml(n.url)}" target="_blank" rel="noopener">
+        <span class="patch-page-thumb"><span class="patch-page-pbe-mark">PBE</span></span>
+        <span class="patch-page-info">
+            <b class="patch-page-title">${escapeHtml(title)}</b>
+            <em class="patch-page-desc">RiotPhroxzon · x.com</em>
+            <span class="patch-page-date">${patchDateText(n.date)}</span>
+        </span>
+        <span class="patch-page-ver">${escapeHtml(n.patch)}</span></a>`;
+}
+
+function patchDateText(iso) {
+    const d = iso ? new Date(iso) : null;
+    const p = x => String(x).padStart(2, '0');
+    return d && !isNaN(d) ? `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}` : '';
 }
 
 // 도감 탭 키 → 헤더 활성 표시용 navId (라우터 두 곳이 같이 쓴다)

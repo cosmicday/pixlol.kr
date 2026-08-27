@@ -3794,6 +3794,8 @@ app.get('/api/rank-cutoffs', async (req, res) => {
 //   ★ 니터 인스턴스는 언제든 죽을 수 있다 — 죽으면 lastGood 폴백, 그마저 없으면
 //     pbe 가 빈 배열이고 화면은 index.html 의 정적 안내(프로필 바로가기)로 남는다.
 //   ★ 두 소스는 따로 try/catch 다. 한쪽이 죽어도 다른 쪽은 나가야 한다.
+// 목록으로 들고 있을 최대 건수 (패치노트 탭이 이만큼까지 보여준다. 홈은 limit=5)
+const PATCH_LIST_MAX = 100;
 let lastGoodOfficialNotes = null;
 let lastGoodPbeNotes = null;
 
@@ -3811,12 +3813,23 @@ async function fetchOfficialPatchNotes() {
     const grid = blades.find(b => b.type === 'articleCardGrid');
     if (!grid || !Array.isArray(grid.items)) throw new Error('articleCardGrid 없음');
 
-    const official = grid.items.slice(0, 5).map(it => {
+    // ★ 5건 → 100건 (2026-08-27). 패치노트 탭이 목록을 통째로 보여준다 —
+    //   홈 위젯은 예전처럼 앞 5개만 쓴다 (엔드포인트가 limit 으로 잘라 준다).
+    //   실측 172건이 오는데 100이면 2년치가 넘는다.
+    const official = grid.items.slice(0, PATCH_LIST_MAX).map(it => {
         const rel = it?.action?.payload?.url || '';
+        const raw = it?.media?.url || it?.imageMedia?.url || '';
+        const title = String(it.title || '').slice(0, 200);
         return {
-            title: String(it.title || '').slice(0, 200),
+            title,
             url: /^https?:/.test(rel) ? rel : `https://www.leagueoflegends.com${rel}`,
-            date: it?.analytics?.publishDate || null
+            date: it?.analytics?.publishDate || it?.publishedAt || null,
+            // ★ sanity CDN 은 &w= 로 줄여 준다 — 원본이 1920x1080(313KB)이라 그대로 걸면
+            //   목록 한 장에 30MB 다. 320px 이면 14KB (2026-08-27 실측)
+            thumb: raw ? raw + (raw.includes('?') ? '&' : '?') + 'w=320' : null,
+            desc: String(it?.description?.body || '').replace(/<[^>]*>/g, '').trim().slice(0, 300) || null,
+            // "26.17 패치 노트" 처럼 제목 앞에 번호가 있는 글만 배지를 단다 (핫픽스 글엔 없다)
+            version: (title.match(/(\d+\.\d+)/) || [])[1] || null
         };
     }).filter(n => n.title && n.url);
     if (!official.length) throw new Error('기사 0건');
@@ -3856,7 +3869,7 @@ function parsePbeRss(xml) {
             url: `https://x.com/RiotPhroxzon/status/${idm[1]}`,
             date: pub ? new Date(pub).toISOString() : null
         });
-        if (pbe.length >= 5) break;   // RSS 가 최신순이라 앞에서 5개면 끝
+        if (pbe.length >= PATCH_LIST_MAX) break;   // RSS 가 최신순이라 앞에서부터 담는다
     }
     return pbe;
 }
@@ -3881,9 +3894,14 @@ async function fetchPbePreviewNotes() {
     throw new Error('전 소스 실패 — ' + fails.join(' / '));
 }
 
+// ★ limit 으로 잘라 준다 (2026-08-27) — 홈 위젯은 5, 패치노트 탭은 100.
+//   **캐시에는 항상 통째로** 담고 응답에서만 자른다. 그래야 홈이 먼저 열려도
+//   탭이 5건짜리 캐시를 물려받지 않는다
 app.get('/api/patch-notes', async (req, res) => {
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 5, 1), PATCH_LIST_MAX);
+    const cut = (p) => Object.assign({}, p, { official: p.official.slice(0, limit), pbe: p.pbe.slice(0, limit) });
     const hit = myCache.get('patch_notes');
-    if (hit) return res.json(hit);
+    if (hit) return res.json(cut(hit));
 
     const [offR, pbeR] = await Promise.allSettled([fetchOfficialPatchNotes(), fetchPbePreviewNotes()]);
 
@@ -3902,7 +3920,7 @@ app.get('/api/patch-notes', async (req, res) => {
         const full = official.length > 0 && pbe.length > 0;
         myCache.set('patch_notes', payload, full ? 1800 : 300);
     }
-    res.json(payload);
+    res.json(cut(payload));
 });
 
 app.get('/api/ranking', async (req, res) => {
