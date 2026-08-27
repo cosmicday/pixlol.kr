@@ -23,6 +23,7 @@
     --dogu-accent-dark: #6a3fc4;                /* 검색 버튼 그라데이션 끝 */
     --dogu-bg-image: url('https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lulu_2.jpg');
     --dogu-overlay-rgb: 11, 11, 20;             /* 예전 body::before 오버레이 색 그대로 (보라 기운 바탕) */
+    --dogu-gnb-panel: #16112a;                  /* 폰 햄버거 메뉴 패널 — 반투명이면 뒤 글자가 비쳐 겹친다 (2026-08-27) */
     /* 블러는 공통 기본값 0 — 예전의 blur(5px) 는 규격에 따라 걷어냈다 */
 }
 

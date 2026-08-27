@@ -334,10 +334,11 @@ document.addEventListener('DOMContentLoaded', () => {
         else showStats();
         setActiveNav('nav-stats');
     } else if (pathParts[1] === 'codex') {
-        // /codex 또는 /codex/rune 처럼 탭을 주소에 담을 수 있다
+        // /codex/item · /codex/rune · /codex/spell — 셋이 각각 헤더 메뉴다 (2026-08-27)
         document.getElementById('codex-container').style.display = "block";
-        showCodex(pathParts[2] ? decodeURIComponent(pathParts[2]) : null);
-        setActiveNav('nav-codex');
+        const codexTab = pathParts[2] ? decodeURIComponent(pathParts[2]) : 'item';
+        showCodex(codexTab);
+        setActiveNav(codexNavId(codexTab));
     } else if (pathParts[1] === 'mythic') {
         // /mythic 또는 /mythic/daily 처럼 소메뉴를 주소에 담을 수 있다 (도감과 같은 모양)
         document.getElementById('mythic-container').style.display = "block";
@@ -352,6 +353,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.pendingChampView = { tab: pathParts[3] || null, skin: pathParts[4] || null };
         showChampions(requestedChamp, true);
         setActiveNav('nav-champions-classic');
+    } else if (pathParts[1] === 'esports') {
+        showEsports();
+    } else if (pathParts[1] === 'broadcast') {
+        showBroadcast();
     } else if (pathParts[1] === 'champions') {
         // /champions/<id>/<탭>/<스킨번호> — 뒤 두 조각은 있을 때만 쓴다
         const requestedChamp = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
@@ -414,8 +419,9 @@ window.addEventListener('popstate', (event) => {
         // ★ 진입부(pathParts 분기)와 여기 두 곳을 항상 같이 고친다. 한쪽만 고치면
         //   뒤로가기로 들어왔을 때 다르게 동작한다 (랭킹 헤더에서 겪은 그 문제다).
         const seg = currentPath.split('/');
-        showCodex(seg[2] ? decodeURIComponent(seg[2]) : null);
-        setActiveNav('nav-codex');
+        const codexTab = seg[2] ? decodeURIComponent(seg[2]) : 'item';
+        showCodex(codexTab);
+        setActiveNav(codexNavId(codexTab));
     } else if (currentPath.startsWith('/mythic')) {
         // ★ 여기와 진입부(pathParts 분기)는 항상 같이 고친다 — 위 도감과 같은 이유다.
         const seg = currentPath.split('/');
@@ -428,6 +434,10 @@ window.addEventListener('popstate', (event) => {
         window.pendingChampView = { tab: pathParts[3] || null, skin: pathParts[4] || null };
         showChampions(champId, true);
         setActiveNav('nav-champions-classic');
+    } else if (currentPath.startsWith('/esports')) {
+        showEsports();
+    } else if (currentPath.startsWith('/broadcast')) {
+        showBroadcast();
     } else if (currentPath.startsWith('/champions')) {
         // ★ 진입부(pathParts 분기)와 **여기 두 곳을 항상 같이 고친다**
         const pathParts = currentPath.split('/');
@@ -525,11 +535,23 @@ const DOGU_NAV = [
     { key: 'search',    navId: 'nav-search',    label: '전적검색', href: '/',          go: () => goLobby() },
     { key: 'ranking',   navId: 'nav-ranking',   label: '랭킹',     href: '/ranking',   go: () => showRanking() },
     { key: 'stats',     navId: 'nav-stats',     label: '통계',     href: '/stats',     go: () => showStats() },
-    { key: 'champions', navId: 'nav-champions', label: '챔피언',   href: '/champions', go: () => showChampions() },
-    { key: 'codex',     navId: 'nav-codex',     label: '도감',     href: '/codex',     go: () => showCodex() },
+    // ★★ 도감은 하위 메뉴만 가진 부모다 (2026-08-27, 사용자 결정) — **href 가 없어서 눌러도 아무 데도 안 간다.**
+    //    공통 헤더가 href 없는 부모를 <span> 으로 그려 하위만 연다. 4칸의 차례는 페이지 안 탭 줄(CODEX_NAV)과 같아야 한다
+    { key: 'codex',     navId: 'nav-codex',     label: '도감', sub: [
+        { key: 'champions',   navId: 'nav-champions',   label: '챔피언',      href: '/champions',   go: () => showChampions() },
+        { key: 'codex-item',  navId: 'nav-codex-item',  label: '아이템',      href: '/codex/item',  go: () => showCodex('item') },
+        { key: 'codex-rune',  navId: 'nav-codex-rune',  label: '룬',          href: '/codex/rune',  go: () => showCodex('rune') },
+        { key: 'codex-spell', navId: 'nav-codex-spell', label: '소환사 주문', href: '/codex/spell', go: () => showCodex('spell') }
+    ] },
     { key: 'mythic',    navId: 'nav-mythic',    label: '신화상점', href: '/mythic',    go: () => showMythicShop() },
+    { key: 'esports',   navId: 'nav-esports',   label: 'e스포츠',  href: '/esports',   go: () => showEsports() },
+    { key: 'broadcast', navId: 'nav-broadcast', label: '방송',     href: '/broadcast', go: () => showBroadcast() },
     // 비공개: 장인랭킹(nav-masters) · 챔피언(클래식)(nav-champions-classic). 되살릴 때 여기 줄을 더한다
 ];
+
+// ★ 하위 메뉴까지 평평하게 편 표 — 라우팅(doguRoute)·활성 표시(setActiveNav)는 **이걸로** 찾는다.
+//   DOGU_NAV 만 훑으면 하위 4개(챔피언·아이템·룬·소환사 주문)를 못 찾는다
+const DOGU_NAV_FLAT = DOGU_NAV.reduce((acc, n) => acc.concat(n, n.sub || []), []);
 
 // 로고·⌂·푸터 링크가 가는 홈. 사이트가 pixlol.kr 루트에서 돌아가므로 '/' 가 곧 pixlol.kr 홈이다
 // (절대 주소를 박으면 로컬에서 프로덕션으로 튄다)
@@ -548,7 +570,7 @@ function doguRoute(href, navKey) {
     }
     if (href === '/terms') { showTerms(); return; }
     if (href === '/privacy') { showPrivacyPolicy(); return; }
-    const item = DOGU_NAV.find(n => n.key === navKey) || DOGU_NAV.find(n => n.href === href) || DOGU_NAV[0];
+    const item = DOGU_NAV_FLAT.find(n => n.key === navKey) || DOGU_NAV_FLAT.find(n => n.href === href) || DOGU_NAV[0];
     item.go();
     // ★ 전적검색 탭은 go() 가 goLobby() 라 홈으로 간다 — 거기서 끈 밑줄을 여기서 도로 켜면 안 된다 (2026-08-27)
     if (item.key !== 'search') setActiveNav(item.navId);
@@ -576,7 +598,10 @@ function mountDoguUI() {
         // ★ 처음엔 아무 탭도 안 켠다 (2026-08-27). 홈에서는 공통 CSS 가 body.dogu-home 을 보고 ⌂ 에 밑줄을 준다 —
         //   예전처럼 여기서 search 를 켜 두면 홈에서 밑줄이 ⌂ 와 전적검색 둘이 된다.
         //   ★ 대신 라우터의 /summoner 분기가 setActiveNav('nav-search') 를 직접 불러야 한다 (기본 active 에 기대던 자리)
-        nav: DOGU_NAV.map(n => ({ key: n.key, label: n.label, href: n.href, active: false })),
+        nav: DOGU_NAV.map(n => ({
+            key: n.key, label: n.label, href: n.href, active: false,
+            sub: n.sub && n.sub.map(x => ({ key: x.key, label: x.label, href: x.href }))
+        })),
         aside: '',                                  // 패치 버전 — initDdragonVersion 뒤에 setAside 로 채운다
         search: { placeholder, onSubmit }
     }));
@@ -632,12 +657,37 @@ function mountDoguUI() {
 mountDoguUI();
 
 function setActiveNav(navId) {
-    const item = DOGU_NAV.find(n => n.navId === navId);
+    const item = DOGU_NAV_FLAT.find(n => n.navId === navId);
     if (window.DoguUI) DoguUI.setActiveNav(item ? item.key : null);
     // 탭 제목은 페이지와 무관하게 고정 — index.html <title> 과 같은 값 (2026-08-22 요청).
     // 사이트 이름은 .env 가 아니라 여기와 index.html 두 곳에 박혀 있다
     document.title = 'PIXLOL.KR: 리그오브레전드';
 }
+
+// 도감 탭 키 → 헤더 활성 표시용 navId (라우터 두 곳이 같이 쓴다)
+function codexNavId(tab) {
+    const t = CODEX_NAV.find(x => x.key === tab);
+    return t ? t.navId : 'nav-codex-item';
+}
+
+// ★ 준비 중 페이지 (2026-08-27) — 내용은 공통 파일의 comingSoonHtml 하나다.
+//   나중에 진짜 내용을 채울 땐 이 함수 안만 갈아 끼우면 된다
+function showComingPage(containerId, title, path, navId) {
+    if (!window.location.pathname.startsWith(path)) {
+        window.history.pushState({ page: navId }, '', path);
+    }
+    hideAllContainers();
+    const box = document.getElementById(containerId);
+    box.style.display = 'block';
+    box.innerHTML = `
+        <div class="stats-header" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 15px; height: 80px;">
+            <h1 class="ranking-title">${title}</h1>
+        </div>` +
+        (window.DoguUI ? DoguUI.comingSoonHtml(DOGU_BRAND) : '');
+    setActiveNav(navId);
+}
+function showEsports() { showComingPage('esports-container', 'e스포츠', '/esports', 'nav-esports'); }
+function showBroadcast() { showComingPage('broadcast-container', '방송', '/broadcast', 'nav-broadcast'); }
 
 function hideAllContainers() {
     document.querySelectorAll('.page-container').forEach(container => {
@@ -2960,6 +3010,41 @@ const CODEX_STATS = [
     { key: 'vamp', name: '생명력 흡수 및 모든 피해 흡혈', tags: ['LifeSteal', 'SpellVamp'] }
 ];
 
+// ★★ 도감 4칸 (2026-08-27). 헤더 드롭다운과 **같은 차례**로 도감·챔피언 페이지 머리에 깐다.
+//   - 이력은 **덮어쓴다**(replaceState) — 주소 규칙의 "메뉴 진입만 이력을 쌓는다" 그대로다.
+//     헤더 드롭다운으로 들어오는 건 메뉴 진입이라 각 show* 가 pushState 한다
+//   - 클릭은 아래 위임 리스너 하나가 받는다 (도감·챔피언 어느 페이지에서 눌러도 같은 길)
+const CODEX_NAV = [
+    { key: 'champions', name: '챔피언',      href: '/champions',   navId: 'nav-champions' },
+    { key: 'item',      name: '아이템',      href: '/codex/item',  navId: 'nav-codex-item' },
+    { key: 'rune',      name: '룬',          href: '/codex/rune',  navId: 'nav-codex-rune' },
+    { key: 'spell',     name: '소환사 주문', href: '/codex/spell', navId: 'nav-codex-spell' }
+];
+
+// 탭마다 마지막으로 고른 항목 — 탭이 페이지가 됐어도(2026-08-27) 돌아오면 보던 걸 다시 연다.
+// ★ showCodex 안에 두면 페이지를 다시 그릴 때마다 비므로 여기(모듈 자리)에 있어야 한다
+const codexLastPick = {};
+
+function codexTabsHtml(active) {
+    return `<div class="codex-tabs">${CODEX_NAV.map(t =>
+        `<button class="codex-tab${t.key === active ? ' active' : ''}" data-codex="${t.key}">${t.name}</button>`).join('')}</div>`;
+}
+
+function goCodexTab(key) {
+    const t = CODEX_NAV.find(x => x.key === key);
+    if (!t) return;
+    // 주소를 먼저 맞춘다 — 그래야 아래 show* 가 자기 pushState 를 건너뛰어 이력이 안 쌓인다
+    if (window.location.pathname !== t.href) window.history.replaceState({ page: 'codex' }, '', t.href);
+    if (key === 'champions') showChampions();
+    else showCodex(key);
+    setActiveNav(t.navId);
+}
+
+document.addEventListener('click', (e) => {
+    const b = e.target.closest('.codex-tab[data-codex]');
+    if (b) goCodexTab(b.dataset.codex);
+});
+
 const CODEX_TABS = [
     { key: 'item', name: '아이템' },
     { key: 'rune', name: '룬' },
@@ -3025,8 +3110,10 @@ function withGraphNotes(list, html) {
 }
 
 async function showCodex(target) {
+    // ★ 주소에 탭까지 담는다 (2026-08-27) — 아이템·룬·소환사 주문이 각각 헤더 메뉴가 됐다
+    const wantTab = CODEX_TABS.some(t => t.key === target) ? target : 'item';
     if (!window.location.pathname.startsWith('/codex')) {
-        window.history.pushState({ page: 'codex' }, '', '/codex');
+        window.history.pushState({ page: 'codex' }, '', '/codex/' + wantTab);
     }
     hideAllContainers();
     const box = document.getElementById('codex-container');
@@ -3041,18 +3128,17 @@ async function showCodex(target) {
         return;
     }
 
-    let curTab = CODEX_TABS.some(t => t.key === target) ? target : 'item';
+    let curTab = wantTab;
     let curRole = 'all';    // 아이템 역할군 (전사·원거리 딜러·암살자·탱커·마법사·서포터 — bin mItemAttributes)
     let curStat = 'all';    // 아이템 스탯 (인게임 상점 왼쪽 목록 — DD tags)
     let curDepth = 'all';   // 아이템 등급 (기본·시작·서사급·전설급·상위)
     let curStyle = 'all';   // 룬 계열 (정밀·지배·마법·영감·결의·파편)
     let runeView = 'tree';  // 룬 탭 보기: 'tree'(인게임 자리) | 'list'(평평한 목록)
     let query = '';
-    let selected = null;      // 지금 고른 항목 id (탭마다 따로 기억한다)
+    let selected = codexLastPick[wantTab] || null;   // 지금 고른 항목 id (탭마다 따로 기억한다)
     // ★ 파편은 같은 id 가 두 칸에 있어서(적응형 1·2줄 / 체력 증가 2·3줄) id 만으로는
     //   어느 칸을 눌렀는지 모른다. 켜지는 건 **누른 칸 하나**여야 해서 칸 열쇠를 따로 든다.
     let selectedCell = null;  // '5008:0-0' 꼴 (파편 트리에서만 쓴다)
-    const lastPick = {};
 
     // ★ TOOLTIP_STYLE_CSS 를 여기 끼운다. style.css 로 못 옮기는 이유는 그 상수 주석 참고.
     box.innerHTML = `
@@ -3061,9 +3147,7 @@ async function showCodex(target) {
             <h1 class="ranking-title">도감</h1>
             <p class="codex-sub">소환사의 협곡 기준 · <span id="codex-count"></span></p>
         </div>
-        <div class="codex-tabs">
-            ${CODEX_TABS.map(t => `<button class="codex-tab${t.key === curTab ? ' active' : ''}" data-tab="${t.key}">${t.name}</button>`).join('')}
-        </div>
+        ${codexTabsHtml(curTab)}
         <div class="codex-body">
             <div class="codex-left">
                 <input type="text" class="codex-search" id="codex-search" placeholder="이름 검색 (초성 · 별명)">
@@ -3373,7 +3457,7 @@ async function showCodex(target) {
         if (!row) return;
         selected = row.dataset.id;
         selectedCell = row.dataset.cell || null;   // 파편이 아니면 null
-        lastPick[curTab] = selected;
+        codexLastPick[curTab] = selected;
         // ★ 파편은 같은 id 가 두 칸에 있다 — **누른 칸 하나만** 켠다 (칸 열쇠로 가른다)
         const cellOn = activeShardCell();
         document.querySelectorAll('.codex-item, .codex-rune-node').forEach(r =>
@@ -3404,7 +3488,7 @@ async function showCodex(target) {
             query = '';
             document.getElementById('codex-search').value = '';
             selected = id;
-            lastPick.item = id;
+            codexLastPick.item = id;
             renderCats(); renderList();
             // 목록이 통째로 새로 그려졌으니 고른 자리로 데려간다
             document.querySelector('.codex-item.active')?.scrollIntoView({ block: 'center' });
@@ -3596,23 +3680,8 @@ async function showCodex(target) {
     }
 
     // ── 컨트롤
-    document.querySelectorAll('.codex-tab').forEach(b => b.addEventListener('click', () => {
-        // ★ 탭을 옮기면 주소도 따라간다 — 다만 **이력은 안 쌓는다** (2026-08-17).
-        //   `/codex/rune` 을 복사해 보내면 그 탭이 열리고, 뒤로가기는 한 번에 이전 페이지다.
-        const want = `/codex/${b.dataset.tab}`;
-        if (window.location.pathname !== want) window.history.replaceState({ page: 'codex' }, '', want);
-        document.querySelectorAll('.codex-tab').forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        curTab = b.dataset.tab;
-        curRole = 'all';
-        curStat = 'all';
-        curDepth = 'all';
-        curStyle = 'all';
-        query = '';
-        document.getElementById('codex-search').value = '';
-        selected = lastPick[curTab] || null;    // 탭으로 돌아오면 보던 걸 다시 연다
-        renderCats(); renderList();
-    }));
+    // ★ 탭 줄(4칸)은 위 goCodexTab 위임 리스너가 받는다 (2026-08-27). 챔피언 칸이 같은 줄에 있어
+    //   페이지 자체가 바뀔 수 있으므로, 예전처럼 이 페이지 안에서만 갈아 끼우지 않는다
 
     document.getElementById('codex-search').addEventListener('input', (ev) => {
         query = ev.target.value;
@@ -7090,6 +7159,8 @@ async function showChampions(requestedChampId = null, classicMode = false) {
             <div class="stats-header" id="champ-page-header" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 15px; height: 80px;">
                 <h1 class="ranking-title">${classicMode ? '챔피언 정보 (클래식)' : '챔피언 정보'}</h1>
             </div>
+            <!-- ★ 도감 4칸 — 헤더 드롭다운과 같은 줄을 페이지 안에도 둔다 (2026-08-27) -->
+            ${classicMode ? '' : codexTabsHtml('champions')}
             
             <!-- ★ 여기 세 덩이는 인라인 style 이었는데 클래스로 뺐다 (2026-08-11).
                  인라인은 스타일시트를 이겨서 @media 로 못 덮는다 — 폰에서 280px 목록이
