@@ -354,6 +354,23 @@ mythicShopSchema.index({ section: 1, date: -1 });             // 구획별 최�
 const MythicShop = mongoose.model('MythicShop', mythicShopSchema);
 
 // ==========================================
+// PBE 패치 미리보기 글 (2026-08-27 신설)
+//   ★★ 왜 저장하나 — RSS 는 **최근 20글**만 준다. 그중 Preview 가 8건이라
+//     화면이 두 달치밖에 못 보여줬다. 30분마다 읽는 김에 본 것을 적어 두면
+//     지우지 않는 한 계속 쌓인다 (한 줄 100B 남짓 · TTL 없음).
+//   ★ 과거분은 `backfill_pbe_notes.js` 가 한 번 채운다 (웨이백 + tweet-result).
+// ==========================================
+const pbeNoteSchema = new mongoose.Schema({
+    tid: { type: String, required: true, unique: true },   // 트윗 id — 이게 열쇠다
+    patch: { type: String },        // "26.17" (2024~2025 초 글은 옛 표기 "14.20"·"15.17" 이 그대로 온다)
+    detail: { type: Boolean },      // 첫 줄에 Full 이 있으면 상세
+    url: { type: String },
+    date: { type: Date }
+});
+pbeNoteSchema.index({ date: -1 });
+const PbeNote = mongoose.model('PbeNote', pbeNoteSchema);
+
+// ==========================================
 // [2] 전역 변수 및 서버(Express) 세팅
 // ==========================================
 const app = express();
@@ -1909,7 +1926,10 @@ async function ensureStatIndexes() {
         { col: 'matchstats', key: { v: 1, k: 1 } },
         { col: 'matchstats', key: { t: 1 } },
         { col: 'champstats', key: { scope: 1, kb: 1, pos: 1 } },
-        { col: 'statscopes', key: { scope: 1, kb: 1 }, unique: true }
+        { col: 'statscopes', key: { scope: 1, kb: 1 }, unique: true },
+        // PBE 글 창고 (2026-08-27). **TTL 없음** — 쌓는 게 목적이다
+        { col: 'pbenotes', key: { tid: 1 }, unique: true },
+        { col: 'pbenotes', key: { date: -1 } }
     ];
 
     // ★★ 못 쓰게 된 옛 인덱스. **지우기 전에 새 걸 만들면 안 된다** — `date` 단독 unique 가
@@ -3899,6 +3919,31 @@ async function fetchPbePreviewNotes() {
 // ★ limit 으로 잘라 준다 (2026-08-27) — 홈 위젯은 5, 패치노트 탭은 100.
 //   **캐시에는 항상 통째로** 담고 응답에서만 자른다. 그래야 홈이 먼저 열려도
 //   탭이 5건짜리 캐시를 물려받지 않는다
+// 본 김에 적어 둔다. 트윗 id 가 열쇠라 몇 번을 다시 봐도 한 줄이다
+async function savePbeNotes(list) {
+    const ops = (list || []).map(n => {
+        const tid = (String(n.url || '').match(/status\/(\d+)/) || [])[1];
+        if (!tid) return null;
+        return { updateOne: {
+            filter: { tid },
+            update: { $set: { tid, patch: n.patch, detail: !!n.detail, url: n.url, date: n.date ? new Date(n.date) : null } },
+            upsert: true
+        } };
+    }).filter(Boolean);
+    if (!ops.length) return;
+    try { await PbeNote.bulkWrite(ops, { ordered: false }); }
+    catch (e) { console.warn('[PatchNotes] PBE 저장 실패:', e.message); }
+}
+
+// 창고에서 최신순으로. 실패하면 빈 배열을 주고 호출부가 RSS 값을 그대로 쓴다
+async function loadPbeNotes(limit) {
+    try {
+        const rows = await PbeNote.find({}, { _id: 0, patch: 1, detail: 1, url: 1, date: 1 })
+            .sort({ date: -1 }).limit(limit).lean();
+        return rows.map(r => ({ patch: r.patch, detail: !!r.detail, url: r.url, date: r.date ? new Date(r.date).toISOString() : null }));
+    } catch (e) { console.warn('[PatchNotes] PBE 창고 조회 실패:', e.message); return []; }
+}
+
 app.get('/api/patch-notes', async (req, res) => {
     const limit = Math.min(Math.max(parseInt(req.query.limit) || 5, 1), PATCH_LIST_MAX);
     const cut = (p) => Object.assign({}, p, { official: p.official.slice(0, limit), pbe: p.pbe.slice(0, limit) });
@@ -3914,6 +3959,13 @@ app.get('/api/patch-notes', async (req, res) => {
     let pbe;
     if (pbeR.status === 'fulfilled') { pbe = pbeR.value; lastGoodPbeNotes = pbe; }
     else { console.warn('[PatchNotes] PBE(nitter) 수집 실패:', pbeR.reason?.message); pbe = lastGoodPbeNotes || []; }
+
+    // ★★ 본 것을 창고에 적고, 화면에는 **창고**를 준다 (2026-08-27).
+    //   RSS 는 최근 20글만 줘서 그것만 쓰면 두 달치가 한계다. 창고에는 과거분
+    //   백필까지 들어 있으므로 훨씬 길다. 창고가 비었거나 조회가 실패하면 RSS 값 그대로.
+    await savePbeNotes(pbe);
+    const stored = await loadPbeNotes(PATCH_LIST_MAX);
+    if (stored.length) pbe = stored;
 
     const payload = { ok: official.length > 0 || pbe.length > 0, official, pbe, fetchedAt: Date.now() };
     // ★ 한쪽이라도 비었으면 5분만 캐시한다 (2026-08-19). 30분으로 두면 니터가 잠깐
