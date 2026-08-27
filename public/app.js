@@ -724,7 +724,7 @@ async function showPatchNotes(kind) {
 
     let data = null;
     try {
-        const res = await fetch('/api/patch-notes?limit=100');
+        const res = await fetch('/api/patch-notes?limit=200');   // 공식 목록 전부 (실측 172건)
         data = await res.json();
     } catch (e) { /* 아래 폴백으로 */ }
 

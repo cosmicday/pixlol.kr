@@ -3794,8 +3794,10 @@ app.get('/api/rank-cutoffs', async (req, res) => {
 //   ★ 니터 인스턴스는 언제든 죽을 수 있다 — 죽으면 lastGood 폴백, 그마저 없으면
 //     pbe 가 빈 배열이고 화면은 index.html 의 정적 안내(프로필 바로가기)로 남는다.
 //   ★ 두 소스는 따로 try/catch 다. 한쪽이 죽어도 다른 쪽은 나가야 한다.
-// 목록으로 들고 있을 최대 건수 (패치노트 탭이 이만큼까지 보여준다. 홈은 limit=5)
-const PATCH_LIST_MAX = 100;
+// 목록으로 들고 있을 최대 건수 (패치노트 탭이 이만큼까지 보여준다. 홈은 limit=5).
+// ★ 공식 태그 페이지가 한 번에 주는 게 172건(9.1 / 2019-01 부터)이라 200이면 전부 담긴다 —
+//   그 페이지의 「더 보기」 버튼은 url 이 "#" 이라 서버에 더 물어볼 곳이 없다 (2026-08-27 실측)
+const PATCH_LIST_MAX = 200;
 let lastGoodOfficialNotes = null;
 let lastGoodPbeNotes = null;
 
