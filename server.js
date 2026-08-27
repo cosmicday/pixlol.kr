@@ -1549,7 +1549,10 @@ async function buildOneBuildScope(scopeKey, matchCond) {
                 shard: [P(25), P(26), P(27)],
                 // ★ 룬 낱개 (2026-08-26 밤 신설) — 룬 6개 + 파편 3개를 하나씩 센다 (최종 아이템을 낱개로 세는 것과 같다).
                 //   lolalytics Runes 표(룬마다 픽률·승률)의 자료. 조합(`rune`) 상위 12개에서 되짚으면 잘린 꼬리 때문에 틀린다.
-                perk: [P(18), P(19), P(20), P(21), P(23), P(24), P(25), P(26), P(27)],
+                perk: [P(18), P(19), P(20), P(21), P(23), P(24)],
+                // ★★ 파편은 **줄 번호와 같이** 센다 (2026-08-27, 사용자 지적 "적응형 픽률 뻥튀기"). 적응형(5008)은 1·2줄, 체력(5001)은
+                //   2·3줄에 있어 id 로만 세면 한 사람이 두 번 더해져 픽률이 100% 를 넘었다 (카밀 139%). key 가 [id, 줄] 이다
+                shardslot: [{ id: P(25), r: 0 }, { id: P(26), r: 1 }, { id: P(27), r: 2 }],
                 // 최종 아이템 6칸 (9~14). 아래 facet 에서 한 번 더 펼쳐 낱개로 센다.
                 item: [P(9), P(10), P(11), P(12), P(13), P(14)],
                 // 같은 이유로 주문도 작은 id 를 앞으로. 점멸/점화와 점화/점멸이 갈리면
@@ -1576,6 +1579,11 @@ async function buildOneBuildScope(scopeKey, matchCond) {
                     { $match: { perk: { $gt: 0 } } },
                     { $group: { _id: { c: '$c', pos: '$pos', k: ['$perk'] }, games: { $sum: 1 }, wins: { $sum: '$w' } } }
                 ],
+                shardslot: [
+                    { $unwind: '$shardslot' },
+                    { $match: { 'shardslot.id': { $gt: 0 } } },
+                    { $group: { _id: { c: '$c', pos: '$pos', k: ['$shardslot.id', '$shardslot.r'] }, games: { $sum: 1 }, wins: { $sum: '$w' } } }
+                ],
                 // ★ 챔피언 총 판수. top N 으로 자르고 나면 줄을 더해도 총합이 안 나오므로
                 //   분모를 따로 담아야 한다. champstats 에서 가져오면 될 것 같지만
                 //   거기는 kb 로 쪼개져 있고 화면의 밴드 필터에 따라 값이 달라진다.
@@ -1586,6 +1594,8 @@ async function buildOneBuildScope(scopeKey, matchCond) {
 
     const f = rows[0];
     if (!f) return 0;
+    // 파편(줄 번호 포함, key [id, 줄])도 같은 'perk' type 에 담는다 — 박제 TYPE_LIST 에 자리를 안 늘리려고
+    f.perk = [...(f.perk || []), ...(f.shardslot || [])];
 
     // ★ 타임라인 갈래(스킬·시작템·코어)는 `sk` 가 있는 판만 세므로 따로 돈다 (위 buildTimelineFacet).
     //   실패해도 룬·아이템 집계는 살린다 — DD item.json 을 못 받는 날 빌드 전체가 비면 손해가 크다.

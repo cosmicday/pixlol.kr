@@ -4330,20 +4330,28 @@ function lxRuneBox(c) {
 //   승률 최고는 표본이 얇은 칸이 100% 로 튀지 않게 "그 줄 1위 판수의 10% 이상(최소 5판)" 인 칸 중에서 고른다.
 function lxRuneBody(c, v) {
     const B = c.B;
-    const perk = {};
-    B.rows('perk').forEach(r => { perk[r.key[0]] = r; });
+    // ★ 룬은 key [id], 파편은 key [id, 줄] (2026-08-27 — 적응형·체력이 두 줄에 있어 id 로만 세면 픽률이 100% 를 넘었다).
+    //   줄 번호 있는 줄이 아직 없으면(재집계 전) 옛 id 값으로 물러난다
+    const perk = {}, perkRow = [{}, {}, {}];
+    B.rows('perk').forEach(r => { if (r.key.length > 1) perkRow[r.key[1]][r.key[0]] = r; else perk[r.key[0]] = r; });
     if (!Object.keys(perk).length) return `<div class="lx-none">룬별 통계는 다음 집계부터 나옵니다.</div>`;
 
     // ★★ 최고 탭은 "줄마다 최고" 가 아니라 **실제로 같이 찍힌 룬 페이지 하나**다 (2026-08-27, 사용자 지적).
     //   룬은 마구 찍는 게 아니라 핵심 룬 1 + 주 계열 줄마다 1 (=4) + 부 계열 한 곳에서 2 = **6개**가 한 페이지고,
     //   줄마다 최고를 따로 뽑으면 실제로 존재하지 않는 조합이 된다. 그래서 `rune` 조합 집계에서
     //   승률 최고(표본 하한 있음) / 픽률 최고 페이지 하나를 골라 그 6칸만 밝힌다. 파편은 그 페이지와 같은 기준으로 고른 `shard` 조합 3개.
-    const page = v === 'all' ? null : B.pick('rune', v === 'win' ? 'win' : 'common');
-    const shardPick = v === 'all' ? null : B.pick('shard', v === 'win' ? 'win' : 'common');
+    // ★ 표본 하한 없이 고른다 (2026-08-27 사용자 지시) — 조합 줄(판수 2 이상, 상위 12개) 중 승률/판수 최고 그대로
+    const pickPage = type => {
+        const list = B.rows(type);
+        if (!list.length) return null;
+        return v === 'win' ? [...list].sort((x, y) => y.wins / y.games - x.wins / x.games || y.games - x.games)[0] : list[0];
+    };
+    const page = v === 'all' ? null : pickPage('rune');
+    const shardPick = v === 'all' ? null : pickPage('shard');
     const bright = new Set(page ? [page.key[1], page.key[2], page.key[3], page.key[4], page.key[6], page.key[7]] : []);
     const shards = (shardPick && shardPick.key) || [];
-    const cell = (id, on) => {
-        const r = perk[id];
+    const cell = (id, on, ri) => {
+        const r = (ri != null && perkRow[ri][id]) || perk[id];
         const dim = v !== 'all' && !on;
         return `<div class="lx-pk${r ? '' : ' is-none'}${dim ? ' is-dim' : ''}${v !== 'all' && on ? ' is-best' : ''}">
             <img src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">
@@ -4352,8 +4360,8 @@ function lxRuneBody(c, v) {
         </div>`;
     };
     // 파편은 자리로 켠다 — 같은 파편이 두 줄에 있어 id 로 켜면 두 칸이 켜진다
-    const rowHtml = (row, cls, ri) => `<div class="lx-pk-row${cls}">${row.map(id => cell(id, ri == null ? bright.has(id) : shards[ri] === id)).join('')}</div>`;
-    const pageLine = page ? `<div class="lx-pk-page">${v === 'win' ? '승률 최고' : '픽률 최고'} 룬 페이지 — <span class="${lxWr(page.wins, page.games)}">${lxPct(page.wins, page.games)}% 승률</span> · <span class="lx-lav">${lxPct(page.games, B.total)}% 픽률</span> · <span class="lx-gray">${page.games}판</span>${shardPick ? ` · 파편은 ${lxPct(shardPick.games, B.total)}% 조합` : ''}</div>` : '';
+    const rowHtml = (row, cls, ri) => `<div class="lx-pk-row${cls}">${row.map(id => cell(id, ri == null ? bright.has(id) : shards[ri] === id, ri)).join('')}</div>`;
+    const pageLine = '';   // 표 위 '승률 최고 룬 페이지 — …' 줄은 2026-08-27 에 뺐다 (사용자 지시)
     const styles = Object.keys(perkData.slots || {}).map(Number).sort((a, b) => a - b);
     const note = v === 'all' ? '' : ' · 밝은 칸 = 그 룬 페이지의 6개 + 파편 3개, 나머지는 어둡게';
     return pageLine + `<div class="lx-pk-trees">
@@ -4366,7 +4374,7 @@ function lxRuneBody(c, v) {
             ${(perkData.shardRows || []).map((row, ri) => rowHtml(row, ' is-shard', ri)).join('')}
         </div>
     </div>
-    <div class="lx-foot">위 = 픽률(이 라인 판 중 그 룬을 든 비율) · 아래 = 승률. 파편은 같은 것이 두 줄에 있어 줄과 무관하게 합산한 값${note}</div>`;
+    <div class="lx-foot">위 = 픽률(이 라인 판 중 그 룬을 든 비율) · 아래 = 승률${note}</div>`;
 }
 
 // ── 탭 바 동작 — 그룹마다 몸통을 다시 그린다 ─────────────────────────
