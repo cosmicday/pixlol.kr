@@ -2808,6 +2808,13 @@ main {
 /* 승률 최고 · 픽률 최고 탭 — 줄에서 뽑힌 칸만 밝고 나머지는 어둡게 (2026-08-27) */
 .lx-pk.is-dim { opacity: 0.22; filter: grayscale(1); }
 .lx-pk-page { padding: 8px 12px 0; font-size: 12px; color: #ddd; }
+/* 조합별 승률 — 한 줄에 룬 페이지 아이콘 + 픽률 · 승률 · 판수 (2026-08-27) */
+.lx-combos { padding: 6px 12px; }
+.lx-combo { display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px 60px; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #1c1c1c; font-size: 12px; text-align: center; }
+.lx-combo:last-child { border-bottom: 0; }
+.lx-combo-head { color: var(--lx-gray); font-size: 11px; }
+.lx-combo-head .lx-combo-page { text-align: left; }
+.lx-combo-page { justify-content: flex-start; min-width: 0; }
 .lx-pk.is-best img { box-shadow: 0 0 0 2px var(--lx-teal); }
 
 /* 같은 이름을 예전 화면이 쓰던 규칙 — 승률 색 (전적 카드 등) */

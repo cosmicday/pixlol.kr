@@ -329,9 +329,9 @@ const mythicShopSchema = new mongoose.Schema({
         _id: false,
         name: { type: String, required: true },    // 정식 명칭 (수집기가 CD 로 대조해 보낸다)
         // 'icon' | 'emote' | 'skin' | 'chroma' | 'ward' | 'border' | 'bundle' | 'other'
-        //   ★ 일일 구획은 예전처럼 icon/emote 만 받는다 (아래 validateMythicBody)
+        //   ★ 일일 구획은 icon/emote/ward 만 받는다 (아래 validateMythicBody · MYTHIC_PRICE). 와드는 2026-08-27 에 추가
         type: { type: String, required: true },
-        price: { type: Number, required: true },   // 신화 정수. 일일은 5|25 고정
+        price: { type: Number, required: true },   // 신화 정수. 일일은 5|25|50 고정
         catalogId: { type: String },               // CommunityDragon id
         // ★ 이미지 URL 은 **수집기가 만들어 보낸다. 서버·프론트가 만들지 말 것.**
         //   아이콘은 id 로 경로를 만들 수 있지만 감정표현은 경로가 제각각이라 유추가 안 된다.
@@ -3305,7 +3305,9 @@ function checkCollectorToken(req) {
 
 // ★★ 수집기를 믿지 않는다. 화면을 잘못 읽을 수도 있고 토큰이 새면 아무나 보낼 수 있다.
 //   틀린 값이 조용히 들어가는 게 이 기능에서 가장 나쁜 결과라 서버에서 다시 본다.
-const MYTHIC_PRICE = { icon: 5, emote: 25 };
+// ★ 일일 구획의 타입↔가격 짝. **2026-08-27 에 와드(50)가 실제로 떴다** (전투사관학교 책상 와드) — 8/16 "일일은 아이콘·감정표현뿐"
+//   이 반만 맞았다. 스킨·크로마는 여전히 안 뜬다. 수집기(`mythic-collector/신화상점_일일와드_20260827.md`) 요청으로 열었다.
+const MYTHIC_PRICE = { icon: 5, emote: 25, ward: 50 };
 const MYTHIC_IMAGE_PREFIX = 'https://raw.communitydragon.org/';
 
 // ★★ 구획 4개 (2026-08-17). 인게임 상점 탭 그대로다.
@@ -3316,8 +3318,8 @@ const MYTHIC_SECTIONS = ['featured', 'biweekly', 'weekly', 'daily'];
 //   일일은 오늘 것이 아니면 곧바로 낡은 것이고, 주간은 7일까지는 그대로다.
 const MYTHIC_SECTION_PERIOD = { featured: 14, biweekly: 14, weekly: 7, daily: 0 };
 
-// 일일 밖에서 파는 것들. **일일 구획에는 여전히 icon/emote 만 받는다** —
-//   그 규칙이 지금까지 오독을 잡아 왔고, 일일에 스킨이 뜨는 일은 없다.
+// 일일 밖에서 파는 것들. **일일 구획에는 icon/emote/ward(MYTHIC_PRICE 의 키)만 받는다** —
+//   그 규칙이 지금까지 오독을 잡아 왔다. 일일에 스킨·크로마가 뜨는 일은 없고, **와드는 2026-08-27 에 실제로 떴다.**
 const MYTHIC_TYPES = ['icon', 'emote', 'skin', 'chroma', 'ward', 'border', 'bundle', 'other'];
 
 // 신화 정수 가격 상한. 프레스티지 125 · 신화 스킨 150 · 크로마 40 근처라 넉넉하다.
@@ -3360,11 +3362,12 @@ function validateMythicBody(body) {
 
         if (isDaily) {
             // ── 일일: 예전 규칙 그대로. 타입 2종 + 가격 고정 + 둘의 짝까지 본다.
-            if (it.type !== 'icon' && it.type !== 'emote') {
-                return `${at}.type 은 icon 또는 emote 여야 합니다 (일일 구획).`;
+            // ★ 타입·가격 목록은 MYTHIC_PRICE 한 표에서 온다 (2026-08-27 와드 50 추가) — 셋을 따로 적으면 어긋난다
+            if (!Object.prototype.hasOwnProperty.call(MYTHIC_PRICE, it.type)) {
+                return `${at}.type 은 ${Object.keys(MYTHIC_PRICE).join(' / ')} 중 하나여야 합니다 (일일 구획).`;
             }
-            if (it.price !== 5 && it.price !== 25) {
-                return `${at}.price 는 5 또는 25 여야 합니다 (일일 구획).`;
+            if (!Object.values(MYTHIC_PRICE).includes(it.price)) {
+                return `${at}.price 는 ${Object.values(MYTHIC_PRICE).join(' / ')} 중 하나여야 합니다 (일일 구획).`;
             }
             // 타입과 가격이 어긋나면 화면을 잘못 읽은 것이다 (아이콘 5 / 감정표현 25 고정)
             if (MYTHIC_PRICE[it.type] !== it.price) {

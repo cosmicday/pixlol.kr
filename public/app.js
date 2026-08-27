@@ -4321,7 +4321,7 @@ function lxRuneBox(c) {
     const B = c.B;
     if (!B.has || !B.total) return '';
     return `<div class="lx-box" id="lx-runes">
-        ${lxTabBar('rune', [{ v: 'all', label: '전체' }, { v: 'win', label: '승률 최고' }, { v: 'common', label: '픽률 최고' }], 'all')}
+        ${lxTabBar('rune', [{ v: 'all', label: '전체' }, { v: 'win', label: '승률 최고' }, { v: 'common', label: '픽률 최고' }, { v: 'combo', label: '조합별 승률' }], 'all')}
         <div id="lx-rune-body">${lxRuneBody(c, 'all')}</div>
     </div>`;
 }
@@ -4330,6 +4330,31 @@ function lxRuneBox(c) {
 //   승률 최고는 표본이 얇은 칸이 100% 로 튀지 않게 "그 줄 1위 판수의 10% 이상(최소 5판)" 인 칸 중에서 고른다.
 function lxRuneBody(c, v) {
     const B = c.B;
+    // ★ 조합별 승률 — 서버가 저장한 룬 페이지 조합(판수 상위 12개, 2판 이상)을 픽률 순으로 (2026-08-27, 사용자 요청).
+    //   승률 최고 탭이 "이 12개 중 최고" 인 이유가 여기서 보인다. 파편은 조합 키에 없어서 안 그린다.
+    if (v === 'combo') {
+        const list = B.rows('rune');
+        if (!list.length) return `<div class="lx-none">표본 없음</div>`;
+        const img = (id, cls) => `<img class="build-perk ${cls || ''}" src="${perkIcon(id)}" alt="" title="${perkName(id)}" loading="lazy">`;
+        return `<div class="lx-combos">
+            <div class="lx-combo lx-combo-head"><span class="lx-combo-page">룬 페이지 (픽률 순)</span><span>픽률</span><span>승률</span><span>판수</span></div>
+            ${list.map(r => {
+                const [ps, ks, m1, m2, m3, ss, s1, s2] = r.key;
+                const sec = perksBySlot(ss, [s1, s2]);
+                return `<div class="lx-combo">
+                    <span class="lx-combo-page build-runes">
+                        <img class="build-style" src="${perkIcon(ps)}" alt="" title="${perkName(ps)}">${img(ks, 'build-perk-key')}${[m1, m2, m3].map(x => img(x)).join('')}
+                        <span class="build-div"></span>
+                        <img class="build-style" src="${perkIcon(ss)}" alt="" title="${perkName(ss)}">${sec.map(x => img(x)).join('')}
+                    </span>
+                    <span class="lx-lav">${lxPct(r.games, B.total)}%</span>
+                    <span class="${lxWr(r.wins, r.games)}">${lxPct(r.wins, r.games)}%</span>
+                    <span class="lx-gray">${r.games}</span>
+                </div>`;
+            }).join('')}
+        </div>
+        <div class="lx-foot">서버가 판수 상위 12개 조합만 저장한다 · 파편은 조합에 안 들어 있다</div>`;
+    }
     // ★ 룬은 key [id], 파편은 key [id, 줄] (2026-08-27 — 적응형·체력이 두 줄에 있어 id 로만 세면 픽률이 100% 를 넘었다).
     //   줄 번호 있는 줄이 아직 없으면(재집계 전) 옛 id 값으로 물러난다
     const perk = {}, perkRow = [{}, {}, {}];
