@@ -197,7 +197,7 @@ const champStatSchema = new mongoose.Schema({
     kills: { type: Number, default: 0 },
     deaths: { type: Number, default: 0 },
     assists: { type: Number, default: 0 }
-});
+}, { versionKey: false });   // ★ __v(몽고 문서 버전 칸) 끔 — 매시간 통째로 갈아엎는 표라 쓸 일이 없다 (2026-08-27, 27만 행 x 7B)
 champStatSchema.index({ scope: 1, kb: 1, pos: 1 });
 const ChampStat = mongoose.model('ChampStat', champStatSchema);
 
@@ -246,7 +246,7 @@ const champBuildSchema = new mongoose.Schema({
     key: { type: [Number], default: [] },
     games: { type: Number, default: 0 },
     wins: { type: Number, default: 0 }
-});
+}, { versionKey: false });   // __v 끔 (champstats 와 같은 이유)
 champBuildSchema.index({ scope: 1, champ: 1 });
 const ChampBuild = mongoose.model('ChampBuild', champBuildSchema);
 
@@ -272,7 +272,7 @@ const champMatchupSchema = new mongoose.Schema({
     rel: { type: Number, default: 0 },
     games: { type: Number, default: 0 },
     wins: { type: Number, default: 0 }
-});
+}, { versionKey: false });   // __v 끔 (champstats 와 같은 이유)
 champMatchupSchema.index({ scope: 1, champ: 1 });
 const ChampMatchup = mongoose.model('ChampMatchup', champMatchupSchema);
 
@@ -1807,6 +1807,17 @@ async function buildChampStats() {
         if (frozenKey && frozenKey !== frozenLoggedKey) {
             console.log(`[Stat] 닫힌 패치는 재집계하지 않는다: ${frozen.map(v => `p:${v}`).join(' · ')} (값이 그대로 얼어 있다)`);
             frozenLoggedKey = frozenKey;
+        }
+        // ★★ 얼어붙은 패치의 원본(matchstats)은 바로 지운다 (2026-08-27). 재집계를 안 하니 읽는 코드가
+        //   없고(집계 말고는 matchstats 를 읽는 데가 없다), TTL 21일까지 들고 있으면 자리만 차지한다.
+        //   창고에 남는 건 "현재 패치 + 3일" 뿐이 되어 원본 정착 380MB → 최고 310 · 평균 180MB.
+        //   ★ 그 패치의 집계 행이 한 번은 만들어졌는지(statscopes 에 줄이 있는지) 보고 지운다 —
+        //     집계 전에 지우면 그 패치가 통째로 빈다. STATS_UNFREEZE 로 다시 셀 길은 이때 사라진다.
+        for (const v of frozen) {
+            const hasRows = await StatScope.exists({ scope: `p:${v}` });
+            if (!hasRows) { console.warn(`[Stat] p:${v} 는 집계 행이 없어 원본을 남긴다`); continue; }
+            const r = await MatchStat.deleteMany({ v });
+            if (r.deletedCount) console.log(`[Stat] 닫힌 패치 p:${v} 원본 ${r.deletedCount}판 삭제 (얼어붙은 집계는 그대로)`);
         }
 
         // 일별 — 최근 7일 (한국시간 기준)
