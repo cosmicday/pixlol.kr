@@ -1322,6 +1322,8 @@ async function fetchMatchStats() {
 //     statscopes 는 upsert 라 남는다. 아래에서 따로 지운다 — 안 지우면 **분모가 두 배**가 된다.
 const K_BAND_ALL = 'all';
 const DAILY_SCOPE_DAYS = 7;        // 최근 며칠치 일별 집계를 유지할지
+const PATCH_FREEZE_DAYS = 3;       // 최신이 아닌 패치의 마지막 경기가 이만큼 지나면 재집계를 멈춘다 (2026-08-27)
+let frozenLoggedKey = '';          // 얼어붙은 패치 목록 로그를 바뀔 때만 찍으려고
 
 // 한국시간 기준 날짜 문자열. 경기 시각(t)이 UTC epoch 라 그냥 자르면 하루가 밀린다.
 // (한국시간 날짜 헬퍼는 위 수집 절의 kstDay 를 그대로 쓴다)
@@ -1776,8 +1778,36 @@ async function buildChampStats() {
         const scopes = [];
 
         // 패치별 — MatchStat 에 실제로 들어 있는 패치만
-        (await MatchStat.distinct('v')).filter(Boolean)
-            .forEach(v => scopes.push({ key: `p:${v}`, cond: { v } }));
+        // ★★ 닫힌 패치는 재집계하지 않는다 (2026-08-27). 원본(matchstats)이 TTL 로 **한 판씩**
+        //   사라지는 동안 매시간 통째로 다시 계산하면 옛 패치 값이 조금씩 줄다가 마지막 몇 판짜리로
+        //   얼어붙는다 ("916판" → "12판"). 예전엔 그 전에 사람이 박제(build_stats_archive.js)를
+        //   돌리는 게 유일한 방어였다. 지금은 **최신 패치가 아니고 마지막 경기가 3일 넘게 지난
+        //   패치**는 건너뛴다 — 그 시점엔 원본이 100% 살아 있어 값이 완전하고, 그 뒤 원본이
+        //   사라져도 재계산이 안 도니 값이 안 변한다. 박제는 용량을 파일로 옮기는 선택 작업이 됐다.
+        //   ★ 3일은 수집의 "그저께 잔량 따라잡기" 를 덮는 여유다.
+        //   ★ 집계 규칙을 바꿔 옛 패치까지 다시 계산하고 싶으면 `STATS_UNFREEZE=1` — 단 그 패치
+        //     원본이 TTL 안에 온전히 남아 있을 때만 (아니면 줄어든 값으로 덮어쓴다).
+        const byPatch = await MatchStat.aggregate([
+            { $match: { v: { $nin: [null, ''] } } },
+            { $group: { _id: '$v', last: { $max: '$t' }, n: { $sum: 1 } } }
+        ]);
+        const verNum = v => v.split('.').map(Number);
+        const newest = byPatch.map(p => p._id).sort((a, b) => {
+            const [am, an] = verNum(a), [bm, bn] = verNum(b);
+            return (bm - am) || (bn - an);
+        })[0];
+        const closedBefore = Math.floor(Date.now() / 1000) - PATCH_FREEZE_DAYS * 86400;
+        const frozen = [];
+        byPatch.forEach(p => {
+            const v = p._id;
+            if (v !== newest && p.last < closedBefore && process.env.STATS_UNFREEZE !== '1') { frozen.push(v); return; }
+            scopes.push({ key: `p:${v}`, cond: { v } });
+        });
+        const frozenKey = frozen.sort().join(',');
+        if (frozenKey && frozenKey !== frozenLoggedKey) {
+            console.log(`[Stat] 닫힌 패치는 재집계하지 않는다: ${frozen.map(v => `p:${v}`).join(' · ')} (값이 그대로 얼어 있다)`);
+            frozenLoggedKey = frozenKey;
+        }
 
         // 일별 — 최근 7일 (한국시간 기준)
         const now = Date.now();
