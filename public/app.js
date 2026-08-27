@@ -6148,8 +6148,10 @@ async function renderMythicSection(key) {
     //   켜 둔 페이지는 updateShopTimer 가 0 이 되는 순간 그 카드를 뗀다.
     const now = Date.now();
     const items = (data.items || []).filter(i => { const e = mythicItemEnd(i.name); return !(e && e <= now); });
+    // ★ 추천도 다른 구획과 같은 격자(한 줄 4개)다 (2026-08-27, 사용자 요청). 예전 "1번 크게 / 2·3번 가로로" 배치(`.is-featured`)는
+    //   CSS 만 남아 있고 안 붙인다.
     const cards = items.length
-        ? `<div class="mshop-grid${key === 'featured' ? ' is-featured' : ''}">${items.map(mythicCardHtml).join('')}</div>`
+        ? `<div class="mshop-grid">${items.map(mythicCardHtml).join('')}</div>`
         : `<div class="mythic-empty">${mythicCollectingMsg(key)}</div>`;
 
     // ★★ 제목 옆은 **다음 초기화까지 남은 시간**, 오른쪽 끝은 **판매 기간**이다 (2026-08-17).
