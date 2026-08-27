@@ -79,6 +79,10 @@ const rankSnapshotSchema = new mongoose.Schema({
     day: { type: String, required: true, unique: true },   // KST "2026-08-17"
     n: { type: Number, default: 0 },
     puuids: { type: [String], default: [] },
+    // ★ 그 날짜의 순회(scanMatchlists)가 끝까지 돌았나 (2026-08-27).
+    //   수집이 전날 잔량을 따라잡을 때 이 표시가 있는 날만 손댄다 — 순회가 덜 된 날은
+    //   등장 횟수(cnt)가 하한조차 못 되어 어떤 판이 5명 이상인지 모른다.
+    scanDone: { type: Boolean, default: false },
     createdAt: { type: Date, expires: '5d', default: Date.now }
 });
 const RankSnapshot = mongoose.model('RankSnapshot', rankSnapshotSchema);
@@ -1064,7 +1068,16 @@ async function scanMatchlists() {
         // 이 날짜를 아직 안 훑은 사람만. 다 훑었으면 쉰다 (그때부터 수집 단계다).
         //   ★ 오늘 명단 + 대상일 명단이다. 오늘 빠진 사람도 어제 게임은 했다.
         const targets = scanTargets(day).slice(0, SCAN_PER_CYCLE).map(puuid => ({ puuid }));
-        if (targets.length === 0) { isScanningMatches = false; return; }
+        if (targets.length === 0) {
+            // ★ 순회가 끝난 날짜에 표시를 남긴다 (하루 한 번). 수집이 다음 날 이 날짜의 잔량을
+            //   따라잡을지 정하는 근거다 — 메모리에만 두면 재시작 때 잃어서 스냅샷 문서에 적는다.
+            if (scanDoneMarkedDay !== day) {
+                scanDoneMarkedDay = day;
+                RankSnapshot.updateOne({ day }, { $set: { scanDone: true } }).catch(() => { });
+            }
+            isScanningMatches = false;
+            return;
+        }
 
         for (const p of targets) {
             try {
@@ -1121,22 +1134,57 @@ const RANK_SET_MIN = 5000;
 
 // k 를 셀 때 쓸 집합. **대상일 스냅샷이 있으면 그것**, 없으면 지금 명단이다.
 //   하루에 한 번만 읽는다 (분마다 0.9MB 를 읽을 이유가 없다).
-let statRankDay = null;
-let statRankCache = null;
+// ★ 날짜별로 캐시한다 (2026-08-27) — 수집이 전날 잔량까지 따라잡으면서 한 사이클에
+//   두 날짜의 명단이 필요해졌다. 오래된 날짜는 지워서 두 개 넘게 안 쌓인다.
+const statRankCacheByDay = new Map();
 let statRankWarnedDay = null;
+let scanDoneMarkedDay = null;
 
-async function statRankSet() {
+// 그 날짜의 순회가 끝까지 돌았나 (스냅샷 문서의 scanDone). 날짜별로 한 번만 읽는다 —
+// true 만 캐시한다. false 는 "아직" 일 수 있어서 다음 사이클에 다시 본다.
+const scanDoneCache = new Set();
+async function scanDoneOn(day) {
+    if (scanDoneCache.has(day)) return true;
+    const doc = await RankSnapshot.findOne({ day }).select('scanDone').lean().catch(() => null);
+    if (doc?.scanDone) { scanDoneCache.add(day); return true; }
+    return false;
+}
+
+// ★ 수집 창에서 빠져나간 날짜의 결산을 한 줄 남긴다 (2026-08-27).
+//   창은 {대상일, 그 전날} 이라 자정에 대상일이 넘어가면 "그저께" 가 빠진다 — 그 순간이
+//   그 날짜의 최종 처리량이 확정되는 때다. 이 줄이 "그날 통계가 얼마나 온전한가" 의 기록이다.
+//   matchseens TTL 이 3일이라 이때까진 문서가 남아 있다 (순회는 경기 다음 날 아침이므로 ~2일).
+let statWindowDay = null;
+async function reportClosedStatDay() {
     const day = scanTargetDay();
-    if (statRankDay === day && statRankCache) return statRankCache;
+    if (statWindowDay === day) return;
+    const first = statWindowDay === null;
+    statWindowDay = day;
+    if (first) return;                                   // 기동 직후엔 결산할 날짜가 없다
+    const closed = kstDay(Date.now() - 3 * 86400000);
+    const cond = { day: closed, cnt: { $gte: STAT_MIN_K } };
+    const [total, done] = await Promise.all([
+        MatchSeen.countDocuments(cond), MatchSeen.countDocuments({ ...cond, done: true })
+    ]).catch(() => [0, 0]);
+    if (!total) return;
+    const scanned = await scanDoneOn(closed);
+    const miss = total - done;
+    const line = `[Stat] ${closed} 수집 종료: ${done}/${total}판 처리` +
+        (miss ? ` — ${miss}판 놓침` : '') + (scanned ? '' : ' (순회 미완료)');
+    (miss ? console.warn : console.log)(line);
+}
+
+async function statRankSet(day = scanTargetDay()) {
+    if (statRankCacheByDay.has(day)) return statRankCacheByDay.get(day);
 
     const doc = await RankSnapshot.findOne({ day }).select('puuids').lean().catch(() => null);
     const snap = new Set(doc?.puuids || []);
 
     if (snap.size >= RANK_SET_MIN) {
         console.log(`[Stat] k 판정에 ${day} 명단 ${snap.size}명을 쓴다`);
-        statRankCache = snap;
-        statRankDay = day;
-        return statRankCache;
+        statRankCacheByDay.set(day, snap);
+        for (const d of statRankCacheByDay.keys()) if (d < kstDay(Date.now() - 3 * 86400000)) statRankCacheByDay.delete(d);
+        return snap;
     }
 
     // ── 도입 첫날이거나 스냅샷이 덜 찬 경우. 예전 동작(지금 명단)으로 물러난다.
@@ -1179,20 +1227,31 @@ async function fetchMatchStats() {
         //   저녁이라 "지금 명단" 으로 세면 그 사이 강등된 사람이 빠져 5명짜리가 4명이 된다.
         //   ★ 스냅샷이 없거나 너무 작으면 지금 명단으로 물러난다 — 예전과 같은 동작이다.
         //     여기서 멈추면 그날 수집이 통째로 날아가므로, 조금 틀리더라도 도는 편이 낫다.
-        const rankSet = await statRankSet();
-        // ★ 지금 순회를 마친 날짜만 처리한다. 이전 날짜가 섞이면 안 되는데,
-        //   서버를 늦은 시각에 처음 띄우면 그날은 순회를 다 못 채우고 자정에 대상이
-        //   넘어간다. 그 **부분만 모인 날짜**를 그대로 집계하면 일별 통계가 왜곡된다.
-        //   남겨 둬도 matchseens TTL(3일)이 알아서 치운다.
+        // ★ 대상일(어제)을 먼저, 남는 자리에 **그 전날 잔량**을 채운다 (2026-08-27).
+        //   예전엔 대상일만 봤다 — 자정이 지나면 못 끝낸 판은 대상에서 빠져 TTL 로 사라졌고
+        //   (429 가 이어지거나 서버가 반나절 죽은 날), 로그도 없이 그날 통계가 얇게 굳었다.
+        //   ★ 전날은 **순회가 끝까지 돈 날(`scanDone`)만** 따라잡는다. 서버를 늦게 띄워
+        //     순회가 반만 된 날은 cnt 가 하한조차 못 되어 그 판들을 처리하면 편향이 생긴다 —
+        //     그런 날은 예전처럼 버린다.
+        //   ★ 전날 판이 늦게 들어오면 매시간 집계가 그 날짜를 다시 계산해 숫자가 조금 오른다.
+        //     전체 재계산 구조라 값은 정확해지는 방향이다.
         // 사람이 많이 낀 판부터 처리한다. 명단 커버리지가 높은 판이 통계 가치도 높다.
-        const targets = await MatchSeen
-            .find({ done: { $ne: true }, cnt: { $gte: STAT_MIN_K }, day: scanTargetDay() })
-            .sort({ cnt: -1 })
-            .limit(FETCH_PER_CYCLE)
-            .lean();
+        const day = scanTargetDay();
+        const pending = (d, n) => MatchSeen
+            .find({ done: { $ne: true }, cnt: { $gte: STAT_MIN_K }, day: d })
+            .sort({ cnt: -1 }).limit(n).lean();
+        let targets = await pending(day, FETCH_PER_CYCLE);
+        if (targets.length < FETCH_PER_CYCLE) {
+            const prev = kstDay(Date.now() - 2 * 86400000);
+            if (await scanDoneOn(prev)) {
+                targets = targets.concat(await pending(prev, FETCH_PER_CYCLE - targets.length));
+            }
+        }
 
         for (const t of targets) {
             try {
+                // ★ k 는 그 경기 날짜의 명단으로 센다 — 날짜가 둘일 수 있어 판마다 고른다
+                const rankSet = await statRankSet(t.day || day);
                 const { data } = await riotApi.get(
                     `https://asia.api.riotgames.com/lol/match/v5/matches/${t.matchId}`
                 );
@@ -2000,20 +2059,31 @@ async function startJobs() {
         setInterval(buildChampStats, 60 * 60 * 1000);
     }, 90 * 1000);
 
-    setInterval(() => {
+    setInterval(async () => {
         if (resolvedCountIn10Mins > 0) {
             console.log(`[Task] 백그라운드 닉네임 변환 진행 (최근 10분간 ${resolvedCountIn10Mins}건 갱신 완료)`);
             resolvedCountIn10Mins = 0;
         }
         const c = statCounters;
-        if (c.scan || c.fetch) {
+        // ★ 남은 판(k>=5 인데 아직 detail 을 못 받은 것)을 같이 센다 (2026-08-27). 라이엇 호출 0.
+        //   예전엔 "한 것" 만 찍어서 429 로 아무것도 못 하는 10분은 로그 자체가 없었다 —
+        //   **밀리고 있다는 사실이 제일 안 보이던 순간**이다. 남은 게 있으면 활동이 0 이어도 찍는다.
+        const day = scanTargetDay();
+        const prev = kstDay(Date.now() - 2 * 86400000);
+        const leftCond = { done: { $ne: true }, cnt: { $gte: STAT_MIN_K } };
+        const [leftDay, leftPrev] = await Promise.all([
+            MatchSeen.countDocuments({ ...leftCond, day }), MatchSeen.countDocuments({ ...leftCond, day: prev })
+        ]).catch(() => [0, 0]);
+        if (c.scan || c.fetch || leftDay || leftPrev) {
             const left = scanPending();
             const phase = left > 0 ? `순회 ${left}명 남음` : '수집';
             // ★ 타임라인은 곁가지라 받은 수·실패 수를 따로 적는다 — 실패가 쌓이면 여기서 드러난다
             const tl = (c.tl || c.tlFail) ? ` / 타임라인 ${c.tl || 0}건${c.tlFail ? ` (실패 ${c.tlFail})` : ''}` : '';
-            console.log(`[Stat] 최근 10분(${phase}): 명단 ${c.scan}명 훑음 / 매치 ${c.seen}건 관측 / detail ${c.fetch}건 (저장 ${c.save} · 제외 ${c.skip})${tl}`);
+            const rest = ` / 남은 판 ${leftDay}` + (leftPrev ? ` (+전날 ${leftPrev})` : '');
+            console.log(`[Stat] 최근 10분(${phase}): 명단 ${c.scan}명 훑음 / 매치 ${c.seen}건 관측 / detail ${c.fetch}건 (저장 ${c.save} · 제외 ${c.skip})${tl}${rest}`);
             statCounters = { scan: 0, seen: 0, fetch: 0, save: 0, skip: 0 };
         }
+        await reportClosedStatDay();
     }, 600 * 1000);
 }
 
