@@ -5973,6 +5973,11 @@ window.updateShopTimer = function () {
 
     document.querySelectorAll('.js-shop-timer').forEach(el => {
         const until = Number(el.dataset.until) || dailyEnd;
+        // ★ 추천 상품 딱지가 0 이 되면 그 카드를 뗀다 (2026-08-27) — 판매가 끝난 상품이 켜 둔 화면에 남지 않게
+        if (el.classList.contains('mythic-item-timer') && until <= Date.now()) {
+            const card = el.closest('.mythic-item-card');
+            if (card) { card.remove(); return; }
+        }
         el.innerText = remainText(until, el.dataset.suffix || '뒤 초기화');
     });
 };
@@ -6138,8 +6143,13 @@ async function renderMythicSection(key) {
     // ★ 추천 구획만 배치가 다르다 — 인게임 상점처럼 첫 상품을 크게 건다.
     //   **자리 기준이다**(1번 크게 / 2·3번 가로로 길게 / 나머지 한 줄). 상품 이름으로 짜면
     //   로테이션이 바뀌는 순간 깨진다. 자세한 건 style.css 의 `.is-featured` 주석.
-    const cards = (data.items && data.items.length)
-        ? `<div class="mshop-grid${key === 'featured' ? ' is-featured' : ''}">${data.items.map(mythicCardHtml).join('')}</div>`
+    // ★ 판매 기간이 끝난 상품은 내린다 (2026-08-27, 사용자 요청). 추천은 로테이션이 아니라 **상품마다 종료가 달라서**
+    //   수집이 새로 안 와도 화면에서 걸러야 한다 — `MYTHIC_ITEM_END`(손표)에 적힌 종료 시각이 지난 것. 종료를 모르는 상품은 둔다.
+    //   켜 둔 페이지는 updateShopTimer 가 0 이 되는 순간 그 카드를 뗀다.
+    const now = Date.now();
+    const items = (data.items || []).filter(i => { const e = mythicItemEnd(i.name); return !(e && e <= now); });
+    const cards = items.length
+        ? `<div class="mshop-grid${key === 'featured' ? ' is-featured' : ''}">${items.map(mythicCardHtml).join('')}</div>`
         : `<div class="mythic-empty">${mythicCollectingMsg(key)}</div>`;
 
     // ★★ 제목 옆은 **다음 초기화까지 남은 시간**, 오른쪽 끝은 **판매 기간**이다 (2026-08-17).
