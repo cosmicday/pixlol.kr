@@ -66,6 +66,12 @@
 
 - **헤더·히어로 검색창·푸터는 전부 `app.js` 의 `mountDoguUI()` 가 그린다** (`index.html` 에 마크업 없음).
   탭 6개는 `DOGU_NAV` 한 표다 — 비공개 탭(장인랭킹·클래식)을 되살릴 땐 여기 줄을 더한다
+- **★★ 홈에서는 ⌂ 에 밑줄이 켜진다 (2026-08-27).** 예전엔 홈에서 `전적검색` 탭에 밑줄이 남아 **다른 4개 사이트(홈에서 아무 데도 안 켜짐)와 어긋났다.**
+  공통 CSS 가 `body.dogu-home .dogu-nav-home` 으로 켜므로 **5개 사이트 전부 자동**이고 사이트 JS 는 손댈 게 없다 (원본 수정 + sync).
+  pixlol 쪽은 탭을 끄는 일만 한다 — `mountHeader` 의 `active: false` · `goLobby()` 의 `setActiveNav(null)` ·
+  `doguRoute()` 에서 **전적검색 탭만 setActiveNav 를 건너뛴다**(그 탭의 go() 가 goLobby 라 홈으로 간다).
+  **★ 그 대신 라우터 `/summoner` 분기에 `setActiveNav('nav-search')` 를 새로 넣어야 했다** — 예전엔 mountHeader 의 기본 active 가 켜 주던 자리다 (/ranking 과 같은 함정).
+  폰(≤768px)은 ⌂ 를 숨기므로 홈에서 밑줄이 아무 데도 없다 (실측 390px: 넘침 0)
 - **★ 라우터 연결 두 곳**: `hideAllContainers()` 가 `DoguUI.setHome(false)`, `goLobby()`/진입부 `/` 가
   `setHome(true)`. `setActiveNav('nav-xxx')` 가 `DoguUI.setActiveNav('xxx')` + `document.title`
   (고정 `PIXLOL.KR: 리그오브레전드` — index.html `<title>` 과 같은 값) 을 맡는다. 옛 `.bg-solid` · 햄버거(`toggleMobileMenu`) 는 지웠다

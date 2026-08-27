@@ -309,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // /summoner/<라이엇 ID>/<경기 번호> — 친구가 받은 경기 링크. 검색이 끝나면 그 경기를 펼친다
         window.pendingMatchId = pathParts[3] ? decodeURIComponent(pathParts[3]) : null;
         executeSearch();
+        setActiveNav('nav-search');   // ★ 예전엔 mountHeader 의 기본 active 가 켜 주던 자리 (2026-08-27)
     } else if (pathParts[1] === 'ranking') {
         document.getElementById('result-container').style.display = "block";
         document.getElementById('game-list').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:#a79fbd;'>랭킹 데이터를 불러오는 중입니다...</div>";
@@ -549,7 +550,8 @@ function doguRoute(href, navKey) {
     if (href === '/privacy') { showPrivacyPolicy(); return; }
     const item = DOGU_NAV.find(n => n.key === navKey) || DOGU_NAV.find(n => n.href === href) || DOGU_NAV[0];
     item.go();
-    setActiveNav(item.navId);
+    // ★ 전적검색 탭은 go() 가 goLobby() 라 홈으로 간다 — 거기서 끈 밑줄을 여기서 도로 켜면 안 된다 (2026-08-27)
+    if (item.key !== 'search') setActiveNav(item.navId);
 }
 
 // (게임 스위처 아이콘은 2026-08-22 부터 공통 파일이 그린다 — mountHeader 의 iconBase 로 경로만 준다.
@@ -571,7 +573,10 @@ function mountDoguUI() {
         site: 'lol',
         iconBase: '/',                              // 스위처 아이콘 public/header_{key}.png — pixlol 은 루트에서 돈다
         gamesOrigin: 'https://dogu.gg',             // ★ 다른 게임 링크의 기준 — 안 주면 pixlol.kr/er 로 가서 제자리가 된다 (2026-08-24)
-        nav: DOGU_NAV.map(n => ({ key: n.key, label: n.label, href: n.href, active: n.key === 'search' })),
+        // ★ 처음엔 아무 탭도 안 켠다 (2026-08-27). 홈에서는 공통 CSS 가 body.dogu-home 을 보고 ⌂ 에 밑줄을 준다 —
+        //   예전처럼 여기서 search 를 켜 두면 홈에서 밑줄이 ⌂ 와 전적검색 둘이 된다.
+        //   ★ 대신 라우터의 /summoner 분기가 setActiveNav('nav-search') 를 직접 불러야 한다 (기본 active 에 기대던 자리)
+        nav: DOGU_NAV.map(n => ({ key: n.key, label: n.label, href: n.href, active: false })),
         aside: '',                                  // 패치 버전 — initDdragonVersion 뒤에 setAside 로 채운다
         search: { placeholder, onSubmit }
     }));
@@ -663,7 +668,7 @@ function goLobby() {
     if (window.DoguUI) DoguUI.setHome(true);     // 홈 — 오버레이를 옅게
     document.getElementById('dogu-search-input').value = "";
     hideAutocomplete();
-    setActiveNav('nav-search');
+    setActiveNav(null);      // 홈은 어떤 탭의 페이지도 아니다 — 밑줄은 ⌂ 가 받는다 (2026-08-27)
 }
 
 // ==========================================
