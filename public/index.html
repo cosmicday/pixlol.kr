@@ -107,7 +107,9 @@
             <div id="mythic-shop-container" class="mythic-shop-container">
                 <div class="shop-title-container">
                     <img src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/rarity-gem-icons/mythic.png" style="width: 22px; height: 22px;">
-                    <h3>오늘의 신화 상점</h3>
+                    <!-- ★ 제목이 신화상점 탭 링크다 (2026-08-27). 공통 헤더와 같은 data-link 규약이라
+                         mountDoguUI 의 위임 리스너가 doguRoute("/mythic") 로 보낸다 — 새 배선이 없다 -->
+                    <h3><a href="/mythic" data-link class="shop-title-link">오늘의 신화 상점</a></h3>
                     <h2>
                         <!-- ★ 초기화 카운트다운은 신화상점 탭에도 같은 게 뜬다. updateShopTimer 가
                              id 가 아니라 `.js-shop-timer` 를 전부 훑으므로 클래스를 빼면 멈춘다. -->
@@ -207,7 +209,7 @@
         <div id="candidates-container" class="page-container"></div>
 
         <div id="champions-container" class="page-container" 
-            style="display: none; max-width: 1500px; margin: 40px auto; padding-bottom: 50px; animation: fadeIn 0.6s ease; min-height: 100vh;">
+            style="display: none; max-width: 1400px; margin: 40px auto; padding-bottom: 50px; animation: fadeIn 0.6s ease; min-height: 100vh;">
         </div>
 
         <div id="privacy-container" class="page-container" 

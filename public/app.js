@@ -3143,10 +3143,8 @@ async function showCodex(target) {
     // ★ TOOLTIP_STYLE_CSS 를 여기 끼운다. style.css 로 못 옮기는 이유는 그 상수 주석 참고.
     box.innerHTML = `
         <style>${TOOLTIP_STYLE_CSS}</style>
-        <div class="codex-header">
-            <h1 class="ranking-title">도감</h1>
-            <p class="codex-sub">소환사의 협곡 기준 · <span id="codex-count"></span></p>
-        </div>
+        <!-- ★ 제목("도감" + 개수)은 뺐다 (2026-08-27, 요청) — 4칸 줄이 곧 제목 노릇을 한다.
+             그래서 챔피언 탭과 줄 높이가 같아져 탭을 옮겨도 화면이 안 튄다 -->
         ${codexTabsHtml(curTab)}
         <div class="codex-body">
             <div class="codex-left">
@@ -3414,8 +3412,6 @@ async function showCodex(target) {
     //     유지되고 고른 항목(맨 위)이 화면 밖에 있게 된다.
     function renderList(keepScroll) {
         const list = visible();
-        document.getElementById('codex-count').textContent =
-            `${CODEX_TABS.find(t => t.key === curTab).name} ${list.length}개`;
 
         const el = document.getElementById('codex-list');
         const keep = keepScroll ? el.scrollTop : 0;
@@ -7156,11 +7152,11 @@ async function showChampions(requestedChampId = null, classicMode = false) {
         }
 
         let html = `
+            <!-- ★ 도감 4칸 — 헤더 드롭다운과 같은 줄이다. **머리글보다 위**여야 네 메뉴에서 줄 높이가 같다 (2026-08-27) -->
+            ${classicMode ? '' : codexTabsHtml('champions')}
             <div class="stats-header" id="champ-page-header" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 15px; height: 80px;">
                 <h1 class="ranking-title">${classicMode ? '챔피언 정보 (클래식)' : '챔피언 정보'}</h1>
             </div>
-            <!-- ★ 도감 4칸 — 헤더 드롭다운과 같은 줄을 페이지 안에도 둔다 (2026-08-27) -->
-            ${classicMode ? '' : codexTabsHtml('champions')}
             
             <!-- ★ 여기 세 덩이는 인라인 style 이었는데 클래스로 뺐다 (2026-08-11).
                  인라인은 스타일시트를 이겨서 @media 로 못 덮는다 — 폰에서 280px 목록이

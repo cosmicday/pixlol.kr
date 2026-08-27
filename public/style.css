@@ -6485,17 +6485,10 @@ main {
     min-height: 100vh;
 }
 
-.codex-header {
-    text-align: center;
-    padding: 20px;
-    margin-bottom: 10px;
-}
 
-.codex-sub {
-    margin: 8px 0 0;
-    color: var(--text-muted);
-    font-size: 13px;
-}
+/* 홈 「오늘의 신화 상점」 제목 — 누르면 신화상점 탭으로 (2026-08-27) */
+.shop-title-link { color: inherit; text-decoration: none; }
+.shop-title-link:hover { color: var(--dogu-accent, #9b6be8); }
 
 .codex-tabs {
     display: flex;
@@ -6560,19 +6553,13 @@ main {
 .codex-body[data-tab="rune"] .codex-left { width: 592px; }
 .codex-body[data-tab="spell"] .codex-left { width: 444px; }
 
-/* ★ 오른쪽 상세도 같이 좁힌다 (룬 -30% / 주문 -40%).
-   `.codex-detail` 은 `flex: 1` 이라 남는 폭을 다 먹으므로 **flex 를 꺼야** 폭이 먹힌다.
-   룬 788 → 552 / 주문 936 → 562. */
-.codex-body[data-tab="rune"] .codex-detail { flex: 0 0 552px; }
-.codex-body[data-tab="spell"] .codex-detail { flex: 0 0 562px; }
-
-/* ★★ 통도 같이 줄여야 가운데로 모인다 (2026-08-26).
-   상세만 좁히면 남는 폭이 **오른쪽에 그대로 남아 화면이 왼쪽으로 치우친다.**
-   통의 max-width 를 칸 합계로 줄이면 `margin: 40px auto` 가 살아나 **검색창·탭 줄까지
-   한꺼번에** 가운데로 온다 (그것들도 통 안에 있어서다).
-   룬  592 + gap 20 + 552 = 1164 / 주문 444 + 20 + 562 = 1026 */
-#codex-container[data-tab="rune"] { max-width: 1164px; }
-#codex-container[data-tab="spell"] { max-width: 1026px; }
+/* ★★ 통 폭은 탭이 바뀌어도 **1400 으로 고정**이다 (2026-08-27, 요청).
+   예전엔 탭마다 통을 줄여(1400 / 1164 / 1026) 가운데로 모았는데, 그러면
+   **탭 줄·검색창·거르는 버튼이 탭을 옮길 때마다 좌우로 최대 187px 씩 움직인다** —
+   탭이 헤더 메뉴가 된 지금은 그게 더 불편하다. 남는 폭은 오른쪽 상세가 받는다
+   (`.codex-detail` 이 `flex: 1` 이라 저절로): 아이템 640 / 룬 788 / 주문 936.
+   ★ 왼쪽 칸 폭(740 / 592 / 444)은 그대로다 — 목록에 필요한 폭이 탭마다 다르다.
+   ★ 챔피언 통(index.html 인라인)도 1500 → 1400 으로 맞췄다 — 4칸 줄이 네 메뉴에서 같은 자리다 */
 
 /* ★★ 아이템 탭에서 [스탯 목록 | 아이템 목록] 을 나란히 둔다 (2026-08-25).
    **인게임 상점과 같은 자리다** — 위가 "유형:"(역할군), 왼쪽이 스탯 목록.
@@ -7441,8 +7428,8 @@ main {
     .codex-rune-node.is-key .codex-rune-icon { width: 46px; height: 46px; }
     .codex-rune-label { font-size: 10px; }
 
-    /* ★ 폰에서는 탭과 무관하게 폭을 다 쓴다. 왼쪽 칸과 같은 이유로 `[data-tab]` 규칙을
-       같은 특이도로 덮어야 한다 — 안 그러면 폰에서도 552/562 가 이긴다. */
+    /* ★ 폰에서는 탭과 무관하게 폭을 다 쓴다 (데스크톱 고정폭은 2026-08-27 에 없앴고
+       선택자는 남겨 둔다 — 다시 탭별 폭을 줄 때 여기도 같이 봐야 하는 자리라서). */
     .codex-detail,
     .codex-body[data-tab="rune"] .codex-detail,
     .codex-body[data-tab="spell"] .codex-detail {
