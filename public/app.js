@@ -4018,8 +4018,8 @@ function lxHeader(c) {
             </div>
             <div class="lx-donut" title="${c.kor} 판 중 ${c.laneName} 비율">
                 <svg viewBox="0 0 80 80" width="80" height="80">
-                    <circle cx="40" cy="40" r="${R}" fill="none" stroke="#333" stroke-width="10"/>
-                    <circle cx="40" cy="40" r="${R}" fill="none" stroke="#3a7e93" stroke-width="10" stroke-dasharray="${(C * c.laneRate / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 40 40)"/>
+                    <circle cx="40" cy="40" r="${R}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+                    <circle cx="40" cy="40" r="${R}" fill="none" stroke="#a78bfa" stroke-width="10" stroke-dasharray="${(C * c.laneRate / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 40 40)"/>
                 </svg>
                 <span>${c.laneRate.toFixed(0)}%</span>
             </div>

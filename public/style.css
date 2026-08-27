@@ -2455,49 +2455,49 @@ main {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   챔피언 통계 상세 페이지 `/stats/<영문키>/<라인>` — lolalytics 챔피언 빌드 페이지를 그대로 옮긴 판
-   (2026-08-26 밤, 사용자 요청 "최대한 같게"). 값은 그쪽 DOM 에서 읽었다:
-   탭 바 활성 rgb(58,126,147) / 비활성 rgb(33,71,83) · 테두리 #333 · 글자 12px · 라벨 #bbb ·
-   챔피언 아이콘 37px(둥글기 4px) · 승률 초록 #22c55e / 빨강 #d8746b · 픽률 연보라 #b5abd4 · 그래프 파랑 #939bf6.
-   ★ 페이지 통(.lx-page)만 검정이고 사이트 배경은 그대로다.
+   챔피언 통계 상세 페이지 `/stats/<영문키>/<라인>` — 구조·순서는 lolalytics 를 옮긴 것(2026-08-26 밤),
+   **색·모양은 2026-08-27 에 사이트 팔레트로 다시 입혔다** (사용자: "우리 사이트 페이지라기엔 이질감").
+   카드 #1a1a2e · 테두리 rgba(255,255,255,.1) · 둥글기 12/8px · 강조 #a78bfa(탭 활성 #2b1a52) ·
+   승률 파랑 #60a5fa / 빨강 #f87171(전적 카드와 같은 관례) · 픽률 연보라 #c4b5fd · 글자 12px.
+   그쪽 검정 바탕·청록 탭·초록 승률은 이 블록에 더 이상 없다. 마크업(app.js)은 안 바뀌었다.
    ══════════════════════════════════════════════════════════════ */
 .lx-page {
-    --lx-teal: #3a7e93;
-    --lx-teal-dim: #214753;
-    --lx-bd: #333;
-    --lx-box: #0e0e0e;
-    --lx-box2: #151515;
-    --lx-gray: #bbb;
+    --lx-teal: #a78bfa;
+    --lx-teal-dim: #2b1a52;
+    --lx-bd: rgba(255, 255, 255, 0.1);
+    --lx-box: #1a1a2e;
+    --lx-box2: rgba(255, 255, 255, 0.03);
+    --lx-gray: var(--text-muted);
     max-width: 1040px;
     margin: 0 auto 60px;
-    padding: 8px 10px 30px;
-    background: #050505;
-    color: #fff;
+    padding: 0 0 30px;
+    color: var(--text-bright);
     font-size: 12px;
     line-height: 1.35;
 }
 
-.lx-green { color: #22c55e; }
-.lx-red { color: #d8746b; }
-.lx-lav { color: #b5abd4; }
-.lx-blue { color: #939bf6; }
+.lx-green { color: #60a5fa; }
+.lx-red { color: #f87171; }
+.lx-lav { color: #c4b5fd; }
+.lx-blue { color: #a78bfa; }
 .lx-yellow { color: #e5c07b; }
-.lx-gray { color: var(--lx-gray); }
-.lx-white { color: #fff; }
-.lx-dim { color: #777; }
+.lx-gray { color: var(--text-faint); }
+.lx-white { color: var(--text-bright); }
+.lx-dim { color: var(--text-faint); }
 
 /* ── 상단 툴바: 초상화 · 라인 5개(비율) · 패치 선택 · 큐 · 지역 */
 .lx-toolbar {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 8px;
-    background: var(--lx-box2);
+    padding: 8px 12px;
+    background: var(--lx-box);
     border: 1px solid var(--lx-bd);
-    margin-bottom: 8px;
+    border-radius: 12px;
+    margin-bottom: 10px;
 }
 
-.lx-toolbar-portrait { width: 40px; height: 40px; border-radius: 4px; margin-right: 6px; }
+.lx-toolbar-portrait { width: 40px; height: 40px; border-radius: 8px; margin-right: 6px; }
 
 .lx-lane {
     display: inline-flex;
@@ -2506,21 +2506,23 @@ main {
     gap: 1px;
     min-width: 46px;
     padding: 3px 4px;
-    background: transparent;
-    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
     color: var(--lx-gray);
     font-size: 10px;
     cursor: pointer;
 }
 
 .lx-lane img { width: 22px; height: 22px; }
-.lx-lane b { font-weight: 400; color: #fff; font-size: 11px; }
+.lx-lane b { font-weight: 600; color: var(--text-bright); font-size: 11px; }
 .lx-lane span { display: none; }
 .lx-lane.is-none { opacity: 0.35; cursor: default; }
-.lx-lane.active { border-color: var(--lx-teal); background: rgba(58, 126, 147, 0.2); }
+.lx-lane.active { border-color: rgba(167, 139, 250, 0.6); background: #2b1a52; box-shadow: 0 0 10px rgba(167, 139, 250, 0.25); }
+.lx-lane.active b { color: #a78bfa; }
 
 @media (hover: hover) {
-    .lx-lane:not(.is-none):hover { border-color: #555; }
+    .lx-lane:not(.is-none):hover { border-color: rgba(255, 255, 255, 0.3); }
 }
 
 .lx-chip {
@@ -2529,21 +2531,24 @@ main {
     align-items: center;
     gap: 1px;
     padding: 4px 10px;
-    border: 1px solid var(--lx-bd);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
     font-size: 11px;
     color: var(--lx-gray);
     line-height: 1.2;
 }
 
-.lx-chip b { color: #fff; font-weight: 700; font-size: 12px; }
+.lx-chip b { color: var(--text-bright); font-weight: 700; font-size: 12px; }
 
 .lx-chip-select select {
-    background: #000;
-    color: #fff;
-    border: 1px solid #444;
+    background: #12101f;
+    color: var(--text-bright);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
     font-size: 12px;
     font-weight: 700;
-    padding: 1px 4px;
+    padding: 2px 6px;
 }
 
 .lx-toolbar-note {
@@ -2561,10 +2566,11 @@ main {
 .lx-hero {
     display: flex;
     gap: 16px;
-    padding: 12px;
+    padding: 18px 20px;
     background: var(--lx-box);
     border: 1px solid var(--lx-bd);
-    margin-bottom: 12px;
+    border-radius: 12px;
+    margin-bottom: 14px;
 }
 
 .lx-hero-left { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
@@ -2575,7 +2581,7 @@ main {
     width: 140px;
     height: 140px;
     border-radius: 50%;
-    border: 3px solid #444;
+    border: 3px solid rgba(167, 139, 250, 0.5);
     box-sizing: border-box;
 }
 
@@ -2585,8 +2591,8 @@ main {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #111;
-    border: 2px solid #444;
+    background: #2b1a52;
+    border: 2px solid rgba(167, 139, 250, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2604,7 +2610,7 @@ main {
 .lx-donut span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; }
 
 .lx-hero-main { min-width: 0; flex: 1; }
-.lx-title { margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #fff; }
+.lx-title { margin: 0 0 8px; font-size: 20px; font-weight: 700; color: var(--text-bright); }
 
 .lx-skills { display: flex; gap: 6px; margin-bottom: 10px; }
 
@@ -2620,63 +2626,67 @@ main {
     font-weight: 700;
     line-height: 12px;
     padding: 0 3px;
-    background: #000;
+    background: #12101f;
     color: #fff;
-    border-radius: 2px;
+    border-radius: 3px;
 }
 
 .lx-skl { width: 36px; height: 36px; }
 .lx-skl.is-sm { width: 24px; height: 24px; }
 .lx-skl.is-sm i { font-size: 9px; line-height: 10px; padding: 0 2px; }
 
-.lx-desc { margin: 0 0 12px; font-size: 13px; line-height: 1.55; color: #ddd; text-align: justify; }
-.lx-desc b { color: var(--lx-teal); font-weight: 700; }
+.lx-desc { margin: 0 0 12px; font-size: 13px; line-height: 1.6; color: var(--text-muted); }
+.lx-desc b { color: var(--text-bright); font-weight: 600; }
 
 .lx-statrow {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    background: var(--lx-box2);
-    border: 1px solid var(--lx-bd);
-    padding: 8px 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 8px;
+    padding: 10px 6px;
     margin-bottom: 8px;
 }
 
 .lx-stat { text-align: center; }
-.lx-stat-v { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
-.lx-stat-k { font-size: 11px; color: var(--lx-gray); margin-top: 2px; }
+.lx-stat-v { font-size: 18px; font-weight: 700; color: var(--text-bright); line-height: 1.2; }
+.lx-stat-k { font-size: 11px; color: var(--text-faint); margin-top: 3px; }
 
 /* ── 상자와 두 칸(여러 칸) 탭 바 */
 .lx-box {
     background: var(--lx-box);
     border: 1px solid var(--lx-bd);
-    margin-bottom: 12px;
+    border-radius: 12px;
+    margin-bottom: 14px;
 }
 
 .lx-tabbar { display: flex; }
 
 .lx-tabbtn {
     flex: 1;
-    height: 34px;
-    background: var(--lx-teal-dim);
-    border: 1px solid #060d0f;
-    color: #fff;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
     font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
 }
 
-.lx-tabbtn.active { background: var(--lx-teal); }
+.lx-tabbtn.active { background: #2b1a52; color: #a78bfa; border-bottom-color: #a78bfa; }
 
 @media (hover: hover) {
-    .lx-tabbtn:hover { filter: brightness(1.15); }
+    .lx-tabbtn:hover { color: var(--text-bright); background: rgba(255, 255, 255, 0.06); }
 }
 
 .lx-none { padding: 14px; font-size: 12px; color: var(--lx-gray); text-align: center; }
-.lx-foot { padding: 6px 10px 8px; font-size: 11px; color: #888; border-top: 1px solid #222; }
+.lx-foot { padding: 7px 12px 9px; font-size: 11px; color: var(--text-faint); border-top: 1px solid rgba(255, 255, 255, 0.06); }
 
 .lx-blk { min-width: 0; }
-.lx-blk-h { font-size: 12px; font-weight: 700; color: #fff; text-align: center; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.lx-blk-h { font-size: 12px; font-weight: 700; color: var(--text-bright); text-align: center; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; }
 .lx-blk-h .lx-style { width: 16px; height: 16px; }
-.lx-arrow { color: #fff; font-size: 18px; line-height: 1; padding: 0 2px; }
+.lx-arrow { color: var(--text-muted); font-size: 18px; line-height: 1; padding: 0 2px; }
 .lx-arrow.is-sm { font-size: 13px; padding: 0 1px; }
 
 .lx-runes { display: flex; justify-content: center; gap: 12px; }
@@ -2685,7 +2695,7 @@ main {
 .lx-rg { width: 26px; height: 26px; border-radius: 50%; opacity: 0.25; filter: grayscale(1); }
 .lx-rg.on { opacity: 1; filter: none; }
 .lx-rg-row.is-key .lx-rg { width: 34px; height: 34px; }
-.lx-rg-row.is-key .lx-rg.on { box-shadow: 0 0 0 2px var(--lx-teal); }
+.lx-rg-row.is-key .lx-rg.on { box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.65); }
 .lx-shard { border-radius: 4px; width: 22px; height: 22px; }
 
 /* ── 범례 + 추이 그래프 4개 */
@@ -2697,28 +2707,29 @@ main {
     padding: 0 10px;
     margin-bottom: 8px;
     border: 1px solid var(--lx-bd);
-    border-radius: 3px;
+    border-radius: 8px;
+    background: var(--lx-box);
     font-size: 12px;
-    color: var(--lx-gray);
+    color: var(--text-muted);
 }
 
-.lx-legend b { color: #fff; font-size: 13px; }
-.lx-legend-on { color: #22c55e; font-weight: 700; }
+.lx-legend b { color: var(--text-bright); font-size: 13px; }
+.lx-legend-on { color: #a78bfa; font-weight: 700; }
 
 .lx-graphs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
-.lx-graph { background: var(--lx-box); border: 1px solid var(--lx-bd); padding: 6px 4px 2px; overflow: hidden; }
+.lx-graph { background: var(--lx-box); border: 1px solid var(--lx-bd); border-radius: 12px; padding: 8px 4px 4px; overflow: hidden; }
 .lx-graph svg { display: block; max-width: 100%; height: auto; }
 .lx-graph-t { text-align: center; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-.lx-line.lx-green { stroke: #22c55e; } .lx-dot.lx-green { fill: #22c55e; }
-.lx-line.lx-blue { stroke: #939bf6; } .lx-dot.lx-blue { fill: #939bf6; }
-.lx-line.lx-white { stroke: #fff; } .lx-dot.lx-white { fill: #fff; }
-.lx-line.lx-red { stroke: #d8746b; } .lx-dot.lx-red { fill: #d8746b; }
+.lx-line.lx-green { stroke: #60a5fa; } .lx-dot.lx-green { fill: #60a5fa; }
+.lx-line.lx-blue { stroke: #a78bfa; } .lx-dot.lx-blue { fill: #a78bfa; }
+.lx-line.lx-white { stroke: #d9d5e3; } .lx-dot.lx-white { fill: #d9d5e3; }
+.lx-line.lx-red { stroke: #f87171; } .lx-dot.lx-red { fill: #f87171; }
 
 /* ── 상성 상자: 왼쪽 라벨(상성/시너지) + 탭 바 두 줄, 아래 라인별 카드 줄 */
 .lx-mu-tabs { border-bottom: 1px solid var(--lx-bd); }
 .lx-mu-tabrow { display: flex; align-items: stretch; }
-.lx-mu-tabrow + .lx-mu-tabrow { border-top: 1px solid #060d0f; }
-.lx-mu-tablabel { width: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: var(--lx-box2); border-right: 1px solid var(--lx-bd); }
+.lx-mu-tabrow + .lx-mu-tabrow { border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.lx-mu-tablabel { width: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #a78bfa; background: rgba(255, 255, 255, 0.03); border-right: 1px solid var(--lx-bd); }
 .lx-mu-tabrow .lx-tabbar { flex: 1; }
 .lx-mu-tabrow .lx-tabbtn { flex: 0 0 auto; padding: 0 14px; }
 
@@ -2734,7 +2745,7 @@ main {
     padding: 6px 4px 6px 0;
     text-align: center;
     font-size: 11px;
-    border-right: 1px solid #222;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .lx-row-head {
@@ -2746,11 +2757,11 @@ main {
     gap: 2px;
     font-size: 12px;
     font-weight: 700;
-    color: #fff;
+    color: var(--text-bright);
 }
 
 .lx-row-head img { width: 22px; height: 22px; }
-.lx-row-k { height: 16px; line-height: 16px; color: var(--lx-gray); }
+.lx-row-k { height: 16px; line-height: 16px; color: var(--text-faint); }
 
 .lx-cards {
     display: flex;
@@ -2762,13 +2773,17 @@ main {
 }
 
 /* ★ 카드 폭은 내용대로 — 스킬 배지(글자가 오른쪽 밖으로 2px 삐져나온다)가 든 카드는 padding 을 더 준다 */
-.lx-card { flex-shrink: 0; min-width: 52px; padding: 0 2px; text-align: center; font-size: 11px; }
+.lx-card { flex-shrink: 0; min-width: 56px; padding: 3px 3px 4px; text-align: center; font-size: 11px; border-radius: 6px; }
+
+@media (hover: hover) {
+    .lx-card:hover { background: rgba(255, 255, 255, 0.04); }
+}
 .lx-card-top .lx-skl { margin-right: 5px; }
 .lx-card-top .lx-skl:last-child { margin-right: 3px; }
 .lx-card.is-dim { opacity: 0.45; }
 .lx-card-top { height: var(--lx-top, 41px); display: flex; align-items: center; justify-content: center; gap: 1px; }
 .lx-card-top.is-stack { flex-direction: column; }
-.lx-card-top img { width: 37px; height: 37px; border-radius: 4px; border: 1px solid #000; box-sizing: border-box; background: #000; }
+.lx-card-top img { width: 37px; height: 37px; border-radius: 6px; border: 1px solid rgba(0, 0, 0, 0.4); box-sizing: border-box; background: rgba(0, 0, 0, 0.3); }
 /* ★ 스킬 배지 안의 img 는 위 37px 규칙을 타면 안 된다 — 24px 배지 밖으로 넘쳐 아래 승률 글자를 덮었다 (2026-08-27) */
 .lx-card-top .lx-skl img { width: 100%; height: 100%; border-radius: 3px; border: 0; }
 .lx-v { height: 16px; line-height: 16px; white-space: nowrap; }
@@ -2781,15 +2796,15 @@ main {
 .lx-so { display: flex; flex-direction: column; gap: 3px; overflow-x: auto; }
 .lx-so-row { display: flex; align-items: center; gap: 2px; }
 .lx-so-row .lx-skl { margin-right: 3px; }
-.lx-so-cell { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; box-sizing: border-box; background: #1a1a1a; border: 1px solid #2a2a2a; font-size: 10px; font-weight: 700; color: #fff; }
-.lx-so-cell.on { background: var(--lx-teal); border-color: #4c97ad; }
+.lx-so-cell { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; box-sizing: border-box; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 3px; font-size: 10px; font-weight: 700; color: #fff; }
+.lx-so-cell.on { background: #6d4fc7; border-color: #8b6de0; }
 .lx-so-cell.is-off { opacity: 0.35; }
 
 /* 스킬 우선순위 줄 — 레벨별 순서는 세로 목록 */
 .lx-seq-list { padding: 6px 10px; }
-.lx-seq { display: flex; align-items: center; gap: 12px; padding: 5px 0; border-bottom: 1px solid #1c1c1c; }
+.lx-seq { display: flex; align-items: center; gap: 12px; padding: 5px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
 .lx-seq-cells { display: flex; gap: 2px; }
-.lx-seq-cell { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; background: #1a1a1a; border: 1px solid #2a2a2a; }
+.lx-seq-cell { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 3px; }
 .lx-seq-cell.k1 { background: #23405f; } .lx-seq-cell.k2 { background: #2f4f2f; } .lx-seq-cell.k3 { background: #5a3f22; } .lx-seq-cell.k4 { background: #4d2a5c; }
 .lx-seq-vals { display: flex; gap: 10px; font-size: 11px; }
 
@@ -2807,12 +2822,12 @@ main {
 .lx-pk.is-none { opacity: 0.35; }
 /* 승률 최고 · 픽률 최고 탭 — 줄에서 뽑힌 칸만 밝고 나머지는 어둡게 (2026-08-27) */
 .lx-pk.is-dim { opacity: 0.22; filter: grayscale(1); }
-.lx-pk-page { padding: 8px 12px 0; font-size: 12px; color: #ddd; }
+.lx-pk-page { padding: 8px 12px 0; font-size: 12px; color: var(--text-muted); }
 /* 조합별 승률 — 한 줄에 룬 페이지 아이콘 + 픽률 · 승률 · 판수 (2026-08-27) */
 .lx-combos { padding: 6px 12px; }
-.lx-combo { display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px 60px; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #1c1c1c; font-size: 12px; text-align: center; }
+.lx-combo { display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px 60px; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 12px; text-align: center; }
 .lx-combo:last-child { border-bottom: 0; }
-.lx-combo-head { color: var(--lx-gray); font-size: 11px; }
+.lx-combo-head { color: var(--text-faint); font-size: 11px; }
 .lx-combo-head .lx-combo-page { text-align: left; }
 .lx-combo-page { justify-content: flex-start; min-width: 0; }
 .lx-pk.is-best img { box-shadow: 0 0 0 2px var(--lx-teal); }
