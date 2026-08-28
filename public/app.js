@@ -2925,82 +2925,66 @@ const STAT_LANE_ICON = {
 const STAT_MIN_GAMES = 30;
 
 // ============================================================
-//  티어 계산 (2026-08-17 개편 — 승률만 보던 것을 승률·픽률·밴률로 바꿨다)
+//  티어 계산 (2026-08-28 개편 — lol.ps · 딥롤과 같은 기준으로. 그 전(08-17)은 z 점수 가중합 → S~D)
 //
-//    ★★ **라인별 pool 안에서만 비교한다.** 예전엔 전 챔피언을 한 줄로 세워 승률로 잘랐는데,
-//      서포터와 미드를 같은 잣대로 재는 게 뜻이 없다 (라인마다 평균 승률도 분포도 다르다).
-//      ALL 탭도 마찬가지라, 거기 찍히는 티어는 **그 챔피언의 주 라인에서 받은 티어**다.
+//    ★★ **라인별 pool 안에서만 비교한다.** 서포터와 미드를 같은 잣대로 재는 게 뜻이 없다
+//      (라인마다 평균 승률도 분포도 다르다). ALL 탭도 마찬가지라, 거기 찍히는 티어는
+//      **그 챔피언의 주 라인에서 받은 티어**다.
 //
-//    점수 = 0.60·z(보정승률) + 0.25·z(log 밴률) + 0.15·z(log 픽률)  → 다시 z → 고정 컷
+//    점수 = 1.5 + 0.86·보정승률 + 3.1·ln(1+픽률) + 0.6·ln(1+밴률)     (50 근처, 높을수록 좋다)
+//    티어 = OP ≥ 56 · 1 ≥ 53.5 · 2 ≥ 50.5 · 3 ≥ 48.5 · 4 ≥ 45.5 · 나머지 5
 //
-//    ★ 세 가지를 왜 이렇게 손보나:
-//      ① **보정 승률** — 30판 승률은 표준오차가 ±9%p 다. 그대로 z 를 내면 표본이 적은
-//         챔피언이 무조건 양 끝을 차지한다. 평균 쪽으로 당겨서(prior 100판) 눌러 둔다.
-//      ② **픽률·밴률에 log** — 분포가 심하게 쏠려 있다(대부분 1% 근처, 몇몇이 20%+).
-//         날 z 를 쓰면 상위 몇 개가 점수를 통째로 지배한다.
-//      ③ **밴률을 라인에 배분** — 밴은 라인 개념이 없어서 pos:-1 줄에만 있다. 그대로 쓰면
-//         럼블이 탑에서도 미드에서도 같은 밴률을 받는다. `밴률 x 그 라인 비율` 로 나눈다.
-//
-//    ★ 밴은 `banGames`(밴된 판 수)를 쓴다. 화면 표기는 `bans`(밴 슬롯)라 둘이 다르다 —
-//      슬롯은 양 팀이 같은 챔피언을 밴하면 2로 세어 100%를 넘을 수 있어서 점수에 안 맞는다.
-//    ★ 가중치·컷은 전부 위 상수다. 감이 안 맞으면 여기만 만지면 된다.
+//    ★★ 계수는 lol.ps 의 「PS 점수」를 26.16 마스터+ 256줄로 회귀해서 얻었다 (R² 0.90).
+//      옛 공식(승률 60%·밴 25%·픽 15%)과의 결정적 차이는 **픽률 비중**이다 — 픽률 1% → 10%
+//      가 승률 +6%p 와 같다. 그래서 승률 55% 라도 픽률 0.6% 면 5티어다 (탑 제드·퀸 — lol.ps ·
+//      딥롤 둘 다 그렇게 찍는다. 옛 공식은 S 였다). 우리 16.16 자료에 넣으면 lol.ps 마스터+ 와
+//      티어 일치 59% · 한 칸 차이 안 99% (옛 공식 44% / 91%). 라인 평균 점수도 우리 49.5 vs
+//      lol.ps 49.2~50.3 이라 계수를 그대로 써도 된다.
+//    ★ 컷은 lol.ps 의 라인별 경계(1티어 53.3 · 2티어 50.5 · 3티어 49 · 4티어 45.5 ±0.5)를
+//      우리 자료에서 일치율로 다듬은 값이다. z 컷이 아니라 **고정 점수 컷**이라 표본이 얇은
+//      패치 초반엔 보정 승률이 가운데로 몰려 1·5티어가 저절로 적어진다 (의도한 것).
+//    ★ OP 는 점수 56 이상 하나다. lol.ps 의 OP 판정은 점수만으로는 안 맞아서(56 넘는데 OP
+//      아닌 줄이 있다) 정확히 못 옮겼다 — 16.16 에서 리 신·니달리·카이사 셋이고 그쪽도 셋 다 OP 다.
+//    ★ 밴률은 **챔피언 전체 밴률**을 그대로 쓴다 (lol.ps 도 그렇다). 옛 공식은 라인 비율로
+//      배분했는데, 그걸 넣으면 일치율이 떨어졌다. 값은 `banGames`(밴된 판 수)다 — 화면 표기
+//      `bans`(밴 슬롯)는 양 팀이 같은 챔피언을 밴하면 2로 세어 100% 를 넘는다.
+//    ★ 보정 승률(prior 200)은 08-17 것 그대로다. lol.ps 는 표본이 우리 1.6배라 날 승률을
+//      쓰지만, 우리 30판 컷에서 날 승률을 쓰면 표본 적은 챔피언이 양 끝을 차지한다.
+//      prior 를 0/50/100/200/300 으로 훑었을 때 일치율이 55 → 62% 로 올라가는 쪽이라 200 을 유지.
 // ============================================================
-const TIER_W = { win: 0.60, ban: 0.25, pick: 0.15 };
-// ★ 보정 강도 200판은 **표를 만들어서 골랐다** (2026-08-17, 표본 4,442판 기준).
-//   prior 를 50/100/200/400 으로 훑고 "라인 상위 5의 표본 중앙값" 을 봤다 —
-//   작을수록 표본이 적은 챔피언이 꼭대기에 앉는다는 뜻이다:
-//     바텀:  50 → 91판 · 100 → 91판 · **200 → 223판** · 400 → 319판
-//   200 에서 제이스(488판)가 뽀삐(49판 승률 71%) 위로 올라오고 티어 분포도 안 망가진다.
-//   400 은 과하다 — 서포터가 `C17 D3` 으로 찌그러진다 (센 챔피언까지 눌려서 가운데로 몰린다).
+const TIER_COEF = { base: 1.5, win: 0.86, pick: 3.1, ban: 0.6 };
 const TIER_PRIOR = 200;     // 보정 승률의 사전 표본 (판)
-const TIER_CUTS = [['S', 1.30], ['A', 0.55], ['B', -0.35], ['C', -1.10]];
+const TIER_CUTS = [['OP', 56], ['1', 53.5], ['2', 50.5], ['3', 48.5], ['4', 45.5]];
+// 티어 라벨 → CSS 클래스 접미사 (tier-op · tier-1 …)
+const tierClass = (t) => `tier-${String(t).toLowerCase()}`;
 
-function zScores(vals) {
-    const n = vals.length;
-    if (!n) return [];
-    const mean = vals.reduce((a, b) => a + b, 0) / n;
-    const sd = Math.sqrt(vals.reduce((a, b) => a + (b - mean) ** 2, 0) / n);
-    // ★ 표본이 다 똑같으면 sd 가 0 이라 나누면 NaN 이다. 그땐 전원 0점이 맞다.
-    return sd > 1e-9 ? vals.map(v => (v - mean) / sd) : vals.map(() => 0);
-}
-
-const tierFromScore = (z) => (TIER_CUTS.find(([, cut]) => z >= cut) || ['D'])[0];
+const tierFromScore = (s) => (TIER_CUTS.find(([, cut]) => s >= cut) || ['5'])[0];
 
 // list = collect() 결과 (champ|pos 행), total = scope 총 경기 수
 //   → Map("champ|pos" -> { tier, score })
 function computeLaneTiers(list, total) {
-    const banOf = {}, totalOf = {};
-    list.forEach(c => {
-        if (c.pos === -1) {
-            banOf[c.champ] = c.banGames || 0;
-            totalOf[c.champ] = c.games;
-        }
-    });
+    const banOf = {};
+    list.forEach(c => { if (c.pos === -1) banOf[c.champ] = c.banGames || 0; });
 
     const out = new Map();
     STAT_POS.forEach(({ code }) => {
         const pool = list.filter(c => c.pos === code && c.games >= STAT_MIN_GAMES);
-        // 라인에 챔피언이 몇 개 없으면 z 가 뜻을 잃는다. 그땐 티어를 안 매긴다(화면엔 '-').
+        // 라인에 챔피언이 몇 개 없으면 라인 평균 승률이 뜻을 잃는다. 그땐 티어를 안 매긴다(화면엔 '-').
         if (pool.length < 5) return;
 
-        // 라인 평균 승률 (판수 가중). 라인마다 다르므로 pool 안에서 구한다.
+        // 라인 평균 승률 (판수 가중). 보정 승률이 이쪽으로 당겨진다.
         const sumG = pool.reduce((a, c) => a + c.games, 0);
         const sumW = pool.reduce((a, c) => a + c.wins, 0);
         const p0 = sumG ? sumW / sumG : 0.5;
 
-        const zWin = zScores(pool.map(c => (c.wins + TIER_PRIOR * p0) / (c.games + TIER_PRIOR)));
-        const zPick = zScores(pool.map(c => Math.log(1 + (total ? c.games / total * 100 : 0))));
-        const zBan = zScores(pool.map(c => {
-            const share = totalOf[c.champ] ? c.games / totalOf[c.champ] : 0;   // 그 라인 비율
-            const br = total ? (banOf[c.champ] || 0) / total * 100 : 0;
-            return Math.log(1 + br * share);
-        }));
-
-        const raw = pool.map((c, i) => TIER_W.win * zWin[i] + TIER_W.ban * zBan[i] + TIER_W.pick * zPick[i]);
-        // ★ 가중합은 SD 가 1 이 아니다(세 값이 서로 얽혀 있다). 컷을 고정값으로 두려면
-        //   여기서 한 번 더 정규화해야 컷의 뜻이 라인마다 같아진다.
-        const zr = zScores(raw);
-        pool.forEach((c, i) => out.set(`${c.champ}|${code}`, { tier: tierFromScore(zr[i]), score: zr[i] }));
+        pool.forEach(c => {
+            const win = (c.wins + TIER_PRIOR * p0) / (c.games + TIER_PRIOR) * 100;
+            const pick = total ? c.games / total * 100 : 0;
+            const ban = total ? (banOf[c.champ] || 0) / total * 100 : 0;
+            const score = TIER_COEF.base + TIER_COEF.win * win
+                + TIER_COEF.pick * Math.log(1 + pick) + TIER_COEF.ban * Math.log(1 + ban);
+            out.set(`${c.champ}|${code}`, { tier: tierFromScore(score), score });
+        });
     });
     return out;
 }
@@ -4174,11 +4158,11 @@ async function showChampStatPage(engId, laneKey) {
 // ── 헤더 ─────────────────────────────────────────────────────────────
 function lxHeader(c) {
     const stat = (val, label, cls, tip) => `<div class="lx-stat"${tip ? ` title="${tip}"` : ''}><div class="lx-stat-v ${cls || ''}">${val}</div><div class="lx-stat-k">${label}</div></div>`;
-    const tierCls = c.myTier ? `tier-${c.myTier.tier.toLowerCase()}` : '';
+    const tierCls = c.myTier ? tierClass(c.myTier.tier) : '';
     const R = 30, C = 2 * Math.PI * R;
     const scopes = (c.data.scopes || []).map(s => `<option value="${s}"${s === c.data.scope ? ' selected' : ''}>${statScopeLabel(s)}</option>`).join('');
     const desc = `<b>${c.kor}</b> ${c.laneName}은 마스터+ 솔로랭크 ${c.patch} 패치에서 승률 <b>${c.wr.toFixed(1)}%</b>`
-        + (c.rank ? `, 같은 라인 ${c.sameLane.length}명 중 <b>${c.rank}위</b>로 <b>${c.myTier.tier} 티어</b>입니다.` : '입니다.')
+        + (c.rank ? `, 같은 라인 ${c.sameLane.length}명 중 <b>${c.rank}위</b>로 <b>${c.myTier.tier === 'OP' ? 'OP' : c.myTier.tier + ' 티어'}</b>입니다 (점수 ${c.myTier.score.toFixed(1)}).` : '입니다.')
         + ` 라인 평균 승률(${c.avgWr.toFixed(2)}%)보다 ${Math.abs(c.delta).toFixed(2)}%p ${c.delta >= 0 ? '높' : '낮'}습니다.`
         + ` 아래는 ${c.kor}의 빌드 · 룬 · 상성을 자세히 나눈 것입니다.`;
     return `
@@ -4223,7 +4207,7 @@ function lxHeader(c) {
                 ${stat(c.pick.toFixed(2) + '%', '픽률')}
             </div>
             <div class="lx-statrow">
-                ${stat(c.myTier ? `<span class="${tierCls}">${c.myTier.tier}</span>` : '-', '티어')}
+                ${stat(c.myTier ? `<span class="${tierCls}">${c.myTier.tier}</span>` : '-', '티어', '', c.myTier ? `점수 ${c.myTier.score.toFixed(2)} — 승률·픽률·밴률 합산, 라인 안에서 매김` : '')}
                 ${stat(c.rank ? `${c.rank} / ${c.sameLane.length}` : '-', '순위', '', '같은 라인 안에서 티어 점수 순')}
                 ${stat(c.ban.toFixed(2) + '%', '밴률')}
                 ${stat(c.main.games.toLocaleString(), '판수')}
@@ -4721,11 +4705,12 @@ async function showStats() {
             </table>
         </div>
         <p class="stats-note">
-            티어는 <b>승률 60% · 밴률 25% · 픽률 15%</b> 를 합친 점수로 매기며,
-            <b>라인마다 따로</b> 계산합니다. 같은 챔피언이라도 라인이 다르면 별도의 줄로 나옵니다
-            (표본 ${STAT_MIN_GAMES}판 이상인 라인만).
-            승률은 표본이 적을수록 평균 쪽으로 보정하고, 밴률은 그 라인에서 뛴 비율만큼만 반영합니다.
-            표의 밴률은 챔피언 전체 기준(밴 슬롯)이라 같은 챔피언을 양 팀이 밴하면 2로 셉니다.
+            티어는 <b>승률 · 픽률 · 밴률</b>을 합친 점수(50 근처, 높을수록 좋음)로 매기며
+            <b>OP · 1 · 2 · 3 · 4 · 5</b> 여섯 단계입니다 (OP 56 · 1티어 53.5 · 2티어 50.5 · 3티어 48.5 · 4티어 45.5 이상).
+            픽률 비중이 커서 승률이 높아도 픽률이 낮으면 티어가 낮습니다.
+            <b>라인마다 따로</b> 계산하고, 같은 챔피언이라도 라인이 다르면 별도의 줄로 나옵니다
+            (표본 ${STAT_MIN_GAMES}판 이상인 라인만). 승률은 표본이 적을수록 라인 평균 쪽으로 보정합니다.
+            표의 밴률은 밴 슬롯 기준이라 같은 챔피언을 양 팀이 밴하면 2로 셉니다. 배지에 마우스를 올리면 점수가 보입니다.
         </p>
     `;
 
@@ -4852,7 +4837,7 @@ async function showStats() {
                     <span class="stats-expand">▾</span>
                 </div></td>
                 <td>${c.tier
-                    ? `<span class="stats-tier tier-${c.tier.toLowerCase()}" title="점수 ${c.score >= 0 ? '+' : ''}${c.score.toFixed(2)}">${c.tier}</span>`
+                    ? `<span class="stats-tier ${tierClass(c.tier)}" title="점수 ${c.score.toFixed(2)}">${c.tier}</span>`
                     : `<span class="stats-tier-none" title="표본 ${STAT_MIN_GAMES}판 미만">-</span>`}</td>
                 <td class="stats-lane">
                     ${laneKey ? `<img src="${STAT_LANE_ICON[laneKey]}" alt="">` : ''}

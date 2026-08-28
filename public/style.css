@@ -2303,12 +2303,14 @@ main {
     font-weight: 800;
 }
 
-.tier-s { color: #f87171; }
-.tier-a { color: #3b82f6; }
-.tier-b { color: #10b981; }
-.tier-c { color: #f59e0b; }
-.tier-d { color: #a1a1aa; }
-.tier-e { color: #cd7f32; }
+/* ★ 2026-08-28 — 티어가 S~D 에서 OP·1~5 로 바뀌었다 (lol.ps·딥롤 기준). OP 는 금색, 1 → 5 로 갈수록 식는다.
+   옛 .tier-s~e 는 showStatsLegacy(안 쓰는 옛 통계 페이지)만 참조해서 지웠다 */
+.tier-op { color: #fbbf24; }
+.tier-1 { color: #f87171; }
+.tier-2 { color: #fb923c; }
+.tier-3 { color: #a78bfa; }
+.tier-4 { color: #60a5fa; }
+.tier-5 { color: #a1a1aa; }
 
 /* ★ invert(1) 을 뺐다 (2026-08-19). op.gg 흑백 아이콘을 뒤집어 희게 만들던 것인데,
    지금은 CD 공식 아이콘(금색 #c8aa6e)이라 그대로 두는 게 맞다 */
