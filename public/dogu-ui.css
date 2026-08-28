@@ -412,8 +412,10 @@ a.dogu-nav-parent { cursor: pointer; }
     border-radius: var(--dogu-radius);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
-.dogu-nav-group:hover .dogu-nav-sub,
-.dogu-nav-group:focus-within .dogu-nav-sub { display: flex; }
+/* ★ .dogu-sub-hold 는 하위 항목을 누른 직후 JS 가 붙인다 (2026-08-28) — SPA 라 페이지가 바뀌어도 누른 <a> 의
+   포커스(:focus-within)와 마우스(:hover)가 그대로라 드롭다운이 안 닫히던 것. 마우스가 그룹을 벗어나면 뗀다 */
+.dogu-nav-group:not(.dogu-sub-hold):hover .dogu-nav-sub,
+.dogu-nav-group:not(.dogu-sub-hold):focus-within .dogu-nav-sub { display: flex; }
 .dogu-nav-sub-item {
     display: block;
     margin: 0;
