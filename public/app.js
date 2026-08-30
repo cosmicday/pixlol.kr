@@ -8172,10 +8172,12 @@ function drawStatPanel() {
     panel.classList.add('open');
     panel.innerHTML = `
         <div class="stat-graph-head">
-            <div class="sgh-row">
+            <div class="sgh-row sgh-main">
                 <i class="stat-dot" style="background:${statColorOf(openStatKey)}"></i>
-                <b>${statLabel(openStatKey)}</b>
-                <span>레벨 1 → 18${gr ? ` · 세로축 ${fmtStat(gr.lo.val)}(${gr.lo.name}) ~ ${fmtStat(gr.hi.val)}(${gr.hi.name})` : ''}</span>
+                <div class="sgh-title">
+                    <b>${statLabel(openStatKey)}</b>
+                    <span>레벨 1 → 18${gr ? ` · 세로축 ${fmtStat(gr.lo.val)}(${gr.lo.name}) ~ ${fmtStat(gr.hi.val)}(${gr.hi.name})` : ''}</span>
+                </div>
             </div>
             <div class="sgh-row">
                 <span class="savg-title">역할군 평균</span>

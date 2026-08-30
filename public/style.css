@@ -4191,7 +4191,10 @@ main {
      폭은 이 칸이 갖고, 상자는 100% 로 따라간다. 높이도 이 칸이 75vh 를 갖고
      상자가 남은 만큼 늘어난다 — 안 그러면 필터 높이만큼 화면 밖으로 밀린다. */
 .champ-list-col {
-    width: 280px;
+    /* ★ 280 → 260 (2026-08-28, 요청: 긴 이름이 한 줄인 한에서 최대한 좁게).
+       가장 긴 이름 「트위스티드 페이트」(700 14px) 가 134px — 항목 패딩 12+12 · 초상화 40 · gap 12 = 210,
+       (실측 렌더는 117px — 250 이면 남는 폭 8px). 목록 스크롤바 17 + 상자 패딩 30 + 테두리 2. 역할군 버튼 6개는 flex:1 이라 37px 로 따라 준다 */
+    width: 250px;
     flex-shrink: 0;
     height: 75vh;
     display: flex;
@@ -4285,17 +4288,17 @@ main {
 .skill-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;        /* 12 → 10 (2026-08-28, 버튼 약간 축소: 96x60 → 84x50) */
     cursor: pointer;
-    padding: 6px;
+    padding: 5px;     /* 6 → 5 */
     border-radius: 8px;
     transition: 0.2s;
     background: rgba(255, 255, 255, 0.02);
 }
 
 .skill-btn-img {
-    width: 48px;
-    height: 48px;
+    width: 40px;      /* 48 → 40 (2026-08-28) */
+    height: 40px;
     border-radius: 8px;
     border: 2px solid transparent;
 }
@@ -5921,6 +5924,13 @@ main {
     color: var(--text-dim);
     font-size: 11px;
 }
+
+/* ★ 제목 줄을 두 줄로 (2026-08-28, 요청): 「공격력」 아래에 「레벨 1 → 18 · 세로축 …」.
+   점은 첫 줄(이름)에 맞춘다 — align-items:center 면 두 줄 사이에 떠서 어색하다 */
+.sgh-row.sgh-main { align-items: flex-start; }
+.sgh-row.sgh-main .stat-dot { margin-top: 9px; }
+.sgh-title { display: flex; flex-direction: column; gap: 2px; line-height: 1.4; }
+.sgh-title b { font-size: 14px; }
 
 /* ★ SVG 는 선만 그린다. 점·라벨·눈금은 전부 HTML 절대배치다.
      전부 SVG 로 그리고 preserveAspectRatio="none" 로 늘렸더니 글자와 점이
