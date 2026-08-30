@@ -1022,7 +1022,7 @@ async function executeSearch() {
                                      onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
                                 <div style="flex: 1;">
                                         <div style="color: #d9d5e3; font-weight: bold; font-size: 13px;">Lv. ${mastery.championLevel}</div>
-                                        <div style="color: #a79fbd; font-size: 11px;">${mastery.championPoints.toLocaleString()} pts</div>
+                                        <div style="color: #a79fbd; font-size: 12px;">${mastery.championPoints.toLocaleString()} pts</div>
                                     </div>
                                 </div>
                             `;
@@ -1329,7 +1329,7 @@ function renderMatches(matches, append = false) {
                 <div style="display: flex; align-items: center; justify-content: flex-start; gap: 3px;">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/2055.png" style="width: 12px; height: 12px; border-radius: 50%; transform: translateY(1.5px);">
                     <span style="color: #fff; font-weight: bold;">${me.visionWards}</span>
-                    <span style="font-size: 11px; margin-left: 2px; cursor: help;" data-tooltip="와드 설치 / 와드 파괴">(+${me.wardsPlaced}/-${me.wardsKilled})</span>
+                    <span style="font-size: 12px; margin-left: 2px; cursor: help;" data-tooltip="와드 설치 / 와드 파괴">(+${me.wardsPlaced}/-${me.wardsKilled})</span>
                 </div>
                 <div>시야점수 ${me.visionScore}</div>
             `;
@@ -1477,16 +1477,16 @@ function renderMatches(matches, append = false) {
                             </div>
                         </div>
                     </td>
-                    <td style="color: #fff; font-size: 11px; font-weight: bold;">${p.champLevel || '-'}</td>
+                    <td style="color: #fff; font-size: 12px; font-weight: bold;">${p.champLevel || '-'}</td>
                     <td>
                         <div class="detail-kda">${p.kills} / <span class="d">${p.deaths}</span> / ${p.assists}</div>
-                        <div style="color: #a79fbd; font-size: 11px;">(${kdaRatio})</div>
+                        <div style="color: #a79fbd; font-size: 12px;">(${kdaRatio})</div>
                     </td>
-                    <td style="color: ${kpColor}; font-weight: bold; font-size: 11px;">${p.kp}%</td>
+                    <td style="color: ${kpColor}; font-weight: bold; font-size: 12px;">${p.kp}%</td>
                     <td>${pItems}</td>
                     <td style="color: #a79fbd;">
-                        <div style="color: #d9d5e3;">${p.cs} <span style="font-size: 11px; color: #a79fbd;">(${pCsPerMin})</span></div>
-                        <div style="font-size: 11px; margin-top: 2px;">${p.gold.toLocaleString()} G</div>
+                        <div style="color: #d9d5e3;">${p.cs} <span style="font-size: 12px; color: #a79fbd;">(${pCsPerMin})</span></div>
+                        <div style="font-size: 12px; margin-top: 2px;">${p.gold.toLocaleString()} G</div>
                     </td>
                     <td>
                         <div style="color: #fff;">${p.damage.toLocaleString()}</div>
@@ -1501,7 +1501,7 @@ function renderMatches(matches, append = false) {
                             <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/2055.png" style="width: 12px; height: 12px; border-radius: 50%; transform: translateY(1.5px);">
                             <span style="color: #fff;">${p.visionWards}</span>
                         </div>
-                        <div style="font-size: 11px; margin-top: 2px;">+${p.wardsPlaced} / -${p.wardsKilled}</div>
+                        <div style="font-size: 12px; margin-top: 2px;">+${p.wardsPlaced} / -${p.wardsKilled}</div>
                     </td>
                 </tr>
             `;
@@ -1563,14 +1563,14 @@ function renderMatches(matches, append = false) {
                             <td class="detail-spell-rune-col">
                                 <div class="detail-augments">${renderAugments(p.augments, 16) || '<span style="color:#8b84a0;">-</span>'}</div>
                             </td>
-                            <td style="color: #fff; font-size: 11px; font-weight: bold;">${p.champLevel || '-'}</td>
+                            <td style="color: #fff; font-size: 12px; font-weight: bold;">${p.champLevel || '-'}</td>
                             <td>
                                 <div class="detail-kda">${p.kills} / <span class="d">${p.deaths}</span> / ${p.assists}</div>
-                                <div style="color: #a79fbd; font-size: 11px;">(${kdaRatio})</div>
+                                <div style="color: #a79fbd; font-size: 12px;">(${kdaRatio})</div>
                             </td>
-                            <td style="color: #a79fbd; font-weight: bold; font-size: 11px;">${p.kp}%</td>
+                            <td style="color: #a79fbd; font-weight: bold; font-size: 12px;">${p.kp}%</td>
                             <td>${pItems}</td>
-                            <td style="color: #d9d5e3; font-size: 11px;">${(p.gold || 0).toLocaleString()} G</td>
+                            <td style="color: #d9d5e3; font-size: 12px;">${(p.gold || 0).toLocaleString()} G</td>
                             <td>
                                 <div style="color: #fff;">${p.damage.toLocaleString()}</div>
                                 <div class="damage-bar-container"><div class="damage-bar" style="width: ${dmgPercent}%;"></div></div>
@@ -1838,7 +1838,7 @@ function renderAramSummaryHtml(matches) {
 
             <div style="display: flex; align-items: center; gap: 22px; width: 195px;">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="color: #ffffff; font-size: 11px;">${total}전 ${wins}승 ${losses}패</div>
+                    <div style="color: #ffffff; font-size: 12px;">${total}전 ${wins}승 ${losses}패</div>
                     <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${winDeg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;">
                         <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; color: ${wrColor};">
                             ${winRate}%
@@ -1847,13 +1847,13 @@ function renderAramSummaryHtml(matches) {
                 </div>
 
                 <div style="display: flex; flex-direction: column; justify-content: center; gap: 6px; text-align: left;">
-                    <div style="font-size: 11px; color: #ffffff; font-weight: bold;">
+                    <div style="font-size: 12px; color: #ffffff; font-weight: bold;">
                         ${avgK} / <span style="color: #e84057;">${avgD}</span> / ${avgA}
                     </div>
                     <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">
                         ${kdaRatio} <span style="font-size: 14px; font-weight: normal; color: #ffffff;">: 1</span>
                     </div>
-                    <div style="font-size: 11px; color: #e84057; font-weight: bold;">
+                    <div style="font-size: 12px; color: #e84057; font-weight: bold;">
                         킬관여 ${avgKp}%
                     </div>
                 </div>
@@ -1864,7 +1864,7 @@ function renderAramSummaryHtml(matches) {
             <!-- ★ 폭 258px = 244 + 좌우 숫자 한 자리씩. 세 패널이 같이 움직여야 한다 —
                  하나만 바꾸면 space-between 이 남는 폭을 다시 나눠 구분선이 어긋난다 -->
             <div style="width: 258px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
-                <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 역할군 (최근 ${total}게임)</div>
+                <div style="color: #ffffff; font-size: 12px; margin-bottom: 12px;">플레이한 역할군 (최근 ${total}게임)</div>
                 ${renderRoleRowsHtml(matches, 'aram')}
             </div>
 
@@ -1874,7 +1874,7 @@ function renderAramSummaryHtml(matches) {
                  다시 나눠서 구분선이 협곡·아레나보다 1px·4px 왼쪽에 찍혔다 (실측).
                  필터를 누를 때마다 구분선이 옮겨 다니는 게 그 때문이었다. -->
             <div style="display: flex; flex-direction: column; justify-content: center; width: 176px;">
-                <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">칼바람 지표 (평균)</div>
+                <div style="color: #ffffff; font-size: 12px; margin-bottom: 8px; text-align: center;">칼바람 지표 (평균)</div>
                 ${metric('분당 피해량', avgDpm.toLocaleString())}
                 ${metric('분당 받은 피해', avgTpm.toLocaleString())}
                 ${metric('분당 골드', avgGpm.toLocaleString())}
@@ -1993,7 +1993,7 @@ function renderArenaSummaryHtml(matches) {
 
             <div style="display: flex; align-items: center; gap: 22px; width: 195px;">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="color: #ffffff; font-size: 11px;">${total}전 · ${firsts}회 우승</div>
+                    <div style="color: #ffffff; font-size: 12px;">${total}전 · ${firsts}회 우승</div>
                     <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${top3Deg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;" data-tooltip="3위 안에 든 비율 ${top3Rate}%">
                         <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: ${avgColor};">
                             <div style="font-size: 15px; font-weight: bold;">${avgPlace}위</div>
@@ -2003,13 +2003,13 @@ function renderArenaSummaryHtml(matches) {
                 </div>
 
                 <div style="display: flex; flex-direction: column; justify-content: center; gap: 6px; text-align: left;">
-                    <div style="font-size: 11px; color: #ffffff; font-weight: bold;">
+                    <div style="font-size: 12px; color: #ffffff; font-weight: bold;">
                         ${avgK} / <span style="color: #e84057;">${avgD}</span> / ${avgA}
                     </div>
                     <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">
                         ${kdaRatio} <span style="font-size: 14px; font-weight: normal; color: #ffffff;">: 1</span>
                     </div>
-                    <div style="font-size: 11px; color: #e84057; font-weight: bold;">
+                    <div style="font-size: 12px; color: #e84057; font-weight: bold;">
                         킬관여 ${avgKp}%
                     </div>
                 </div>
@@ -2020,14 +2020,14 @@ function renderArenaSummaryHtml(matches) {
             <!-- ★ 폭 258px = 244 + 좌우 숫자 한 자리씩. 세 패널이 같이 움직여야 한다 —
                  하나만 바꾸면 space-between 이 남는 폭을 다시 나눠 구분선이 어긋난다 -->
             <div style="width: 258px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
-                <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 역할군 (최근 ${total}게임)</div>
+                <div style="color: #ffffff; font-size: 12px; margin-bottom: 12px;">플레이한 역할군 (최근 ${total}게임)</div>
                 ${renderRoleRowsHtml(matches, 'arena')}
             </div>
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
             <div style="display: flex; flex-direction: column; justify-content: center; width: 176px;">
-                <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">등수 분포</div>
+                <div style="color: #ffffff; font-size: 12px; margin-bottom: 8px; text-align: center;">등수 분포</div>
                 <div style="display: flex; justify-content: center; gap: 8px; align-items: flex-end;">
                     ${bars}
                 </div>
@@ -2216,7 +2216,7 @@ function renderSummaryStats(matchesToCalc) {
             
             <div style="display: flex; align-items: center; gap: 22px; width: 195px;">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="color: #ffffff; font-size: 11px;">${totalGames}전 ${wins}승 ${losses}패</div>
+                    <div style="color: #ffffff; font-size: 12px;">${totalGames}전 ${wins}승 ${losses}패</div>
                     <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${winDeg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;">
                         <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; color: ${wrColor};">
                             ${winRate}%
@@ -2225,13 +2225,13 @@ function renderSummaryStats(matchesToCalc) {
                 </div>
                 
                 <div style="display: flex; flex-direction: column; justify-content: center; gap: 6px; text-align: left;">
-                    <div style="font-size: 11px; color: #ffffff; font-weight: bold;">
+                    <div style="font-size: 12px; color: #ffffff; font-weight: bold;">
                         ${avgK} / <span style="color: #e84057;">${avgD}</span> / ${avgA}
                     </div>
                     <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">
                         ${kdaRatio} <span style="font-size: 14px; font-weight: normal; color: #ffffff;">: 1</span>
                     </div>
-                    <div style="font-size: 11px; color: #e84057; font-weight: bold;">
+                    <div style="font-size: 12px; color: #e84057; font-weight: bold;">
                         킬관여 ${avgKp}%
                     </div>
                 </div>
@@ -2242,14 +2242,14 @@ function renderSummaryStats(matchesToCalc) {
             <!-- ★ 폭 258px = 244 + 좌우 숫자 한 자리씩. 세 패널이 같이 움직여야 한다 —
                  하나만 바꾸면 space-between 이 남는 폭을 다시 나눠 구분선이 어긋난다 -->
             <div style="width: 258px; padding-left: 9px; display: flex; flex-direction: column; justify-content: center;">
-                <div style="color: #ffffff; font-size: 11px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${totalGames}게임)</div>
+                <div style="color: #ffffff; font-size: 12px; margin-bottom: 12px;">플레이한 챔피언 (최근 ${totalGames}게임)</div>
                 ${champsHtml}
             </div>
 
             <div style="width: 1px; height: 90px; background: rgba(107, 70, 193, 0.4); margin: 0 10px;"></div>
 
             <div style="display: flex; flex-direction: column; justify-content: center; width: 176px;">
-                <div style="color: #ffffff; font-size: 11px; margin-bottom: 8px; text-align: center;">선호 포지션 (랭크)</div>
+                <div style="color: #ffffff; font-size: 12px; margin-bottom: 8px; text-align: center;">선호 포지션 (랭크)</div>
                 <div style="display: flex; justify-content: center; gap: 10px; align-items: flex-end;">
                     ${posOrder.map(renderBar).join('')}
                 </div>
@@ -2762,7 +2762,7 @@ window.drawGraph = (id, color, dataArr, title) => {
 
     return `<span class="custom-footnote">[${id}]
         <span class="custom-footnote-content">
-            <div style="font-size: 11px; margin-bottom: 8px; color: #fff;">${title || '레벨별 성장 수치'} (Lv.1 ~ 18)</div>
+            <div style="font-size: 12px; margin-bottom: 8px; color: #fff;">${title || '레벨별 성장 수치'} (Lv.1 ~ 18)</div>
             <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow: visible;">
                 <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" />
                 ${elements}
@@ -2786,7 +2786,7 @@ window.drawSteps = (id, color, pairs) => {
 
     return `<span class="custom-footnote">[${id}]
         <span class="custom-footnote-content">
-            <div style="font-size: 11px; margin-bottom: 6px; color: #fff;">${pairs.map(p => p[0]).join(' / ')}레벨에 ${pairs.length > 1 && Number(pairs[pairs.length - 1][1]) < Number(pairs[0][1]) ? '감소' : '상승'}</div>
+            <div style="font-size: 12px; margin-bottom: 6px; color: #fff;">${pairs.map(p => p[0]).join(' / ')}레벨에 ${pairs.length > 1 && Number(pairs[pairs.length - 1][1]) < Number(pairs[0][1]) ? '감소' : '상승'}</div>
             <div style="font-size: 12px; min-width: 96px;">${rows}</div>
         </span>
     </span>`;
@@ -7287,7 +7287,7 @@ async function showChampions(requestedChampId = null, classicMode = false) {
                  onmouseover="if(!this.classList.contains('active')) this.style.background='rgba(255,255,255,0.08)'"
                  onmouseout="if(!this.classList.contains('active')) this.style.background='rgba(255,255,255,0.02)'">
                 <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${champ.id}.png" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;">
-                <div style="font-size: 14px; font-weight: bold; color: #fff;">${champ.name}</div>
+                <div style="font-size: 14px; font-weight: 500; color: #fff;">${champ.name}</div>
             </div>
         `).join('');
 

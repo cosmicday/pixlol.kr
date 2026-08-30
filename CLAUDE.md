@@ -78,6 +78,12 @@
 탭 내용 스크롤은 각 탭의 스크롤러(`champ-skill-body` · `vs-list` · `skin-list` · `champ-tab-scroll`)가 그대로 맡는다 (실측 넷 다 정상). 폰은 목록 → 상자 순서 그대로, `.champ-detail-col { height:auto }`.
 **전적검색 폭(1089) 되돌리기는 브랜치 `summoner-width-rollback`(ce82209)에 준비만** — 사용자 판단 대기. 합치려면 `git merge summoner-width-rollback`.
 
+**같은 날 — 글자 계단 정리 (디자인 점검 3순위, 사용자 확인 대기):** ① `body { line-height: 1.5 }` (예전 normal≈1.2) ② `font-size: 11px` 을 **전부 12px 로**
+(style.css 61곳 + app.js 인라인 29곳 — 11px 은 이제 없다) ③ 긴 문단 셋을 15px / 1.7 로: 스킬 설명 `#champ-skill-desc-text-body`(새 규칙) · 배경 이야기 `.champ-lore-text`(1.9 → 1.7) ·
+도감 설명 `.codex-desc`(14 → 15). 나무위키 본문이 15px / 1.5 (실측) ④ 굵기: 챔피언 목록 이름 bold → 500 · 도감 목록 이름 600 → 500 · 스킬 키 bold → 600.
+실측: 랭킹 행 49 · 전적 카드 96 · 도감 항목 54 · 챔피언 항목 58 그대로, **통계 표 행만 65 → 70** (td 글자 줄 간격) · 폰 넘침 0 · 랭킹 승률 `(825W 706L)` 줄바꿈 0.
+행 높이를 되돌리려면 `.stats-table td { line-height: 1.3 }`.
+
 ## ★★ 2026-08-28 — 챔피언 티어를 lol.ps · 딥롤 기준으로 (S~D → OP · 1~5)
 
 사용자 요청으로 통계 탭 티어 공식을 통째로 바꿨다. **상세는 `docs/통계집계.md` 「티어 공식」 절** — 여기는 요지만.
