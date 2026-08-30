@@ -24,6 +24,9 @@
     --dogu-bg-image: url('https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lulu_2.jpg');
     --dogu-overlay-rgb: 11, 11, 20;             /* 예전 body::before 오버레이 색 그대로 (보라 기운 바탕) */
     --dogu-gnb-panel: #16112a;                  /* 폰 햄버거 메뉴 패널 — 반투명이면 뒤 글자가 비쳐 겹친다 (2026-08-27) */
+    /* ★ 본문 폭을 1200 으로 통일하면서 헤더·푸터·준비중 상자(.dogu-wrap)도 같은 축에 맞췄다 (2026-08-28).
+       공통 기본값은 1120(내용 1088)이라 pixlol 만 덮는다 — 다른 dogu 사이트는 그대로다. 내용 폭 = 1232 - 패딩 32 = 1200 */
+    --dogu-wrap: 1232px;
     /* 블러는 공통 기본값 0 — 예전의 blur(5px) 는 규격에 따라 걷어냈다 */
 }
 
@@ -111,7 +114,7 @@ main {
 .mythic-shop-container {
     margin-top: 110px;   /* 80 → 110 (2026-08-18): 검색창과 위젯 사이를 벌렸다 */
     width: 100%;
-    max-width: 1000px;
+    max-width: 1240px;   /* 내용 1200 + 패딩 40 (2026-08-28 본문 폭 통일) */
     padding: 0 20px;
 }
 
@@ -238,7 +241,7 @@ main {
     display: flex;
     gap: 20px;
     width: 100%;
-    max-width: 1000px;
+    max-width: 1240px;   /* 내용 1200 + 패딩 40 (2026-08-28 본문 폭 통일) */
     padding: 0 20px;
     margin-top: 40px;
     /* 홈이 짧을 때 푸터가 바짝 붙지 않게 아래 여백을 준다 */
@@ -350,7 +353,7 @@ main {
    ========================================= */
 #result-container {
     display: none;
-    max-width: 1089px;
+    max-width: 1200px;   /* 1089 → 1200 (2026-08-28 본문 폭 통일) */
     margin: 40px auto;
     padding-bottom: 50px;
     animation: fadeIn 0.6s ease;
@@ -2210,7 +2213,7 @@ main {
    ========================================= */
 #stats-container {
     display: none;
-    max-width: 1000px;
+    max-width: 1200px;   /* 1000 → 1200 (2026-08-28 본문 폭 통일) */
     margin: 40px auto;
     padding-bottom: 50px;
     animation: fadeIn 0.6s ease;
@@ -2471,7 +2474,7 @@ main {
     --lx-box: #1a1a2e;
     --lx-box2: rgba(255, 255, 255, 0.03);
     --lx-gray: var(--text-muted);
-    max-width: 1040px;
+    max-width: 1200px;   /* 1040 → 1200 (2026-08-28 본문 폭 통일) */
     margin: 0 auto 60px;
     padding: 0 0 30px;
     color: var(--text-bright);
@@ -3018,7 +3021,7 @@ main {
    ========================================= */
 #masters-container {
     display: none;
-    max-width: 1500px;
+    max-width: 1200px;   /* 1500 → 1200 (2026-08-28 본문 폭 통일, 비공개 페이지) */
     margin: 40px auto;
     padding-bottom: 50px;
     animation: fadeIn 0.6s ease;
@@ -6479,8 +6482,9 @@ main {
 #codex-container {
     display: none;
     /* ★ 왼쪽 목록이 280 → 560px 로 넓어지면서 같이 올렸다 (1100 → 1400, 2026-08-16).
-       안 올리면 오른쪽 상세가 776 → 520px 으로 쪼그라든다. 지금은 820px 이라 오히려 넓다. */
-    max-width: 1400px;
+       안 올리면 오른쪽 상세가 776 → 520px 으로 쪼그라든다. 지금은 820px 이라 오히려 넓다.
+       ★★ 2026-08-28 본문 폭 통일로 1400 → 1200. 왼쪽 칸도 740 → 680 (아래). 상세는 아이템 500 / 룬 588 / 주문 736 */
+    max-width: 1200px;
     margin: 40px auto;
     padding-bottom: 50px;
     animation: fadeIn 0.6s ease;
@@ -6494,7 +6498,7 @@ main {
    ============================================================ */
 #patch-container {
     display: none;
-    max-width: 1000px;
+    max-width: 1200px;   /* 1000 → 1200 (2026-08-28 본문 폭 통일) */
     margin: 40px auto;
     padding-bottom: 50px;
     animation: fadeIn 0.6s ease;
@@ -6628,8 +6632,9 @@ main {
 .codex-left {
     /* ★ 스탯 목록(168) + gap(12) 이 들어오면서 560 → 740 으로 넓혔다 (2026-08-25).
        안 넓히면 아이템 목록 두 칸이 190px 씩으로 쪼그라들어 이름이 통째로 잘린다.
-       ★★ 룬·주문 탭은 좁힌다 (2026-08-26) — 아래 `[data-tab]` 규칙 참고. */
-    width: 740px;
+       ★★ 룬·주문 탭은 좁힌다 (2026-08-26) — 아래 `[data-tab]` 규칙 참고.
+       ★ 통이 1200 이 되면서 740 → 680 (2026-08-28). 목록 두 칸이 262 → 232px 로 준다 — 이름 잘림은 실측으로 볼 것 */
+    width: 680px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -6645,7 +6650,7 @@ main {
 .codex-body[data-tab="rune"] .codex-left { width: 592px; }
 .codex-body[data-tab="spell"] .codex-left { width: 444px; }
 
-/* ★★ 통 폭은 탭이 바뀌어도 **1400 으로 고정**이다 (2026-08-27, 요청).
+/* ★★ 통 폭은 탭이 바뀌어도 **한 값(1200, 08-28 전엔 1400)으로 고정**이다 (2026-08-27, 요청).
    예전엔 탭마다 통을 줄여(1400 / 1164 / 1026) 가운데로 모았는데, 그러면
    **탭 줄·검색창·거르는 버튼이 탭을 옮길 때마다 좌우로 최대 187px 씩 움직인다** —
    탭이 헤더 메뉴가 된 지금은 그게 더 불편하다. 남는 폭은 오른쪽 상세가 받는다
@@ -7562,7 +7567,7 @@ main {
 
 #mythic-container {
     display: none;
-    max-width: 1100px;
+    max-width: 1200px;   /* 1100 → 1200 (2026-08-28 본문 폭 통일) */
     margin: 40px auto;
     padding-bottom: 50px;
     animation: fadeIn 0.6s ease;
