@@ -7256,10 +7256,8 @@ async function showChampions(requestedChampId = null, classicMode = false) {
         let html = `
             <!-- ★ 도감 4칸 — 헤더 드롭다운과 같은 줄이다. **머리글보다 위**여야 네 메뉴에서 줄 높이가 같다 (2026-08-27) -->
             ${classicMode ? '' : codexTabsHtml('champions')}
-            <div class="stats-header" id="champ-page-header" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 15px; height: 80px;">
-                <h1 class="ranking-title">${classicMode ? '챔피언 정보 (클래식)' : '챔피언 정보'}</h1>
-            </div>
-            
+            <!-- ★ 머리글(#champ-page-header)은 2026-08-28 부터 **오른쪽 칸 안**(.champ-detail-col) 에 있다 —
+                 왼쪽 검색창이 도감 다른 탭처럼 4칸 줄 바로 아래에 오게 (사용자 요청). 폰에서는 display:contents + order 로 맨 위로 되돌린다 -->
             <!-- ★ 여기 세 덩이는 인라인 style 이었는데 클래스로 뺐다 (2026-08-11).
                  인라인은 스타일시트를 이겨서 @media 로 못 덮는다 — 폰에서 280px 목록이
                  그대로 버텨 상세 영역에 60px 밖에 안 남았다. style.css 15번 절 참고. -->
@@ -7296,9 +7294,14 @@ async function showChampions(requestedChampId = null, classicMode = false) {
         html += `
                     <div id="champ-list-empty" class="champ-list-empty" style="display:none;">조건에 맞는 챔피언이 없습니다.</div>
                 </div></div>
+                <div class="champ-detail-col">
+            <div class="stats-header" id="champ-page-header" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 15px; height: 80px;">
+                <h1 class="ranking-title">${classicMode ? '챔피언 정보 (클래식)' : '챔피언 정보'}</h1>
+            </div>
                 <div id="champ-detail-area" class="champ-detail-pane">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png" style="width: 80px; opacity: 0.3; margin-bottom: 20px;">
                     <div style="color: #a79fbd; font-size: 18px;">👈 왼쪽에서 챔피언을 선택해주세요.</div>
+                </div>
                 </div>
             </div>
         `;
