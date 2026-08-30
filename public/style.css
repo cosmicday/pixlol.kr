@@ -4192,14 +4192,31 @@ main {
      상자가 남은 만큼 늘어난다 — 안 그러면 필터 높이만큼 화면 밖으로 밀린다. */
 /* ★ 오른쪽 칸 = 머리글(초상화·이름, 80 + 아래 여백 20) + 상세 상자 (2026-08-28).
    머리글이 두 칸 위에 걸쳐 있던 것을 여기로 옮겨서 왼쪽 검색창이 4칸 줄 바로 아래에 온다 (도감 다른 탭과 같은 자리) */
+/* ★★ 2026-08-28 (사용자 선택 A): 이 칸이 **상자 자체**다 — 머리글이 상자 안 맨 위 줄(왼쪽 정렬)이고 그 아래가 탭·내용.
+   그래서 왼쪽 목록과 윗변·아랫변이 같은 선(75vh)에 선다. 상세 상자(.champ-detail-pane)는 테두리·배경을 잃고 남은 높이를 채운다 */
 .champ-detail-col {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
+    height: 75vh;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
 }
-/* ★ 상세 상자의 flex:1 은 가로(행) 배치용이었다 — 세로 칸 안에선 높이까지 늘려 75vh 를 넘긴다 (실측 +15px, 왼쪽 목록과 아래 끝이 안 맞음). 세로 칸 안에서는 늘리지 않는다 */
-.champ-detail-col > .champ-detail-pane { flex: 0 0 auto; }
+#champ-page-header {
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.champ-detail-col > .champ-detail-pane {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    background: none;
+    border: 0;
+    border-radius: 0;
+}
 
 .champ-list-col {
     /* ★ 280 → 260 (2026-08-28, 요청: 긴 이름이 한 줄인 한에서 최대한 좁게).
@@ -4207,8 +4224,7 @@ main {
        (실측 렌더는 117px — 250 이면 남는 폭 8px). 목록 스크롤바 17 + 상자 패딩 30 + 테두리 2. 역할군 버튼 6개는 flex:1 이라 37px 로 따라 준다 */
     width: 250px;
     flex-shrink: 0;
-    /* ★ 75vh + 머리글 100(높이 80 + margin 20) — 오른쪽 상세 상자와 아래 끝을 맞춘다 (2026-08-28) */
-    height: calc(75vh + 100px);
+    height: 75vh;   /* 오른쪽 상자(.champ-detail-col)와 같은 높이 */
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -4756,11 +4772,9 @@ main {
        .ranking-title 이 폰에서 세로 배치(2913줄)로 바뀌면서 80px 를 넘긴다. */
     #champ-page-header {
         height: auto !important;
-        margin-bottom: 12px !important;
-        order: -1;   /* 폰에선 머리글을 목록 위로 (아래 display:contents 와 한 쌍) */
     }
-    /* ★ 오른쪽 칸 감싸개를 폰에선 없는 셈 친다 — 머리글·상세 상자가 .champ-page-wrap 의 직접 자식이 되어 order 가 먹는다 */
-    .champ-detail-col { display: contents; }
+    /* 폰은 상자 높이를 풀어 페이지가 스크롤되게 (상세 상자와 같은 이유) */
+    .champ-detail-col { height: auto; }
 
     .champ-page-wrap {
         flex-direction: column;

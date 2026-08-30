@@ -71,12 +71,12 @@
 - 랭킹은 원래 1200 이라 안 바뀌었다. 도감·챔피언 상세는 200px 좁아졌다 (상세 아이템 500 / 룬 588 / 주문 736, 챔피언 상세 885)
 
 **같은 날 이어서 — 챔피언 페이지 (사용자 요청 넷):** ① 왼쪽 목록 280 → **250** (「트위스티드 페이트」 한 줄 유지 최소, 실측 이름 117px + 여유 8)
-② 스킬 P/Q/W/E/R 버튼 96×60 → 84×50 ③ 스탯 그래프 제목 두 줄(`.sgh-main` / `.sgh-title`) ④ **머리글(`#champ-page-header`)을 오른쪽 칸
-`.champ-detail-col` 안으로** 옮겨 왼쪽 검색창이 도감 다른 탭처럼 4칸 줄 바로 아래(탭 +14px)에 온다. **★ 함정 둘**: 상세 상자의 `flex: 1` 이
-세로 칸 안에선 높이까지 늘려 75vh 를 넘긴다 → `.champ-detail-col > .champ-detail-pane { flex: 0 0 auto }` / 폰은 `.champ-detail-col { display: contents }`
-+ 머리글 `order: -1` 로 예전 순서(머리글 → 목록 → 상세)를 유지. 왼쪽 칸 높이는 `calc(75vh + 100px)`(머리글 80 + margin 20)로 아래 끝을 맞췄다.
+② 스킬 P/Q/W/E/R 버튼 96×60 → 84×50 ③ 스탯 그래프 제목 두 줄(`.sgh-main` / `.sgh-title`) ④ **머리글(`#champ-page-header`)이 오른쪽 상자 안 맨 위 줄**이다 —
+`.champ-detail-col` 이 상자 자체(배경·테두리·75vh)이고 그 안이 머리글(왼쪽 정렬, 초상화 48) → 탭 → 내용. 왼쪽 검색창이 도감 다른 탭처럼
+4칸 줄 바로 아래(+14px)에 오고 두 상자의 윗변·아랫변이 같은 선(202 / 1027)이다. 사용자가 "오른쪽 상자도 올리기(A) vs 머리글만 왼쪽 끝(B)" 중 A 를 골랐다.
+**★ 함정**: 상세 상자(`.champ-detail-pane`)의 `flex: 1` 은 가로 배치용이라 세로 칸 안에선 높이까지 늘린다 → 상자 안에서는 `flex:1; min-height:0; height:auto` 로 남은 높이만 채우게.
+탭 내용 스크롤은 각 탭의 스크롤러(`champ-skill-body` · `vs-list` · `skin-list` · `champ-tab-scroll`)가 그대로 맡는다 (실측 넷 다 정상). 폰은 목록 → 상자 순서 그대로, `.champ-detail-col { height:auto }`.
 **전적검색 폭(1089) 되돌리기는 브랜치 `summoner-width-rollback`(ce82209)에 준비만** — 사용자 판단 대기. 합치려면 `git merge summoner-width-rollback`.
-- **★ bash `node -e` 안의 백틱 함정에 또 걸렸다** — 이 절을 처음 쓸 때 코드 표기가 전부 빈칸이 돼서 파일로 써서 끼웠다. CLAUDE.md 에 긴 글을 넣을 땐 Write 로 파일부터
 
 ## ★★ 2026-08-28 — 챔피언 티어를 lol.ps · 딥롤 기준으로 (S~D → OP · 1~5)
 

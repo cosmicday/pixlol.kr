@@ -7257,7 +7257,7 @@ async function showChampions(requestedChampId = null, classicMode = false) {
             <!-- ★ 도감 4칸 — 헤더 드롭다운과 같은 줄이다. **머리글보다 위**여야 네 메뉴에서 줄 높이가 같다 (2026-08-27) -->
             ${classicMode ? '' : codexTabsHtml('champions')}
             <!-- ★ 머리글(#champ-page-header)은 2026-08-28 부터 **오른쪽 칸 안**(.champ-detail-col) 에 있다 —
-                 왼쪽 검색창이 도감 다른 탭처럼 4칸 줄 바로 아래에 오게 (사용자 요청). 폰에서는 display:contents + order 로 맨 위로 되돌린다 -->
+                 그 칸이 상자 자체라 머리글이 상자 안 맨 위 줄(왼쪽 정렬)이고 아래가 탭·내용이다 (사용자 선택 A). 폰도 같은 순서(목록 → 상자) -->
             <!-- ★ 여기 세 덩이는 인라인 style 이었는데 클래스로 뺐다 (2026-08-11).
                  인라인은 스타일시트를 이겨서 @media 로 못 덮는다 — 폰에서 280px 목록이
                  그대로 버텨 상세 영역에 60px 밖에 안 남았다. style.css 15번 절 참고. -->
@@ -7295,8 +7295,8 @@ async function showChampions(requestedChampId = null, classicMode = false) {
                     <div id="champ-list-empty" class="champ-list-empty" style="display:none;">조건에 맞는 챔피언이 없습니다.</div>
                 </div></div>
                 <div class="champ-detail-col">
-            <div class="stats-header" id="champ-page-header" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 15px; height: 80px;">
-                <h1 class="ranking-title">${classicMode ? '챔피언 정보 (클래식)' : '챔피언 정보'}</h1>
+            <div class="stats-header" id="champ-page-header" style="display: flex; align-items: center; justify-content: flex-start; gap: 15px; padding: 12px 20px; min-height: 72px;">
+                <span style="color: #8b84a0; font-size: 14px;">${classicMode ? '챔피언 정보 (클래식)' : '챔피언 정보'}</span>
             </div>
                 <div id="champ-detail-area" class="champ-detail-pane">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png" style="width: 80px; opacity: 0.3; margin-bottom: 20px;">
@@ -7362,10 +7362,10 @@ window.selectChampion = async function (champId, champName) {
         const header = document.getElementById('champ-page-header');
         if (header) {
             header.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <div style="display: flex; align-items: center; justify-content: flex-start; gap: 15px;">
                     <img class="champ-header-portrait" src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${champId}.png"
                          onclick="playChampVoice('${champ.key}', 'pick')" title="${escapeHtml(champ.name)} 대표 대사 듣기"
-                         style="width: 56px; height: 56px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                         style="width: 48px; height: 48px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
                     <div style="text-align: left; display: flex; align-items: center; gap: 15px;">
                         <div>
                             <div style="color: #a78bfa; font-weight: bold; font-size: 13px; margin-bottom: 2px;">${champ.title}</div>
