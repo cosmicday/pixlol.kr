@@ -719,7 +719,7 @@ async function showPatchNotes(kind) {
 
     box.innerHTML = patchTabsHtml(cur) +
         `<div class="patch-page-list" id="patch-page-list">
-            <div class="patch-page-empty">패치노트를 불러오는 중입니다...</div>
+            ${Array.from({ length: 6 }, () => '<div class="skel" style="height:96px;border-radius:12px"></div>').join('')}
         </div>`;
 
     let data = null;
@@ -4613,7 +4613,7 @@ async function showStats() {
     hideAllContainers();
     const box = document.getElementById('stats-container');
     box.style.display = 'block';
-    box.innerHTML = `<div class="stats-empty">통계를 불러오는 중입니다...</div>`;
+    box.innerHTML = `<div style="min-height:100vh">${skelTableHtml(12, 48)}</div>`;
 
     await fetchChampionMap();
 
@@ -5335,7 +5335,7 @@ async function showRanking(targetPage = 1) {
     if (summaryArea) summaryArea.style.display = "none";
 
     renderRankingHeader();
-    listDiv.innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:var(--text-muted);'>데이터를 불러오는 중입니다...</div>";
+    listDiv.innerHTML = `<div style="min-height:100vh">${skelTableHtml(12, 44)}</div>`;
     const moreArea = document.getElementById('load-more-area');
     if (moreArea) moreArea.innerHTML = "";
 

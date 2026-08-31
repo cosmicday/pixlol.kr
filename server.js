@@ -196,7 +196,8 @@ const champStatSchema = new mongoose.Schema({
     banGames: { type: Number, default: 0 },
     kills: { type: Number, default: 0 },
     deaths: { type: Number, default: 0 },
-    assists: { type: Number, default: 0 }
+    assists: { type: Number, default: 0 },
+    g: { type: Number }   // 세대 딱지 (2026-08-31) — statScopeSchema.gen 주석 참고
 }, { versionKey: false });   // ★ __v(몽고 문서 버전 칸) 끔 — 매시간 통째로 갈아엎는 표라 쓸 일이 없다 (2026-08-27, 27만 행 x 7B)
 champStatSchema.index({ scope: 1, kb: 1, pos: 1 });
 const ChampStat = mongoose.model('ChampStat', champStatSchema);
@@ -206,7 +207,14 @@ const statScopeSchema = new mongoose.Schema({
     scope: { type: String, required: true },
     kb: { type: String, required: true },
     games: { type: Number, default: 0 },
-    updatedAt: { type: Date, default: Date.now }
+    updatedAt: { type: Date, default: Date.now },
+    // ★★ 세대 딱지 (2026-08-31). 재집계가 "지우고 넣기" 대신 "넣고 → 딱지 갱신 → 옛 세대 삭제" 로
+    //   돌므로, 조회는 항상 딱지가 가리키는 완성된 한 벌만 읽는다 — 재집계 중에도 빈 결과가 없다.
+    //   컬렉션마다 딱지가 따로다: gen = champstats · genB = champbuilds · genM = champmatchups.
+    //   딱지가 없으면(얼어붙은 옛 패치 등) 조회가 세대 필터 없이 그대로 읽는다.
+    gen: { type: Number },
+    genB: { type: Number },
+    genM: { type: Number }
 });
 statScopeSchema.index({ scope: 1, kb: 1 }, { unique: true });
 const StatScope = mongoose.model('StatScope', statScopeSchema);
@@ -245,7 +253,8 @@ const champBuildSchema = new mongoose.Schema({
     type: { type: String, required: true },
     key: { type: [Number], default: [] },
     games: { type: Number, default: 0 },
-    wins: { type: Number, default: 0 }
+    wins: { type: Number, default: 0 },
+    g: { type: Number }   // 세대 딱지 (2026-08-31) — statScopeSchema.gen 주석 참고
 }, { versionKey: false });   // __v 끔 (champstats 와 같은 이유)
 champBuildSchema.index({ scope: 1, champ: 1 });
 const ChampBuild = mongoose.model('ChampBuild', champBuildSchema);
@@ -271,7 +280,8 @@ const champMatchupSchema = new mongoose.Schema({
     fpos: { type: Number, default: -1 },
     rel: { type: Number, default: 0 },
     games: { type: Number, default: 0 },
-    wins: { type: Number, default: 0 }
+    wins: { type: Number, default: 0 },
+    g: { type: Number }   // 세대 딱지 (2026-08-31) — statScopeSchema.gen 주석 참고
 }, { versionKey: false });   // __v 끔 (champstats 와 같은 이유)
 champMatchupSchema.index({ scope: 1, champ: 1 });
 const ChampMatchup = mongoose.model('ChampMatchup', champMatchupSchema);
@@ -1414,22 +1424,29 @@ async function buildOneScope(scopeKey, matchCond) {
     f.bans.forEach(r => { if (r._id.c != null) put(r._id.kb, r._id.c, -1, { bans: r.bans }); });
     f.banGames.forEach(r => { if (r._id.c != null) put(r._id.kb, r._id.c, -1, { banGames: r.n }); });
 
-    // 재계산이라 통째로 갈아 끼운다. $set 으로 덮으면 이번에 안 나온 챔피언 줄이
-    // 옛 숫자를 그대로 들고 남는다.
+    // ★★ 세대 교체 (2026-08-31): 예전엔 `deleteMany → insertMany` 라 도는 동안 컬렉션이 비어서
+    //   그 순간 조회가 "표본을 모으는 중" 을 받았다 (배포 5번 몰아서 한 날 사용자가 실제로 걸렸다).
+    //   지금은 **새 세대를 넣고 → statscopes 의 딱지(gen)를 바꾸고 → 옛 세대를 지운다.**
+    //   조회는 딱지가 가리키는 세대만 읽으므로 재집계 중에도 항상 완성된 한 벌을 본다.
+    //   재계산마다 통째로 갈아 끼우는 건 그대로다 — $set 으로 덮으면 이번에 안 나온 챔피언 줄이
+    //   옛 숫자를 그대로 들고 남기 때문이다. 대가는 재집계 몇 분 동안 그 scope 만 두 벌인 것.
     const docs = [...agg.values()];
-    await ChampStat.deleteMany({ scope: scopeKey });
+    const gen = Date.now();
+    docs.forEach(d => { d.g = gen; });
     if (docs.length) await ChampStat.insertMany(docs, { ordered: false });
 
     await StatScope.bulkWrite(f.totals.map(t => ({
         updateOne: {
             filter: { scope: scopeKey, kb: t._id },
-            update: { $set: { games: t.games, updatedAt: new Date() } },
+            update: { $set: { games: t.games, updatedAt: new Date(), gen } },
             upsert: true
         }
     })));
     // ★ 밴드 폐지 전에 만들어진 줄을 지운다. 화면이 statscopes 를 **더해서** 분모로 쓰므로
     //   남겨 두면 판수가 두 배로 보인다.
     await StatScope.deleteMany({ scope: scopeKey, kb: { $ne: K_BAND_ALL } });
+    // ★ 딱지를 바꾼 뒤에야 옛 세대를 지운다 ($ne 는 g 가 없는 옛 문서도 잡는다)
+    await ChampStat.deleteMany({ scope: scopeKey, g: { $ne: gen } });
 
     return f.totals.reduce((a, t) => a + t.games, 0);
 }
@@ -1717,10 +1734,12 @@ async function buildOneBuildScope(scopeKey, matchCond) {
         });
     }
 
-    // champstats 와 같은 이유로 통째로 갈아 끼운다 — $set 으로 덮으면 이번에 안 나온
-    // 조합이 옛 숫자를 들고 남는다.
-    await ChampBuild.deleteMany({ scope: scopeKey });
+    // champstats 와 같은 세대 교체 (2026-08-31) — 넣고 → 딱지(genB) → 옛 세대 삭제.
+    const gen = Date.now();
+    docs.forEach(d => { d.g = gen; });
     if (docs.length) await ChampBuild.insertMany(docs, { ordered: false });
+    await StatScope.updateMany({ scope: scopeKey }, { $set: { genB: gen } });
+    await ChampBuild.deleteMany({ scope: scopeKey, g: { $ne: gen } });
     return docs.length;
 }
 
@@ -1764,10 +1783,12 @@ async function buildOneMatchupScope(scopeKey, matchCond) {
         .filter(r => r._id.c > 0 && r._id.f > 0)
         .map(r => ({ scope: scopeKey, pos: r._id.pos, champ: r._id.c, foe: r._id.f, fpos: r._id.fpos, rel: r._id.rel, games: r.games, wins: r.wins }));
 
-    // champstats·champbuilds 와 같은 이유로 통째로 갈아 끼운다 —
-    // $set 으로 덮으면 이번에 안 나온 칸이 옛 숫자를 들고 남는다.
-    await ChampMatchup.deleteMany({ scope: scopeKey });
+    // champstats·champbuilds 와 같은 세대 교체 (2026-08-31) — 넣고 → 딱지(genM) → 옛 세대 삭제.
+    const gen = Date.now();
+    docs.forEach(d => { d.g = gen; });
     if (docs.length) await ChampMatchup.insertMany(docs, { ordered: false });
+    await StatScope.updateMany({ scope: scopeKey }, { $set: { genM: gen } });
+    await ChampMatchup.deleteMany({ scope: scopeKey, g: { $ne: gen } });
     return docs.length;
 }
 
@@ -3151,10 +3172,11 @@ app.get('/api/champion-stats', async (req, res) => {
 
         const { scope, scopeKeys } = pickStatScope(scopes, req.query.scope);
 
-        const [rows, totalRows] = await Promise.all([
-            ChampStat.find({ scope }).select('-_id -__v').lean(),
-            StatScope.find({ scope }).lean()
-        ]);
+        // ★ 세대 딱지(gen)를 먼저 읽고 그 세대만 조회한다 (2026-08-31) — 재집계 중에도 완성된 한 벌.
+        //   딱지가 없으면(얼어붙은 옛 패치 등 이 코드 이전에 마지막으로 집계된 scope) 필터 없이 읽는다.
+        const totalRows = await StatScope.find({ scope }).lean();
+        const gen = totalRows.reduce((m, t) => Math.max(m, t.gen || 0), 0) || null;
+        const rows = await ChampStat.find(gen ? { scope, g: gen } : { scope }).select('-_id -__v -g').lean();
 
         // kb 별 총 경기 수. 화면에서 5-7 과 8-10 을 합쳐 볼 수 있게 둘 다 준다.
         const totals = {};
@@ -3209,8 +3231,11 @@ app.get('/api/champion-matchups', async (req, res) => {
         const hit = myCache.get(cacheKey);
         if (hit) return res.json(hit);
 
-        const rows = await ChampMatchup.find({ scope, champ })
-            .select('-_id -__v -scope -champ').lean();
+        // ★ 세대 딱지(genM) 세대만 읽는다 (2026-08-31, champion-stats 와 같은 장치)
+        const scRowM = await StatScope.findOne({ scope, genM: { $exists: true } }).select('genM').lean();
+        const genM = scRowM?.genM || null;
+        const rows = await ChampMatchup.find(genM ? { scope, champ, g: genM } : { scope, champ })
+            .select('-_id -__v -scope -champ -g').lean();
 
         // 박제된 패치면 행이 파일에 있다 (champion-builds 와 같은 판별).
         if (!rows.length && !(await ChampMatchup.exists({ scope })) && await StatScope.exists({ scope })) {
@@ -3238,10 +3263,15 @@ app.get('/api/champion-trend', async (req, res) => {
         const hit = myCache.get(cacheKey);
         if (hit) return res.json(hit);
 
-        const [rows, scopes] = await Promise.all([
-            ChampStat.find({ scope: /^d:/, champ, pos: { $in: [pos, -1] } }).select('-_id scope pos games wins bans').lean(),
-            StatScope.find({ scope: /^d:/ }).select('-_id scope games').lean()
+        const [rowsAll, scopes] = await Promise.all([
+            ChampStat.find({ scope: /^d:/, champ, pos: { $in: [pos, -1] } }).select('-_id scope pos games wins bans g').lean(),
+            StatScope.find({ scope: /^d:/ }).select('-_id scope games gen').lean()
         ]);
+        // ★ 세대 딱지 (2026-08-31): 재집계 중인 날짜 scope 는 두 세대가 겹쳐 있다 — 딱지 세대만 남긴다
+        //   (안 거르면 그날 판수가 그래프에서 순간 두 배로 뛴다). 딱지 없는 scope 는 그대로 쓴다.
+        const genMap = {};
+        scopes.forEach(s => { if (s.gen) genMap[s.scope] = Math.max(genMap[s.scope] || 0, s.gen); });
+        const rows = rowsAll.filter(r => !genMap[r.scope] || r.g === genMap[r.scope]);
         const total = {};
         scopes.forEach(s => { total[s.scope] = (total[s.scope] || 0) + s.games; });
         const byDay = {};
@@ -3272,7 +3302,10 @@ app.get('/api/champion-builds', async (req, res) => {
         const hit = myCache.get(cacheKey);
         if (hit) return res.json(hit);
 
-        const rows = await ChampBuild.find({ scope, champ }).select('-_id -__v -scope -champ').lean();
+        // ★ 세대 딱지(genB) 세대만 읽는다 (2026-08-31, champion-stats 와 같은 장치)
+        const scRowB = await StatScope.findOne({ scope, genB: { $exists: true } }).select('genB').lean();
+        const genB = scRowB?.genB || null;
+        const rows = await ChampBuild.find(genB ? { scope, champ, g: genB } : { scope, champ }).select('-_id -__v -scope -champ -g').lean();
 
         // ★ 박제된 패치면 행이 파일에 있다. 화면은 표를 그릴 때 이미 그 파일을 받아 뒀으므로
         //   원래 여기까지 오지도 않는데, 옛 화면이 부를 수 있으니 표식을 돌려준다.
@@ -3342,9 +3375,12 @@ app.get('/api/spell-usage', async (req, res) => {
 
         // ★ pos 를 조건에서 빼고 통째로 받는다 — `-1`(라인 무관 전체)과 `0~4`(라인별)를
         //   한 번에 세려는 것이다. 행 수가 얼마 안 돼서 두 번 조회할 이유가 없다.
+        // ★ 세대 딱지(genB) 세대만 읽는다 (2026-08-31) — scopes 를 이미 통째로 받아 둬서 추가 조회 0
+        const genB = scopes.filter(s => s.scope === scope).reduce((m, s) => Math.max(m, s.genB || 0), 0) || null;
+        const gq = genB ? { g: genB } : {};
         const [spellRows, allRows] = await Promise.all([
-            ChampBuild.find({ scope, type: 'spell' }).select('-_id champ pos key games wins').lean(),
-            ChampBuild.find({ scope, type: 'all' }).select('-_id champ pos games').lean()
+            ChampBuild.find({ scope, type: 'spell', ...gq }).select('-_id champ pos key games wins').lean(),
+            ChampBuild.find({ scope, type: 'all', ...gq }).select('-_id champ pos games').lean()
         ]);
 
         // 박제된 패치는 champbuilds 행이 없다 (champion-builds 와 같은 판별)
