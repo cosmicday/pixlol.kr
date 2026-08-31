@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (pathParts[1] === 'summoner' && pathParts[2]) {
         document.getElementById('result-container').style.display = "block";
-        document.getElementById('game-list').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:var(--text-muted);'>전적 데이터를 불러오는 중입니다...</div>";
+        document.getElementById('game-list').innerHTML = skelSummonerHtml();
         document.getElementById('dogu-search-input').value = decodeURIComponent(pathParts[2]);
         // /summoner/<라이엇 ID>/<경기 번호> — 친구가 받은 경기 링크. 검색이 끝나면 그 경기를 펼친다
         window.pendingMatchId = pathParts[3] ? decodeURIComponent(pathParts[3]) : null;
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setActiveNav('nav-search');   // ★ 예전엔 mountHeader 의 기본 active 가 켜 주던 자리 (2026-08-27)
     } else if (pathParts[1] === 'ranking') {
         document.getElementById('result-container').style.display = "block";
-        document.getElementById('game-list').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:var(--text-muted);'>랭킹 데이터를 불러오는 중입니다...</div>";
+        document.getElementById('game-list').innerHTML = `<div style="min-height:100vh">${skelTableHtml(12, 44)}</div>`;
         showRanking(getQueryPage());
         // ★ 이 줄이 빠져 있어서 /ranking 을 새로고침하면 메뉴 불이 "전적검색" 에 켜졌다.
         //   index.html 에서 nav-search 가 기본 active 라, 아무도 안 바꾸면 그게 그대로 남는다.
@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setActiveNav('nav-masters');
     } else if (pathParts[1] === 'stats') {
         document.getElementById('stats-container').style.display = "block";
-        document.getElementById('stats-container').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:var(--text-muted);'>통계 데이터를 불러오는 중입니다...</div>";
+        document.getElementById('stats-container').innerHTML = `<div style="min-height:100vh">${skelTableHtml(12, 48)}</div>`;
         // ★ `/stats/<영문키>` 는 챔피언 상세 페이지다 (2026-08-26).
         //   **popstate 쪽도 같이 고쳐야 한다** — 한쪽만 고치면 주소로 들어오는 것과
         //   뒤로가기가 다르게 동작한다 (이 저장소에서 반복해서 겪은 함정이다).
@@ -873,7 +873,7 @@ async function executeSearch() {
     if (filterArea) filterArea.style.display = "none";
     const summaryArea = document.getElementById('summary-stats-area');
     if (summaryArea) summaryArea.style.display = "none";
-    document.getElementById('game-list').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:var(--text-muted);'>전적 데이터를 불러오는 중입니다...</div>";
+    document.getElementById('game-list').innerHTML = skelSummonerHtml();
 
     try {
         const response = await fetch(`/api/summoner/${encodeURIComponent(inputName)}`);
@@ -1751,7 +1751,7 @@ function renderMatches(matches, append = false) {
             ${isArena ? '' : `
             <div id="tab-analysis-${game.matchId}" class="detail-tab-content" style="padding: 20px;">
                 <div id="analysis-body-${game.matchId}">
-                    <div style="text-align:center; color:var(--text-muted); padding:40px;">불러오는 중...</div>
+                    <div class="skel" style="height:220px;border-radius:10px;margin:10px 0;"></div>
                 </div>
             </div>`}
 
@@ -1767,13 +1767,13 @@ function renderMatches(matches, append = false) {
                     <div class="build-box">
                         <div class="build-title">스킬 빌드</div>
                         <div id="skill-body-${game.matchId}">
-                            <div style="text-align:center; color:var(--text-muted); padding:30px;">불러오는 중...</div>
+                            <div class="skel" style="height:72px;border-radius:8px;margin:8px 0;"></div>
                         </div>
                     </div>
                     <div class="build-box">
                         <div class="build-title">아이템 빌드</div>
                         <div id="item-body-${game.matchId}">
-                            <div style="text-align:center; color:var(--text-muted); padding:30px;">불러오는 중...</div>
+                            <div class="skel" style="height:72px;border-radius:8px;margin:8px 0;"></div>
                         </div>
                     </div>
                 </div>
@@ -3225,7 +3225,7 @@ async function showCodex(target) {
     box.style.animation = 'none';
     void box.offsetWidth;
     box.style.animation = '';
-    box.innerHTML = `<div class="codex-empty">도감을 불러오는 중입니다...</div>`;
+    box.innerHTML = skelCodexHtml();
 
     let D;
     try {
@@ -4039,7 +4039,7 @@ async function showChampStatPage(engId, laneKey) {
     setActiveNav('nav-stats');
     const box = document.getElementById('stats-container');
     box.style.display = 'block';
-    box.innerHTML = `<div class="stats-empty">불러오는 중입니다...</div>`;
+    box.innerHTML = `<div class="lx-page">${skelLxHtml()}</div>`;
 
     await fetchChampionMap();
     const champ = Number(Object.keys(championIdMap)
@@ -4119,7 +4119,7 @@ async function showChampStatPage(engId, laneKey) {
     box.innerHTML = `
     <div class="lx-page">
         ${lxHeader(ctx)}
-        <div id="lx-body"><div class="build-loading">빌드를 불러오는 중...</div></div>
+        <div id="lx-body">${skelLxHtml(false)}</div>
     </div>`;
 
     // 라인 전환 — 주소는 바꾸되 이력은 안 쌓는다 (replaceState). 버전 전환도 같은 함수로 다시 그린다
@@ -7218,7 +7218,7 @@ async function showChampions(requestedChampId = null, classicMode = false) {
     // ★ 재방문이면 로딩 문구를 안 쓴다 (2026-08-31, 사용자 지적 — 진입할 때마다 0.1초 깜빡였다).
     //   champion.json 이 메모리 캐시에 있으면 아래 렌더가 사실상 즉시라, 이전 화면을 잠깐 두는 쪽이 안 깜빡인다
     if (!window.__champJson) {
-        champsContainer.innerHTML = "<div style='text-align:center; padding:100px 0; color:var(--text-muted);'>챔피언 데이터를 불러오는 중입니다...</div>";
+        champsContainer.innerHTML = skelChampHtml();
     }
 
     try {
@@ -9204,3 +9204,72 @@ window.copyMatchLink = async function (e, btn, matchId) {
     btn.classList.add(ok ? 'copied' : 'copy-failed');
     setTimeout(() => btn.classList.remove('copied', 'copy-failed'), 1600);
 };
+
+// ============================================================
+// 로딩 스켈레톤 (2026-08-31, 260830 디자인 7번)
+// "…불러오는 중" 한 줄 대신 올 내용의 모양을 그린다. 모양 CSS 는 style.css 의 .skel* 절.
+// 함수 선언이라 파일 끝에 있어도 호이스팅으로 어디서든 불린다.
+// ============================================================
+
+// 표 뼈대 — 랭킹·통계처럼 [아이콘·이름 ……… 숫자 셋] 줄이 이어지는 자리
+function skelTableHtml(rows = 12, rowH = 36) {
+    let r = '';
+    for (let i = 0; i < rows; i++) {
+        r += `<div class="skel-row" style="height:${rowH}px">
+            <div class="skel skel-ico"></div>
+            <div class="skel" style="width:${130 + (i * 37) % 90}px"></div>
+            <div class="skel" style="width:56px;margin-left:auto"></div>
+            <div class="skel" style="width:56px"></div>
+            <div class="skel" style="width:56px"></div>
+        </div>`;
+    }
+    return `<div class="skel-box">${r}</div>`;
+}
+
+// 전적검색 뼈대 — 프로필 카드 + 요약 상자 + 경기 카드들
+function skelSummonerHtml() {
+    const cards = Array.from({ length: 5 }, () =>
+        `<div class="skel" style="height:96px;border-radius:12px;margin-bottom:10px"></div>`).join('');
+    return `<div style="min-height:100vh">
+        <div class="skel" style="height:150px;border-radius:12px;margin-bottom:20px"></div>
+        <div class="skel" style="height:180px;border-radius:12px;margin-bottom:20px"></div>
+        ${cards}
+    </div>`;
+}
+
+// 도감 뼈대 — 탭 칩 줄 + [목록 | 상세] 두 상자
+function skelCodexHtml() {
+    const chips = Array.from({ length: 4 }, () =>
+        `<div class="skel" style="width:92px;height:36px;border-radius:8px"></div>`).join('');
+    return `<div style="display:flex;gap:10px;margin-bottom:14px">${chips}</div>
+        <div class="skel-split" style="height:62vh">
+            <div class="skel" style="flex:0 0 56%;border-radius:12px"></div>
+            <div class="skel" style="flex:1;border-radius:12px"></div>
+        </div>`;
+}
+
+// 챔피언 페이지 뼈대 — 탭 칩 줄 + [왼쪽 목록 | 오른쪽 상세]
+function skelChampHtml() {
+    const chips = Array.from({ length: 4 }, () =>
+        `<div class="skel" style="width:92px;height:36px;border-radius:8px"></div>`).join('');
+    return `<div style="display:flex;gap:10px;margin-bottom:14px">${chips}</div>
+        <div class="skel-split" style="height:70vh">
+            <div class="skel" style="flex:0 0 250px;border-radius:12px"></div>
+            <div class="skel" style="flex:1;border-radius:12px"></div>
+        </div>`;
+}
+
+// 통계 상세(빌드 페이지) 뼈대 — 툴바 + 카드 두 열. 툴바가 이미 그려진 자리(lx-body)는 withBar=false
+function skelLxHtml(withBar = true) {
+    return `${withBar ? '<div class="skel" style="height:64px;border-radius:12px;margin-bottom:14px"></div>' : ''}
+        <div class="skel-split">
+            <div class="skel-col">
+                <div class="skel" style="height:260px;border-radius:12px"></div>
+                <div class="skel" style="height:200px;border-radius:12px"></div>
+            </div>
+            <div class="skel-col">
+                <div class="skel" style="height:150px;border-radius:12px"></div>
+                <div class="skel" style="height:310px;border-radius:12px"></div>
+            </div>
+        </div>`;
+}
