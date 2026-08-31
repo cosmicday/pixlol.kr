@@ -7388,8 +7388,9 @@ window.selectChampion = async function (champId, champName) {
                             <h2 style="color: #fff; font-size: 26px; margin: 0; line-height: 1;">${champ.name}</h2>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 2px;">
-                            <button onclick="playChampVoice('${champ.key}', 'pick')" style="background: #2b1a52; border: 1px solid var(--accent-deep); color: #fff; border-radius: 4px; padding: 2px 10px; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; outline: none;" onmouseover="this.style.background='var(--accent-deep)'" onmouseout="this.style.background='#2b1a52'">PICK</button>
-                            <button onclick="playChampVoice('${champ.key}', 'ban')" style="background: #2b1a52; border: 1px solid var(--accent-deep); color: #fff; border-radius: 4px; padding: 2px 10px; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; outline: none;" onmouseover="this.style.background='var(--accent-deep)'" onmouseout="this.style.background='#2b1a52'">BAN</button>
+                            <!-- ★ PICK/BAN → 픽 대사/밴 대사 + 아웃라인(보조 버튼) 꼴 (2026-08-31, 260830 디자인 6번 — 뜻이 안 보인다는 지적) -->
+                            <button onclick="playChampVoice('${champ.key}', 'pick')" style="background: transparent; border: 1px solid rgba(167, 139, 250, 0.5); color: var(--text-bright); border-radius: 8px; padding: 2px 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s; outline: none; white-space: nowrap;" onmouseover="this.style.background='rgba(107, 70, 193, 0.3)'" onmouseout="this.style.background='transparent'">픽 대사</button>
+                            <button onclick="playChampVoice('${champ.key}', 'ban')" style="background: transparent; border: 1px solid rgba(167, 139, 250, 0.5); color: var(--text-bright); border-radius: 8px; padding: 2px 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s; outline: none; white-space: nowrap;" onmouseover="this.style.background='rgba(107, 70, 193, 0.3)'" onmouseout="this.style.background='transparent'">밴 대사</button>
                         </div>
                     </div>
                 </div>

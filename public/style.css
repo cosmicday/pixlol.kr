@@ -477,26 +477,29 @@ main {
     flex-wrap: wrap;
 }
 
+/* ★ 2026-08-31 버튼 정리 (260830 디자인 6번): 둥근 알약(반경 20)이던 것을 도감 탭(.codex-tab)과
+   같은 각진 칩으로 — 탭/필터 성격은 사이트 전체가 한 모양을 쓴다. 되돌리려면 옛 값: 반경 20 ·
+   배경 rgba(255,255,255,0.05) · 테두리 rgba(107,70,193,0.4) · active 는 accent-deep 채움 + glow */
 .filter-btn {
     padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(107, 70, 193, 0.4);
-    border-radius: 20px;
-    color: var(--text-bright);
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-muted);
     cursor: pointer;
     font-size: 13px;
-    transition: all 0.3s;
+    font-weight: 600;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .filter-btn:hover {
-    background: rgba(107, 70, 193, 0.2);
+    color: var(--text-bright);
 }
 
 .filter-btn.active {
-    background: var(--accent-deep);
-    color: white;
-    border-color: var(--accent);
-    box-shadow: 0 0 10px rgba(107, 70, 193, 0.5);
+    background: #2b1a52;
+    border-color: rgba(167, 139, 250, 0.5);
+    color: var(--accent);
 }
 
 /* =========================================
@@ -531,7 +534,7 @@ main {
     padding: 4px 11px;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(167, 139, 250, 0.5);
-    border-radius: 12px;
+    border-radius: 8px;   /* 12 → 8 (2026-08-31 버튼 정리) */
     color: var(--text-bright);
     font-size: 12px;
     line-height: 1.2;
@@ -566,7 +569,7 @@ main {
     padding: 8px 16px;
     background: rgba(107, 70, 193, 0.18);
     border: 1px solid rgba(167, 139, 250, 0.6);
-    border-radius: 20px;
+    border-radius: 8px;   /* 20 → 8 (2026-08-31 버튼 정리 — 같은 줄의 큐 필터 칩과 맞춤) */
     color: var(--text-bright);
     cursor: pointer;
     font-size: 13px;
@@ -1021,7 +1024,7 @@ main {
 .profile-action-btn {
     padding: 10px 20px;
     font-size: 14px;
-    border-radius: 4px;
+    border-radius: 8px;   /* 4 → 8 (2026-08-31 버튼 정리 — 버튼·칩 반경 8 통일) */
     width: 100%;
     border: none;
     color: #fff;
@@ -1030,13 +1033,19 @@ main {
     white-space: nowrap;
 }
 
+/* ★ 꺼진 상태(관전할 게임 없음)를 회색 채움 → 아웃라인으로 (2026-08-31 버튼 정리).
+   채움은 "누르면 실행"의 모양이라, 못 누르는 상태가 채움(회색)인 게 어긋났다. 켜지면(.in-game) 보라 채움 그대로 */
 .live-btn {
-    background: #444;
+    background: transparent;
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    color: var(--text-faint);
     cursor: not-allowed;
 }
 
 .live-btn.in-game {
     background: var(--accent-deep);
+    border-color: var(--accent-deep);
+    color: #fff;   /* 위 아웃라인 상태가 글자를 흐리게 바꿔서 여기서 되살린다 */
     cursor: pointer;
     box-shadow: 0 0 10px rgba(107, 70, 193, 0.5);
 }
