@@ -18,6 +18,12 @@
     --text-faint:  #7288ac;   /*  5.1:1 — 옛 #555·#666·#777·#6b7280 자리 (= 공통 --dogu-text-3) */
     --text-dim:    #5d7498;   /*  3.9:1 — 옛 #5f666e·#4b5563 자리 (축 라벨·placeholder 전용) */
 
+    /* ★ 보라 액센트 변수 (2026-08-31, 260830 디자인 4-②). 값은 하드코딩돼 있던 그대로 — 정리만 했고 화면 변화 0.
+       예외로 hex 를 남긴 자리: TOOLTIP_STYLE_CSS(실측 색표) · app.js SVG stroke 속성(var() 이 안 먹는다) */
+    --accent:      #a78bfa;   /* 주 액센트 — 강조 글자·활성 탭·링크 (97곳) */
+    --accent-mid:  #8b5cf6;   /* 배지·테두리 (8곳) */
+    --accent-deep: #6b46c1;   /* 진한 채움·그라데이션 끝 (17곳) */
+
     /* ★ dogu.gg 공통 UI 사이트별 변수 (2026-08-22, DOGU_UI.md 2절). 값은 DOGU_UI_PLAN.md 색 표.
        헤더·히어로·검색창·푸터·배경은 public/dogu-ui.css 가 그리고, 여기선 **이 변수만** 바꾼다.
        `.dogu-*` 선택자를 이 파일에 쓰면 안 된다 — 한 사이트만 달라지면 통일이 무너진다 */
@@ -288,7 +294,7 @@ main {
 }
 
 .patch-note-more:hover {
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 .patch-note-list {
@@ -345,7 +351,7 @@ main {
 .patch-note-x-link {
     display: inline-block;
     margin-top: 6px;
-    color: #a78bfa;
+    color: var(--accent);
     font-weight: bold;
     text-decoration: none;
 }
@@ -397,7 +403,7 @@ main {
     width: 85px;
     height: 85px;
     border-radius: 15px;
-    border: 3px solid #6b46c1;
+    border: 3px solid var(--accent-deep);
 }
 
 .profile-info {
@@ -475,7 +481,7 @@ main {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(107, 70, 193, 0.4);
     border-radius: 20px;
-    color: #ccc;
+    color: var(--text-bright);
     cursor: pointer;
     font-size: 13px;
     transition: all 0.3s;
@@ -486,9 +492,9 @@ main {
 }
 
 .filter-btn.active {
-    background: #6b46c1;
+    background: var(--accent-deep);
     color: white;
-    border-color: #a78bfa;
+    border-color: var(--accent);
     box-shadow: 0 0 10px rgba(107, 70, 193, 0.5);
 }
 
@@ -534,7 +540,7 @@ main {
 
 .profile-fav-btn:hover {
     background: rgba(107, 70, 193, 0.3);
-    border-color: #a78bfa;
+    border-color: var(--accent);
     color: #fff;
 }
 
@@ -572,8 +578,8 @@ main {
 }
 
 .champ-filter-btn.selected {
-    background: #6b46c1;
-    border-color: #a78bfa;
+    background: var(--accent-deep);
+    border-color: var(--accent);
     color: #fff;
     box-shadow: 0 0 10px rgba(107, 70, 193, 0.5);
 }
@@ -648,7 +654,7 @@ main {
 }
 
 .cf-search:focus {
-    border-color: #a78bfa;
+    border-color: var(--accent);
 }
 
 .cf-search::placeholder {
@@ -971,8 +977,8 @@ main {
 
 .tl-champ-toggle.active {
     opacity: 1;
-    border-color: var(--line-color, #a78bfa);
-    box-shadow: 0 0 8px var(--line-color, #a78bfa);
+    border-color: var(--line-color, var(--accent));
+    box-shadow: 0 0 8px var(--line-color, var(--accent));
 }
 
 /* 블루팀 5명과 레드팀 5명 사이를 벌린다 */
@@ -1005,7 +1011,7 @@ main {
 /* ★ 전적 갱신 버튼 색. 예전엔 `class="search-btn profile-action-btn"` 으로 히어로 검색 버튼의
    그라데이션을 빌려 썼는데 그 규칙을 지우면서 (2026-08-22) 여기로 옮겼다 */
 .refresh-btn {
-    background: linear-gradient(135deg, #8b5cf6, #6b46c1);
+    background: linear-gradient(135deg, var(--accent-mid), var(--accent-deep));
     font-weight: bold;
     transition: filter 0.2s;
 }
@@ -1029,7 +1035,7 @@ main {
 }
 
 .live-btn.in-game {
-    background: #6b46c1;
+    background: var(--accent-deep);
     cursor: pointer;
     box-shadow: 0 0 10px rgba(107, 70, 193, 0.5);
 }
@@ -1635,7 +1641,7 @@ main {
 }
 
 .pix-player:hover span {
-    color: #a78bfa !important;
+    color: var(--accent) !important;
     text-decoration: underline;
 }
 
@@ -1783,7 +1789,7 @@ main {
 .detail-tab-btn.active {
     background: #2b1a44;
     color: #ffffff;
-    border-bottom: 2px solid #a78bfa;
+    border-bottom: 2px solid var(--accent);
 }
 
 .detail-tab-content {
@@ -1918,7 +1924,7 @@ main {
 }
 
 .detail-summoner:hover {
-    color: #a78bfa;
+    color: var(--accent);
     text-decoration: underline;
 }
 
@@ -2259,7 +2265,7 @@ main {
 
 .stats-table th {
     background: #2b1a52;
-    color: #a78bfa;
+    color: var(--accent);
     padding: 15px 10px;
     font-weight: 600;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -2317,7 +2323,7 @@ main {
 .tier-op { color: #fbbf24; }
 .tier-1 { color: #f87171; }
 .tier-2 { color: #fb923c; }
-.tier-3 { color: #a78bfa; }
+.tier-3 { color: var(--accent); }
 .tier-4 { color: #60a5fa; }
 .tier-5 { color: #a1a1aa; }
 
@@ -2364,7 +2370,7 @@ main {
 
 .stats-select:focus {
     outline: none;
-    border-color: #8b5cf6;
+    border-color: var(--accent-mid);
 }
 
 .stats-band {
@@ -2393,7 +2399,7 @@ main {
 
 .stats-band-btn.active {
     background: #2b1a52;
-    color: #a78bfa;
+    color: var(--accent);
     font-weight: 600;
 }
 
@@ -2469,12 +2475,12 @@ main {
 /* ══════════════════════════════════════════════════════════════
    챔피언 통계 상세 페이지 `/stats/<영문키>/<라인>` — 구조·순서는 lolalytics 를 옮긴 것(2026-08-26 밤),
    **색·모양은 2026-08-27 에 사이트 팔레트로 다시 입혔다** (사용자: "우리 사이트 페이지라기엔 이질감").
-   카드 #1a1a2e · 테두리 rgba(255,255,255,.1) · 둥글기 12/8px · 강조 #a78bfa(탭 활성 #2b1a52) ·
+   카드 #1a1a2e · 테두리 rgba(255,255,255,.1) · 둥글기 12/8px · 강조 var(--accent)(탭 활성 #2b1a52) ·
    승률 파랑 #60a5fa / 빨강 #f87171(전적 카드와 같은 관례) · 픽률 연보라 #c4b5fd · 글자 12px.
    그쪽 검정 바탕·청록 탭·초록 승률은 이 블록에 더 이상 없다. 마크업(app.js)은 안 바뀌었다.
    ══════════════════════════════════════════════════════════════ */
 .lx-page {
-    --lx-teal: #a78bfa;
+    --lx-teal: var(--accent);
     --lx-teal-dim: #2b1a52;
     --lx-bd: rgba(255, 255, 255, 0.1);
     --lx-box: #1a1a2e;
@@ -2491,7 +2497,7 @@ main {
 .lx-green { color: #60a5fa; }
 .lx-red { color: #f87171; }
 .lx-lav { color: #c4b5fd; }
-.lx-blue { color: #a78bfa; }
+.lx-blue { color: var(--accent); }
 .lx-yellow { color: #e5c07b; }
 .lx-gray { color: var(--text-faint); }
 .lx-white { color: var(--text-bright); }
@@ -2531,7 +2537,7 @@ main {
 .lx-lane span { display: none; }
 .lx-lane.is-none { opacity: 0.35; cursor: default; }
 .lx-lane.active { border-color: rgba(167, 139, 250, 0.6); background: #2b1a52; box-shadow: 0 0 10px rgba(167, 139, 250, 0.25); }
-.lx-lane.active b { color: #a78bfa; }
+.lx-lane.active b { color: var(--accent); }
 
 @media (hover: hover) {
     .lx-lane:not(.is-none):hover { border-color: rgba(255, 255, 255, 0.3); }
@@ -2686,7 +2692,7 @@ main {
     cursor: pointer;
 }
 
-.lx-tabbtn.active { background: #2b1a52; color: #a78bfa; border-bottom-color: #a78bfa; }
+.lx-tabbtn.active { background: #2b1a52; color: var(--accent); border-bottom-color: var(--accent); }
 
 @media (hover: hover) {
     .lx-tabbtn:hover { color: var(--text-bright); background: rgba(255, 255, 255, 0.06); }
@@ -2726,22 +2732,22 @@ main {
 }
 
 .lx-legend b { color: var(--text-bright); font-size: 13px; }
-.lx-legend-on { color: #a78bfa; font-weight: 700; }
+.lx-legend-on { color: var(--accent); font-weight: 700; }
 
 .lx-graphs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
 .lx-graph { background: var(--lx-box); border: 1px solid var(--lx-bd); border-radius: 12px; padding: 8px 4px 4px; overflow: hidden; }
 .lx-graph svg { display: block; max-width: 100%; height: auto; }
 .lx-graph-t { text-align: center; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
 .lx-line.lx-green { stroke: #60a5fa; } .lx-dot.lx-green { fill: #60a5fa; }
-.lx-line.lx-blue { stroke: #a78bfa; } .lx-dot.lx-blue { fill: #a78bfa; }
-.lx-line.lx-white { stroke: #d9d5e3; } .lx-dot.lx-white { fill: #d9d5e3; }
+.lx-line.lx-blue { stroke: var(--accent); } .lx-dot.lx-blue { fill: var(--accent); }
+.lx-line.lx-white { stroke: var(--text-bright); } .lx-dot.lx-white { fill: var(--text-bright); }
 .lx-line.lx-red { stroke: #f87171; } .lx-dot.lx-red { fill: #f87171; }
 
 /* ── 상성 상자: 왼쪽 라벨(상성/시너지) + 탭 바 두 줄, 아래 라인별 카드 줄 */
 .lx-mu-tabs { border-bottom: 1px solid var(--lx-bd); }
 .lx-mu-tabrow { display: flex; align-items: stretch; }
 .lx-mu-tabrow + .lx-mu-tabrow { border-top: 1px solid rgba(255, 255, 255, 0.06); }
-.lx-mu-tablabel { width: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #a78bfa; background: rgba(255, 255, 255, 0.03); border-right: 1px solid var(--lx-bd); }
+.lx-mu-tablabel { width: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--accent); background: rgba(255, 255, 255, 0.03); border-right: 1px solid var(--lx-bd); }
 .lx-mu-tabrow .lx-tabbar { flex: 1; }
 .lx-mu-tabrow .lx-tabbtn { flex: 0 0 auto; padding: 0 14px; }
 
@@ -2849,7 +2855,7 @@ main {
 .build-wr-down { color: #f87171; }
 .build-wr-dim { color: var(--text-faint); font-weight: 600; }
 .build-none { font-size: 12px; color: var(--text-faint); padding: 8px 2px; }
-.build-lane { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 4px; background: #2b1a52; color: #a78bfa; font-size: 12px; font-weight: bold; }
+.build-lane { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 4px; background: #2b1a52; color: var(--accent); font-size: 12px; font-weight: bold; }
 .build-thin { color: #c9a227; margin-left: 6px; }
 .build-style { width: 18px; height: 18px; margin-right: 2px; }
 .build-perk { width: 24px; height: 24px; border-radius: 50%; background: rgba(0, 0, 0, 0.3); }
@@ -2916,7 +2922,7 @@ main {
 
 .stats-filter-btn.active {
     background: #2b1a52;
-    border-color: #a78bfa;
+    border-color: var(--accent);
     box-shadow: 0 0 10px rgba(167, 139, 250, 0.3);
 }
 
@@ -2972,7 +2978,7 @@ main {
 }
 
 .stats-pickcut input:focus {
-    border-color: #a78bfa;
+    border-color: var(--accent);
 }
 
 /* ★ "라인" 은 정렬이 안 되는 유일한 헤더 칸이다. cursor·user-select 를 안 잡으면
@@ -3019,7 +3025,7 @@ main {
 }
 
 .sortable-th.active .sort-icon {
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 /* =========================================
@@ -3075,7 +3081,7 @@ main {
 
 .champ-grid-item:hover,
 .champ-grid-item.active {
-    border-color: #a78bfa;
+    border-color: var(--accent);
     transform: scale(1.1);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     z-index: 10;
@@ -3145,7 +3151,7 @@ main {
 
 .tier-badge.c { background: #ca8a04; }
 .tier-badge.gm { background: #d33148; }
-.tier-badge.m { background: #8b5cf6; }
+.tier-badge.m { background: var(--accent-mid); }
 .tier-badge.d { background: #0284c7; }
 .tier-badge.e { background: #10b981; }
 
@@ -3171,7 +3177,7 @@ main {
 }
 
 .summoner-link:hover {
-    color: #a78bfa !important;
+    color: var(--accent) !important;
     text-decoration: underline;
 }
 
@@ -3249,7 +3255,7 @@ main {
     position: relative;
     display: inline-block;
     cursor: pointer;
-    color: #a78bfa;
+    color: var(--accent);
     font-weight: bold;
     font-size: 0.85em;
     vertical-align: super;
@@ -3851,7 +3857,7 @@ main {
 }
 
 .ac-name .ac-hl {
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 .ac-name .ac-tag {
@@ -3884,7 +3890,7 @@ main {
 }
 
 .cand-count b {
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 .cand-list {
@@ -3926,7 +3932,7 @@ main {
 
 .cand-badge.t-challenger { background: #ca8a04; }
 .cand-badge.t-grandmaster { background: #d33148; }
-.cand-badge.t-master { background: #8b5cf6; }
+.cand-badge.t-master { background: var(--accent-mid); }
 .cand-badge.t-diamond { background: #3b82f6; }
 .cand-badge.t-emerald { background: #10b981; }
 .cand-badge.t-platinum { background: #14b8a6; }
@@ -3968,7 +3974,7 @@ main {
     width: 100%;
     padding: 14px 0;
     background: #1a1a2e;
-    color: #a78bfa;
+    color: var(--accent);
     border: 1px solid rgba(167, 139, 250, 0.35);
     border-radius: 10px;
     font-size: 14px;
@@ -4077,7 +4083,7 @@ main {
 }
 
 .arena-team img.me {
-    outline: 1px solid #a78bfa;
+    outline: 1px solid var(--accent);
     outline-offset: -1px;
 }
 
@@ -4111,7 +4117,7 @@ main {
 /* 상세 표 */
 .arena-detail-table .arena-col-header th {
     background: rgba(167, 139, 250, 0.1);
-    color: #a78bfa;
+    color: var(--accent);
     font-size: 12px;
     padding: 8px 0;
 }
@@ -4397,7 +4403,7 @@ main {
 
 .skin-item.active {
     background: rgba(167, 139, 250, 0.12);
-    border-color: #a78bfa;
+    border-color: var(--accent);
 }
 
 /* ★ 16:9 를 못 박아 둔다. 이미지가 늦게 오면 높이가 0 이었다가 늘어나면서
@@ -4582,7 +4588,7 @@ main {
 }
 
 .chroma-dot.active {
-    box-shadow: 0 0 0 2px #a78bfa;
+    box-shadow: 0 0 0 2px var(--accent);
     transform: scale(1.15);
 }
 
@@ -4602,7 +4608,7 @@ main {
 .skin-view-price {
     font-size: 15px;
     font-weight: normal;
-    color: #a78bfa;
+    color: var(--accent);
     margin-left: 2px;
     white-space: nowrap;
 }
@@ -4651,7 +4657,7 @@ main {
 }
 
 .champ-lore-text a {
-    color: #a78bfa;
+    color: var(--accent);
     text-decoration: none;
 }
 
@@ -4668,7 +4674,7 @@ main {
     margin: 0 0 28px 0;
     padding: 20px 24px;
     background: rgba(167, 139, 250, 0.06);
-    border-left: 3px solid #a78bfa;
+    border-left: 3px solid var(--accent);
     border-radius: 0 10px 10px 0;
 }
 
@@ -4680,8 +4686,8 @@ main {
     word-break: keep-all;
 }
 
-.champ-quote-text::before { content: '“'; color: #a78bfa; }
-.champ-quote-text::after { content: '”'; color: #a78bfa; }
+.champ-quote-text::before { content: '“'; color: var(--accent); }
+.champ-quote-text::after { content: '”'; color: var(--accent); }
 
 .champ-quote-author {
     margin-top: 12px;
@@ -4702,7 +4708,7 @@ main {
     gap: 8px;
     padding: 10px 18px;
     background: #2b1a52;
-    border: 1px solid #6b46c1;
+    border: 1px solid var(--accent-deep);
     border-radius: 8px;
     color: #fff;
     font-size: 14px;
@@ -4711,12 +4717,12 @@ main {
 }
 
 .champ-voice-btn:hover {
-    background: #6b46c1;
+    background: var(--accent-deep);
 }
 
 .champ-voice-icon {
     font-size: 12px;
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 .champ-voice-btn:hover .champ-voice-icon {
@@ -4758,7 +4764,7 @@ main {
 
 .champ-skill-meta {
     text-align: right;
-    color: #aaa;
+    color: var(--text-muted);
     font-size: 13px;
     font-weight: bold;
     line-height: 1.7;
@@ -5048,7 +5054,7 @@ main {
 
 .rank-table thead {
     background: #2b1a52;
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 .rank-table th {
@@ -5118,7 +5124,7 @@ main {
    빨강/파랑을 쓰느라 app.js 에 인라인 style 로 남아 있었다. 그 두 줄을 지우고
    여기로 옮겼다.
    ★ `td.` 를 반드시 붙일 것 — `.rank-lp` 만 쓰면 <th> 에도 걸려서
-   헤더의 보라색(thead { color: #a78bfa })이 흰색이 돼버린다. */
+   헤더의 보라색(thead { color: var(--accent) })이 흰색이 돼버린다. */
 .rank-table td.rank-lp {
     color: #fff;
 }
@@ -5234,7 +5240,7 @@ main {
 }
 
 .rank-search:focus {
-    border-color: #a78bfa;
+    border-color: var(--accent);
 }
 
 .rank-search-clear {
@@ -5368,9 +5374,9 @@ main {
 }
 
 .rank-pg.active {
-    background: #6b46c1;
+    background: var(--accent-deep);
     color: #fff;
-    border-color: #a78bfa;
+    border-color: var(--accent);
     font-weight: bold;
 }
 
@@ -5396,7 +5402,7 @@ main {
 }
 
 .rank-pg-jump input:focus {
-    border-color: #a78bfa;
+    border-color: var(--accent);
 }
 
 /* -----------------------------------------
@@ -5820,7 +5826,7 @@ main {
     height: 14px;
     margin-top: -7px;
     border-radius: 2px;
-    background: #a78bfa;
+    background: var(--accent);
 }
 
 .stat-tname {
@@ -6190,7 +6196,7 @@ main {
 /* 지금 겹쳐 그리는 챔피언. 그래프의 vs 선 색과 같은 보라다 */
 .vs-item.on {
     background: rgba(167, 139, 250, 0.14);
-    border-color: #a78bfa;
+    border-color: var(--accent);
     color: #fff;
 }
 
@@ -6404,7 +6410,7 @@ main {
 }
 
 .champ-search:focus {
-    border-color: #a78bfa;
+    border-color: var(--accent);
 }
 
 .role-btns {
@@ -6451,7 +6457,7 @@ main {
 
 .role-btn.on {
     background: rgba(167, 139, 250, 0.12);
-    border-color: #a78bfa;
+    border-color: var(--accent);
 }
 
 .role-btn.on img {
@@ -6594,7 +6600,7 @@ main {
 .patch-page-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .patch-page-pbe-mark {
-    color: #a78bfa;
+    color: var(--accent);
     font-size: 15px;
     font-weight: 800;
     letter-spacing: 1px;
@@ -6621,7 +6627,7 @@ main {
     background: rgba(167, 139, 250, 0.14);
     border: 1px solid rgba(167, 139, 250, 0.35);
     border-radius: 6px;
-    color: #a78bfa;
+    color: var(--accent);
     font-size: 12.5px;
     font-weight: 700;
 }
@@ -6661,7 +6667,7 @@ main {
 .codex-tab.active {
     background: #2b1a52;
     border-color: rgba(167, 139, 250, 0.5);
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 /* ★ 목록과 상세가 각자 스크롤을 갖는다. 바깥 스크롤에 맡기면 아이템 254개짜리에서
@@ -6763,7 +6769,7 @@ main {
 
 .codex-stat.active {
     background: rgba(167, 139, 250, 0.15);
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 /* ★ 0 개인 칸은 흐리게 — 눌러서 빈 목록을 보게 되는 걸 미리 알린다 (누르는 건 막지 않는다) */
@@ -6777,7 +6783,7 @@ main {
     color: var(--text-faint);
 }
 
-.codex-stat.active .codex-stat-n { color: #a78bfa; }
+.codex-stat.active .codex-stat-n { color: var(--accent); }
 
 .codex-search {
     width: 100%;
@@ -6840,7 +6846,7 @@ main {
 .codex-cat.active {
     background: rgba(167, 139, 250, 0.15);
     border-color: rgba(167, 139, 250, 0.5);
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 /* ★★ 한 줄에 두 개씩 깐다 (2026-08-16). 왼쪽 칸을 280 → 560px 로 넓히면서 두 칸 격자로 바꿨다.
@@ -6948,7 +6954,7 @@ main {
 .codex-view-btn.active {
     background: rgba(167, 139, 250, 0.15);
     border-color: rgba(167, 139, 250, 0.5);
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 /* ============================================================
@@ -7073,7 +7079,7 @@ main {
 /* ★★ 각주(레벨 그래프)만은 위 강조 끄기의 예외다.
    `background: none` 이 각주 상자의 배경까지 지워서 **툴팁이 투명해진다** — 실제로 그랬다.
    각주 번호는 스킬 탭과 같은 보라색으로 되살린다. */
-.codex-desc.is-plain .custom-footnote { color: #a78bfa !important; }
+.codex-desc.is-plain .custom-footnote { color: var(--accent) !important; }
 
 .codex-desc.is-plain .custom-footnote-content {
     background-color: rgba(20, 20, 28, 0.98) !important;
@@ -7110,7 +7116,7 @@ main {
 .codex-upgrade-name {
     font-size: 13px;
     font-weight: 700;
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 /* ★★ 소환사 주문 채택률 (2026-08-26). 주문 상세가 도감에서 제일 휑해서 그 자리를 채운다.
@@ -7186,7 +7192,7 @@ main {
 .codex-usage-rate {
     font-size: 12px;
     font-weight: 700;
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 /* ★★ 라인별 채택률 막대 (2026-08-26).
@@ -7230,7 +7236,7 @@ main {
     display: block;
     height: 100%;
     border-radius: 3px;
-    background: linear-gradient(90deg, #6a3fc4, #a78bfa);
+    background: linear-gradient(90deg, #6a3fc4, var(--accent));
 }
 
 .codex-lane-pct {
@@ -7239,7 +7245,7 @@ main {
     text-align: right;
     font-size: 12px;
     font-weight: 700;
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 .codex-lane-pct.is-zero {
@@ -7290,7 +7296,7 @@ main {
 .codex-badge {
     background: rgba(167, 139, 250, 0.12);
     border: 1px solid rgba(167, 139, 250, 0.3);
-    color: #a78bfa;
+    color: var(--accent);
     padding: 2px 8px;
     border-radius: 5px;
     font-size: 12px;
@@ -7331,7 +7337,7 @@ main {
    맞추기 위해서다. 폭만 늘리고 줄바꿈을 막는다. */
 .codex-recipe-label {
     font-size: 12px;
-    color: #a78bfa;
+    color: var(--accent);
     font-weight: 600;
     flex-shrink: 0;
     width: 74px;
@@ -7658,7 +7664,7 @@ main {
 .mshop-tab.active {
     background: #2b1a52;
     border-color: rgba(167, 139, 250, 0.5);
-    color: #a78bfa;
+    color: var(--accent);
 }
 
 .mshop-body {
@@ -7881,7 +7887,7 @@ main {
 .mshop-goto {
     background: #2b1a52;
     border: 1px solid rgba(167, 139, 250, 0.5);
-    color: #a78bfa;
+    color: var(--accent);
     padding: 9px 18px;
     border-radius: 8px;
     font-size: 13px;
