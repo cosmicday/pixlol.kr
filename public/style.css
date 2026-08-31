@@ -2403,9 +2403,9 @@ main {
     font-weight: 600;
 }
 
+/* ★ 2026-08-31 사용자 요청 — 승률 초록을 픽률·밴률과 같은 색으로. 굵기도 같이 맞췄다 (되돌리려면 #10b981 · bold) */
 .stats-win {
-    color: #10b981;
-    font-weight: bold;
+    color: var(--text-bright);
 }
 
 .stats-num {
