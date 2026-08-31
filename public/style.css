@@ -216,8 +216,9 @@ main {
 }
 
 .mythic-item-img-box img {
-    width: 70px;
-    height: 70px;
+    /* ★ 70 → 100 (2026-08-31, 260830 디자인 5-⑤): 카드(110px 상자)에 비해 아이콘이 작아 휑했다 */
+    width: 100px;
+    height: 100px;
     object-fit: contain;
     border-radius: 5px;
 }
@@ -3390,6 +3391,11 @@ main {
     .main-search-section {
         padding-left: 28px;
         padding-right: 28px;
+    }
+
+    /* ★ 폰 홈: 검색창 밑 빈 그림 200px 를 줄인다 — 위젯 상단 여백 110 → 55 (2026-08-31, 260830 디자인 5-④). PC 는 그대로 */
+    .mythic-shop-container {
+        margin-top: 55px;
     }
 
     .mythic-items-grid {
@@ -6707,6 +6713,15 @@ main {
 .codex-body[data-tab="rune"] .codex-left { width: 592px; }
 .codex-body[data-tab="spell"] .codex-left { width: 444px; }
 
+/* ★ 주문 탭은 목록이 9개뿐이라 상자 아래 550px 이 비어 있었다 (2026-08-31, 260830 디자인 5-①).
+   .codex-left-body 가 가로 flex 라 세로는 교차축 — align-self 로 stretch 를 풀어야 내용 높이가 된다.
+   ★ 폰에서는 세로 flex 로 바뀌어 align-self 가 **가로**를 줄여 버린다 — 폰 블록에서 stretch 로 되돌린다 */
+.codex-body[data-tab="spell"] .codex-list {
+    align-self: flex-start;
+    max-height: 100%;
+    width: 100%;
+}
+
 /* ★★ 통 폭은 탭이 바뀌어도 **한 값(1200, 08-28 전엔 1400)으로 고정**이다 (2026-08-27, 요청).
    예전엔 탭마다 통을 줄여(1400 / 1164 / 1026) 가운데로 모았는데, 그러면
    **탭 줄·검색창·거르는 버튼이 탭을 옮길 때마다 좌우로 최대 187px 씩 움직인다** —
@@ -7574,6 +7589,9 @@ main {
 
     /* ★ 트리는 목록보다 높이를 더 준다 — 38vh 면 한 계열도 다 안 들어와 계속 스크롤해야 한다 */
     .codex-list.is-tree { max-height: 62vh; }
+
+    /* ★ 주문 탭의 align-self: flex-start 는 데스크톱(가로 flex) 전용 — 폰은 세로 flex 라 가로를 줄여 버린다 */
+    .codex-body[data-tab="spell"] .codex-list { align-self: stretch; }
 
     /* 390px 실측: 78 x 4칸 + gap 6 x 3 = 330px 이라 가로 넘침이 없다 */
     .codex-rune-row { gap: 6px; }

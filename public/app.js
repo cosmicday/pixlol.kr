@@ -3219,6 +3219,12 @@ async function showCodex(target) {
     hideAllContainers();
     const box = document.getElementById('codex-container');
     box.style.display = 'block';
+    // ★ 아이템↔룬↔주문끼리 옮길 때도 등장 모션이 돌게 (2026-08-31, 사용자 요청).
+    //   컨테이너가 이미 떠 있으면 위 display 토글이 같은 프레임에 합쳐져 fadeIn 이 재시작을 안 한다 —
+    //   animation 을 껐다가 reflow 로 확정한 뒤 되살려 강제로 다시 돌린다 (챔피언↔3종은 원래 나온다)
+    box.style.animation = 'none';
+    void box.offsetWidth;
+    box.style.animation = '';
     box.innerHTML = `<div class="codex-empty">도감을 불러오는 중입니다...</div>`;
 
     let D;
@@ -7209,7 +7215,11 @@ async function showChampions(requestedChampId = null, classicMode = false) {
     hideAllContainers();
     const champsContainer = document.getElementById('champions-container');
     champsContainer.style.display = "block";
-    champsContainer.innerHTML = "<div style='text-align:center; padding:100px 0; color:var(--text-muted);'>챔피언 데이터를 불러오는 중입니다...</div>";
+    // ★ 재방문이면 로딩 문구를 안 쓴다 (2026-08-31, 사용자 지적 — 진입할 때마다 0.1초 깜빡였다).
+    //   champion.json 이 메모리 캐시에 있으면 아래 렌더가 사실상 즉시라, 이전 화면을 잠깐 두는 쪽이 안 깜빡인다
+    if (!window.__champJson) {
+        champsContainer.innerHTML = "<div style='text-align:center; padding:100px 0; color:var(--text-muted);'>챔피언 데이터를 불러오는 중입니다...</div>";
+    }
 
     try {
         // ★ 버전 동기화를 반드시 기다린다. 안 기다리면 기본값(구버전)으로 받아서
@@ -7221,8 +7231,14 @@ async function showChampions(requestedChampId = null, classicMode = false) {
         //   두 fetch 가 서로 안 기다리게 챔피언 목록과 같이 출발시킨다.
         const champDataLoaded = loadChampionData();
 
-        const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/champion.json`);
-        const data = await res.json();
+        // ★ champion.json 메모리 캐시 (2026-08-31, 깜빡임 수정의 짝) — 버전이 갈리면 다시 받는다
+        let data = (window.__champJsonVer === ddragonVersion) ? window.__champJson : null;
+        if (!data) {
+            const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/champion.json`);
+            data = await res.json();
+            window.__champJson = data;
+            window.__champJsonVer = ddragonVersion;
+        }
 
         let champList = [];
         for (let key in data.data) {
@@ -8271,6 +8287,9 @@ window.renderChampStats = function (champId) {
         </div>
         <div class="stat-foot" id="stat-foot">스탯 이름을 누르면 오른쪽에 1~18레벨 성장 곡선이 나옵니다. 레벨 성장은 직선이 아니라 중간이 완만합니다.<br>그래프 위 역할군 아이콘을 누르면 그 역할군 챔피언들의 레벨별 평균이 점선으로, 오른쪽에서 고른 챔피언은 실선으로 겹쳐집니다.</div>`;
     syncVsBox();
+    // ★ 체력을 기본으로 열어 둔다 (2026-08-31, 260830 디자인 5-③) — 그래프 자리가 빈 채로 시작하지 않게.
+    //   openStatKey 는 위에서 null 로 초기화됐으므로 toggle 이 곧 "켜기"다
+    if (s['체력']) toggleStatGraph('체력');
 };
 
 window.switchChampTab = function (event, tabName) {
@@ -8291,6 +8310,9 @@ window.switchChampTab = function (event, tabName) {
     champViewTab = CHAMP_TABS.includes(tabName) ? tabName : 'skills';
     syncChampUrl();
 
+    // ★ 스탯 탭이 숨겨진 채로 기본(체력) 그래프가 그려지면 범례 top 계산(offsetHeight)이 0 이라
+    //   탭을 열 때 한 번 다시 그린다 (2026-08-31, 기본 선택의 짝)
+    if (tabName === 'stats') drawStatPanel();
     // 배경·대사는 열 때 채운다 (배경은 960KB 라 미리 받지 않는다)
     if (tabName === 'lore') renderChampLore();
     if (tabName === 'quotes') renderChampQuotes();
