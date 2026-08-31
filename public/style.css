@@ -393,11 +393,15 @@ main {
 .profile-header {
     display: flex;
     align-items: center;
-    background: linear-gradient(135deg, #2b1a52, #161625);
+    /* ★ 사이트 유일의 그라데이션 배경이었다 → 다른 카드와 같은 단색 + 왼쪽 액센트 띠
+       (2026-08-31, 260830 디자인 8-3). 되돌리려면 linear-gradient(135deg, #2b1a52, #161625).
+       ★ border-left 는 border 축약 **뒤**에 — 앞에 두면 축약이 되돌린다 */
+    background: #1a1a2e;
     padding: 30px;
     border-radius: 8px;
     margin-bottom: 10px;
     border: 1px solid rgba(107, 70, 193, 0.4);
+    border-left: 4px solid var(--accent);
 }
 
 .profile-icon {
@@ -1519,11 +1523,13 @@ main {
     font-weight: bold;
 }
 
+/* ★ 아이템 아이콘 22 → 28 (2026-08-31, 260830 디자인 8-4 — 카드가 840 으로 넓어져 여유가 생겼고 op.gg 도 28).
+   폰은 아래 미디어쿼리가 20px !important 로 눌러서 무영향. 상자 폭 = 4x28 + gap 2x3 = 118 */
 .pix-items-box {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    width: 80px;
+    width: 118px;
     flex-shrink: 0;
     margin-top: 3px;
     margin-left: 11px;
@@ -1531,15 +1537,15 @@ main {
 
 .pix-items {
     display: grid;
-    grid-template-columns: repeat(4, 22px);
-    grid-template-rows: repeat(2, 22px);
+    grid-template-columns: repeat(4, 28px);
+    grid-template-rows: repeat(2, 28px);
     gap: 2px;
 }
 
 .pix-items img,
 .pix-items .empty {
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
     border-radius: 3px;
     background: rgba(0, 0, 0, 0.3);
 }
@@ -6614,12 +6620,28 @@ main {
 
 .patch-page-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+/* ★ "PBE" 글자 하나 → 큰 패치 번호 + 상세/간단 라벨 (2026-08-31, 260830 디자인 8-2).
+   간단 프리뷰는 흐리게, 상세(.is-detail)는 액센트로 — 목록에서 한눈에 갈린다 */
 .patch-page-pbe-mark {
-    color: var(--accent);
-    font-size: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: var(--text-muted);
+}
+.patch-page-pbe-mark b {
+    font-size: 22px;
     font-weight: 800;
     letter-spacing: 1px;
+    line-height: 1;
 }
+.patch-page-pbe-mark i {
+    font-style: normal;
+    font-size: 11px;
+    color: var(--text-faint);
+}
+.patch-page-pbe-mark.is-detail { color: var(--accent); }
+.patch-page-pbe-mark.is-detail i { color: var(--accent); opacity: 0.75; }
 
 .patch-page-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
 .patch-page-title { color: var(--text-bright); font-size: 15px; font-weight: 700; }
@@ -6760,6 +6782,9 @@ main {
     padding: 8px 6px;
     scrollbar-gutter: stable;
 }
+
+/* ★ 스탯 줄 접기 토글은 폰 전용이다 (2026-08-31, 260830 디자인 8-5) — 데스크톱은 숨김. 폰 규칙은 아래 미디어쿼리 */
+.codex-statbar-toggle { display: none; }
 
 .codex-statbar-label {
     font-size: 12px;
@@ -7581,6 +7606,25 @@ main {
 
     /* 가로 줄에서는 "스탯" 머리글이 자리만 먹는다 */
     .codex-statbar-label { display: none; }
+
+    /* ★ 폰에서는 스탯 줄을 기본으로 접는다 (2026-08-31, 260830 디자인 8-5) — 등급·유형·스탯 세 줄이
+       200px 를 먹어 목록이 밀렸다. 토글을 눌러야 펼쳐진다. 룬·주문 탭에선 토글도 숨긴다.
+       ★ !important 는 renderStatBar 의 인라인 display 를 이기기 위함 */
+    .codex-statbar-toggle {
+        display: block;
+        align-self: flex-start;
+        background: #1a1a2e;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .codex-body[data-tab="rune"] .codex-statbar-toggle,
+    .codex-body[data-tab="spell"] .codex-statbar-toggle { display: none; }
+    .codex-statbar:not(.is-open) { display: none !important; }
 
     .codex-stat {
         width: auto;

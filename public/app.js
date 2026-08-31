@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ddragonReady = initDdragonVersion();
     ddragonReady.then(() => {
         // 공통 헤더 2단 오른쪽 보조 정보 — DD 버전 앞 두 자리 (16.16.1 → 16.16)
-        if (window.DoguUI) DoguUI.setAside('패치 <b>' + String(ddragonVersion).split('.').slice(0, 2).join('.') + '</b>');
+        if (window.DoguUI) DoguUI.setAside('패치 <b>' + patchDisplay(ddragonVersion) + '</b>');
         fetchChampionMap();
         fetchRuneMap();
         fetchItemData();
@@ -762,11 +762,12 @@ function patchNoteRowHtml(n) {
         </span>${ver}</a>`;
 }
 
-// PBE — 그림이 없다 (x.com 글이라). 그 자리엔 PBE 딱지를 둔다
+// PBE — 그림이 없다 (x.com 글이라). 그 자리엔 큰 패치 번호를 둔다
+//   (2026-08-31, 260830 디자인 8-2 — "PBE" 빈 박스 반복이 밋밋하다는 지적. 상세/간단도 여기서 갈린다)
 function pbeNoteRowHtml(n) {
     const title = `PBE 서버 ${n.patch} 패치 [${n.detail ? '상세' : '간단'}]`;
     return `<a class="patch-page-item is-pbe" href="${escapeHtml(n.url)}" target="_blank" rel="noopener">
-        <span class="patch-page-thumb"><span class="patch-page-pbe-mark">PBE</span></span>
+        <span class="patch-page-thumb"><span class="patch-page-pbe-mark${n.detail ? ' is-detail' : ''}"><b>${escapeHtml(n.patch)}</b><i>${n.detail ? '상세 프리뷰' : '간단 프리뷰'}</i></span></span>
         <span class="patch-page-info">
             <b class="patch-page-title">${escapeHtml(title)}</b>
             <em class="patch-page-desc">RiotPhroxzon · x.com</em>
@@ -1264,7 +1265,7 @@ function renderMatches(matches, append = false) {
 
         const item7 = game[`item7`];
         if (item7) {
-            itemsHtml += `<img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${item7}.png" style="width: 22px; height: 22px; border-radius: 3px;" data-tt-type="item" data-tt-id="${item7}">`;
+            itemsHtml += `<img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${item7}.png" style="width: 28px; height: 28px; border-radius: 3px;" data-tt-type="item" data-tt-id="${item7}">`;
         } else {
             itemsHtml += `<div class="empty"></div>`;
         }
@@ -2989,9 +2990,19 @@ function computeLaneTiers(list, total) {
     return out;
 }
 
+// ★ 화면 표기용 패치 번호 (2026-08-31, 260830 디자인 8-1). 내부(주소·API·scope 키·집계)는
+//   DD 번호(16.x) 그대로 쓰고 **보여줄 때만** 라이엇 공식 표기(26.x)로 — 앞자리 +10.
+//   앞자리가 20 이상이면 이미 공식 표기(PBE 트윗의 26.x 등)라 그대로 둔다.
+function patchDisplay(v) {
+    const m = String(v || '').match(/^(\d+)\.(\d+)/);
+    if (!m) return String(v || '');
+    const major = Number(m[1]);
+    return `${major < 20 ? major + 10 : major}.${m[2]}`;
+}
+
 function statScopeLabel(scope) {
     if (!scope) return '';
-    return scope.startsWith('p:') ? `${scope.slice(2)} 패치` : `${scope.slice(2)}`;
+    return scope.startsWith('p:') ? `${patchDisplay(scope.slice(2))} 패치` : `${scope.slice(2)}`;
 }
 
 // ============================================================
@@ -3259,6 +3270,8 @@ async function showCodex(target) {
                 <div class="codex-cats" id="codex-cats"></div>
                 <!-- ★ 아이템 탭만 왼쪽에 스탯 목록이 붙는다 (인게임 상점과 같은 자리).
                      룬·주문 탭에서는 statbar 를 숨겨 목록이 폭을 다 쓴다. -->
+                <!-- ★ 폰 전용 스탯 줄 접기 (2026-08-31, 260830 디자인 8-5). 데스크톱·룬·주문 탭에선 CSS 가 숨긴다 -->
+                <button type="button" class="codex-statbar-toggle" id="codex-statbar-toggle">스탯 필터 ▾</button>
                 <div class="codex-left-body">
                     <div class="codex-statbar" id="codex-statbar"></div>
                     <div class="codex-list" id="codex-list"></div>
@@ -3267,6 +3280,12 @@ async function showCodex(target) {
             <div class="codex-detail" id="codex-detail"></div>
         </div>
     `;
+
+    // ★ 폰 스탯 줄 접기 토글 (2026-08-31). 접힘이 기본 — CSS 가 .is-open 없는 statbar 를 숨긴다
+    document.getElementById('codex-statbar-toggle').addEventListener('click', function () {
+        const open = document.getElementById('codex-statbar').classList.toggle('is-open');
+        this.textContent = open ? '스탯 필터 ▴' : '스탯 필터 ▾';
+    });
 
     // ── 탭별 항목 목록을 한 모양으로 맞춘다
     function entries() {
@@ -3749,7 +3768,7 @@ async function showCodex(target) {
                 <span class="codex-usage-label">채택률</span>
                 <span class="codex-usage-big">${pct}%</span>
                 <span class="codex-dim">승률 ${wr}%</span>
-                <span class="codex-usage-scope">마스터+ · ${spellUsage.scope.replace('p:', '')} 패치</span>
+                <span class="codex-usage-scope">마스터+ · ${patchDisplay(spellUsage.scope.replace('p:', ''))} 패치</span>
             </div>
             ${champs ? `
                 <div class="codex-usage-sub">채택률 TOP5</div>
@@ -4075,7 +4094,7 @@ async function showChampStatPage(engId, laneKey) {
 
     const kor = window.korChampMap[eng] || engId;
     const total = (data.totals && (data.totals.all ?? Object.values(data.totals)[0])) || 0;
-    const patch = String(data.scope || '').replace('p:', '');
+    const patch = patchDisplay(String(data.scope || '').replace('p:', ''));
 
     // ★ 표와 같은 방식으로 줄을 만든다 (`pos: -1` 전체 · 0~4 라인별)
     const mine = (data.rows || []).filter(r => r.champ === champ);
