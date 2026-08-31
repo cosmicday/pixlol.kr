@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setActiveNav('nav-masters');
     } else if (pathParts[1] === 'stats') {
         document.getElementById('stats-container').style.display = "block";
-        document.getElementById('stats-container').innerHTML = `<div style="min-height:100vh">${skelTableHtml(12, 48)}</div>`;
+        document.getElementById('stats-container').innerHTML = skelStatsPageHtml();
         // ★ `/stats/<영문키>` 는 챔피언 상세 페이지다 (2026-08-26).
         //   **popstate 쪽도 같이 고쳐야 한다** — 한쪽만 고치면 주소로 들어오는 것과
         //   뒤로가기가 다르게 동작한다 (이 저장소에서 반복해서 겪은 함정이다).
@@ -4613,7 +4613,7 @@ async function showStats() {
     hideAllContainers();
     const box = document.getElementById('stats-container');
     box.style.display = 'block';
-    box.innerHTML = `<div style="min-height:100vh">${skelTableHtml(12, 48)}</div>`;
+    box.innerHTML = skelStatsPageHtml();
 
     await fetchChampionMap();
 
@@ -9257,6 +9257,18 @@ function skelChampHtml() {
             <div class="skel" style="flex:0 0 250px;border-radius:12px"></div>
             <div class="skel" style="flex:1;border-radius:12px"></div>
         </div>`;
+}
+
+// 통계 탭 뼈대 — ★ 제목 줄은 진짜로 그린다 (2026-08-31 지적: 제목까지 뭉개졌다가 바뀌면 어색하다.
+//   랭킹은 머리가 바로 뜨고 표만 뼈대라 자연스러웠다 — 그 모양에 맞춘 것). 부제·드롭다운 자리만 뼈대.
+function skelStatsPageHtml() {
+    return `
+        <div class="stats-header">
+            <h1 class="ranking-title">챔피언 통계</h1>
+            <p class="stats-sub"><span class="skel" style="display:inline-block;width:220px;height:13px;vertical-align:middle"></span></p>
+        </div>
+        <div class="stats-controls"><div class="skel" style="width:140px;height:38px;border-radius:8px;margin:0 auto"></div></div>
+        <div style="min-height:100vh">${skelTableHtml(12, 48)}</div>`;
 }
 
 // 통계 상세(빌드 페이지) 뼈대 — 툴바 + 카드 두 열. 툴바가 이미 그려진 자리(lx-body)는 withBar=false
