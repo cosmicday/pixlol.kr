@@ -8287,8 +8287,11 @@ main {
     transform: translate(-50%, -50%);
 }
 
+/* ★ opacity 0 이 아니라 display:none 이어야 한다 — nowrap 말풍선이 숨어 있어도 자리를 차지해서
+   오른쪽 끝 점의 말풍선 절반이 페이지를 가로로 넘겼다 (폰 390 실측 +31px, 픽률 추이에서 걸림) */
 .pi-dot::after {
     content: attr(data-tip);
+    display: none;
     position: absolute;
     left: 50%;
     bottom: 10px;
@@ -8300,13 +8303,11 @@ main {
     color: #e5e7eb;
     font-size: 12px;
     white-space: nowrap;
-    opacity: 0;
     pointer-events: none;
-    transition: opacity 0.1s;
     z-index: 5;
 }
 
-.pi-dot:hover::after { opacity: 1; }
+.pi-dot:hover::after { display: block; }
 
 .pi-y {
     position: absolute;
@@ -8354,4 +8355,145 @@ main {
     /* 그래프 세 장을 세로로 — 폰 폭에서 3칸이면 그래프가 90px 로 쪼그라든다 */
     .pi-boxes { grid-template-columns: 1fr; }
     .pi-detail-card { padding: 14px 12px; }
+}
+
+/* ==========================================
+   조합 · 픽률 추이 페이지 (2026-09-01, /stats/duo · /stats/trend)
+   표는 통계 탭의 .stats-table 을 재사용하고, 탭 칩·범례 칩만 여기서 그린다
+   ========================================== */
+#duo-container,
+#trend-container {
+    display: none;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding-bottom: 50px;
+    animation: fadeIn 0.6s ease;
+    min-height: 100vh;
+}
+
+.duo-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.duo-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+@media (hover: hover) {
+    .duo-tab:hover { border-color: var(--accent-mid); color: var(--text-bright); }
+}
+
+.duo-tab.active {
+    background: var(--accent-deep);
+    border-color: var(--accent-mid);
+    color: #fff;
+}
+
+.duo-tab img { width: 16px; height: 16px; }
+
+/* ★ .stats-table 의 nth-child 폭(7칸 기준)이 이 표(5칸)에도 걸린다 — 여기서 5칸 몫으로 덮는다 */
+.duo-table th:nth-child(1) { width: 6%; }
+.duo-table th:nth-child(2) { width: 46%; }
+.duo-table th:nth-child(3) { width: 16%; }
+.duo-table th:nth-child(4) { width: 16%; }
+.duo-table th:nth-child(5) { width: 16%; }
+
+.duo-rank { text-align: center; color: var(--text-faint); }
+
+.duo-pair {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 20px;
+}
+
+.duo-champ {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: var(--text-bright);
+    white-space: nowrap;
+}
+
+@media (hover: hover) {
+    .duo-champ:hover { color: var(--accent); }
+}
+
+.duo-champ img {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+}
+
+.duo-plus { color: var(--text-faint); }
+
+.duo-num { text-align: center; }
+.duo-games { color: var(--text-muted); }
+
+.duo-table td { height: 52px; }
+
+.duo-empty-row {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--text-muted);
+}
+
+/* ── 픽률 추이 ── */
+.lt-chips {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.lt-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    color: var(--text-bright);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+@media (hover: hover) {
+    .lt-chip:hover { border-color: #ef4444; color: #fca5a5; }
+}
+
+.lt-chip i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.lt-add { font-size: 12px; }
+.lt-full { font-size: 12px; color: var(--text-faint); }
+
+.lt-plot { height: 320px; }
+
+@media (max-width: 768px) {
+    #duo-container,
+    #trend-container { margin: 20px auto; padding: 0 10px 40px; }
+    .duo-pair { gap: 5px; padding-left: 8px; }
+    .duo-champ { gap: 5px; font-size: 12px; }
+    .duo-champ img { width: 26px; height: 26px; }
+    .lt-plot { height: 240px; }
 }

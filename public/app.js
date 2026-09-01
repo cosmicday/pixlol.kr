@@ -325,11 +325,17 @@ document.addEventListener('DOMContentLoaded', () => {
         showMasters(requestedChamp);
         setActiveNav('nav-masters');
     } else if (pathParts[1] === 'stats') {
-        // ★ `/stats/patch` 는 패치 영향 페이지다 (2026-09-01) — 'patch' 가 예약어라
+        // ★ `/stats/patch`·`/stats/duo`·`/stats/trend` 는 예약어다 (2026-09-01) —
         //   챔피언 상세(`/stats/<영문키>`)보다 먼저 갈라야 한다 (그런 이름의 챔피언은 없다).
         if (pathParts[2] === 'patch') {
             showPatchImpact();
             setActiveNav('nav-stats-patch');
+        } else if (pathParts[2] === 'duo') {
+            showDuoPage(pathParts[3] || null);
+            setActiveNav('nav-stats-duo');
+        } else if (pathParts[2] === 'trend') {
+            showTrendPage(pathParts[3] || null);
+            setActiveNav('nav-stats-trend');
         } else {
             document.getElementById('stats-container').style.display = "block";
             document.getElementById('stats-container').innerHTML = skelStatsPageHtml();
@@ -427,6 +433,12 @@ window.addEventListener('popstate', (event) => {
         if (seg[2] === 'patch') {
             showPatchImpact();
             setActiveNav('nav-stats-patch');
+        } else if (seg[2] === 'duo') {
+            showDuoPage(seg[3] || null);
+            setActiveNav('nav-stats-duo');
+        } else if (seg[2] === 'trend') {
+            showTrendPage(seg[3] || null);
+            setActiveNav('nav-stats-trend');
         } else if (seg[2]) {
             showChampStatPage(decodeURIComponent(seg[2]), seg[3] ? decodeURIComponent(seg[3]) : null);
             setActiveNav('nav-stats-live');
@@ -564,7 +576,9 @@ const DOGU_NAV = [
     //   옛 /stats 주소는 그대로 실시간 통계로 열린다 (라우터가 받는다).
     { key: 'stats',     navId: 'nav-stats',     label: '통계', sub: [
         { key: 'stats-live',  navId: 'nav-stats-live',  label: '실시간 통계', href: '/stats',       go: () => showStats() },
-        { key: 'stats-patch', navId: 'nav-stats-patch', label: '패치 영향',   href: '/stats/patch', go: () => showPatchImpact() }
+        { key: 'stats-patch', navId: 'nav-stats-patch', label: '패치 영향',   href: '/stats/patch', go: () => showPatchImpact() },
+        { key: 'stats-duo',   navId: 'nav-stats-duo',   label: '조합',        href: '/stats/duo',   go: () => showDuoPage() },
+        { key: 'stats-trend', navId: 'nav-stats-trend', label: '픽률 추이',   href: '/stats/trend', go: () => showTrendPage() }
     ] },
     // 패치노트도 하위 메뉴만 가진 부모다 (도감과 같은 꼴 — href 가 없어 눌러도 안 움직인다)
     { key: 'patch',     navId: 'nav-patch',     label: '패치노트', sub: [
@@ -4897,6 +4911,270 @@ function piGraphHtml(cfg) {
             ${dots}${yLabels}${avgLabel}
         </div>
         <div class="pi-axis"><span>${pts[0].day.slice(5).replace('-', '.')}</span><span>${pts[n - 1].day.slice(5).replace('-', '.')}</span></div>
+    </div>`;
+}
+
+// ==========================================
+//  조합 페이지 (2026-09-01, 로드맵 A-1) — /stats/duo
+//    아군 두 라인 짝(원딜+서폿 · 탑+정글 · 미드+정글)의 승률 표.
+//    자료는 champmatchups 의 아군 짝(rel 1) — 집계 추가 0, 지난 패치 소급됨.
+// ==========================================
+const DUO_TABS = [
+    { key: 'bot',   name: '원딜 + 서포터', a: 3, b: 4 },
+    { key: 'topjg', name: '탑 + 정글',     a: 0, b: 1 },
+    { key: 'midjg', name: '미드 + 정글',   a: 2, b: 1 }
+];
+// ★ 표본 컷 (2026-09-01 사용자 결정 30판). 30판 미만은 승률이 튀어서 표에서 아예 뺀다
+//   (통계 탭 라인 필터와 같은 규칙 — 흐림이 아니라 제외).
+const DUO_SHOW_MIN = 30;
+let duoTab = 'bot';
+let duoSort = { col: 'wr', dir: 'desc' };
+
+async function showDuoPage(tabKey) {
+    if (DUO_TABS.some(t => t.key === tabKey)) duoTab = tabKey;
+    if (!window.location.pathname.startsWith('/stats/duo')) {
+        window.history.pushState({ page: 'duo' }, '', '/stats/duo');
+    }
+    // 탭은 주소에 담되 이력은 덮어쓴다 (사이트 공통 규칙 — 기본 탭이면 /stats/duo 그대로)
+    const want = duoTab === 'bot' ? '/stats/duo' : `/stats/duo/${duoTab}`;
+    if (window.location.pathname !== want) window.history.replaceState({ page: 'duo' }, '', want);
+
+    hideAllContainers();
+    setActiveNav('nav-stats-duo');
+    const box = document.getElementById('duo-container');
+    box.style.display = 'block';
+    box.innerHTML = `<div class="pi-head"><h1 class="ranking-title">조합</h1></div>${skelTableHtml(12, 52)}`;
+
+    await fetchChampionMap();
+    let d = null;
+    try {
+        const scopeQ = window.statScope ? `&scope=${encodeURIComponent(window.statScope)}` : '';
+        d = await (await fetch(`/api/champion-duos?combo=${duoTab}${scopeQ}`)).json();
+    } catch (e) { }
+    if (!window.location.pathname.startsWith('/stats/duo')) return;   // 그리는 사이 다른 화면으로 갔으면 버린다
+    if (!d || !d.ready) {
+        box.innerHTML = `<div class="pi-head"><h1 class="ranking-title">조합</h1></div>
+            <div class="stats-empty">아직 표본을 모으는 중입니다.</div>`;
+        return;
+    }
+    window.statScope = d.scope;
+    renderDuoPage(box, d);
+}
+
+function renderDuoPage(box, d) {
+    const scopeOpts = d.scopes.map(s =>
+        `<option value="${s}"${s === d.scope ? ' selected' : ''}>${statScopeLabel(s)}</option>`).join('');
+    const tabs = DUO_TABS.map(t =>
+        `<button class="duo-tab${t.key === duoTab ? ' active' : ''}" data-tab="${t.key}" type="button">${t.name}</button>`).join('');
+
+    const combo = DUO_TABS.find(t => t.key === duoTab);
+    const rows = (d.rows || [])
+        .filter(r => r.games >= DUO_SHOW_MIN)
+        .map(r => ({
+            a: r.champ, b: r.foe, games: r.games,
+            wr: r.games > 0 ? r.wins / r.games * 100 : 0,
+            pick: d.total > 0 ? r.games / d.total * 100 : 0
+        }));
+    const dir = duoSort.dir === 'desc' ? -1 : 1;
+    rows.sort((x, y) => (x[duoSort.col] - y[duoSort.col]) * dir || y.games - x.games);
+
+    const th = (col, label) => {
+        const on = duoSort.col === col;
+        return `<th class="sortable-th${on ? ' active' : ''}" data-col="${col}">${label} <span class="sort-icon">${on && duoSort.dir === 'asc' ? '▲' : '▼'}</span></th>`;
+    };
+    const champCell = (id) => {
+        const eng = championIdMap[id];
+        const name = window.korChampMap[eng] || eng || '?';
+        return { eng, name };
+    };
+    const body = rows.length ? rows.map((r, i) => {
+        const A = champCell(r.a), B = champCell(r.b);
+        return `<tr>
+            <td class="duo-rank">${i + 1}</td>
+            <td class="duo-pair">
+                <span class="duo-champ" data-eng="${A.eng}" data-lane="${combo.a}"><img src="${champIconUrl(A.eng)}" alt="" loading="lazy">${A.name}</span>
+                <span class="duo-plus">+</span>
+                <span class="duo-champ" data-eng="${B.eng}" data-lane="${combo.b}"><img src="${champIconUrl(B.eng)}" alt="" loading="lazy">${B.name}</span>
+            </td>
+            <td class="duo-num">${r.wr.toFixed(1)}%</td>
+            <td class="duo-num">${r.pick.toFixed(2)}%</td>
+            <td class="duo-num duo-games">${r.games.toLocaleString()}</td>
+        </tr>`;
+    }).join('') : `<tr><td colspan="5" class="duo-empty-row">표본 ${DUO_SHOW_MIN}판을 넘는 조합이 아직 없습니다.</td></tr>`;
+
+    box.innerHTML = `
+        <div class="pi-head">
+            <h1 class="ranking-title">조합</h1>
+            <select class="stats-select" id="duo-scope">${scopeOpts}</select>
+        </div>
+        <p class="pi-sub">같은 팀에서 함께 뛴 두 라인의 승률입니다. 표본 ${DUO_SHOW_MIN}판 이상만 싣습니다.
+            <span class="pi-sub-dim">마스터+ 솔로랭크 · ${statScopeLabel(d.scope)} · ${d.total.toLocaleString()}판 · ${rows.length}쌍</span></p>
+        <div class="duo-tabs">${tabs}</div>
+        <div class="stats-table-wrapper">
+            <table class="stats-table duo-table">
+                <thead><tr>
+                    <th>#</th>
+                    <th style="text-align:left; padding-left:20px;">조합</th>
+                    ${th('wr', '승률')}${th('pick', '픽률')}${th('games', '표본')}
+                </tr></thead>
+                <tbody>${body}</tbody>
+            </table>
+        </div>`;
+
+    box.querySelector('#duo-scope').addEventListener('change', (e) => {
+        window.statScope = e.target.value;
+        showDuoPage(duoTab);
+    });
+    box.querySelector('.duo-tabs').addEventListener('click', (e) => {
+        const btn = e.target.closest('.duo-tab[data-tab]');
+        if (btn && btn.dataset.tab !== duoTab) showDuoPage(btn.dataset.tab);
+    });
+    box.querySelector('.duo-table thead').addEventListener('click', (e) => {
+        const h = e.target.closest('.sortable-th[data-col]');
+        if (!h) return;
+        const col = h.dataset.col;
+        if (duoSort.col === col) duoSort.dir = duoSort.dir === 'desc' ? 'asc' : 'desc';
+        else duoSort = { col, dir: 'desc' };
+        renderDuoPage(box, d);
+    });
+    // 챔피언을 누르면 그 라인의 상세 페이지로 (통계 표의 줄 클릭과 같은 규약)
+    box.querySelector('.duo-table tbody').addEventListener('click', (e) => {
+        const c = e.target.closest('.duo-champ[data-eng]');
+        if (!c || !c.dataset.eng) return;
+        const lane = STAT_POS.find(p => p.code === Number(c.dataset.lane))?.key;
+        const url = lane ? `/stats/${c.dataset.eng}/${lane}` : `/stats/${c.dataset.eng}`;
+        window.history.pushState({ page: 'stats', champ: c.dataset.eng, lane }, '', url);
+        showChampStatPage(c.dataset.eng, lane);
+        setActiveNav('nav-stats-live');
+    });
+}
+
+// ==========================================
+//  픽률 추이 페이지 (2026-09-01) — /stats/trend
+//    라인 하나를 골라 챔피언들의 일자별 픽률 꺾은선을 겹쳐 본다.
+//    자료는 일별 champstats (보관 42일 — 2026-08-26 부터 쌓여 날마다 길어진다).
+// ==========================================
+const TREND_COLORS = ['#a78bfa', '#60a5fa', '#34d399', '#fbbf24', '#f87171', '#22d3ee', '#f472b6', '#a3e635', '#fb923c', '#c4b5fd'];
+const TREND_DEFAULT_N = 8;    // 처음에 그리는 상위 챔피언 수
+const TREND_MAX_N = 10;       // 그 이상은 색도 모자라고 못 읽는다
+let trendLane = 'top';
+const trendSel = {};          // laneKey → [champId…] (탭마다 고른 목록을 세션 동안 기억)
+
+async function showTrendPage(laneKey) {
+    if (STAT_POS.some(p => p.key === laneKey)) trendLane = laneKey;
+    if (!window.location.pathname.startsWith('/stats/trend')) {
+        window.history.pushState({ page: 'trend' }, '', '/stats/trend');
+    }
+    const want = trendLane === 'top' ? '/stats/trend' : `/stats/trend/${trendLane}`;
+    if (window.location.pathname !== want) window.history.replaceState({ page: 'trend' }, '', want);
+
+    hideAllContainers();
+    setActiveNav('nav-stats-trend');
+    const box = document.getElementById('trend-container');
+    box.style.display = 'block';
+    box.innerHTML = `<div class="pi-head"><h1 class="ranking-title">픽률 추이</h1></div>
+        <div class="skel" style="height:420px;border-radius:12px"></div>`;
+
+    await fetchChampionMap();
+    const pos = STAT_POS.find(p => p.key === trendLane).code;
+    let d = null;
+    try { d = await (await fetch(`/api/lane-trend?pos=${pos}`)).json(); } catch (e) { }
+    if (!window.location.pathname.startsWith('/stats/trend')) return;
+    if (!d || !d.ready || !d.days?.length) {
+        box.innerHTML = `<div class="pi-head"><h1 class="ranking-title">픽률 추이</h1></div>
+            <div class="stats-empty">아직 일별 표본을 모으는 중입니다.</div>`;
+        return;
+    }
+
+    // 기본 선택 = 최근 3일 평균 픽률 상위 N (마지막 날은 수집 중이라 하루만 보면 튄다)
+    const lastN = Math.min(3, d.days.length);
+    const recent = (g) => {
+        let games = 0, total = 0;
+        for (let i = d.days.length - lastN; i < d.days.length; i++) { games += g[i]; total += d.days[i].total; }
+        return total > 0 ? games / total : 0;
+    };
+    const ranked = d.rows.map(r => ({ c: r.c, v: recent(r.g) })).sort((a, b) => b.v - a.v);
+    if (!trendSel[trendLane]) trendSel[trendLane] = ranked.slice(0, TREND_DEFAULT_N).map(r => r.c);
+
+    renderTrendPage(box, d, ranked);
+}
+
+function renderTrendPage(box, d, ranked) {
+    const sel = trendSel[trendLane];
+    const nameOf = (id) => window.korChampMap[championIdMap[id]] || championIdMap[id] || '?';
+
+    const tabs = STAT_POS.map(p =>
+        `<button class="duo-tab${p.key === trendLane ? ' active' : ''}" data-lane="${p.key}" type="button">
+            <img src="${STAT_LANE_ICON[p.key]}" alt="">${p.name}</button>`).join('');
+
+    const chips = sel.map((id, i) =>
+        `<button class="lt-chip" data-champ="${id}" type="button" title="빼기">
+            <i style="background:${TREND_COLORS[i % TREND_COLORS.length]}"></i>${nameOf(id)} ×</button>`).join('');
+    const addOpts = ranked.filter(r => !sel.includes(r.c)).map(r =>
+        `<option value="${r.c}">${nameOf(r.c)} (${(r.v * 100).toFixed(1)}%)</option>`).join('');
+    const addSel = sel.length >= TREND_MAX_N
+        ? `<span class="lt-full">최대 ${TREND_MAX_N}명까지</span>`
+        : `<select class="stats-select lt-add" id="lt-add"><option value="">+ 챔피언 추가</option>${addOpts}</select>`;
+
+    box.innerHTML = `
+        <div class="pi-head"><h1 class="ranking-title">픽률 추이</h1></div>
+        <p class="pi-sub">라인을 골라 챔피언들의 일자별 픽률을 겹쳐 봅니다. 칩을 누르면 빠집니다.
+            <span class="pi-sub-dim">마스터+ 솔로랭크 · ${d.days[0].day.slice(5).replace('-', '.')} ~ ${d.days[d.days.length - 1].day.slice(5).replace('-', '.')}</span></p>
+        <div class="duo-tabs">${tabs}</div>
+        <div class="lt-chips">${chips}${addSel}</div>
+        <div class="pi-detail-card">${trendChartHtml(d, sel, nameOf)}</div>`;
+
+    box.querySelector('.duo-tabs').addEventListener('click', (e) => {
+        const btn = e.target.closest('.duo-tab[data-lane]');
+        if (btn && btn.dataset.lane !== trendLane) showTrendPage(btn.dataset.lane);
+    });
+    box.querySelector('.lt-chips').addEventListener('click', (e) => {
+        const chip = e.target.closest('.lt-chip[data-champ]');
+        if (!chip) return;
+        trendSel[trendLane] = sel.filter(id => id !== Number(chip.dataset.champ));
+        renderTrendPage(box, d, ranked);
+    });
+    const add = box.querySelector('#lt-add');
+    if (add) add.addEventListener('change', (e) => {
+        const id = Number(e.target.value);
+        if (id && !sel.includes(id)) { sel.push(id); renderTrendPage(box, d, ranked); }
+    });
+}
+
+// 여러 챔피언의 꺾은선을 한 판에 — 축·점·글자 규칙은 piGraphHtml 과 같다 (0 부터 시작하는 픽률 축)
+function trendChartHtml(d, sel, nameOf) {
+    if (!sel.length) return `<div class="pi-box-empty" style="height:300px">챔피언을 추가해 보세요.</div>`;
+    const byId = {};
+    d.rows.forEach(r => { byId[r.c] = r.g; });
+    const series = sel.map((id, i) => ({
+        id, name: nameOf(id), color: TREND_COLORS[i % TREND_COLORS.length],
+        pts: d.days.map((day, j) => ({
+            day: day.day,
+            games: (byId[id] || [])[j] || 0,
+            v: day.total > 0 ? ((byId[id] || [])[j] || 0) / day.total * 100 : 0
+        }))
+    }));
+
+    const vMax = Math.max(...series.flatMap(s => s.pts.map(p => p.v)), 1);
+    const hi = vMax * 1.15, lo = 0;
+    const n = d.days.length;
+    const X = (i) => n === 1 ? 50 : (i / (n - 1)) * 100;
+    const Y = (v) => 100 - ((v - lo) / (hi - lo)) * 100;
+
+    const lines = series.map(s => n > 1
+        ? `<polyline class="pi-line" style="stroke:${s.color}" points="${s.pts.map((p, i) => X(i).toFixed(2) + ',' + Y(p.v).toFixed(2)).join(' ')}"/>` : '').join('');
+    const dots = series.map(s => s.pts.map((p, i) =>
+        `<span class="pi-dot" style="left:${X(i).toFixed(2)}%; top:${Y(p.v).toFixed(2)}%; background:${s.color}"
+               data-tip="${s.name} · ${p.day.slice(5).replace('-', '.')} · ${p.v.toFixed(2)}% (${p.games}판)"></span>`).join('')).join('');
+    const yLabels = `<span class="pi-y" style="top:${Y(vMax).toFixed(2)}%">${vMax.toFixed(1)}</span>
+        <span class="pi-y" style="top:${Y(0).toFixed(2)}%">0</span>`;
+
+    return `<div class="lt-plot-wrap">
+        <div class="pi-plot lt-plot">
+            <svg class="pi-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>
+            ${dots}${yLabels}
+        </div>
+        <div class="pi-axis"><span>${d.days[0].day.slice(5).replace('-', '.')}</span><span>${d.days[n - 1].day.slice(5).replace('-', '.')}</span></div>
     </div>`;
 }
 

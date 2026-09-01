@@ -1805,7 +1805,7 @@ async function buildOneMatchupScope(scopeKey, matchCond) {
 //   API 캐시만 36줄(rune 까지만 들어간 순간)을 들고 있었다.
 //   ★ 그래서 사이클 끝에 통계 캐시를 통째로 비운다. 노출 창이 "재집계에 걸리는 시간" 으로 줄어든다.
 //   ★ `/api/champion-stats` 는 캐시를 안 쓰므로 여기 없다 (부분 결과가 보여도 다음 요청에 낫는다).
-const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'spellusage_', 'patchimpact_'];
+const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'spellusage_', 'patchimpact_', 'duos_', 'lanetrend_'];
 
 function flushStatCaches() {
     const keys = myCache.keys().filter(k => STAT_CACHE_PREFIXES.some(p => k.startsWith(p)));
@@ -3364,6 +3364,92 @@ app.get('/api/patch-impact', async (req, res) => {
     } catch (e) {
         console.error('[API] 패치 영향 조회 실패:', e.message);
         res.status(500).json({ error: '패치 영향을 불러오지 못했습니다.' });
+    }
+});
+
+// ★ 조합 (2026-09-01, 로드맵 A-1) — 아군 두 라인 짝의 승률 (원딜+서폿 · 탑+정글 · 미드+정글).
+//   집계 추가 0 — champmatchups 가 2026-08-26 부터 아군 짝(rel 1)도 담는다. 로드맵의
+//   "집계 한 종(champduos) 추가" 는 그 확장 전에 적힌 낡은 줄이다.
+//   ★ 쌍은 양쪽 관점으로 두 번 저장돼 있다 (원딜→서폿 · 서폿→원딜). **첫 라인 관점(pos=a)만**
+//     읽어야 한 쌍이 한 번씩 나온다. 표본 컷은 화면 몫(DUO_SHOW_MIN) — 여기서는 다 내려준다
+//     (저장 자체가 MATCHUP_MIN=5판 이상이라 1천 행 안팎이다).
+const DUO_COMBOS = { bot: [3, 4], topjg: [0, 1], midjg: [2, 1] };   // [내 라인, 짝 라인]
+app.get('/api/champion-duos', async (req, res) => {
+    try {
+        const comboKey = String(req.query.combo || 'bot');
+        const combo = DUO_COMBOS[comboKey];
+        if (!combo) return res.status(400).json({ error: '잘못된 요청입니다.' });
+        const reqScope = String(req.query.scope || '');
+
+        const cacheKey = `duos_${comboKey}_${reqScope}`;
+        const hit = myCache.get(cacheKey);
+        if (hit) return res.json(hit);
+
+        const allScopes = await StatScope.find({}).select('-_id scope games genM').lean();
+        const patchKeys = [...new Set(allScopes.filter(s => s.scope.startsWith('p:')).map(s => s.scope))]
+            .sort((a, b) => {
+                const pa = a.slice(2).split('.').map(Number), pb = b.slice(2).split('.').map(Number);
+                return (pb[0] - pa[0]) || (pb[1] - pa[1]);
+            });
+        if (!patchKeys.length) return res.json({ ready: false });
+        const scope = patchKeys.includes(reqScope) ? reqScope : patchKeys[0];
+        const total = allScopes.filter(s => s.scope === scope).reduce((a, s) => a + s.games, 0);
+
+        // 세대 딱지(genM) — champion-matchups 와 같은 장치
+        const genM = allScopes.filter(s => s.scope === scope).reduce((m, s) => Math.max(m, s.genM || 0), 0) || null;
+        const cond = { scope, pos: combo[0], fpos: combo[1], rel: 1 };
+        if (genM) cond.g = genM;
+        const rows = await ChampMatchup.find(cond).select('-_id champ foe games wins').lean();
+
+        const payload = { ready: true, combo: comboKey, scope, scopes: patchKeys, total, rows };
+        myCache.set(cacheKey, payload, 600);
+        res.json(payload);
+    } catch (e) {
+        console.error('[API] 조합 조회 실패:', e.message);
+        res.status(500).json({ error: '조합 통계를 불러오지 못했습니다.' });
+    }
+});
+
+// ★ 라인별 일자별 픽률 (2026-09-01) — 한 라인의 모든 챔피언 x 일별 판수.
+//   일별 champstats(보관 42일)를 라인 하나로 읽기만 한다. 픽률 계산(games/total)은 화면이 한다.
+app.get('/api/lane-trend', async (req, res) => {
+    try {
+        const pos = Number(req.query.pos);
+        if (!Number.isInteger(pos) || pos < 0 || pos > 4) return res.status(400).json({ error: '잘못된 요청입니다.' });
+
+        const cacheKey = `lanetrend_${pos}`;
+        const hit = myCache.get(cacheKey);
+        if (hit) return res.json(hit);
+
+        const [rowsAll, dayScopes] = await Promise.all([
+            ChampStat.find({ scope: /^d:/, pos }).select('-_id scope champ games g').lean(),
+            StatScope.find({ scope: /^d:/ }).select('-_id scope games gen').lean()
+        ]);
+        // 세대 딱지 — 재집계 중인 날짜 scope 는 두 세대가 겹쳐 있다 (champion-trend 와 같은 장치)
+        const genMap = {};
+        dayScopes.forEach(s => { if (s.gen) genMap[s.scope] = Math.max(genMap[s.scope] || 0, s.gen); });
+
+        const dayTotals = {};
+        dayScopes.forEach(s => { dayTotals[s.scope] = (dayTotals[s.scope] || 0) + s.games; });
+        const days = Object.keys(dayTotals).sort().map(sc => ({ day: sc.slice(2), total: dayTotals[sc] }));
+        const dayIdx = {};
+        days.forEach((d, i) => { dayIdx['d:' + d.day] = i; });
+
+        // 챔피언별로 날짜 축에 맞춘 판수 배열 (빈 날은 0 — 픽률 0 은 값이지 빈칸이 아니다)
+        const byChamp = {};
+        rowsAll.filter(r => !genMap[r.scope] || r.g === genMap[r.scope]).forEach(r => {
+            const i = dayIdx[r.scope];
+            if (i === undefined) return;
+            (byChamp[r.champ] || (byChamp[r.champ] = new Array(days.length).fill(0)))[i] += r.games;
+        });
+        const rows = Object.entries(byChamp).map(([c, g]) => ({ c: Number(c), g }));
+
+        const payload = { ready: true, pos, days, rows };
+        myCache.set(cacheKey, payload, 600);
+        res.json(payload);
+    } catch (e) {
+        console.error('[API] 라인 추이 조회 실패:', e.message);
+        res.status(500).json({ error: '라인 추이를 불러오지 못했습니다.' });
     }
 });
 
