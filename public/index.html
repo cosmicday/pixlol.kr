@@ -84,6 +84,9 @@
     <!-- 룬 레벨 스케일 각주(꺾은선 그래프). build_rune_graphs.js 가 롤위키에서 만든다.
          3.7KB 라 도감 데이터와 같이 받는다. 그리는 건 app.js 의 drawGraph 다. -->
     <script class="lazy-codex-data" data-src="/rune_graphs.js"></script>
+    <!-- 패치마다 "실제로 바뀐 챔피언" 목록 (패치 영향 페이지). build_patch_changes.js 가 만든다.
+         작은 파일이지만 그 페이지에서만 쓰므로 지연 로드 — app.js 의 loadPatchChanges() 가 붙인다. -->
+    <script class="lazy-patch-changes" data-src="/patch_changes.js"></script>
 </head>
 
 <!-- ★ 헤더는 app.js 의 mountDoguUI() 가 DoguUI.mountHeader() 로 body 맨 앞에 끼운다 (2026-08-22).
@@ -200,6 +203,8 @@
         </div>
 
         <div id="stats-container" class="page-container"></div>
+        <!-- 패치 영향 (2026-09-01). 내용은 app.js 의 showPatchImpact() 가 그린다 -->
+        <div id="patch-impact-container" class="page-container" style="display: none;"></div>
         <div id="codex-container" class="page-container"></div>
         <div id="mythic-container" class="page-container"></div>
         <div id="masters-container" class="page-container"></div>

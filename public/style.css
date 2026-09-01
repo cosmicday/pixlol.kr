@@ -8078,3 +8078,280 @@ main {
     .skel-split { flex-direction: column; }
     .skel-split > .skel { flex: none; height: 34vh; }
 }
+
+/* ==========================================
+   패치 영향 페이지 (2026-09-01, /stats/patch)
+   그래프는 컷라인 카드와 같은 골격 — SVG 는 선만 그리고 점·글자는 HTML 절대배치
+   ========================================== */
+#patch-impact-container {
+    display: none;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding-bottom: 50px;
+    animation: fadeIn 0.6s ease;
+    min-height: 100vh;
+}
+
+.pi-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.pi-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0 0 18px;
+}
+
+.pi-sub-dim { color: var(--text-faint); }
+
+/* ── 바뀐 챔피언 초상화 격자 ── */
+.pi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.pi-champ {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 4px 8px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+}
+
+@media (hover: hover) {
+    .pi-champ:hover { border-color: var(--accent-mid); }
+}
+
+.pi-champ.on {
+    border-color: var(--accent);
+    background: #221a3e;
+}
+
+.pi-champ img {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+}
+
+.pi-champ-name {
+    font-size: 12px;
+    color: var(--text-bright);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pi-champ-tag {
+    font-size: 11px;
+    color: var(--accent);
+}
+
+/* 아이콘 에셋만 바뀐 챔피언 — 밸런스 변경이 아니라서 흐리게 */
+.pi-champ.is-icon { opacity: 0.45; }
+.pi-champ.is-icon .pi-champ-tag { color: var(--text-faint); }
+
+/* ── 상세 카드 ── */
+.pi-detail-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: #1a1a2e;
+    padding: 18px 20px;
+}
+
+.pi-detail-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.pi-detail-portrait {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+}
+
+.pi-detail-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.pi-detail-sub {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-top: 2px;
+}
+
+.pi-note {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin: 0 0 12px;
+}
+
+.pi-boxes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.pi-box {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: #16162a;
+    padding: 12px 14px 8px;
+}
+
+.pi-box-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.pi-box-title {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.pi-box-val {
+    font-size: 15px;
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.pi-delta { font-size: 12px; font-weight: 600; margin-left: 2px; }
+.pi-delta.up { color: #10b981; }
+.pi-delta.down { color: #ef4444; }
+.pi-delta.flat { color: var(--text-faint); }
+.pi-delta.na { color: var(--text-faint); font-weight: normal; }
+
+/* 오른쪽 40px 은 y 라벨 자리 (컷라인 그래프와 같은 배치) */
+.pi-plot {
+    position: relative;
+    height: 110px;
+    margin: 0 40px 8px 0;
+}
+
+.pi-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+}
+
+.pi-line {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.pi-avg {
+    stroke: var(--text-faint);
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+    vector-effect: non-scaling-stroke;
+}
+
+.pi-bound {
+    stroke: rgba(255, 255, 255, 0.25);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+    vector-effect: non-scaling-stroke;
+}
+
+.pi-dot {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    transform: translate(-50%, -50%);
+}
+
+.pi-dot::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: #e5e7eb;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.1s;
+    z-index: 5;
+}
+
+.pi-dot:hover::after { opacity: 1; }
+
+.pi-y {
+    position: absolute;
+    left: 100%;
+    margin-left: 8px;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--text-faint);
+    white-space: nowrap;
+}
+
+.pi-avg-label {
+    position: absolute;
+    left: 4px;
+    transform: translateY(-100%);
+    padding-bottom: 2px;
+    font-size: 11px;
+    color: var(--text-faint);
+    white-space: nowrap;
+}
+
+.pi-axis {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-right: 40px;
+}
+
+.pi-box-empty {
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--text-faint);
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    #patch-impact-container { margin: 20px auto; padding: 0 10px 40px; }
+    .pi-head { flex-wrap: wrap; }
+    .pi-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+    .pi-champ img { width: 40px; height: 40px; }
+    /* 그래프 세 장을 세로로 — 폰 폭에서 3칸이면 그래프가 90px 로 쪼그라든다 */
+    .pi-boxes { grid-template-columns: 1fr; }
+    .pi-detail-card { padding: 14px 12px; }
+}

@@ -104,6 +104,14 @@ const STEPS = [
         n: 11, name: '도감 룬 각주', cmd: ['build_rune_graphs.js', '--write'],
         out: ['public/rune_graphs.js'],
         why: 'codex_data.js 를 읽으므로 9번 뒤여야 한다'
+    },
+    {
+        // ★ 바뀐 챔피언 목록 (패치 영향 페이지). 이 스크립트가 만든 백업(pipeline.bak-*)과
+        //   새 파일 세 벌(스킬 수치·문장·기본 스탯)을 비교하므로 맨 마지막이어야 한다.
+        //   리허설이면 변경 0 으로 돌고 기존 항목은 안 지워진다 (스크립트가 합친다).
+        n: 12, name: '바뀐 챔피언 목록', cmd: ['build_patch_changes.js', '--old', `pipeline.bak-${stamp}`, '--write'],
+        out: ['public/patch_changes.js'],
+        why: '백업 vs 새 파일 diff — 패치 영향 페이지가 이 목록으로 초상화를 그린다'
     }
 ];
 
@@ -262,7 +270,7 @@ function runCheck(ck) {
     // ── 요약
     head('요약');
     const bad = results.filter(r => !r.ok).length;
-    log(`  빌드 11단계 ✔`);
+    log(`  빌드 ${STEPS.length}단계 ✔`);
     log(`  검증 ${CHECKS.length - bad}/${CHECKS.length} 통과`);
     if (drift) log(`  드리프트 ${drift.length}개 파일`);
     log('');

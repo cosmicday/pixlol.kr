@@ -325,14 +325,21 @@ document.addEventListener('DOMContentLoaded', () => {
         showMasters(requestedChamp);
         setActiveNav('nav-masters');
     } else if (pathParts[1] === 'stats') {
-        document.getElementById('stats-container').style.display = "block";
-        document.getElementById('stats-container').innerHTML = skelStatsPageHtml();
-        // ★ `/stats/<영문키>` 는 챔피언 상세 페이지다 (2026-08-26).
-        //   **popstate 쪽도 같이 고쳐야 한다** — 한쪽만 고치면 주소로 들어오는 것과
-        //   뒤로가기가 다르게 동작한다 (이 저장소에서 반복해서 겪은 함정이다).
-        if (pathParts[2]) showChampStatPage(decodeURIComponent(pathParts[2]), pathParts[3] ? decodeURIComponent(pathParts[3]) : null);
-        else showStats();
-        setActiveNav('nav-stats');
+        // ★ `/stats/patch` 는 패치 영향 페이지다 (2026-09-01) — 'patch' 가 예약어라
+        //   챔피언 상세(`/stats/<영문키>`)보다 먼저 갈라야 한다 (그런 이름의 챔피언은 없다).
+        if (pathParts[2] === 'patch') {
+            showPatchImpact();
+            setActiveNav('nav-stats-patch');
+        } else {
+            document.getElementById('stats-container').style.display = "block";
+            document.getElementById('stats-container').innerHTML = skelStatsPageHtml();
+            // ★ `/stats/<영문키>` 는 챔피언 상세 페이지다 (2026-08-26).
+            //   **popstate 쪽도 같이 고쳐야 한다** — 한쪽만 고치면 주소로 들어오는 것과
+            //   뒤로가기가 다르게 동작한다 (이 저장소에서 반복해서 겪은 함정이다).
+            if (pathParts[2]) showChampStatPage(decodeURIComponent(pathParts[2]), pathParts[3] ? decodeURIComponent(pathParts[3]) : null);
+            else showStats();
+            setActiveNav('nav-stats-live');
+        }
     } else if (pathParts[1] === 'codex') {
         // /codex/item · /codex/rune · /codex/spell — 셋이 각각 헤더 메뉴다 (2026-08-27)
         document.getElementById('codex-container').style.display = "block";
@@ -414,11 +421,19 @@ window.addEventListener('popstate', (event) => {
     } else if (currentPath === '/terms') {
         showTerms();
     } else if (currentPath.startsWith('/stats')) {
-        // ★ 진입부(pathParts 분기)와 여기 두 곳을 항상 같이 고친다 — `/stats/<영문키>` 는 상세 페이지다
+        // ★ 진입부(pathParts 분기)와 여기 두 곳을 항상 같이 고친다 — `/stats/<영문키>` 는 상세 페이지,
+        //   `/stats/patch` 는 패치 영향 페이지다 (예약어, 2026-09-01)
         const seg = currentPath.split('/');
-        if (seg[2]) showChampStatPage(decodeURIComponent(seg[2]), seg[3] ? decodeURIComponent(seg[3]) : null);
-        else showStats();
-        setActiveNav('nav-stats');
+        if (seg[2] === 'patch') {
+            showPatchImpact();
+            setActiveNav('nav-stats-patch');
+        } else if (seg[2]) {
+            showChampStatPage(decodeURIComponent(seg[2]), seg[3] ? decodeURIComponent(seg[3]) : null);
+            setActiveNav('nav-stats-live');
+        } else {
+            showStats();
+            setActiveNav('nav-stats-live');
+        }
     } else if (currentPath.startsWith('/codex')) {
         // ★ 진입부(pathParts 분기)와 여기 두 곳을 항상 같이 고친다. 한쪽만 고치면
         //   뒤로가기로 들어왔을 때 다르게 동작한다 (랭킹 헤더에서 겪은 그 문제다).
@@ -544,7 +559,13 @@ const DOGU_NAV = [
     //   hidden 은 mountHeader 로 넘길 때만 걸러진다
     { key: 'search',    navId: 'nav-search',    label: '전적검색', href: '/',          go: () => goLobby(), hidden: true },
     { key: 'ranking',   navId: 'nav-ranking',   label: '랭킹',     href: '/ranking',   go: () => showRanking() },
-    { key: 'stats',     navId: 'nav-stats',     label: '통계',     href: '/stats',     go: () => showStats() },
+    // ★ 통계도 하위 메뉴만 가진 부모다 (2026-09-01, 사용자 결정 — 실시간/패치 영향 둘로 갈랐다).
+    //   도감·패치노트와 같은 꼴: href 가 없어 부모를 눌러도 안 움직이고 하위만 연다.
+    //   옛 /stats 주소는 그대로 실시간 통계로 열린다 (라우터가 받는다).
+    { key: 'stats',     navId: 'nav-stats',     label: '통계', sub: [
+        { key: 'stats-live',  navId: 'nav-stats-live',  label: '실시간 통계', href: '/stats',       go: () => showStats() },
+        { key: 'stats-patch', navId: 'nav-stats-patch', label: '패치 영향',   href: '/stats/patch', go: () => showPatchImpact() }
+    ] },
     // 패치노트도 하위 메뉴만 가진 부모다 (도감과 같은 꼴 — href 가 없어 눌러도 안 움직인다)
     { key: 'patch',     navId: 'nav-patch',     label: '패치노트', sub: [
         { key: 'patch-live', navId: 'nav-patch-live', label: '본서버 패치노트', href: '/patch/live', go: () => showPatchNotes('live') },
@@ -4055,7 +4076,7 @@ function lxRow(label, cards, opts = {}) {
 // ── 페이지 본체 ───────────────────────────────────────────────────────
 async function showChampStatPage(engId, laneKey) {
     hideAllContainers();
-    setActiveNav('nav-stats');
+    setActiveNav('nav-stats-live');
     const box = document.getElementById('stats-container');
     box.style.display = 'block';
     box.innerHTML = `<div class="lx-page">${skelLxHtml()}</div>`;
@@ -4626,6 +4647,258 @@ function lxBindTabs(root, c) {
     });
 }
 
+
+// ==========================================
+//  패치 영향 페이지 (2026-09-01, 로드맵 A-3) — /stats/patch
+//    패치를 고르면 그 패치에서 실제로 바뀐 챔피언이 초상화로 뜨고,
+//    초상화를 누르면 직전 패치 대비 승률·픽률·밴률 비교(합계 + 일별 그래프)가 열린다.
+//    · 바뀐 챔피언 목록 = public/patch_changes.js (build_patch_changes.js 가 패치 때 만든다. 지연 로드)
+//    · 통계 = /api/patch-impact (champstats 패치 scope 두 개 + 일별 scope. 집계 추가 0)
+//    ★ 직전 패치의 일별 자료가 보관 기간(42일) 밖이면 그 구간은 점선(패치 전체 평균)만 나온다 —
+//      16.17 페이지의 16.16 쪽이 그렇다. 다음 패치부터는 양쪽 다 꺾은선이 나온다.
+// ==========================================
+const PI_MIN_GAMES = 100;   // 승률 ▲▼ 를 믿고 보여줄 최소 표본 (양쪽 패치 각각 · 2026-09-01 사용자 결정)
+
+let patchChangesPromise = null;
+function loadPatchChanges() {
+    if (patchChangesPromise) return patchChangesPromise;
+    const tag = document.querySelector('script.lazy-patch-changes[data-src]');
+    if (!tag) return Promise.reject(new Error('patch_changes.js 태그가 없습니다.'));
+    patchChangesPromise = new Promise((done, fail) => {
+        const s = document.createElement('script');
+        s.async = false;
+        s.src = tag.dataset.src;      // ?v=mtime 은 server.js 가 붙여 놨다 (도감과 같은 규약)
+        s.onload = done;
+        s.onerror = fail;
+        document.head.appendChild(s);
+    }).then(() => {
+        if (typeof patchChanges === 'undefined') throw new Error('바뀐 챔피언 목록을 받지 못했습니다.');
+        return patchChanges;
+    });
+    patchChangesPromise.catch(() => { patchChangesPromise = null; });
+    return patchChangesPromise;
+}
+
+let piVer = null;      // 고른 패치 (patch_changes 의 키 — 내부 표기 16.x)
+let piChamp = null;    // 고른 챔피언 (영문 키)
+
+async function showPatchImpact() {
+    if (window.location.pathname !== '/stats/patch') window.history.pushState({ page: 'patch-impact' }, '', '/stats/patch');
+    hideAllContainers();
+    setActiveNav('nav-stats-patch');
+    const box = document.getElementById('patch-impact-container');
+    box.style.display = 'block';
+    box.innerHTML = `<div class="pi-head"><h1 class="ranking-title">패치 영향</h1></div>
+        <div class="skel" style="height:140px;border-radius:12px;margin-bottom:16px"></div>
+        <div class="skel" style="height:300px;border-radius:12px"></div>`;
+
+    let pc = null;
+    try { [pc] = await Promise.all([loadPatchChanges(), fetchChampionMap()]); } catch (e) { }
+    // ★ 그리는 사이에 다른 화면으로 옮겼으면 버린다 (느린 응답이 새 화면을 덮지 않게)
+    if (window.location.pathname !== '/stats/patch') return;
+    if (!pc || !Object.keys(pc).length) {
+        box.innerHTML = `<div class="pi-head"><h1 class="ranking-title">패치 영향</h1></div>
+            <div class="stats-empty">바뀐 챔피언 목록을 불러오지 못했습니다.</div>`;
+        return;
+    }
+    const versions = Object.keys(pc);   // build_patch_changes.js 가 내림차순으로 적는다
+    if (!versions.includes(piVer)) piVer = versions[0];
+    if (piChamp && !pc[piVer].champs[piChamp]) piChamp = null;
+    renderPatchImpactPage(box, pc);
+}
+
+function piFlagLabel(flags) {
+    if (flags.includes('n')) return '신규';
+    const parts = [];
+    if (flags.includes('v') || flags.includes('t')) parts.push('스킬');
+    if (flags.includes('s')) parts.push('기본 스탯');
+    if (!parts.length) return '아이콘만';
+    return parts.join(' · ');
+}
+
+function renderPatchImpactPage(box, pc) {
+    const versions = Object.keys(pc);
+    const entry = pc[piVer];
+    const opts = versions.map(v =>
+        `<option value="${v}"${v === piVer ? ' selected' : ''}>${patchDisplay(v)} 패치</option>`).join('');
+
+    // 초상화 정렬: 신규 → 스킬·스탯 변경 → 아이콘만(흐림). 같은 무리 안에서는 한글 이름순
+    const items = Object.entries(entry.champs).map(([eng, flags]) => ({
+        eng, flags,
+        name: window.korChampMap[eng] || eng,
+        rank: flags.includes('n') ? 0 : flags === 'i' ? 2 : 1
+    })).sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name, 'ko'));
+
+    const grid = items.map(it => `
+        <button class="pi-champ${it.rank === 2 ? ' is-icon' : ''}${it.eng === piChamp ? ' on' : ''}" data-champ="${it.eng}" type="button">
+            <img src="${champIconUrl(it.eng)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+            <span class="pi-champ-name">${it.name}</span>
+            <span class="pi-champ-tag">${piFlagLabel(it.flags)}</span>
+        </button>`).join('');
+
+    box.innerHTML = `
+        <div class="pi-head">
+            <h1 class="ranking-title">패치 영향</h1>
+            <select class="stats-select" id="pi-ver">${opts}</select>
+        </div>
+        <p class="pi-sub">이 패치에서 실제로 데이터가 바뀐 챔피언입니다. 초상화를 누르면 직전 패치와의 승률·픽률·밴률 비교가 열립니다.
+            <span class="pi-sub-dim">마스터+ 솔로랭크 · ${entry.date} 반영</span></p>
+        <div class="pi-grid">${grid}</div>
+        <div id="pi-detail"></div>`;
+
+    box.querySelector('#pi-ver').addEventListener('change', (e) => {
+        piVer = e.target.value;
+        piChamp = null;
+        renderPatchImpactPage(box, pc);
+    });
+    box.querySelector('.pi-grid').addEventListener('click', (e) => {
+        const btn = e.target.closest('.pi-champ[data-champ]');
+        if (!btn) return;
+        piChamp = btn.dataset.champ;
+        box.querySelectorAll('.pi-champ.on').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+        loadPatchImpactDetail(pc);
+    });
+    if (piChamp) loadPatchImpactDetail(pc);
+}
+
+async function loadPatchImpactDetail(pc) {
+    const el = document.getElementById('pi-detail');
+    if (!el || !piChamp) return;
+    const eng = piChamp, ver = piVer;
+    el.innerHTML = `<div class="skel" style="height:280px;border-radius:12px"></div>`;
+
+    // 영문 키 → 숫자 id (championIdMap 은 id → 영문 키라 뒤집어 찾는다)
+    const champId = Number(Object.keys(championIdMap).find(k => championIdMap[k] === eng));
+    if (!Number.isFinite(champId)) {
+        el.innerHTML = `<div class="stats-empty">챔피언 정보를 찾지 못했습니다.</div>`;
+        return;
+    }
+
+    let d = null;
+    try {
+        d = await (await fetch(`/api/patch-impact?champ=${champId}&scope=${encodeURIComponent('p:' + ver)}`)).json();
+    } catch (e) { }
+    // ★ 느린 응답이 새 선택을 덮지 않게 — 그 사이 챔피언·패치·화면을 바꿨으면 버린다
+    if (piChamp !== eng || piVer !== ver || window.location.pathname !== '/stats/patch') return;
+    const now = document.getElementById('pi-detail');
+    if (!now) return;
+    if (!d || !d.ready) {
+        now.innerHTML = `<div class="stats-empty">통계를 불러오지 못했습니다.</div>`;
+        return;
+    }
+    now.innerHTML = piDetailHtml(d, pc, eng);
+    now.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function piDetailHtml(d, pc, eng) {
+    const name = window.korChampMap[eng] || eng;
+    const versions = Object.keys(pc);
+    const idx = versions.indexOf(piVer);
+    const nextDate = idx > 0 ? pc[versions[idx - 1]].date : null;              // 다음 패치 시작일 = 이 패치 구간의 끝
+    const prevVer = versions[idx + 1] || null;
+    const fromDate = (prevVer && pc[prevVer].date) || pc[piVer].date;          // 직전 패치 시작일부터 (기록이 없으면 이 패치부터)
+    const boundary = pc[piVer].date;
+
+    const days = (d.days || []).filter(x => x.day >= fromDate && (!nextDate || x.day < nextDate));
+
+    const cur = d.cur, prev = d.prev;
+    const rate = (num, den) => den > 0 ? num / den * 100 : null;
+    const curWin = rate(cur.wins, cur.games), prevWin = prev ? rate(prev.wins, prev.games) : null;
+    const curPick = rate(cur.games, cur.total), prevPick = prev ? rate(prev.games, prev.total) : null;
+    const curBan = rate(cur.bans, cur.total), prevBan = prev ? rate(prev.bans, prev.total) : null;
+
+    // ▲▼ — 승률만 표본 가드가 있다 (패치 초반 40판짜리 62% 는 내일이면 다른 숫자다)
+    const deltaHtml = (c, p, guarded) => {
+        if (typeof c !== 'number' || typeof p !== 'number') return '';
+        if (guarded) return `<span class="pi-delta na" data-tooltip="양쪽 패치 각 ${PI_MIN_GAMES}판 이상 쌓이면 표시합니다">표본 부족</span>`;
+        const diff = c - p;
+        if (Math.abs(diff) < 0.05) return `<span class="pi-delta flat">—</span>`;
+        return `<span class="pi-delta ${diff > 0 ? 'up' : 'down'}">${diff > 0 ? '▲' : '▼'} ${Math.abs(diff).toFixed(1)}%p</span>`;
+    };
+    const winGuarded = !(cur.games >= PI_MIN_GAMES && prev && prev.games >= PI_MIN_GAMES);
+
+    const prevLabel = d.prevScope ? patchDisplay(d.prevScope.slice(2)) : null;
+    const fmtV = v => typeof v === 'number' ? v.toFixed(1) + '%' : '-';
+    const mkPts = (fn) => days.map(x => {
+        const v = fn(x);
+        return typeof v === 'number'
+            ? { day: x.day, v, tip: `${x.day.slice(5).replace('-', '.')} · ${v.toFixed(2)}% (${x.games}판)` }
+            : null;
+    }).filter(Boolean);
+
+    const boxes = [
+        piGraphHtml({ title: '승률', pts: mkPts(x => x.games > 0 ? x.wins / x.games * 100 : null),
+            prevAvg: prevWin, prevLabel, boundary, valueHtml: `${fmtV(curWin)} ${deltaHtml(curWin, prevWin, winGuarded)}` }),
+        piGraphHtml({ title: '픽률', pts: mkPts(x => x.total > 0 ? x.games / x.total * 100 : null),
+            prevAvg: prevPick, prevLabel, boundary, valueHtml: `${fmtV(curPick)} ${deltaHtml(curPick, prevPick, false)}` }),
+        piGraphHtml({ title: '밴률', pts: mkPts(x => x.total > 0 ? x.bans / x.total * 100 : null),
+            prevAvg: prevBan, prevLabel, boundary, valueHtml: `${fmtV(curBan)} ${deltaHtml(curBan, prevBan, false)}` })
+    ].join('');
+
+    const sample = `${patchDisplay(piVer)} 패치 ${cur.games.toLocaleString()}판`
+        + (prev ? ` · ${prevLabel} 패치 ${prev.games.toLocaleString()}판` : '');
+    const noPrevDaily = prev && !days.some(x => x.day < boundary);
+
+    return `<div class="pi-detail-card">
+        <div class="pi-detail-head">
+            <img class="pi-detail-portrait" src="${champIconUrl(eng)}" alt="">
+            <div>
+                <div class="pi-detail-name">${name}</div>
+                <div class="pi-detail-sub">${sample}</div>
+            </div>
+        </div>
+        ${noPrevDaily ? `<p class="pi-note">직전 패치(${prevLabel}) 구간의 일별 기록은 보관 기간이 지나 없습니다 — 점선이 그 패치의 전체 평균입니다.</p>` : ''}
+        <div class="pi-boxes">${boxes}</div>
+    </div>`;
+}
+
+// 그래프 한 장 — 컷라인 그래프와 같은 골격 (SVG 는 선만, 점·글자는 HTML 절대배치.
+// viewBox 를 가로로 늘리므로 글자를 SVG 에 넣으면 찌그러진다 — 그 함정 그대로다)
+function piGraphHtml(cfg) {
+    const pts = cfg.pts || [];
+    const head = `<div class="pi-box-head"><span class="pi-box-title">${cfg.title}</span><span class="pi-box-val">${cfg.valueHtml || ''}</span></div>`;
+    if (!pts.length) return `<div class="pi-box">${head}<div class="pi-box-empty">이 패치의 일별 표본이 아직 없습니다.</div></div>`;
+
+    const vals = pts.map(p => p.v).concat(typeof cfg.prevAvg === 'number' ? [cfg.prevAvg] : []);
+    const vMax = Math.max(...vals), vMin = Math.min(...vals);
+    const span = vMax - vMin;
+    const pad = span > 0 ? span * 0.25 : Math.max(0.5, vMax * 0.1);
+    const lo = Math.max(0, vMin - pad), hi = vMax + pad;
+    const n = pts.length;
+    const X = (i) => n === 1 ? 50 : (i / (n - 1)) * 100;
+    const Y = (v) => 100 - ((v - lo) / (hi - lo)) * 100;
+
+    const line = n > 1
+        ? `<polyline class="pi-line" points="${pts.map((p, i) => X(i).toFixed(2) + ',' + Y(p.v).toFixed(2)).join(' ')}"/>` : '';
+    // 직전 패치 평균 점선 — 일별 기록이 지워진 구간을 대신하는 기준선
+    const avg = typeof cfg.prevAvg === 'number'
+        ? `<line class="pi-avg" x1="0" x2="100" y1="${Y(cfg.prevAvg).toFixed(2)}" y2="${Y(cfg.prevAvg).toFixed(2)}"/>` : '';
+    // 패치 경계 세로선 — 경계 앞뒤에 점이 다 있을 때만 (다음 패치부터 나온다)
+    let bound = '';
+    if (cfg.boundary) {
+        const bi = pts.findIndex(p => p.day >= cfg.boundary);
+        if (bi > 0) {
+            const bx = ((X(bi) + X(bi - 1)) / 2).toFixed(2);
+            bound = `<line class="pi-bound" x1="${bx}" x2="${bx}" y1="0" y2="100"/>`;
+        }
+    }
+    const dots = pts.map((p, i) =>
+        `<span class="pi-dot" style="left:${X(i).toFixed(2)}%; top:${Y(p.v).toFixed(2)}%" data-tip="${p.tip}"></span>`).join('');
+    const yLabels = `<span class="pi-y" style="top:${Y(vMax).toFixed(2)}%">${vMax.toFixed(1)}</span>`
+        + (span > 0 ? `<span class="pi-y" style="top:${Y(vMin).toFixed(2)}%">${vMin.toFixed(1)}</span>` : '');
+    const avgLabel = (typeof cfg.prevAvg === 'number' && cfg.prevLabel)
+        ? `<span class="pi-avg-label" style="top:${Y(cfg.prevAvg).toFixed(2)}%">${cfg.prevLabel} 평균 ${cfg.prevAvg.toFixed(1)}%</span>` : '';
+
+    return `<div class="pi-box">
+        ${head}
+        <div class="pi-plot">
+            <svg class="pi-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${avg}${bound}${line}</svg>
+            ${dots}${yLabels}${avgLabel}
+        </div>
+        <div class="pi-axis"><span>${pts[0].day.slice(5).replace('-', '.')}</span><span>${pts[n - 1].day.slice(5).replace('-', '.')}</span></div>
+    </div>`;
+}
 
 async function showStats() {
     if (window.location.pathname !== '/stats') window.history.pushState({ page: 'stats' }, '', '/stats');

@@ -1348,7 +1348,13 @@ async function fetchMatchStats() {
 //   ★ 옛 '5-7'/'8-10' 줄은 champstats 는 통째로 갈아 끼우니 저절로 사라지는데,
 //     statscopes 는 upsert 라 남는다. 아래에서 따로 지운다 — 안 지우면 **분모가 두 배**가 된다.
 const K_BAND_ALL = 'all';
-const DAILY_SCOPE_DAYS = 7;        // 최근 며칠치 일별 집계를 유지할지
+const DAILY_SCOPE_DAYS = 7;        // 최근 며칠치 일별 집계를 **다시 계산**할지 (원본이 온전한 폭만)
+// ★ 보관은 따로 더 길다 (2026-09-01, 패치 영향 페이지). 일별 줄을 42일치 남겨야
+//   "이번 패치 + 직전 패치" 그래프가 그려진다 (하루 ~730행 · 166B 라 42일 ≈ 10MB, 실측).
+//   ★★ 재계산 창(7일)을 늘리면 안 된다 — 원본(matchstats)은 얼어붙은 패치 삭제·TTL 로
+//   사라지므로, 원본이 빠진 날짜를 다시 계산하면 멀쩡한 일별 줄이 쪼그라든 값으로 덮인다
+//   ("916판 → 12판" 과 같은 모양). 오래된 날짜는 **건드리지 않고 남겨만** 둔다.
+const DAILY_KEEP_DAYS = 42;        // 일별 집계를 며칠치 보관할지 (현재 + 직전 패치를 덮는 폭)
 const PATCH_FREEZE_DAYS = 3;       // 최신이 아닌 패치의 마지막 경기가 이만큼 지나면 재집계를 멈춘다 (2026-08-27)
 let frozenLoggedKey = '';          // 얼어붙은 패치 목록 로그를 바뀔 때만 찍으려고
 
@@ -1799,7 +1805,7 @@ async function buildOneMatchupScope(scopeKey, matchCond) {
 //   API 캐시만 36줄(rune 까지만 들어간 순간)을 들고 있었다.
 //   ★ 그래서 사이클 끝에 통계 캐시를 통째로 비운다. 노출 창이 "재집계에 걸리는 시간" 으로 줄어든다.
 //   ★ `/api/champion-stats` 는 캐시를 안 쓰므로 여기 없다 (부분 결과가 보여도 다음 요청에 낫는다).
-const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'spellusage_'];
+const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'spellusage_', 'patchimpact_'];
 
 function flushStatCaches() {
     const keys = myCache.keys().filter(k => STAT_CACHE_PREFIXES.some(p => k.startsWith(p)));
@@ -1883,7 +1889,10 @@ async function buildChampStats() {
 
         // 기간이 지난 일별 집계는 지운다 (패치별은 남긴다).
         // ★ 한 객체에 같은 키를 두 번 쓰면 뒤엣것만 남으므로 연산자를 합쳐서 쓴다.
-        const keep = scopes.map(s => s.key);
+        // ★ 삭제 기준은 재계산 창(7일)이 아니라 보관 폭(DAILY_KEEP_DAYS)이다 (2026-09-01) —
+        //   7~42일 사이의 일별 줄은 다시 계산하지 않고 그대로 남는다 (패치 영향 그래프 몫).
+        const keep = [];
+        for (let i = 0; i < DAILY_KEEP_DAYS; i++) keep.push(`d:${kstDay(now - i * 86400000)}`);
         await ChampStat.deleteMany({ scope: { $regex: '^d:', $nin: keep } });
         await StatScope.deleteMany({ scope: { $regex: '^d:', $nin: keep } });
 
@@ -3287,6 +3296,74 @@ app.get('/api/champion-trend', async (req, res) => {
     } catch (e) {
         console.error('[API] 추이 조회 실패:', e.message);
         res.status(500).json({ error: '추이를 불러오지 못했습니다.' });
+    }
+});
+
+// ★ 패치 영향 (2026-09-01, 로드맵 A-3) — 챔피언 하나의 "이번 패치 vs 직전 패치" 합계와 일별 추이.
+//   집계 추가 0 — champstats 의 패치 scope 두 개(pos -1 = 챔피언 전체 줄)와 일별 scope 를 읽기만 한다.
+//   ★ 일별은 DAILY_KEEP_DAYS(42일)치가 남는다. 직전 패치의 일별이 이미 지워진 구간(16.16 이
+//     그렇다)은 days 에 안 나오고, 화면이 그 구간을 패치 평균 점선으로 대신 그린다.
+//   ★ 밴은 bans(밴 슬롯 수)를 쓴다 — 통계 탭 화면 기본값과 같은 정의라 숫자가 서로 맞는다.
+app.get('/api/patch-impact', async (req, res) => {
+    try {
+        const champ = Number(req.query.champ);
+        if (!Number.isFinite(champ)) return res.status(400).json({ error: '잘못된 요청입니다.' });
+        const reqScope = String(req.query.scope || '');
+
+        const cacheKey = `patchimpact_${reqScope}_${champ}`;
+        const hit = myCache.get(cacheKey);
+        if (hit) return res.json(hit);
+
+        const allScopes = await StatScope.find({}).select('-_id scope games gen').lean();
+        // 패치 scope 를 숫자로 내림차순 — 문자열 정렬은 16.9 > 16.16 이 된다 (pickStatScope 와 같은 규칙)
+        const patchKeys = [...new Set(allScopes.filter(s => s.scope.startsWith('p:')).map(s => s.scope))]
+            .sort((a, b) => {
+                const pa = a.slice(2).split('.').map(Number), pb = b.slice(2).split('.').map(Number);
+                return (pb[0] - pa[0]) || (pb[1] - pa[1]);
+            });
+        if (!patchKeys.length) return res.json({ ready: false });
+        const scope = patchKeys.includes(reqScope) ? reqScope : patchKeys[0];
+        const prevScope = patchKeys[patchKeys.indexOf(scope) + 1] || null;
+
+        // 패치 합계 — pos -1 줄이 챔피언 전체(라인 합 + 라인 판정 실패분)이고 밴도 여기에만 있다
+        const aggOf = async (sc) => {
+            if (!sc) return null;
+            const rows = allScopes.filter(s => s.scope === sc);
+            const total = rows.reduce((a, s) => a + s.games, 0);
+            const gen = rows.reduce((m, s) => Math.max(m, s.gen || 0), 0) || null;
+            const r = await ChampStat.findOne(gen ? { scope: sc, champ, pos: -1, g: gen } : { scope: sc, champ, pos: -1 })
+                .select('-_id games wins bans banGames').lean();
+            return { scope: sc, total, games: r?.games || 0, wins: r?.wins || 0, bans: r?.bans || 0, banGames: r?.banGames || 0 };
+        };
+        const [cur, prev] = await Promise.all([aggOf(scope), aggOf(prevScope)]);
+
+        // 일별 — champion-trend 와 같은 골격인데 라인 구분 없이 pos -1 만 본다.
+        //   ★ 챔피언 줄이 없는 날도 0 으로 내보낸다 (픽률 0 은 "빈 날" 이 아니라 값이다)
+        const [dayRows, dayScopes] = await Promise.all([
+            ChampStat.find({ scope: /^d:/, champ, pos: -1 }).select('-_id scope games wins bans g').lean(),
+            StatScope.find({ scope: /^d:/ }).select('-_id scope games gen').lean()
+        ]);
+        // ★ 세대 딱지 — 재집계 중인 날짜 scope 는 두 세대가 겹쳐 있다 (champion-trend 와 같은 장치)
+        const genMap = {};
+        dayScopes.forEach(s => { if (s.gen) genMap[s.scope] = Math.max(genMap[s.scope] || 0, s.gen); });
+        const byDay = {};
+        dayScopes.forEach(s => {
+            const d = byDay[s.scope] || (byDay[s.scope] = { day: s.scope.slice(2), games: 0, wins: 0, bans: 0, total: 0 });
+            d.total += s.games;
+        });
+        dayRows.filter(r => !genMap[r.scope] || r.g === genMap[r.scope]).forEach(r => {
+            const d = byDay[r.scope];
+            if (!d) return;
+            d.games += r.games; d.wins += r.wins; d.bans += r.bans || 0;
+        });
+        const days = Object.values(byDay).sort((a, b) => a.day.localeCompare(b.day));
+
+        const payload = { ready: true, champ, scope, prevScope, patchKeys, cur, prev, days };
+        myCache.set(cacheKey, payload, 600);
+        res.json(payload);
+    } catch (e) {
+        console.error('[API] 패치 영향 조회 실패:', e.message);
+        res.status(500).json({ error: '패치 영향을 불러오지 못했습니다.' });
     }
 });
 
