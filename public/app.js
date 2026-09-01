@@ -235,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchArenaAugments();
     });
 
+    loadHomeTiers();
     loadMythicShop();
     loadPatchNotes();
     updateShopTimer();
@@ -6539,6 +6540,88 @@ function mythicCollectingMsg(key) {
 //    왼쪽 목록만 서버(/api/patch-notes)에서 온다 — 공식 홈페이지 목록을 30분 캐시로
 //    긁은 것이다. 오른쪽 PBE 칸은 X 자동 수집이 안 돼서 index.html 에 정적 안내다.
 // ============================================================
+// ==========================================
+//  홈 위젯 — 이번 패치 라인별 최강 (2026-09-01 신설, 로드맵 A-6)
+//
+//   홈에 통계로 가는 입구가 헤더 메뉴뿐이라 만들었다. **라인마다 티어 점수 1위 하나씩** —
+//   점수 상위 5명으로 뽑으면 16.17 기준 정글이 셋(리 신·킨드레드·니달리)이라 라인이 치우친다
+//   (사용자 결정 2026-09-01).
+//
+//   ★★ 티어 점수는 통계 탭과 **같은 `computeLaneTiers`** 가 계산한다. 서버에 공식을 복제하면
+//     두 벌이 되어 어긋난다 (TIER_COEF·TIER_CUTS 가 화면 쪽에만 있는 이유이기도 하다).
+//     `/api/champion-stats` 는 gzip 16.8KB 라 홈에서 한 번 받아도 부담이 없고 서버 캐시도 있다.
+//   ★ 실패하거나 표본이 없으면 **위젯을 통째로 숨긴다** (도감 채택률과 같은 정신).
+//     `#home-tier-container` 가 `display:none` 으로 시작해서, 그릴 게 있을 때만 켠다.
+//   ★ 줄을 누르면 통계 상세로 간다 — 통계 표와 같이 **라인을 주소에 같이 넘긴다**
+//     (안 넘기면 판수가 제일 많은 라인으로 물러나서 "탑 잭스" 를 눌러도 다른 라인이 뜬다).
+async function loadHomeTiers() {
+    const box = document.getElementById('home-tier-container');
+    if (!box) return;
+    try {
+        await fetchChampionMap();
+        const res = await fetch('/api/champion-stats');
+        const data = await res.json();
+        // 박제된 패치(rows 가 파일에 있는 경우)는 홈에서까지 파일을 받지 않는다 — 그냥 안 그린다
+        if (!data.ready || !data.rows?.length) return;
+
+        // 통계 탭의 collect() 와 같은 합산 (kb 는 'all' 하나뿐이다)
+        const byKey = new Map();
+        data.rows.forEach(r => {
+            const k = `${r.champ}|${r.pos}`;
+            let c = byKey.get(k);
+            if (!c) byKey.set(k, c = { champ: r.champ, pos: r.pos, games: 0, wins: 0, bans: 0, banGames: 0 });
+            c.games += r.games; c.wins += r.wins; c.bans += r.bans; c.banGames += r.banGames || 0;
+        });
+        const list = [...byKey.values()];
+        const total = Object.values(data.totals || {}).reduce((a, b) => a + b, 0);
+        const tiers = computeLaneTiers(list, total);
+
+        // 라인마다 점수 1위 하나
+        const best = new Map();
+        list.forEach(c => {
+            const t = tiers.get(`${c.champ}|${c.pos}`);
+            if (!t) return;
+            const cur = best.get(c.pos);
+            if (!cur || t.score > cur.score) best.set(c.pos, { ...c, ...t });
+        });
+        const picks = STAT_POS.map(p => ({ p, c: best.get(p.code) })).filter(x => x.c);
+        if (!picks.length) return;
+
+        document.getElementById('home-tier-scope').textContent = statScopeLabel(data.scope);
+        document.getElementById('home-tier-list').innerHTML = picks.map(({ p, c }) => {
+            const eng = championIdMap[c.champ] || '0';
+            const kor = (window.korChampMap || {})[eng] || eng;
+            const win = c.games ? c.wins / c.games * 100 : 0;
+            const pick = total ? c.games / total * 100 : 0;
+            return `
+            <div class="home-tier-card" data-champ="${eng}" data-lane="${p.key}">
+                <div class="home-tier-lane">
+                    <img src="${STAT_LANE_ICON[p.key]}" alt="">
+                    <span>${p.name}</span>
+                </div>
+                <img class="home-tier-portrait"
+                     src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${eng}.png" alt="" loading="lazy">
+                <div class="home-tier-main">
+                    <span class="home-tier-name">${kor}</span>
+                    <span class="stats-tier ${tierClass(c.tier)}" title="점수 ${c.score.toFixed(2)}">${c.tier === 'OP' ? 'OP' : c.tier + '티어'}</span>
+                </div>
+                <div class="home-tier-num">승률 ${win.toFixed(1)}% · 픽률 ${pick.toFixed(1)}%</div>
+            </div>`;
+        }).join('');
+        box.style.display = '';
+
+        document.getElementById('home-tier-list').addEventListener('click', (e) => {
+            const card = e.target.closest('.home-tier-card');
+            if (!card) return;
+            const url = `/stats/${card.dataset.champ}/${card.dataset.lane}`;
+            window.history.pushState({ page: 'stats', champ: card.dataset.champ, lane: card.dataset.lane }, '', url);
+            showChampStatPage(card.dataset.champ, card.dataset.lane);
+        });
+    } catch (e) {
+        // 곁가지라 조용히 넘긴다 — 홈의 나머지는 그대로 나온다
+    }
+}
+
 async function loadPatchNotes() {
     const box = document.getElementById('patch-note-list');
     if (!box) return;
