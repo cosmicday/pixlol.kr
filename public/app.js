@@ -3325,7 +3325,6 @@ async function showCodex(target) {
     let selected = codexLastPick[wantTab] || null;   // 지금 고른 항목 id (탭마다 따로 기억한다)
     // ★ 파편은 같은 id 가 두 칸에 있어서(적응형 1·2줄 / 체력 증가 2·3줄) id 만으로는
     //   어느 칸을 눌렀는지 모른다. 켜지는 건 **누른 칸 하나**여야 해서 칸 열쇠를 따로 든다.
-    let selectedCell = null;  // '5008:0-0' 꼴 (파편 트리에서만 쓴다)
 
     // ★ TOOLTIP_STYLE_CSS 를 여기 끼운다. style.css 로 못 옮기는 이유는 그 상수 주석 참고.
     box.innerHTML = `
@@ -3389,13 +3388,20 @@ async function showCodex(target) {
                 }));
             });
             // 스탯 파편도 같은 목록에 붙인다 (룬 페이지의 일부다).
-            // ★ 5008(적응형)·5001(체력 증가)은 두 줄에 걸쳐 있다 — 목록에는 한 번만 넣는다.
-            const seenShard = new Set();
+            // ★★ **격자 칸마다 한 항목이다** (2026-09-01, 사용자 요청). 5008(적응형)은 1·2줄,
+            //   5001(체력 증가)은 2·3줄에 걸쳐 있는데, 예전엔 목록에 한 번만 넣고 상세에서 두 줄을
+            //   한꺼번에 보여줬다 — **한 칸을 눌러도 다른 칸 값이 같이 나와** 고를 수가 없었다.
+            //   지금은 id 가 `5008:0` 꼴이고 채택률 카드도 그 줄 하나뿐이다.
+            //   ★ 원래 id 는 `rid` 에 남긴다 — 아이콘·룬 그래프(rune_graphs)가 그 키로 찾는다.
+            //   ★ 파편 칸이 9개라 계열 버튼의 '파편' 개수도 7 → 9 가 된다 (칸 수라 맞는 값이다).
             D.shardRows.forEach((row, ri) => row.forEach((pid, ci) => {
                 const sh = D.shards[pid];
-                if (!sh || seenShard.has(pid)) return;
-                seenShard.add(pid);
-                list.push({ id: String(pid), name: sh.n, icon: codexPerkIcon(sh.i), sub: '스탯 파편', raw: sh, shard: true, sort: [99999, ri * 10 + ci] });
+                if (!sh) return;
+                list.push({
+                    id: `${pid}:${ri}`, rid: String(pid), srow: ri,
+                    name: sh.n, icon: codexPerkIcon(sh.i), sub: `스탯 파편 · ${ri + 1}번째 줄`,
+                    raw: sh, shard: true, sort: [99999, ri * 10 + ci]
+                });
             }));
             return list;
         }
@@ -3572,30 +3578,20 @@ async function showCodex(target) {
                 <div class="codex-rune-head"><span>스탯 파편</span></div>
                 ${D.shardRows.map((row, ri) => `
                 <div class="codex-rune-row">
-                    ${row.map((pid, ci) => runeNodeHtml(String(pid), D.shards[pid], false, `${pid}:${ri}-${ci}`)).join('')}
+                    ${row.map(pid => runeNodeHtml(`${pid}:${ri}`, D.shards[pid], false)).join('')}
                 </div>`).join('')}
             </div>`;
         }
         return html;
     }
 
-    // 파편 격자에서 **켜질 칸 하나**를 정한다.
-    // ★ 목록에서 골랐거나 트리를 처음 그릴 때는 눌린 칸이 없다 — 그 파편이 **처음 나오는 칸**을 켠다.
-    function activeShardCell() {
-        if (selectedCell && selectedCell.startsWith(selected + ':')) return selectedCell;
-        for (let r = 0; r < D.shardRows.length; r++) {
-            const c = D.shardRows[r].indexOf(Number(selected));
-            if (c >= 0) return `${selected}:${r}-${c}`;
-        }
-        return null;
-    }
-
-    // cell 이 있으면 파편 칸이다 — id 가 같아도 **그 칸일 때만** 켠다
-    function runeNodeHtml(id, r, key, cell) {
+    // ★ 파편도 칸마다 id 가 달라서(`5008:0`) 켜는 규칙이 룬과 같아졌다 (2026-09-01).
+    //   예전엔 id 가 같은 칸이 둘이라 `activeShardCell()` 로 어느 칸을 켤지 따로 정해야 했다.
+    function runeNodeHtml(id, r, key) {
         if (!r) return '';
-        const on = id === selected && (!cell || cell === activeShardCell());
+        const on = id === selected;
         return `
-        <div class="codex-rune-node${on ? ' active' : ''}${key ? ' is-key' : ''}" data-id="${id}"${cell ? ` data-cell="${cell}"` : ''}>
+        <div class="codex-rune-node${on ? ' active' : ''}${key ? ' is-key' : ''}" data-id="${id}">
             <img class="codex-rune-icon" src="${codexPerkIcon(r.i)}" alt="" loading="lazy">
             <span class="codex-rune-label">${r.n}</span>
         </div>`;
@@ -3647,16 +3643,14 @@ async function showCodex(target) {
         const row = ev.target.closest('.codex-item, .codex-rune-node');
         if (!row) return;
         selected = row.dataset.id;
-        selectedCell = row.dataset.cell || null;   // 파편이 아니면 null
         codexLastPick[curTab] = selected;
-        // ★ 파편은 같은 id 가 두 칸에 있다 — **누른 칸 하나만** 켠다 (칸 열쇠로 가른다)
-        const cellOn = activeShardCell();
         document.querySelectorAll('.codex-item, .codex-rune-node').forEach(r =>
-            r.classList.toggle('active', r.dataset.id === selected && (!r.dataset.cell || r.dataset.cell === cellOn)));
+            r.classList.toggle('active', r.dataset.id === selected));
         renderDetail();
     });
 
     // ── 오른쪽 상세
+    let lastDetailId = null;
     function renderDetail() {
         const el = document.getElementById('codex-detail');
         const e = visible().find(x => x.id === selected);
@@ -3669,6 +3663,12 @@ async function showCodex(target) {
         el.innerHTML = curTab === 'item' ? itemDetailHtml(e)
             : curTab === 'rune' ? runeDetailHtml(e)
                 : spellDetailHtml(e);
+
+        // ★★ 고른 항목이 **바뀔 때만** 상세 스크롤을 맨 위로 되돌린다 (2026-09-01, 사용자 요청).
+        //   같은 <div> 를 재사용해서 scrollTop 이 남는다 — 긴 아이템을 내려 보고 다음 것을 고르면
+        //   중간부터 보였다 (목록 쪽 renderList 의 keepScroll 과 같은 함정).
+        //   ★ 무조건 0 으로 두면 안 된다 — 채택률이 도착해 **다시 그릴 때 스크롤이 튄다.**
+        if (lastDetailId !== selected) { el.scrollTop = 0; lastDetailId = selected; }
 
         // 조합식 아이콘을 누르면 그 아이템으로 옮겨간다 (트리 노드도 같은 동작)
         el.querySelectorAll('.codex-recipe-item, .codex-tree-node[data-id]').forEach(b => b.addEventListener('click', () => {
@@ -3759,9 +3759,9 @@ async function showCodex(target) {
         const r = e.raw;
         const styleName = e.shard ? '스탯 파편' : (D.styles[r.st]?.n || '');
         // ★ 파편은 두 줄에 걸친 것이 있다 (적응형 1·2줄 / 체력 증가 2·3줄) — 있는 줄을 다 적는다
-        const shardRowsOf = id => D.shardRows
-            .map((row, i) => row.includes(Number(id)) ? i + 1 : 0).filter(Boolean);
-        const slotName = e.shard ? `${shardRowsOf(e.id).join('·')}번째 줄`
+        // ★ 파편은 격자 칸 하나가 곧 한 항목이다 (2026-09-01) — 걸쳐 있는 줄을 다 적던 것을
+        //   자기 줄 하나로 바꿨다. `srow` 는 0부터라 화면에는 +1 해서 적는다.
+        const slotName = e.shard ? `${e.srow + 1}번째 줄`
             : (r.sl === 0 ? '핵심 룬' : `${r.sl}번째 줄`);
         return `
         <div class="codex-detail-head">
@@ -3776,10 +3776,8 @@ async function showCodex(target) {
                 ${r.s ? `<div class="codex-plain is-plain">${r.s}</div>` : ''}
             </div>
         </div>
-        <div class="codex-desc is-plain">${r.d ? withRuneGraphs(e.id, r.d) : '<span class="codex-dim">설명이 없습니다.</span>'}</div>
-        ${e.shard
-            ? shardRowsOf(e.id).map(n => usageCardHtml('rune', `${e.id}:${n - 1}`, { label: `${n}번째 줄 채택률` })).join('')
-            : usageCardHtml('rune', String(e.id))}`;
+        <div class="codex-desc is-plain">${r.d ? withRuneGraphs(e.rid || e.id, r.d) : '<span class="codex-dim">설명이 없습니다.</span>'}</div>
+        ${usageCardHtml('rune', String(e.id), e.shard ? { label: `${e.srow + 1}번째 줄 채택률` } : {})}`;
     }
 
     // ★★ 사거리 20000 이상은 **"표시할 값 없음" 더미**다 — 스킬 탭이 쓰는 그 규칙과 같다.
