@@ -1557,8 +1557,6 @@ const ITEM_CONSUMABLES = [
     2138, 2139, 2140,   // 영약 3종
     2150, 2151, 2152    // 강화 영약 3종
 ];
-// 아이템은 조합이 아니라 낱개라 가짓수가 적다. 화면이 8개를 쓰므로 15면 넉넉하다.
-const ITEM_TOP_N = 15;
 
 // ★★ 타임라인 집계 — 슬림 문서의 `sk`(스킬 순서)·`it`(구매) 에서 센다 (2026-08-26 신설, 같은 날 밤 확장).
 //   같은 컬렉션(champbuilds)에 type 만 다르게 담는다. 화면(챔피언 통계 상세 페이지)이 lolalytics 와
@@ -1815,7 +1813,12 @@ async function buildOneBuildScope(scopeKey, matchCond) {
             put(c, -1, key, r.games, r.wins);                  // 라인 무관 전체 (전원)
         });
         // ★ perk 는 한 칸에 룬 60여 개 + 파편 9개가 전부 들어가야 표가 된다 — 안 자른다
-        const topN = (type === 'all' || type === 'tlall' || type === 'perk') ? Infinity : (type === 'item' ? ITEM_TOP_N : BUILD_TOP_N);
+        // ★★ 아이템도 안 자른다 (2026-09-01, `ITEM_TOP_N` 폐지). 챔피언당 상위 15개만 담았더니
+        //   도감 채택률이 통째로 틀렸다 — 챔피언당 고유 아이템이 **중앙값 78개**라 15번째 줄의
+        //   채택률이 9.5% 였고, 그 아래가 다 사라져서 합계 418.5%(실제 522.7%) · 챔피언 TOP5 는
+        //   208개 중 108개만 맞았다. 상세 페이지의 "전체 아이템"(60칸)도 15개까지밖에 못 채웠다.
+        //   ★ 대가는 item 줄 11,932 → 40,022 (+7.4MB). 낱개라 가짓수가 원래 적어서 감당된다.
+        const topN = (type === 'all' || type === 'tlall' || type === 'perk' || type === 'item') ? Infinity : BUILD_TOP_N;
         cells.forEach(bucket => {
             const list = [...bucket.values()].sort((a, b) => b.games - a.games);
             docs.push(...list.slice(0, topN));
@@ -1887,7 +1890,7 @@ async function buildOneMatchupScope(scopeKey, matchCond) {
 //   API 캐시만 36줄(rune 까지만 들어간 순간)을 들고 있었다.
 //   ★ 그래서 사이클 끝에 통계 캐시를 통째로 비운다. 노출 창이 "재집계에 걸리는 시간" 으로 줄어든다.
 //   ★ `/api/champion-stats` 는 캐시를 안 쓰므로 여기 없다 (부분 결과가 보여도 다음 요청에 낫는다).
-const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'spellusage_', 'patchimpact_', 'duos_', 'lanetrend_'];
+const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'usage_', 'patchimpact_', 'duos_', 'lanetrend_'];
 
 function flushStatCaches() {
     const keys = myCache.keys().filter(k => STAT_CACHE_PREFIXES.some(p => k.startsWith(p)));
@@ -3607,101 +3610,125 @@ app.get('/api/champion-builds', async (req, res) => {
 });
 
 // ==========================================
-// 소환사 주문 채택률 (2026-08-26 신설) — 도감 주문 탭이 읽는다
+// 도감 채택률 — 주문(2026-08-26) · 아이템·룬(2026-09-01)
 //
-//   ★★ `champbuilds` 의 `type:'spell'` 을 **주문 기준으로 뒤집기만 한다.**
-//     통계 탭은 "이 챔피언이 뭘 드나"(챔피언 → 주문)인데 여기는 "이 주문을 누가 드나" 다.
-//     **수집·집계에 더한 게 없다** — 이미 있는 줄을 다르게 세는 것이라 지난 원본도 그대로 소급된다.
+//   ★★ `champbuilds` 를 **"이걸 누가 드나" 로 뒤집기만 한다.** 통계 탭은 "이 챔피언이 뭘 드나"
+//     (챔피언 → 항목)인데 도감은 반대다. **수집·집계에 더한 게 없고** 이미 있는 줄을 다르게
+//     세는 것이라 지난 원본도 그대로 소급된다.
 //
 //   ★ 분모는 `type:'all'` 의 합, 즉 **"챔피언 픽 합계(명)"** 다. 경기 수가 아니다 —
-//     한 경기에 10명이 있고 한 사람이 주문을 2개 드니 **채택률 합이 200% 가 된다.**
-//     실측(16.16): 점멸 97.4% · 순간이동 21.4% · 점화 21.3% · 강타 20.0% …
-//     강타가 정확히 20% 인 건 팀당 정글러 1명이라는 뜻이라 값이 맞다는 방증이다.
+//     한 사람이 주문 2개·룬 6개·파편 3개를 드니 **채택률 합이 200% · 600% · 300%** 가 된다.
+//     실측(16.17): 주문 점멸 97.4% · 강타 20.0%(팀당 정글러 1명) / **룬 합계가 정확히 600.0%** /
+//     파편은 줄마다 100%. 값이 맞다는 방증으로 쓸 수 있는 숫자들이다.
+//
+//   ★★ 아이템만 뜻이 다르다 — `type:'item'` 은 **경기가 끝났을 때 6칸에 남아 있던** 아이템이라
+//     "최종 아이템에 남은 비율" 이다. 그래서 롱소드가 12.3% 다 (미완성으로 끝난 판).
+//     합계는 522.7% (사람당 5개꼴). **화면이 그 뜻을 한 줄로 적는다** — 안 적으면 기본 재료에
+//     값이 있는 게 오류처럼 보인다.
+//
+//   ★★ 아이템은 2026-09-01 에 `ITEM_TOP_N`(챔피언당 상위 15개) 컷을 폐지하고서야 정확해졌다.
+//     그전에 뒤집으면 **채택률 합계 418.5%(실제 522.7%)** 였고 챔피언 TOP5 는 208개 중 108개만
+//     맞았다 (27개는 목록이 통째로 비었다). 챔피언당 고유 아이템이 중앙값 78개인데 15개만
+//     저장돼서, **채택률 9.5% 아래가 통째로 없었다.** 룬(perk)은 원래 안 잘려서 정확했다.
 //
 //   ★ `champs` 는 **그 챔피언 판수 대비 채택률** 순이다 (판수 순이 아니다).
 //     판수 순으로 하면 인기 챔피언만 나와서 "강타 = 리 신·그레이브즈" 처럼 뻔해진다.
-//     비율 순이면 "헤카림 100% · 릴리아 100%" 처럼 **그 주문을 반드시 드는 챔피언**이 나온다.
-//   ★ 표본이 적으면 비율이 튄다 — `SPELL_CHAMP_MIN` 판 미만은 뺀다.
-const SPELL_CHAMP_MIN = 30;   // 챔피언 top 목록에 들 최소 표본
-const SPELL_CHAMP_TOP = 5;   // 화면 문구가 "채택률 TOP5" 라 다섯이다 (2026-08-26)
-app.get('/api/spell-usage', async (req, res) => {
+//     비율 순이면 "헤카림 100% · 릴리아 100%" 처럼 **그걸 반드시 드는 챔피언**이 나온다.
+//   ★ 표본이 적으면 비율이 튄다 — `USAGE_CHAMP_MIN` 판 미만은 뺀다.
+const USAGE_CHAMP_MIN = 30;   // 챔피언 top 목록에 들 최소 표본
+const USAGE_CHAMP_TOP = 5;    // ★ 화면 문구가 "채택률 TOP5" 라 다섯이다 — 문구와 짝이라 한쪽만 고치면 어긋난다
+
+// type 하나를 뒤집어 응답을 만든다. `keyOf` 가 **한 줄이 기여하는 항목 키**를 준다 —
+// 주문은 조합 2개를 펼치고, 아이템·룬은 낱개 하나, 파편만 `id:줄` 이다.
+async function usagePayload(reqScope, type, field, keyOf) {
+    const scopes = await StatScope.find({}).lean();
+    if (!scopes.length) return { ready: false, [field]: {} };
+
+    const { scope } = pickStatScope(scopes, reqScope);
+    const cacheKey = `usage_${type}_${scope}`;
+    const hit = myCache.get(cacheKey);
+    if (hit) return hit;
+
+    // ★ pos 를 조건에서 빼고 통째로 받는다 — `-1`(라인 무관 전체)과 `0~4`(라인별)를
+    //   한 번에 세려는 것이다. 행 수가 얼마 안 돼서 두 번 조회할 이유가 없다.
+    // ★ 세대 딱지(genB) 세대만 읽는다 (2026-08-31) — scopes 를 이미 통째로 받아 둬서 추가 조회 0
+    const genB = scopes.filter(s => s.scope === scope).reduce((m, s) => Math.max(m, s.genB || 0), 0) || null;
+    const gq = genB ? { g: genB } : {};
+    const [rows, allRows] = await Promise.all([
+        ChampBuild.find({ scope, type, ...gq }).select('-_id champ pos key games wins').lean(),
+        ChampBuild.find({ scope, type: 'all', ...gq }).select('-_id champ pos games').lean()
+    ]);
+
+    // 박제된 패치는 champbuilds 행이 없다 (champion-builds 와 같은 판별)
+    if (!rows.length) return { ready: false, scope, [field]: {}, picks: 0 };
+
+    // ★ 분모는 두 벌이다 — 전체(-1)와 라인별(0~4).
+    //   **라인별 분모를 전체로 쓰면 안 된다** — 탑 픽은 전체의 5분의 1쯤이라
+    //   "탑에서 순간이동 89%" 가 18% 로 찌그러진다.
+    const totalByChamp = {};      // 전체(-1) 기준 챔피언별 판수 — champs top 의 분모
+    const picksByPos = {};        // 라인별 픽 합계 — 라인 채택률의 분모
+    allRows.forEach(r => {
+        const pos = r.pos == null ? -1 : r.pos;
+        if (pos === -1) totalByChamp[r.champ] = r.games;
+        picksByPos[pos] = (picksByPos[pos] || 0) + r.games;
+    });
+    const picks = picksByPos[-1] || 0;
+
+    const agg = {};
+    rows.forEach(r => {
+        const pos = r.pos == null ? -1 : r.pos;
+        keyOf(r).forEach(k => {
+            const s = agg[k] || (agg[k] = { games: 0, wins: 0, byChamp: {}, byPos: {} });
+            s.byPos[pos] = (s.byPos[pos] || 0) + r.games;
+            if (pos !== -1) return;          // 아래 합계·챔피언 top 은 전체 기준이다
+            s.games += r.games;
+            s.wins += r.wins;
+            s.byChamp[r.champ] = (s.byChamp[r.champ] || 0) + r.games;
+        });
+    });
+
+    const entries = {};
+    Object.entries(agg).forEach(([k, s]) => {
+        // 라인별 채택률. 그 라인 픽이 없으면 칸을 안 만든다
+        const pos = {};
+        for (let p = 0; p <= 4; p++) {
+            if (!picksByPos[p]) continue;
+            pos[p] = Math.round((s.byPos[p] || 0) / picksByPos[p] * 1000) / 1000;
+        }
+        entries[k] = {
+            games: s.games,
+            wins: s.wins,
+            pos,
+            champs: Object.entries(s.byChamp)
+                .filter(([c]) => (totalByChamp[c] || 0) >= USAGE_CHAMP_MIN)
+                .map(([c, g]) => ({ c: Number(c), g, r: g / totalByChamp[c] }))
+                .sort((a, b) => b.r - a.r || b.g - a.g)
+                .slice(0, USAGE_CHAMP_TOP)
+                .map(x => ({ c: x.c, r: Math.round(x.r * 1000) / 1000 }))
+        };
+    });
+
+    const payload = { ready: true, scope, picks, picksByPos, [field]: entries };
+    myCache.set(cacheKey, payload, 1800);   // 집계가 매시간이라 30분
+    return payload;
+}
+
+// 세 라우트가 같은 함수를 탄다. **응답 필드 이름만 다르다** — 옛 화면이 `spells` 를 읽는다.
+const usageRoute = (path, type, field, keyOf) => app.get(path, async (req, res) => {
     try {
-        const scopes = await StatScope.find({}).lean();
-        if (!scopes.length) return res.json({ ready: false, spells: {} });
-
-        const { scope } = pickStatScope(scopes, req.query.scope);
-        const cacheKey = `spellusage_${scope}`;
-        const hit = myCache.get(cacheKey);
-        if (hit) return res.json(hit);
-
-        // ★ pos 를 조건에서 빼고 통째로 받는다 — `-1`(라인 무관 전체)과 `0~4`(라인별)를
-        //   한 번에 세려는 것이다. 행 수가 얼마 안 돼서 두 번 조회할 이유가 없다.
-        // ★ 세대 딱지(genB) 세대만 읽는다 (2026-08-31) — scopes 를 이미 통째로 받아 둬서 추가 조회 0
-        const genB = scopes.filter(s => s.scope === scope).reduce((m, s) => Math.max(m, s.genB || 0), 0) || null;
-        const gq = genB ? { g: genB } : {};
-        const [spellRows, allRows] = await Promise.all([
-            ChampBuild.find({ scope, type: 'spell', ...gq }).select('-_id champ pos key games wins').lean(),
-            ChampBuild.find({ scope, type: 'all', ...gq }).select('-_id champ pos games').lean()
-        ]);
-
-        // 박제된 패치는 champbuilds 행이 없다 (champion-builds 와 같은 판별)
-        if (!spellRows.length) return res.json({ ready: false, scope, spells: {}, picks: 0 });
-
-        // ★ 분모는 두 벌이다 — 전체(-1)와 라인별(0~4).
-        //   **라인별 분모를 전체로 쓰면 안 된다** — 탑 픽은 전체의 5분의 1쯤이라
-        //   "탑에서 순간이동 89%" 가 18% 로 찌그러진다.
-        const totalByChamp = {};      // 전체(-1) 기준 챔피언별 판수 — champs top 의 분모
-        const picksByPos = {};        // 라인별 픽 합계 — 라인 채택률의 분모
-        allRows.forEach(r => {
-            const pos = r.pos == null ? -1 : r.pos;
-            if (pos === -1) totalByChamp[r.champ] = r.games;
-            picksByPos[pos] = (picksByPos[pos] || 0) + r.games;
-        });
-        const picks = picksByPos[-1] || 0;
-
-        // 주문 하나가 조합의 양쪽에 나오므로 key 를 펼쳐서 센다
-        const agg = {};
-        spellRows.forEach(r => {
-            const pos = r.pos == null ? -1 : r.pos;
-            (r.key || []).forEach(id => {
-                const s = agg[id] || (agg[id] = { games: 0, wins: 0, byChamp: {}, byPos: {} });
-                s.byPos[pos] = (s.byPos[pos] || 0) + r.games;
-                if (pos !== -1) return;          // 아래 합계·챔피언 top 은 전체 기준이다
-                s.games += r.games;
-                s.wins += r.wins;
-                s.byChamp[r.champ] = (s.byChamp[r.champ] || 0) + r.games;
-            });
-        });
-
-        const spells = {};
-        Object.entries(agg).forEach(([id, s]) => {
-            // 라인별 채택률. 그 라인 픽이 없으면 칸을 안 만든다
-            const pos = {};
-            for (let p = 0; p <= 4; p++) {
-                if (!picksByPos[p]) continue;
-                pos[p] = Math.round((s.byPos[p] || 0) / picksByPos[p] * 1000) / 1000;
-            }
-            spells[id] = {
-                games: s.games,
-                wins: s.wins,
-                pos,
-                champs: Object.entries(s.byChamp)
-                    .filter(([c]) => (totalByChamp[c] || 0) >= SPELL_CHAMP_MIN)
-                    .map(([c, g]) => ({ c: Number(c), g, r: g / totalByChamp[c] }))
-                    .sort((a, b) => b.r - a.r || b.g - a.g)
-                    .slice(0, SPELL_CHAMP_TOP)
-                    .map(x => ({ c: x.c, r: Math.round(x.r * 1000) / 1000 }))
-            };
-        });
-
-        const payload = { ready: true, scope, picks, picksByPos, spells };
-        myCache.set(cacheKey, payload, 1800);   // 집계가 매시간이라 30분
-        res.json(payload);
+        res.json(await usagePayload(req.query.scope, type, field, keyOf));
     } catch (e) {
-        console.error('[API] 주문 채택률 실패:', e.message);
-        res.status(500).json({ error: '주문 통계를 불러오지 못했습니다.' });
+        console.error(`[API] ${type} 채택률 실패:`, e.message);
+        res.status(500).json({ error: '채택률을 불러오지 못했습니다.' });
     }
 });
+
+usageRoute('/api/spell-usage', 'spell', 'spells', r => (r.key || []).map(String));
+usageRoute('/api/item-usage', 'item', 'items', r => [String(r.key[0])]);
+// ★★ 파편만 `id:줄` 이다 (2026-09-01) — 적응형 능력치(5008)가 1·2줄 두 자리에 있어서 id 로만
+//   세면 한 사람이 두 번 더해져 **115.6%** 가 나온다. 줄을 붙이면 줄마다 합이 딱 100% 다
+//   (집계가 이미 `[id, 줄]` 로 담고 있다 — 2026-08-27 의 그 수정).
+usageRoute('/api/rune-usage', 'perk', 'runes', r => [r.key.length > 1 ? `${r.key[0]}:${r.key[1]}` : String(r.key[0])]);
 
 // ==========================================
 // 신화급 상점 (2026-08-16 신설)

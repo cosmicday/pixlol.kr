@@ -3222,25 +3222,35 @@ const CODEX_TABS = [
     { key: 'spell', name: '소환사 주문' }
 ];
 
-// ★★ 소환사 주문 채택률 (2026-08-26). 도감에서 **유일하게 런타임 API 를 부르는 자리**다.
-//   도감은 "codex_data.js 한 파일 · 런타임 의존 0" 이 원칙인데, 통계는 매시간 바뀌어서
-//   파일에 구울 수가 없다. 그래서 여기만 예외다 — **실패해도 화면은 그대로**고
-//   주문 상세에서 그 칸만 안 나온다 (아래 catch 가 조용히 넘긴다).
-//   ★ 한 번만 받는다. 도감 주문 탭에 들어갈 때 부르고 그 뒤로는 캐시를 쓴다.
-//   ★ 서버가 무엇을 세는지는 `/api/spell-usage` 주석 참고 (챔피언 픽 합계가 분모라 합이 200%).
-let spellUsage = null;
-let spellUsageTried = false;
-async function ensureSpellUsage(onLoad) {
-    if (spellUsageTried) return;
-    spellUsageTried = true;
+// ★★ 도감 채택률 (주문 2026-08-26 · 아이템·룬 2026-09-01). 도감에서 **유일하게 런타임 API 를
+//   부르는 자리**다. 도감은 "codex_data.js 한 파일 · 런타임 의존 0" 이 원칙인데, 통계는 매시간
+//   바뀌어서 파일에 구울 수가 없다. 그래서 여기만 예외다 — **실패해도 화면은 그대로**고
+//   상세에서 그 칸만 안 나온다 (아래 catch 가 조용히 넘긴다).
+//   ★ 탭마다 한 번씩만 받는다. 그 탭에 들어갈 때 부르고 그 뒤로는 캐시를 쓴다.
+//   ★ 서버가 무엇을 세는지는 `usagePayload` 주석 참고 (챔피언 픽 합계가 분모라 합이 200%·600%).
+//   ★★ 응답 필드 이름이 셋 다 다르다 (`spells`/`items`/`runes`) — 받아서 `map` 으로 통일해 둔다.
+const USAGE_API = {
+    spell: ['/api/spell-usage', 'spells'],
+    item: ['/api/item-usage', 'items'],
+    rune: ['/api/rune-usage', 'runes']
+};
+const usageData = {};
+const usageTried = {};
+async function ensureUsage(kind, onLoad) {
+    if (usageTried[kind]) return;
+    usageTried[kind] = true;
     try {
         // 챔피언 아이콘·한글 이름이 필요하다. 이미 받아 뒀으면 재요청하지 않는다.
         await fetchChampionMap();
-        const res = await fetch('/api/spell-usage');
+        const [url, field] = USAGE_API[kind];
+        const res = await fetch(url);
         const j = await res.json();
-        if (j && j.ready && j.picks) { spellUsage = j; if (onLoad) onLoad(); }
+        if (j && j.ready && j.picks) {
+            usageData[kind] = { picks: j.picks, scope: j.scope, map: j[field] || {} };
+            if (onLoad) onLoad();
+        }
     } catch (e) {
-        // 곁가지라 조용히 넘긴다 — 주문 상세의 나머지는 그대로 나온다
+        // 곁가지라 조용히 넘긴다 — 상세의 나머지는 그대로 나온다
     }
 }
 
@@ -3651,9 +3661,11 @@ async function showCodex(target) {
         const el = document.getElementById('codex-detail');
         const e = visible().find(x => x.id === selected);
         if (!e) { el.innerHTML = ''; return; }
-        // ★ 주문 탭에 들어왔을 때만 채택률을 받는다 (한 번만 — 안쪽 가드).
+        // ★ 그 탭에 들어왔을 때만 채택률을 받는다 (탭마다 한 번씩 — 안쪽 가드).
         //   받고 나면 지금 보고 있는 상세를 다시 그려 칸이 채워진다.
-        if (curTab === 'spell') ensureSpellUsage(() => { if (curTab === 'spell') renderDetail(); });
+        //   ★ 탭 키(item/rune/spell)가 곧 채택률 종류다. 받는 사이에 탭을 옮겼으면 안 그린다.
+        const usageTab = curTab;
+        ensureUsage(usageTab, () => { if (curTab === usageTab) renderDetail(); });
         el.innerHTML = curTab === 'item' ? itemDetailHtml(e)
             : curTab === 'rune' ? runeDetailHtml(e)
                 : spellDetailHtml(e);
@@ -3739,7 +3751,8 @@ async function showCodex(target) {
         <div class="codex-desc">${it.d || '<span class="codex-dim">설명이 없습니다.</span>'}</div>
         ${it.f.length ? recipeTreeRow(e.id) : ''}
         ${recipeRow('재료', it.f)}
-        ${recipeRow('상위 아이템', it.t)}`;
+        ${recipeRow('상위 아이템', it.t)}
+        ${usageCardHtml('item', String(e.id), { note: ITEM_USAGE_NOTE })}`;
     }
 
     function runeDetailHtml(e) {
@@ -3763,7 +3776,10 @@ async function showCodex(target) {
                 ${r.s ? `<div class="codex-plain is-plain">${r.s}</div>` : ''}
             </div>
         </div>
-        <div class="codex-desc is-plain">${r.d ? withRuneGraphs(e.id, r.d) : '<span class="codex-dim">설명이 없습니다.</span>'}</div>`;
+        <div class="codex-desc is-plain">${r.d ? withRuneGraphs(e.id, r.d) : '<span class="codex-dim">설명이 없습니다.</span>'}</div>
+        ${e.shard
+            ? shardRowsOf(e.id).map(n => usageCardHtml('rune', `${e.id}:${n - 1}`, { label: `${n}번째 줄 채택률` })).join('')
+            : usageCardHtml('rune', String(e.id))}`;
     }
 
     // ★★ 사거리 20000 이상은 **"표시할 값 없음" 더미**다 — 스킬 탭이 쓰는 그 규칙과 같다.
@@ -3800,15 +3816,30 @@ async function showCodex(target) {
                 </div>
                 <div class="codex-desc">${withGraphNotes(u.g || [], u.d)}</div>
             </div>`).join('')}
-        ${spellUsageHtml(e.id)}`;
+        ${usageCardHtml('spell', String(e.id))}`;
     }
 
+    // ★★ 아이템만 채택률의 뜻이 다르다 (2026-09-01) — 집계가 세는 건 **경기가 끝났을 때 6칸에
+    //   남아 있던** 아이템이라 "산 비율" 이 아니다. 그래서 롱소드 같은 기본 재료도 12% 가 나온다
+    //   (미완성으로 끝난 판). 안 적으면 오류처럼 보이는 자리라 헤더 아래 한 줄로 밝힌다.
+    const ITEM_USAGE_NOTE = '경기가 끝났을 때 아이템 창에 남아 있던 비율 · 기본 재료도 값이 있다';
+
+    // ★★ 승률만 표본 가드를 건다 (2026-09-01). 채택률은 분모가 전체 픽이라 표본이 몇 판이든
+    //   뜻이 있지만, 승률은 3판짜리에서 33% 같은 값이 나온다 — 칼리스타의 칠흑의 창(16.17 에
+    //   4판)처럼 거의 안 쓰이는 아이템이 도감 목록 맨 위에 있어서 실제로 걸리는 자리다.
+    //   값은 패치 영향 페이지의 `PI_MIN_GAMES` 와 같은 100 이다 (같은 정신이라 맞춰 둔다).
+    const USAGE_WR_MIN = 100;
+
     // ★ 채택률 칸. 데이터가 아직 없거나 실패했으면 **아무것도 안 그린다** (칸이 통째로 없다).
-    function spellUsageHtml(id) {
-        const u = spellUsage && spellUsage.spells[id];
+    //   ★★ 세 탭이 같은 함수를 쓴다 (2026-09-01). 다른 건 셋뿐이다 —
+    //     `label`(파편은 줄마다 카드가 하나라 "1번째 줄 채택률") · `note`(아이템의 뜻 한 줄) ·
+    //     키(파편만 `id:줄`).
+    function usageCardHtml(kind, key, opt = {}) {
+        const U = usageData[kind];
+        const u = U && U.map[key];
         if (!u || !u.games) return '';
-        const pct = (u.games / spellUsage.picks * 100).toFixed(1);
-        const wr = (u.wins / u.games * 100).toFixed(1);
+        const pct = (u.games / U.picks * 100).toFixed(1);
+        const wr = u.games >= USAGE_WR_MIN ? (u.wins / u.games * 100).toFixed(1) : null;
         const champs = (u.champs || []).map(x => {
             const eng = championIdMap[x.c];
             if (!eng) return '';                       // 신챔 등 아직 표에 없는 경우
@@ -3824,11 +3855,12 @@ async function showCodex(target) {
         return `
         <div class="codex-usage">
             <div class="codex-usage-head">
-                <span class="codex-usage-label">채택률</span>
+                <span class="codex-usage-label">${opt.label || '채택률'}</span>
                 <span class="codex-usage-big">${pct}%</span>
-                <span class="codex-dim">승률 ${wr}%</span>
-                <span class="codex-usage-scope">마스터+ · ${patchDisplay(spellUsage.scope.replace('p:', ''))} 패치</span>
+                <span class="codex-dim">${wr ? `승률 ${wr}%` : '승률 표본 부족'}</span>
+                <span class="codex-usage-scope">마스터+ · ${patchDisplay(U.scope.replace('p:', ''))} 패치</span>
             </div>
+            ${opt.note ? `<div class="codex-usage-note">${opt.note}</div>` : ''}
             ${champs ? `
                 <div class="codex-usage-sub">채택률 TOP5</div>
                 <div class="codex-usage-champs">${champs}</div>` : ''}

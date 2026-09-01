@@ -7168,9 +7168,10 @@ main {
     color: var(--accent);
 }
 
-/* ★★ 소환사 주문 채택률 (2026-08-26). 주문 상세가 도감에서 제일 휑해서 그 자리를 채운다.
-   ★ 데이터가 없으면 이 상자 자체가 안 그려진다 (spellUsageHtml 이 빈 문자열을 낸다) —
-     통계 API 가 실패해도 화면이 비어 보이지 않는다. */
+/* ★★ 도감 채택률 (주문 2026-08-26 · 아이템·룬 2026-09-01). 상세가 휑한 자리를 채운다.
+   ★ 데이터가 없으면 이 상자 자체가 안 그려진다 (usageCardHtml 이 빈 문자열을 낸다) —
+     통계 API 가 실패해도 화면이 비어 보이지 않는다.
+   ★ 파편은 있는 줄마다 카드가 하나씩이라 상자가 둘 나올 수 있다 (적응형 능력치). */
 .codex-usage {
     margin-top: 14px;
     padding-top: 14px;
@@ -7199,6 +7200,14 @@ main {
 /* 표본 출처. 오른쪽 끝으로 밀어 값과 떨어뜨린다 */
 .codex-usage-scope {
     margin-left: auto;
+    font-size: 12px;
+    color: var(--text-faint);
+}
+
+/* ★ 아이템만 붙는 안내 한 줄 — 채택률의 뜻이 "산 비율" 이 아니라 "경기 끝에 남아 있던 비율"
+   이라 기본 재료에도 값이 있다 (app.js 의 ITEM_USAGE_NOTE). */
+.codex-usage-note {
+    margin-top: 6px;
     font-size: 12px;
     color: var(--text-faint);
 }
