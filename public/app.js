@@ -1038,6 +1038,17 @@ async function executeSearch() {
         `;
 
         const userPuuid = data.puuid || (data.profile && data.profile.puuid);
+
+        // ★ LP 추이 카드 (2026-09-01, 로드맵 A-9) — 마스터+ 랭커만 기록이 있다.
+        //   서버가 매일 자정 +2분에 명단 전원의 LP 를 한 점씩 남긴다 (배포일부터 — 소급 불가).
+        //   기록이 없거나 하나뿐이면 "모으는 중" 안내가 뜬다.
+        if (userPuuid && ["MASTER", "GRANDMASTER", "CHALLENGER"].includes(rawTier.toUpperCase())) {
+            try {
+                const lpRes = await fetch(`/api/lp-history/${userPuuid}`);
+                if (lpRes.ok) sidebarHtml += lpTrendCardHtml((await lpRes.json()).rows || [], lp);
+            } catch (e) { }
+        }
+
         if (userPuuid) {
             try {
                 const masteryRes = await fetch(`/api/mastery/${userPuuid}`);
@@ -1451,6 +1462,17 @@ function renderMatches(matches, append = false) {
         const maxDamage = Math.max(...game.participants.map(p => p.damage));
         const maxDamageTaken = Math.max(...game.participants.map(p => p.damageTaken));
 
+        // ★ 참가자 티어 배지 (2026-09-01) — 마스터+ 명단에 있으면 초상화 왼쪽에 미니 문장.
+        //   한 명이라도 있어야 자리(18px)를 만든다 — 아무도 없는 판(일반·칼바람)에 빈 칸을 두면
+        //   이름 시작점만 밀린다. 협곡 표와 아레나 표(renderArenaDetail)가 같이 쓴다.
+        const anyTier = game.participants.some(x => x.rankTier);
+        const tierSlot = (p) => anyTier
+            ? `<span class="detail-tier-slot">${p.rankTier
+                ? `<img src="${RANK_MEDAL_BASE}${rankTierInfo(p.rankTier[0]).icon}.png" alt=""
+                       title="${rankTierInfo(p.rankTier[0]).name} · ${p.rankTier[1].toLocaleString()} LP" loading="lazy">`
+                : ''}</span>`
+            : '';
+
         const blueWon = game.participants.find(p => p.teamId === 100)?.win;
         const redWon = game.participants.find(p => p.teamId === 200)?.win;
         const blueHeaderClass = blueWon ? 'team-blue-header' : 'team-red-header';
@@ -1497,6 +1519,7 @@ function renderMatches(matches, append = false) {
                 <tr style="${isMeStyle}">
                     <td class="detail-champ-col">
                         <div class="champ-name-wrapper">
+                            ${tierSlot(p)}
                             <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png">
                             <div class="detail-summoner" onclick="document.getElementById('dogu-search-input').value='${p.summonerName}'; executeSearch();" title="${p.summonerName}">${p.summonerName}</div>
                         </div>
@@ -1592,6 +1615,7 @@ function renderMatches(matches, append = false) {
                         <tr style="${isMeStyle}">
                             <td class="detail-champ-col">
                                 <div class="champ-name-wrapper">
+                                    ${tierSlot(p)}
                                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png">
                                     <div class="detail-summoner" onclick="document.getElementById('dogu-search-input').value='${p.summonerName}'; executeSearch();" title="${p.summonerName}">${p.summonerName}</div>
                                 </div>
@@ -5786,6 +5810,40 @@ const RANK_MEDAL_BASE = 'https://raw.communitydragon.org/latest/plugins/rcp-fe-l
 
 function rankTierInfo(code) {
     return RANK_TIER_INFO[code] || RANK_TIER_INFO.M;
+}
+
+// ── LP 추이 카드 (2026-09-01, 로드맵 A-9) — 전적 페이지 사이드바. 그래프 골격은 pi-* 재사용
+function lpTrendCardHtml(rows, nowLp) {
+    const fmtD = (d) => { const s = String(d); return s.slice(2, 4) + '.' + s.slice(4); };   // 260901 → 09.01
+    const head = `<div class="lp-card-head"><h3>LP 추이</h3><span class="lp-card-now">${(nowLp || 0).toLocaleString()} LP</span></div>`;
+    if (!rows || rows.length < 2) {
+        return `<div class="pix-box lp-card">${head}
+            <div class="lp-card-empty">매일 자정에 한 점씩 기록됩니다.${rows && rows.length === 1 ? '<br>내일부터 선이 그려집니다.' : ''}</div></div>`;
+    }
+    const pts = rows.map(r => ({ day: r[0], v: r[1], t: r[2] }));
+    const vals = pts.map(p => p.v);
+    const vMax = Math.max(...vals), vMin = Math.min(...vals);
+    const span = vMax - vMin;
+    const pad = span > 0 ? span * 0.25 : Math.max(10, Math.round(vMax * 0.05) || 10);
+    const lo = vMin - pad, hi = vMax + pad;
+    const n = pts.length;
+    const X = (i) => n === 1 ? 50 : (i / (n - 1)) * 100;
+    const Y = (v) => 100 - ((v - lo) / (hi - lo)) * 100;
+    const line = `<polyline class="pi-line" points="${pts.map((p, i) => X(i).toFixed(2) + ',' + Y(p.v).toFixed(2)).join(' ')}"/>`;
+    // 점이 붙어 못 알아보면 선만 그린다 (컷라인 그래프의 30개 규칙과 같은 감각)
+    const dots = n <= 60 ? pts.map((p, i) =>
+        `<span class="pi-dot" style="left:${X(i).toFixed(2)}%; top:${Y(p.v).toFixed(2)}%"
+               data-tip="${fmtD(p.day)} · ${p.v.toLocaleString()} LP · ${rankTierInfo(p.t).short}"></span>`).join('') : '';
+    const yLabels = `<span class="pi-y" style="top:${Y(vMax).toFixed(2)}%">${vMax.toLocaleString()}</span>`
+        + (span > 0 ? `<span class="pi-y" style="top:${Y(vMin).toFixed(2)}%">${vMin.toLocaleString()}</span>` : '');
+    return `<div class="pix-box lp-card">
+        ${head}
+        <div class="pi-plot lp-plot">
+            <svg class="pi-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${line}</svg>
+            ${dots}${yLabels}
+        </div>
+        <div class="pi-axis lp-axis"><span>${fmtD(pts[0].day)}</span><span>${fmtD(pts[n - 1].day)}</span></div>
+    </div>`;
 }
 
 // "3분 전 갱신". 서버가 0 을 주면(아직 한 번도 안 받았으면) 예전 문구로 물러난다.

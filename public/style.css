@@ -8497,3 +8497,51 @@ main {
     .duo-champ img { width: 26px; height: 26px; }
     .lt-plot { height: 240px; }
 }
+
+/* ==========================================
+   상세 전적 티어 배지 + LP 추이 카드 (2026-09-01)
+   ========================================== */
+/* ★ .champ-name-wrapper img 가 32px 를 강제하므로 배지는 슬롯 안에서 따로 잡는다 */
+.champ-name-wrapper .detail-tier-slot {
+    width: 18px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.champ-name-wrapper .detail-tier-slot img {
+    width: 18px;
+    height: 18px;
+    border-radius: 0;
+}
+
+.lp-card { padding: 16px 18px 12px; }
+
+.lp-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+}
+
+.lp-card-head h3 {
+    color: #fff;
+    font-size: 14px;
+}
+
+.lp-card-now {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.lp-plot { height: 90px; margin: 0 46px 8px 0; }
+.lp-axis { margin-right: 46px; }
+
+.lp-card-empty {
+    font-size: 12px;
+    color: var(--text-faint);
+    line-height: 1.6;
+    padding: 2px 0 4px;
+}

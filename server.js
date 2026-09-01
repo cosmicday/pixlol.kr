@@ -88,6 +88,21 @@ const rankSnapshotSchema = new mongoose.Schema({
 const RankSnapshot = mongoose.model('RankSnapshot', rankSnapshotSchema);
 
 // ==========================================
+// 랭커 LP 일별 이력 (2026-09-01, 로드맵 A-9) — 전적 페이지 LP 추이 그래프 몫
+//   ★★ 로드맵의 "ranksnapshots 로 소급 가능" 은 틀렸다 — 거긴 puuid 목록뿐이고
+//     LP 가 없다 (TTL 5일). 그래서 소급은 불가능하고 **배포일부터** 하루 한 점씩 쌓는다.
+//   hist 한 칸 = [YYMMDD(수, 260901 꼴), LP, 티어 한 글자]. 날짜를 수로 담는 건 용량 때문 —
+//   1.1만 명 x 180칸이면 문서당 ~5KB 라 문자열 날짜보다 1KB 씩 아낀다.
+//   명단에서 빠진 지 180일 지난 문서는 잡이 지운다 (강등·계정 이동으로 떠난 사람이 무한히 안 쌓이게).
+// ==========================================
+const lpHistorySchema = new mongoose.Schema({
+    puuid: { type: String, required: true, unique: true },
+    lastDay: { type: Number, default: 0 },   // 마지막 기록일 (재실행 중복 방지 + 청소 기준)
+    hist: { type: Array, default: [] }
+}, { versionKey: false });
+const LpHistory = mongoose.model('LpHistory', lpHistorySchema);
+
+// ==========================================
 // 상위 티어 어긋남 눈금 (2026-08-17 신설)
 //   ★★ **라이엇이 티어를 언제 다시 계산하는지 알아내려고 둔 것이다.**
 //     라이엇은 챌린저/그마 소속을 연속으로 갱신하지 않고 하루 한 번쯤 몰아서 처리한다.
@@ -550,6 +565,10 @@ async function updateArenaAugments() {
 //   (마스터는 1만 명이라 응답이 커서 504 게이트웨이 타임아웃이 유독 자주 났다)
 const RANK_TIERS = ['challengerleagues', 'grandmasterleagues', 'masterleagues'];
 const rankListByTier = { challengerleagues: [], grandmasterleagues: [], masterleagues: [] };
+const TIER_LETTER = { challengerleagues: 'C', grandmasterleagues: 'G', masterleagues: 'M' };
+// ★ puuid → [티어 한 글자, LP] (2026-09-01). 상세 전적의 참가자 티어 배지 몫 —
+//   명단이 갱신될 때마다 같이 다시 만든다. 조회는 buildHistoryEntry 가 한다 (라이엇 호출 0).
+let rankTierByPuuid = new Map();
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -596,6 +615,7 @@ async function updateChallengerList() {
             challengerList = combinedEntries.sort((a, b) => b.leaguePoints - a.leaguePoints);
             // ★ k 판정용 집합을 같이 갱신한다. 명단이 10분마다 바뀌므로 여기서만 만든다.
             rankPuuidSet = new Set(challengerList.map(p => p.puuid));
+            rankTierByPuuid = new Map(challengerList.map(p => [p.puuid, [TIER_LETTER[p.tier] || 'M', p.leaguePoints]]));
             rankUpdatedAt = Date.now();
             myCache.del('challenger_ranking_data');   // 새 명단이 왔으면 옛 응답을 버린다
             console.log(`[Task] 랭킹 명단 갱신 완료 (총 ${challengerList.length}명)`);
@@ -892,6 +912,68 @@ function scheduleCutoffJob(overrideMs) {
         catch (e) { console.error('[Cutoff] 저장 실패:', e.message); }
         scheduleCutoffJob(ok ? undefined : CUTOFF_RETRY);   // 실패하면 5분 뒤, 성공하면 내일 자정
     }, overrideMs === undefined ? nextCutoffDelay() : overrideMs);
+}
+
+// ==========================================
+// 랭커 LP 일별 기록 잡 (2026-09-01) — 한국시간 자정 +2분, 하루 한 번
+//   ★ 컷라인 잡(+30초)과 일부러 어긋나게 — 1.1만 건 쓰기가 자정 정각에 몰리지 않게.
+//   ★ 라이엇 호출 0 — 이미 5~10분마다 받아 둔 명단(challengerList)을 재사용한다.
+//   ★ day 딱지는 **어제**다 (컷라인 잡과 같은 규칙 — 자정 직후의 명단은 어젯밤 마감 LP 다).
+// ==========================================
+const LP_HIST_MAX = 180;                 // 스플릿 하나 길이 (2026-09-01 사용자 결정)
+const LP_JOB_OFFSET = 2 * 60 * 1000;
+const LP_JOB_RETRY = 5 * 60 * 1000;
+
+const yymmdd = (ms) => Number(kstDay(ms).slice(2).replace(/-/g, ''));   // "2026-09-01" → 260901
+
+async function saveLpHistory() {
+    if (!challengerList.length) return false;    // 부팅 직후 명단이 비면 5분 뒤 재시도
+    const day = yymmdd(Date.now() - 86400000);   // 어제
+
+    const ops = challengerList.map(p => ({
+        updateOne: {
+            // ★ lastDay 가드 — 재시작·중복 실행이 같은 날 두 점을 만들지 않게.
+            //   이미 기록된 문서는 filter 에 안 걸려 upsert 가 중복 키(E11000)로 터지는데,
+            //   그건 "이미 했다" 는 뜻이라 아래에서 삼킨다.
+            filter: { puuid: p.puuid, lastDay: { $ne: day } },
+            update: {
+                $set: { lastDay: day },
+                $push: { hist: { $each: [[day, p.leaguePoints, TIER_LETTER[p.tier] || 'M']], $slice: -LP_HIST_MAX } }
+            },
+            upsert: true
+        }
+    }));
+    let written = 0;
+    for (let i = 0; i < ops.length; i += 2000) {
+        try {
+            const r = await LpHistory.bulkWrite(ops.slice(i, i + 2000), { ordered: false });
+            written += (r.modifiedCount || 0) + (r.upsertedCount || 0);
+        } catch (e) {
+            if (e.code !== 11000 && !/E11000/.test(e.message || '')) throw e;
+            written += e.result?.nModified || 0;
+        }
+    }
+    // 명단에서 빠진 지 LP_HIST_MAX 일이 지난 문서는 지운다 (YYMMDD 수는 대소 비교가 날짜순과 같다)
+    const cutoff = yymmdd(Date.now() - (LP_HIST_MAX + 1) * 86400000);
+    await LpHistory.deleteMany({ lastDay: { $lt: cutoff, $gt: 0 } }).catch(() => { });
+    console.log(`[LpHist] ${day} LP 기록 ${written}명 / 명단 ${challengerList.length}명`);
+    return true;
+}
+
+function nextLpHistDelay() {
+    const kstNow = Date.now() + 9 * 3600000;
+    let wait = LP_JOB_OFFSET - (kstNow % 86400000);
+    if (wait <= 0) wait += 86400000;
+    return wait;
+}
+
+function scheduleLpHistoryJob(overrideMs) {
+    setTimeout(async () => {
+        let ok = false;
+        try { ok = await saveLpHistory(); }
+        catch (e) { console.error('[LpHist] 저장 실패:', e.message); }
+        scheduleLpHistoryJob(ok ? undefined : LP_JOB_RETRY);
+    }, overrideMs === undefined ? nextLpHistDelay() : overrideMs);
 }
 
 // ★★ 스냅샷을 **합집합으로** 쌓는다 — "그날 명단에 한 번이라도 있던 사람" 이 맞다.
@@ -2120,6 +2202,8 @@ async function startJobs() {
     scheduleRankUpdate();
     // ★ 컷라인은 명단 갱신과 별개로 하루 한 번(한국시간 자정) 혼자 돈다. 라이엇 호출 0.
     scheduleCutoffJob();
+    // ★ 랭커 LP 일별 기록 — 자정 +2분, 라이엇 호출 0 (2026-09-01)
+    scheduleLpHistoryJob();
     setInterval(resolveNamesInBackground, 60 * 1000);
 
     // ★ 숙련도 잡은 30초 어긋나게 띄운다. 닉네임 20회(24초) + 숙련도 10회(12초)를
@@ -2412,6 +2496,9 @@ function buildHistoryEntry(detail, targetPuuid, isPast = false) {
         dateStr: isPast ? "과거 전적" : relativeDay(daysAgo),
         timestamp: detail.info.gameEndTimestamp,
         participants: detail.info.participants.map(part => ({
+            // ★ 마스터+ 명단에 있으면 [티어 한 글자, LP] — 상세 표의 티어 배지 몫 (2026-09-01).
+            //   응답을 만드는 순간의 명단 기준이라 캐시된 응답은 몇 분 낡을 수 있다 (문제 없다)
+            rankTier: rankTierByPuuid.get(part.puuid) || null,
             puuid: part.puuid, isSearchedUser: part.puuid === targetPuuid, teamId: part.teamId, win: part.win, champLevel: part.champLevel,
             championName: part.championName === "FiddleSticks" ? "Fiddlesticks" : part.championName, visionScore: part.visionScore,
             summonerName: part.riotIdGameName ? `${part.riotIdGameName}#${part.riotIdTagline}` : (part.summonerName || "알 수 없음"),
@@ -2657,6 +2744,17 @@ app.get('/api/summoner/:name', async (req, res) => {
 });
 
 // 마스터리 조회
+// ★ 랭커 LP 일별 이력 (2026-09-01) — 전적 페이지 LP 추이 카드 몫. 마스터+ 만 기록이 있다
+app.get('/api/lp-history/:puuid', async (req, res) => {
+    try {
+        const doc = await LpHistory.findOne({ puuid: req.params.puuid }).select('-_id hist').lean();
+        res.json({ rows: doc?.hist || [] });
+    } catch (e) {
+        console.error('[API] LP 이력 조회 실패:', e.message);
+        res.status(500).json({ error: 'LP 이력을 불러오지 못했습니다.' });
+    }
+});
+
 app.get('/api/mastery/:puuid', async (req, res) => {
     try {
         const response = await riotApi.get(`https://kr.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${req.params.puuid}/top?count=7`);
