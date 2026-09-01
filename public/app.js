@@ -6541,11 +6541,11 @@ function mythicCollectingMsg(key) {
 //    긁은 것이다. 오른쪽 PBE 칸은 X 자동 수집이 안 돼서 index.html 에 정적 안내다.
 // ============================================================
 // ==========================================
-//  홈 위젯 — 이번 패치 라인별 최강 (2026-09-01 신설, 로드맵 A-6)
+//  홈 위젯 — 라인별 추천 챔피언 (2026-09-01 신설, 로드맵 A-6)
 //
-//   홈에 통계로 가는 입구가 헤더 메뉴뿐이라 만들었다. **라인마다 티어 점수 1위 하나씩** —
-//   점수 상위 5명으로 뽑으면 16.17 기준 정글이 셋(리 신·킨드레드·니달리)이라 라인이 치우친다
-//   (사용자 결정 2026-09-01).
+//   홈에 통계로 가는 입구가 헤더 메뉴뿐이라 만들었다. **라인마다 티어 점수 상위 3명** —
+//   점수 상위 5명을 통짜로 뽑으면 16.17 기준 정글이 셋(리 신·킨드레드·니달리)이라 라인이
+//   치우친다 (사용자 결정 2026-09-01: 라인별 · 3명 · 가로 일자 카드).
 //
 //   ★★ 티어 점수는 통계 탭과 **같은 `computeLaneTiers`** 가 계산한다. 서버에 공식을 복제하면
 //     두 벌이 되어 어긋난다 (TIER_COEF·TIER_CUTS 가 화면 쪽에만 있는 이유이기도 하다).
@@ -6554,6 +6554,9 @@ function mythicCollectingMsg(key) {
 //     `#home-tier-container` 가 `display:none` 으로 시작해서, 그릴 게 있을 때만 켠다.
 //   ★ 줄을 누르면 통계 상세로 간다 — 통계 표와 같이 **라인을 주소에 같이 넘긴다**
 //     (안 넘기면 판수가 제일 많은 라인으로 물러나서 "탑 잭스" 를 눌러도 다른 라인이 뜬다).
+// ★ 라인마다 몇 명을 보여줄지. 열 폭이 232px 라 이 이상은 세로로만 길어진다
+const HOME_TIER_N = 3;
+
 async function loadHomeTiers() {
     const box = document.getElementById('home-tier-container');
     if (!box) return;
@@ -6576,46 +6579,48 @@ async function loadHomeTiers() {
         const total = Object.values(data.totals || {}).reduce((a, b) => a + b, 0);
         const tiers = computeLaneTiers(list, total);
 
-        // 라인마다 점수 1위 하나
-        const best = new Map();
-        list.forEach(c => {
-            const t = tiers.get(`${c.champ}|${c.pos}`);
-            if (!t) return;
-            const cur = best.get(c.pos);
-            if (!cur || t.score > cur.score) best.set(c.pos, { ...c, ...t });
-        });
-        const picks = STAT_POS.map(p => ({ p, c: best.get(p.code) })).filter(x => x.c);
-        if (!picks.length) return;
+        // 라인마다 점수 상위 HOME_TIER_N 명
+        const cols = STAT_POS.map(p => ({
+            p,
+            arr: list
+                .map(c => { const t = tiers.get(`${c.champ}|${c.pos}`); return (t && c.pos === p.code) ? { ...c, ...t } : null; })
+                .filter(Boolean)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, HOME_TIER_N)
+        })).filter(x => x.arr.length);
+        if (!cols.length) return;
 
         document.getElementById('home-tier-scope').textContent = statScopeLabel(data.scope);
-        document.getElementById('home-tier-list').innerHTML = picks.map(({ p, c }) => {
+        document.getElementById('home-tier-list').innerHTML = cols.map(({ p, arr }) => `
+            <div class="home-tier-col">
+                <div class="home-tier-colhead">
+                    <img src="${STAT_LANE_ICON[p.key]}" alt="">
+                    <span>${p.name}</span>
+                    <span class="home-tier-colnote">승률 · 픽률</span>
+                </div>
+                ${arr.map(c => {
             const eng = championIdMap[c.champ] || '0';
             const kor = (window.korChampMap || {})[eng] || eng;
             const win = c.games ? c.wins / c.games * 100 : 0;
             const pick = total ? c.games / total * 100 : 0;
             return `
-            <div class="home-tier-card" data-champ="${eng}" data-lane="${p.key}">
-                <div class="home-tier-lane">
-                    <img src="${STAT_LANE_ICON[p.key]}" alt="">
-                    <span>${p.name}</span>
-                </div>
-                <img class="home-tier-portrait"
-                     src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${eng}.png" alt="" loading="lazy">
-                <div class="home-tier-main">
+                <div class="home-tier-row" data-champ="${eng}" data-lane="${p.key}" title="${kor} · ${p.name} · 승률 ${win.toFixed(1)}% · 픽률 ${pick.toFixed(1)}%">
+                    <img class="home-tier-portrait"
+                         src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${eng}.png" alt="" loading="lazy">
                     <span class="home-tier-name">${kor}</span>
-                    <span class="stats-tier ${tierClass(c.tier)}" title="점수 ${c.score.toFixed(2)}">${c.tier === 'OP' ? 'OP' : c.tier + '티어'}</span>
-                </div>
-                <div class="home-tier-num">승률 ${win.toFixed(1)}% · 픽률 ${pick.toFixed(1)}%</div>
-            </div>`;
-        }).join('');
+                    <span class="stats-tier ${tierClass(c.tier)} home-tier-badge" title="점수 ${c.score.toFixed(2)}">${c.tier === 'OP' ? 'OP' : c.tier + '티어'}</span>
+                    <span class="home-tier-num">${win.toFixed(1)}%·${pick.toFixed(1)}%</span>
+                </div>`;
+        }).join('')}
+            </div>`).join('');
         box.style.display = '';
 
         document.getElementById('home-tier-list').addEventListener('click', (e) => {
-            const card = e.target.closest('.home-tier-card');
-            if (!card) return;
-            const url = `/stats/${card.dataset.champ}/${card.dataset.lane}`;
-            window.history.pushState({ page: 'stats', champ: card.dataset.champ, lane: card.dataset.lane }, '', url);
-            showChampStatPage(card.dataset.champ, card.dataset.lane);
+            const row = e.target.closest('.home-tier-row');
+            if (!row) return;
+            const url = `/stats/${row.dataset.champ}/${row.dataset.lane}`;
+            window.history.pushState({ page: 'stats', champ: row.dataset.champ, lane: row.dataset.lane }, '', url);
+            showChampStatPage(row.dataset.champ, row.dataset.lane);
         });
     } catch (e) {
         // 곁가지라 조용히 넘긴다 — 홈의 나머지는 그대로 나온다
