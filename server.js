@@ -1631,7 +1631,9 @@ async function loadCompletedItems() {
 }
 
 // 타임라인 갈래 — buildOneBuildScope 의 facet 과 같은 모양(`_id: {c, pos, k}, games, wins`)으로 돌려준다.
-async function buildTimelineFacet(matchCond) {
+//   ★ `opts.pick`({c,pos}) 을 주면 **참가자 한 명만** 남긴다 — vs 비교 페이지가 "그 상대와 만난 판의
+//     나 한 명" 으로 좁혀 **같은 facet 을 그대로 태우려고** 뚫은 자리다 (2026-09-02).
+async function buildTimelineFacet(matchCond, opts = {}) {
     const { complete, boots } = await loadCompletedItems();
     const at = (arr, i) => ({ $arrayElemAt: [arr, i] });
     // 스킬 L 의 포인트 수(n)와 5번째 포인트를 찍은 자리(at, 없으면 99)
@@ -1664,6 +1666,7 @@ async function buildTimelineFacet(matchCond) {
             } }
         } } } } },
         { $unwind: '$rows' }, { $replaceRoot: { newRoot: '$rows' } },
+        ...(opts.pick ? [{ $match: { c: opts.pick.c, pos: opts.pick.pos } }] : []),
         { $project: {
             c: 1, pos: 1, w: 1,
             ord: { $slice: [
@@ -1695,7 +1698,9 @@ async function buildTimelineFacet(matchCond) {
 }
 
 // 챔피언별 룬·주문 빌드 집계. **패치 scope 에만 부른다** (champBuildSchema 주석 참고)
-async function buildOneBuildScope(scopeKey, matchCond) {
+//   ★ `opts` 는 vs 비교 페이지가 쓴다 (2026-09-02) — `pick`({c,pos})으로 참가자 한 명만 남기고,
+//     `returnDocs` 면 저장하지 않고 줄을 그대로 돌려준다. **안 넘기면 예전과 똑같이 돈다.**
+async function buildOneBuildScope(scopeKey, matchCond, opts = {}) {
     const P = i => ({ $arrayElemAt: ['$p', i] });
 
     // ★ $unwind 를 한 번만 하고 $facet 으로 네 갈래를 낸다. 갈래마다 따로 aggregate 를
@@ -1704,6 +1709,8 @@ async function buildOneBuildScope(scopeKey, matchCond) {
         { $match: matchCond },
         { $project: { p: 1 } },
         { $unwind: '$p' },
+        // ★ vs 비교는 여기서 한 명으로 좁힌다 (그 뒤 facet 은 통째로 같다)
+        ...(opts.pick ? [{ $match: { $expr: { $and: [{ $eq: [P(0), opts.pick.c] }, { $eq: [P(1), opts.pick.pos] }] } } }] : []),
         {
             $project: {
                 c: P(0), w: P(2),
@@ -1781,9 +1788,9 @@ async function buildOneBuildScope(scopeKey, matchCond) {
     // ★ 타임라인 갈래(스킬·시작템·코어)는 `sk` 가 있는 판만 세므로 따로 돈다 (위 buildTimelineFacet).
     //   실패해도 룬·아이템 집계는 살린다 — DD item.json 을 못 받는 날 빌드 전체가 비면 손해가 크다.
     //   ★★ 16.17 미만 패치는 아예 안 돈다 (`TL_MIN_PATCH`) — 16.16 은 아이템·스킬 로그 없이 간다 (사용자 지시)
-    if (scopeKey.startsWith('p:') && patchAtLeast(scopeKey.slice(2), TL_MIN_PATCH)) {
+    if (opts.timeline || (scopeKey.startsWith('p:') && patchAtLeast(scopeKey.slice(2), TL_MIN_PATCH))) {
         try {
-            Object.assign(f, await buildTimelineFacet(matchCond));
+            Object.assign(f, await buildTimelineFacet(matchCond, opts));
         } catch (e) {
             console.error(`[Stat] 타임라인 집계 실패 (${scopeKey}):`, e.message);
         }
@@ -1824,6 +1831,9 @@ async function buildOneBuildScope(scopeKey, matchCond) {
             docs.push(...list.slice(0, topN));
         });
     }
+
+    // ★ vs 비교는 저장하지 않고 줄만 가져간다 (그 자리에서 한 번 쓰고 버리는 값이다)
+    if (opts.returnDocs) return docs;
 
     // champstats 와 같은 세대 교체 (2026-08-31) — 넣고 → 딱지(genB) → 옛 세대 삭제.
     const gen = Date.now();
@@ -3617,23 +3627,16 @@ app.get('/api/champion-builds', async (req, res) => {
 //   ★★ 이건 **집계에 없는 자료다.** `champbuilds` 는 (챔피언 × 라인 × 빌드)로만 뭉쳐 있어서
 //     "상대가 누구였는지" 가 아예 안 담긴다. 미리 집계하려면 (챔피언 × 상대 × 라인쌍 × 빌드) 라
 //     행이 폭발한다 — 16.17 기준 관계만 72,646개다. 그래서 **원본(matchstats)에서 그때그때 센다.**
-//   ★ 실측 434ms (16.17 · 21,770판). `v` 인덱스를 타고 $project 로 필요한 칸만 남겨서 빠르다.
-//     응답은 30분 캐시라 같은 쌍을 다시 열면 즉시 나온다.
 //
-//   ★★ 화면은 이 값을 **그 챔피언의 평소 빌드(`/api/champion-builds`)와 나란히** 놓는다.
-//     "에클립스 86.8%" 만으로는 뜻이 없고 "평소 82.1% → 그브전 86.8% (+4.7)" 여야 읽힌다.
-//     그래서 **key 모양을 champbuilds 와 정확히 같게 맞춘다** — 특히
-//     `keystone` 은 `[주 계열 id, 핵심 룬 id]` 두 칸이고, `spell` 은 **작은 id 를 앞으로 정렬**하며
-//     (안 하면 점멸/강타와 강타/점멸이 갈려 표본이 반이 된다), `skillpri`·`skillord6` 은
-//     `buildTimelineFacet` 과 **같은 규칙으로** 뽑는다 (선마는 "5번째 포인트를 찍은 자리" 순).
+//   ★★★ **집계 함수를 그대로 쓴다** (`buildOneBuildScope` 에 `pick`·`returnDocs`·`timeline` 을 넘긴다).
+//     응답이 `/api/champion-builds` 와 **완전히 같은 모양**(rows/totals)이라, 화면은 통계 상세와
+//     **같은 컴포넌트**(lxLowerRows·lxSkillBox·lxRuneBox)를 그대로 그린다 — 룬 페이지·시작 아이템·
+//     초반 아이템·세트·신발·1~5번째 아이템·스킬 순서까지 **한 칸도 빠지지 않는다.**
+//     예전에 vs 전용 표를 따로 만들었다가 "양식이 다르고 데이터가 잘린다" 는 지적을 받았다.
 //
-//   ★ `rel` 은 0 이 적, 1 이 아군이다 (champmatchups 와 같은 뜻). 팀 판별은 슬림 문서 3번 칸(teamId).
-//   ★ 미러전 가드: A 와 B 가 같은 챔피언·같은 라인이면 filter 가 같은 자리를 두 번 집을 수 있어
-//     `i !== j` 를 못 박는다.
-//   ★ 스킬 두 칸은 `sk`(스킬 로그)가 있는 판만 센다 — 16.17 은 22,585/22,585 라 전부 있지만
-//     16.16 이하는 아예 없다 (`TL_MIN_PATCH`). 그래서 표본이 다른 칸과 다를 수 있다.
-const VERSUS_TOP = 12;   // 칸마다 상위 몇 개까지 내려줄지 (화면이 8개 안팎을 쓴다)
-
+//   ★ 판 고르기는 `$expr` 한 덩어리다 — 나(a,pos)와 상대(b,fpos)가 같은 판에 있고 팀 관계가 `rel`
+//     인 판. **미러전 가드**로 상대 자리에서 내 자리를 뺀다(`$ne`), 안 그러면 같은 사람을 둘로 센다.
+//   ★ 실측 1.1초 안팎 (16.17 · 21,770판, 타임라인 facet 포함). 30분 캐시라 다시 열면 즉시 나온다.
 app.get('/api/versus-build', async (req, res) => {
     try {
         const a = Number(req.query.a), b = Number(req.query.b);
@@ -3644,10 +3647,9 @@ app.get('/api/versus-build', async (req, res) => {
         }
 
         const scopes = await StatScope.find({}).lean();
-        if (!scopes.length) return res.json({ ready: false, games: 0 });
+        if (!scopes.length) return res.json({ ready: false, total: 0, rows: [] });
         const { scope } = pickStatScope(scopes, req.query.scope);
-        // 패치 scope 가 아니면(일별) 셀 뜻이 없다
-        if (!scope.startsWith('p:')) return res.json({ ready: false, games: 0, scope });
+        if (!scope.startsWith('p:')) return res.json({ ready: false, total: 0, rows: [], scope });
 
         const cacheKey = `versusbuild_${scope}_${a}_${b}_${pos}_${fpos}_${rel}`;
         const hit = myCache.get(cacheKey);
@@ -3655,71 +3657,43 @@ app.get('/api/versus-build', async (req, res) => {
 
         const at = (arr, i) => ({ $arrayElemAt: [arr, i] });
         const P = (i, j) => at(at('$p', i), j);
-        const M = j => at('$me', j);
-        const grp = k => ({ $group: { _id: k, g: { $sum: 1 }, w: { $sum: '$w' } } });
-        const top = [{ $sort: { g: -1 } }, { $limit: VERSUS_TOP }];
-        // 스킬 L 의 포인트 수(n)와 5번째 포인트를 찍은 자리(at) — buildTimelineFacet 과 같은 식
-        const maxAt = L => ({ $reduce: {
-            input: { $range: [0, { $strLenCP: '$sk' }] }, initialValue: { n: 0, at: 99 },
-            in: { $cond: [
-                { $eq: [{ $substrCP: ['$sk', '$$this', 1] }, L] },
-                { n: { $add: ['$$value.n', 1] }, at: { $cond: [{ $eq: ['$$value.n', 4] }, '$$this', '$$value.at'] } },
-                '$$value'
-            ] }
-        } });
-
-        const rows = await MatchStat.aggregate([
-            { $match: { v: scope.slice(2) } },
-            { $project: { p: 1, sk: { $ifNull: ['$sk', []] } } },
-            // 내 자리와 상대 자리를 찾는다 (챔피언 + 라인으로)
-            { $project: {
-                p: 1, sk: 1,
-                mi: { $filter: { input: { $range: [0, 10] }, as: 'i',
-                    cond: { $and: [{ $eq: [P('$$i', 0), a] }, { $eq: [P('$$i', 1), pos] }] } } },
-                fi: { $filter: { input: { $range: [0, 10] }, as: 'i',
-                    cond: { $and: [{ $eq: [P('$$i', 0), b] }, { $eq: [P('$$i', 1), fpos] }] } } }
-            } },
-            { $match: { 'mi.0': { $exists: true }, 'fi.0': { $exists: true } } },
-            { $project: { p: 1, sk: 1, i: at('$mi', 0), j: at('$fi', 0) } },
-            { $match: { $expr: { $ne: ['$i', '$j'] } } },          // 미러전 가드
-            { $project: { me: at('$p', '$i'), sk: { $ifNull: [at('$sk', '$i'), ''] },
-                mt: P('$i', 3), ft: P('$j', 3) } },
-            { $match: { $expr: rel === 1 ? { $eq: ['$mt', '$ft'] } : { $ne: ['$mt', '$ft'] } } },
-            { $project: {
-                w: M(2),
-                keystone: [M(17), M(18)],
-                perk: [M(18), M(19), M(20), M(21), M(23), M(24)],
-                item: [M(9), M(10), M(11), M(12), M(13), M(14)],
-                // ★ 작은 id 를 앞으로 — 집계와 같은 규칙이라야 평소 값과 짝이 맞는다
-                spell: { $cond: [{ $lt: [M(15), M(16)] }, [M(15), M(16)], [M(16), M(15)]] },
-                ord: { $map: { input: { $range: [0, { $strLenCP: '$sk' }] }, as: 'i',
-                    in: { $add: [{ $indexOfCP: ['QWER', { $substrCP: ['$sk', '$$i', 1] }] }, 1] } } },
-                pri: { $map: { input: { $sortArray: { input: [
-                    { $mergeObjects: [{ l: 1 }, maxAt('Q')] },
-                    { $mergeObjects: [{ l: 2 }, maxAt('W')] },
-                    { $mergeObjects: [{ l: 3 }, maxAt('E')] }
-                ], sortBy: { at: 1, n: -1, l: 1 } } }, as: 's', in: '$$s.l' } }
-            } },
-            { $facet: {
-                n: [{ $group: { _id: null, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
-                keystone: [grp('$keystone'), ...top],
-                perk: [{ $unwind: '$perk' }, { $match: { perk: { $gt: 0 } } }, grp(['$perk']), ...top],
-                item: [{ $unwind: '$item' }, { $match: { item: { $gt: 0, $nin: ITEM_CONSUMABLES } } }, grp(['$item']), ...top],
-                spell: [grp('$spell'), ...top],
-                // 선마는 9포인트 이상인 판만 (집계와 같은 조건 — 그래야 평소 값과 모집단이 같다)
-                skillpri: [{ $match: { 'ord.8': { $exists: true } } }, grp('$pri'), ...top],
-                skillord6: [{ $match: { 'ord.5': { $exists: true } } }, grp({ $slice: ['$ord', 6] }), ...top]
+        // 두 챔피언이 그 라인 짝으로 같은 판에 있었나 (rel 0 적 · 1 아군)
+        const cond = {
+            v: scope.slice(2),
+            $expr: { $let: {
+                vars: { mi: { $filter: { input: { $range: [0, 10] }, as: 'i',
+                    cond: { $and: [{ $eq: [P('$$i', 0), a] }, { $eq: [P('$$i', 1), pos] }] } } } },
+                in: { $let: {
+                    vars: { i: at('$$mi', 0) },
+                    in: { $and: [
+                        { $gt: [{ $size: '$$mi' }, 0] },
+                        { $gt: [{ $size: { $filter: { input: { $range: [0, 10] }, as: 'k',
+                            cond: { $and: [
+                                { $ne: ['$$k', '$$i'] },                       // ★ 미러전 가드
+                                { $eq: [P('$$k', 0), b] }, { $eq: [P('$$k', 1), fpos] },
+                                rel === 1 ? { $eq: [P('$$k', 3), P('$$i', 3)] } : { $ne: [P('$$k', 3), P('$$i', 3)] }
+                            ] } } } }, 0] }
+                    ] }
+                } }
             } }
-        ]).allowDiskUse(true);
+        };
 
-        const f = rows[0] || {};
-        const cell = (arr) => (arr || []).map(r => ({ k: r._id, g: r.g, w: r.w }));
+        // ★ 집계 함수를 그대로 태운다 — 나온 줄이 champbuilds 와 같은 모양이다
+        const docs = await buildOneBuildScope('vs', cond, {
+            pick: { c: a, pos }, returnDocs: true, timeline: patchAtLeast(scope.slice(2), TL_MIN_PATCH)
+        });
+
+        // `/api/champion-builds` 와 같은 응답 모양으로 (화면이 같은 코드로 읽는다)
+        const totals = {}, totalWins = {};
+        docs.filter(d => d.type === 'all').forEach(d => { totals[d.pos] = d.games; totalWins[d.pos] = d.wins; });
         const payload = {
             ready: true, scope, a, b, pos, fpos, rel,
-            games: (f.n && f.n[0] && f.n[0].games) || 0,
-            wins: (f.n && f.n[0] && f.n[0].wins) || 0,
-            keystone: cell(f.keystone), perk: cell(f.perk), item: cell(f.item),
-            spell: cell(f.spell), skillpri: cell(f.skillpri), skillord6: cell(f.skillord6)
+            champ: a,
+            total: totals[pos] || 0,
+            wins: totalWins[pos] || 0,
+            totals, totalWins,
+            rows: docs.filter(d => d.type !== 'all')
+                .map(d => ({ pos: d.pos, type: d.type, key: d.key, games: d.games, wins: d.wins }))
         };
         myCache.set(cacheKey, payload, 1800);
         res.json(payload);

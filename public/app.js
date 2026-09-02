@@ -4175,7 +4175,6 @@ function lxRow(label, cards, opts = {}) {
 //   ★ 표본 컷은 없다 (사용자 결정) — 5판짜리 관계도 그린다. 대신 표본을 크게 적고
 //     `MATCHUP_SHOW_MIN` 미만이면 흐리게 해서 얇다는 걸 눈으로 알 수 있게 한다.
 //   ★ 픽률 분모가 둘이다 — 스킬 두 칸(선마·순서)은 `tlall`, 나머지는 `all` 이다 (집계와 같은 규칙).
-const VS_SHOW = { keystone: 3, perk: 6, item: 8, spell: 3, skillpri: 3, skillord6: 3 };
 
 // ★ 한국어 조사 — 받침이 있으면 을/이, 없으면 를/가. 챔피언 이름이 둘 다라서(그레이브즈를 · 리 신을)
 //   그냥 붙이면 어색하다. 마지막 글자의 종성만 보면 된다 (한글이 아니면 받침 있는 쪽으로).
@@ -4327,19 +4326,29 @@ async function showVersusPage(engA, engB, relKey) {
     </div>`;
     bindVersus(box, a, b, engOf, cur);
 
-    // ── 빌드 비교 (그 관계의 판만 세서 평소와 나란히)
+    // ── 빌드 비교 — **통계 상세와 같은 컴포넌트로** 그린다 (2026-09-02, 사용자 지적).
+    //   `/api/versus-build` 가 champbuilds 와 같은 모양으로 오므로 `lxBuildData` 에 그대로 넣으면
+    //   룬 페이지·시작/초반 아이템·세트·신발·1~5번째·스킬 순서까지 **한 칸도 안 빠지고** 나온다.
+    //   세 번째 인자(평소 빌드)를 주면 모든 줄에 "평소 대비" 칸이 하나 더 붙는다.
     try {
-        // ★ 룬·아이템 이름표를 먼저 받는다 — perkIcon/itemNameOf 가 그걸 읽는다.
-        //   통계 상세는 이미 부르고 있어서, 안 부르면 여기서만 조용히 빈 상자가 됐다 (실제로 그랬다).
         await loadPerkData();
-        const [vb, builds] = await Promise.all([
+        const [vb, baseBuilds, icons] = await Promise.all([
             fetch(`/api/versus-build?a=${a}&b=${b}&pos=${cur.pos}&fpos=${cur.fpos}&rel=${cur.rel}&scope=${encodeURIComponent(data.scope)}`)
                 .then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/champion-builds?scope=${encodeURIComponent(data.scope)}&champ=${a}`)
-                .then(r => r.ok ? r.json() : null).catch(() => null)
+                .then(r => r.ok ? r.json() : null).catch(() => null),
+            loadChampSpellIcons(engOf(a))
         ]);
         const el = document.getElementById('versus-build');
-        if (el) el.innerHTML = versusBuildHtml(vb, builds, cur, korOf(a), korOf(b));
+        if (!el) return;
+        if (!vb || !vb.ready || !vb.total) { el.innerHTML = `<div class="lx-none">이 관계의 빌드 표본이 아직 없습니다.</div>`; return;}
+        // 통계 상세와 같은 ctx — 그쪽 컴포넌트가 c.B 와 c.skillIcons 만 본다
+        const vctx = { B: lxBuildData(vb, cur.pos, baseBuilds), skillIcons: icons, pos: cur.pos };
+        el.innerHTML = `<div class="versus-build-head">
+                <span class="versus-build-title">${cur.rel ? josa(korOf(b), '과', '와') + ' 같은 팀일 때' : josa(korOf(b), '을', '를') + ' 만났을 때'} ${korOf(a)} 빌드</span>
+                <span class="versus-build-n">${(vb.total || 0).toLocaleString()}판 기준 · 평소 대비 칸은 상대를 가리지 않은 같은 라인 채택률과의 차이입니다</span>
+            </div>` + lxLowerRows(vctx) + lxSkillBox(vctx) + lxRuneBox(vctx);
+        lxBindTabs(el, vctx);
     } catch (e) {
         const el = document.getElementById('versus-build');
         if (el) el.innerHTML = '';
@@ -4370,77 +4379,6 @@ function bindVersus(box, a, b, engOf, cur) {
     });
 }
 
-// ★ 빌드 비교 표. `vb` 가 그 관계의 값이고 `builds` 가 평소 값이다.
-//   ★ 분모가 둘이다 — 스킬 두 칸은 tlall, 나머지는 all (집계와 같은 규칙).
-function versusBuildHtml(vb, builds, cur, korA, korB) {
-    if (!vb || !vb.ready || !vb.games) return '';
-    const B = lxBuildData(builds, cur.pos);
-    const kk = k => (Array.isArray(k) ? k.join(',') : String(k));
-
-    // 평소 값 표 (type → key → 채택률)
-    const baseOf = (type) => {
-        const denom = (type === 'skillpri' || type === 'skillord6') ? B.tl : B.total;
-        const m = {};
-        B.rows(type).forEach(r => { if (denom) m[kk(r.key)] = r.games / denom * 100; });
-        return m;
-    };
-    const denomOf = type => (type === 'skillpri' || type === 'skillord6') ? vb.games : vb.games;
-
-    const render = {
-        keystone: k => {
-            const [style, key] = k;
-            return `<img class="vsb-ico is-round" src="${perkIcon(key)}" alt=""><span class="vsb-name">${perkName(key)}</span>`;
-        },
-        perk: k => `<img class="vsb-ico is-round" src="${perkIcon(k[0])}" alt=""><span class="vsb-name">${perkName(k[0])}</span>`,
-        item: k => `<img class="vsb-ico" src="${itemIconOf(k[0])}" alt=""><span class="vsb-name">${itemNameOf(k[0]) || k[0]}</span>`,
-        spell: k => `<span class="vsb-spells">${k.map(id => `<img class="vsb-ico" src="${spellIcon(id)}" alt="" title="${spellName(id)}">`).join('')}</span><span class="vsb-name">${k.map(id => spellName(id)).join(' + ')}</span>`,
-        skillpri: k => `<span class="vsb-name is-skill">${k.map(n => 'QWE'[n - 1]).join(' > ')}</span>`,
-        skillord6: k => `<span class="vsb-name is-skill">${k.map(n => 'QWER'[n - 1]).join('')}</span>`
-    };
-
-    const rowHtml = (type, label) => {
-        const list = (vb[type] || []).slice(0, VS_SHOW[type] || 6);
-        if (!list.length) return '';
-        const base = baseOf(type);
-        const denom = denomOf(type);
-        const cards = list.map(r => {
-            const cur2 = denom ? r.g / denom * 100 : 0;
-            const b0 = base[kk(r.k)];
-            const d = b0 == null ? null : cur2 - b0;
-            return `
-            <div class="vsb-card" title="${r.g}판 · 승률 ${(r.w / r.g * 100).toFixed(1)}%">
-                ${render[type](r.k)}
-                <span class="vsb-cur">${cur2.toFixed(1)}%</span>
-                <span class="vsb-base">평소 ${b0 == null ? '—' : b0.toFixed(1) + '%'}</span>
-                <span class="vsb-delta${d == null ? '' : (d >= 0 ? ' is-up' : ' is-down')}">${d == null ? '' : (d >= 0 ? '+' : '') + d.toFixed(1)}</span>
-            </div>`;
-        }).join('');
-        return `<div class="vsb-row"><div class="vsb-label">${label}</div><div class="vsb-cards">${cards}</div></div>`;
-    };
-
-    const body = [
-        rowHtml('keystone', '핵심 룬'),
-        rowHtml('perk', '룬'),
-        rowHtml('spell', '소환사 주문'),
-        rowHtml('item', '최종 아이템'),
-        rowHtml('skillpri', '선마 순서'),
-        rowHtml('skillord6', '스킬 순서 (6레벨)')
-    ].join('');
-    if (!body.trim()) return '';
-
-    return `
-    <div class="vsb-box">
-        <div class="vsb-head">
-            <span class="vsb-title">${cur.rel ? josa(korB, '과', '와') + ' 같은 팀일 때' : josa(korB, '을', '를') + ' 만났을 때'} ${korA} 빌드</span>
-            <span class="vsb-n">${vb.games.toLocaleString()}판 기준</span>
-        </div>
-        ${body}
-        <div class="vsb-foot">
-            왼쪽 값이 <b>이 상대와 만난 판</b>의 채택률이고, <b>평소</b>는 상대를 가리지 않은 같은 라인 채택률입니다.
-            차이가 크면 그 상대를 상대로 빌드를 바꾼다는 뜻입니다. 스킬 두 줄은 스킬 로그가 있는 판만 셉니다.
-        </div>
-    </div>`;
-}
 
 // ── 페이지 본체 ───────────────────────────────────────────────────────
 async function showChampStatPage(engId, laneKey) {
@@ -4646,7 +4584,9 @@ function lxHeader(c) {
 // ── 빌드 자료 정리 ─────────────────────────────────────────────────────
 //   B.rows(type) = 그 라인의 줄들(판수 내림차순, 1판짜리 제외 — 전부 1판이면 한 줄), B.pick(type, mode) = 대표 하나
 //   B.total = all 분모, B.tl = tlall 분모 (타임라인 있는 판). tl 이 0 이면 그 패치는 로그가 없는 것이다.
-function lxBuildData(builds, pos) {
+// ★★ `baseBuilds` 를 주면 **평소 대비 차이** 칸이 모든 줄에 붙는다 (2026-09-02, vs 비교 페이지).
+//   통계 상세는 안 넘기므로 예전 그대로 세 칸이다 — 같은 컴포넌트를 두 화면이 쓰는 이유가 이것이다.
+function lxBuildData(builds, pos, baseBuilds) {
     const rowsAll = (builds && builds.rows) || [];
     const totals = (builds && builds.totals) || {};
     const total = totals[pos] || 0;
@@ -4674,7 +4614,19 @@ function lxBuildData(builds, pos) {
         }
         return list.slice(0, n);
     };
-    return { rows, pick, sorted, total, tl, rebuilding: builds && builds.rebuilding, archived: builds && builds.archived, has: !!builds };
+    // 평소 값 표 — `type|key` → 채택률(%). 분모는 그쪽 all/tlall 이다 (여기 분모와 다르다)
+    let base = null;
+    if (baseBuilds && baseBuilds.rows) {
+        const bT = (baseBuilds.totals || {})[pos] || 0;
+        const bTl = (baseBuilds.rows.find(r => r.type === "tlall" && (r.pos == null ? -1 : r.pos) === pos) || {}).games || 0;
+        base = {};
+        baseBuilds.rows.forEach(r => {
+            if ((r.pos == null ? -1 : r.pos) !== pos) return;
+            const d = LX_TL_TYPES.has(r.type) ? bTl : bT;
+            if (d) base[`${r.type}|${(r.key || []).join(",")}`] = r.games / d * 100;
+        });
+    }
+    return { rows, pick, sorted, total, tl, base, rebuilding: builds && builds.rebuilding, archived: builds && builds.archived, has: !!builds };
 }
 
 // 픽률 분모: 타임라인 type 은 tl, 나머지는 total
@@ -4683,13 +4635,23 @@ function lxDenom(B, type) { return LX_TL_TYPES.has(type) ? B.tl : B.total; }
 
 // 3칸 값 (승률 · 픽률 · 판수) — 카드 줄 공통
 function lxVals3(B, type, r) {
-    return [
+    const vals = [
         { v: lxPct(r.wins, r.games) + '%', cls: lxWr(r.wins, r.games) },
         { v: lxPct(r.games, lxDenom(B, type)) + '%', cls: 'lx-lav' },
         { v: r.games, cls: 'lx-gray' }
     ];
+    // ★ vs 비교에서만 붙는 칸 — 평소 채택률 대비 차이 (통계 상세는 B.base 가 없어 그대로 세 칸)
+    if (B.base) {
+        const b0 = B.base[`${type}|${(r.key || []).join(",")}`];
+        const cur = lxDenom(B, type) ? r.games / lxDenom(B, type) * 100 : 0;
+        const d = b0 == null ? null : cur - b0;
+        vals.push({ v: d == null ? '—' : (d >= 0 ? '+' : '') + d.toFixed(1), cls: d == null ? 'lx-gray' : (d >= 0 ? 'lx-green' : 'lx-red') });
+    }
+    return vals;
 }
 const LX_M3 = [{ t: '승률', cls: 'lx-green' }, { t: '픽률', cls: 'lx-lav' }, { t: '판수', cls: 'lx-gray' }];
+// ★ vs 비교면 머리글도 한 칸 는다 (lxVals3 과 짝이라 한쪽만 고치면 어긋난다)
+const lxM3 = B => (B && B.base) ? [...LX_M3, { t: '평소 대비', cls: 'lx-yellow' }] : LX_M3;
 
 // 스킬 배지 (아이콘 + 글자)
 function lxSkill(c, n, small) {
@@ -4826,17 +4788,17 @@ function lxLowerRows(c) {
     const box = (id, tabbar, rowsHtml) => `<div class="lx-box" id="${id}">${tabbar || ''}<div class="lx-box-rows">${rowsHtml}</div></div>`;
 
     // 소환사 주문 (아이콘 두 개를 세로로 쌓는다 — 그쪽과 같다)
-    const spells = box('lx-spells', '', lxRow({ title: '소환사 주문', metrics: LX_M3 },
+    const spells = box('lx-spells', '', lxRow({ title: '소환사 주문', metrics: lxM3(B) },
         B.rows('spell').slice(0, LX_ROW_MAX).map(r => ({ icons: r.key.map(spellIcon), title: r.key.map(spellName).join(' + '), vals: lxVals3(B, 'spell', r) })),
         { stack: true, topH: 80 }));
 
     // 최종 아이템 셋 — 인기(픽 순) · 승률(승률 순, 표본 하한) · 전체
     const fin = B.rows('item');
     const floor = Math.max(BUILD_MIN_GAMES, (fin[0]?.games || 0) * LX_WIN_MIN_SHARE);
-    const finalRows = lxRow({ title: '인기 아이템', metrics: LX_M3 }, itemCards('item', fin.slice(0, LX_ROW_MAX)))
-        + lxRow({ title: '승률 아이템', metrics: LX_M3 }, itemCards('item', fin.filter(r => r.games >= floor).sort((a, b) => b.wins / b.games - a.wins / a.games).slice(0, LX_ROW_MAX)))
+    const finalRows = lxRow({ title: '인기 아이템', metrics: lxM3(B) }, itemCards('item', fin.slice(0, LX_ROW_MAX)))
+        + lxRow({ title: '승률 아이템', metrics: lxM3(B) }, itemCards('item', fin.filter(r => r.games >= floor).sort((a, b) => b.wins / b.games - a.wins / a.games).slice(0, LX_ROW_MAX)))
         // ★ '전체 아이템' 줄은 **타임라인 없는 패치(16.16)에서만** 뺀다 (2026-08-27, 사용자 요청) — 16.17 은 그쪽과 같이 다 보여준다
-        + (hasTl ? lxRow({ title: '전체 아이템', metrics: LX_M3 }, itemCards('item', fin.slice(0, 60))) : '');
+        + (hasTl ? lxRow({ title: '전체 아이템', metrics: lxM3(B) }, itemCards('item', fin.slice(0, 60))) : '');
 
     if (!hasTl) {
         return spells + box('lx-items', '', finalRows);
@@ -4850,10 +4812,10 @@ function lxLowerRows(c) {
         `<div id="lx-early-body">${lxEarlyBody(c, 'item')}</div>`);
     const sets = box('lx-sets',
         lxTabBar('sets', [{ v: 'set2', label: '아이템 2개' }, { v: 'core', label: '아이템 3개' }, { v: 'set4', label: '아이템 4개' }, { v: 'set5', label: '아이템 5개' }], 'core'),
-        `<div id="lx-sets-body">${lxRow({ title: '세트', metrics: LX_M3 }, setCards('core', B.rows('core').slice(0, 12)), { empty: '타임라인 표본을 모으는 중' })}</div>`);
+        `<div id="lx-sets-body">${lxRow({ title: '세트', metrics: lxM3(B) }, setCards('core', B.rows('core').slice(0, 12)), { empty: '타임라인 표본을 모으는 중' })}</div>`);
     const items = box('lx-items', '',
-        lxRow({ title: '신발', metrics: LX_M3 }, itemCards('boots', B.rows('boots').slice(0, LX_ROW_MAX)), { empty: '타임라인 표본을 모으는 중' })
-        + ['item1', 'item2', 'item3', 'item4', 'item5'].map((t, i) => lxRow({ title: `${i + 1}번째 아이템`, metrics: LX_M3 }, itemCards(t, B.rows(t).slice(0, LX_ROW_MAX)), { empty: '타임라인 표본을 모으는 중' })).join('')
+        lxRow({ title: '신발', metrics: lxM3(B) }, itemCards('boots', B.rows('boots').slice(0, LX_ROW_MAX)), { empty: '타임라인 표본을 모으는 중' })
+        + ['item1', 'item2', 'item3', 'item4', 'item5'].map((t, i) => lxRow({ title: `${i + 1}번째 아이템`, metrics: lxM3(B) }, itemCards(t, B.rows(t).slice(0, LX_ROW_MAX)), { empty: '타임라인 표본을 모으는 중' })).join('')
         + finalRows);
     return spells + starting + early + sets + items;
 }
@@ -4861,18 +4823,18 @@ function lxLowerRows(c) {
 function lxStartBody(c, v) {
     const B = c.B;
     if (v === 'set') {
-        return lxRow({ title: '시작 세트', metrics: LX_M3 }, B.rows('start').slice(0, 12).map(r => ({ icons: r.key.map(itemIconOf), title: r.key.map(itemNameOf).join(' + '), vals: lxVals3(B, 'start', r) })), { empty: '타임라인 표본을 모으는 중' });
+        return lxRow({ title: '시작 세트', metrics: lxM3(B) }, B.rows('start').slice(0, 12).map(r => ({ icons: r.key.map(itemIconOf), title: r.key.map(itemNameOf).join(' + '), vals: lxVals3(B, 'start', r) })), { empty: '타임라인 표본을 모으는 중' });
     }
     // 낱개 — 세트를 펼쳐서 아이템마다 합친다
     const agg = new Map();
     B.rows('start').forEach(r => r.key.forEach(id => { const cur = agg.get(id) || { key: [id], games: 0, wins: 0 }; cur.games += r.games; cur.wins += r.wins; agg.set(id, cur); }));
     const list = [...agg.values()].sort((a, b) => b.games - a.games).slice(0, LX_ROW_MAX);
-    return lxRow({ title: '시작 아이템', metrics: LX_M3 }, list.map(r => ({ icons: [itemIconOf(r.key[0])], title: itemNameOf(r.key[0]), vals: lxVals3(B, 'start', r) })), { empty: '타임라인 표본을 모으는 중' });
+    return lxRow({ title: '시작 아이템', metrics: lxM3(B) }, list.map(r => ({ icons: [itemIconOf(r.key[0])], title: itemNameOf(r.key[0]), vals: lxVals3(B, 'start', r) })), { empty: '타임라인 표본을 모으는 중' });
 }
 function lxEarlyBody(c, v) {
     const B = c.B;
     const type = v === 'set' ? 'earlyset' : 'early';
-    return lxRow({ title: v === 'set' ? '초반 세트' : '초반 아이템', metrics: LX_M3 }, B.rows(type).slice(0, v === 'set' ? 12 : LX_ROW_MAX).map(r => ({ icons: r.key.map(itemIconOf), title: r.key.map(itemNameOf).join(' + '), vals: lxVals3(B, type, r) })), { empty: '타임라인 표본을 모으는 중' });
+    return lxRow({ title: v === 'set' ? '초반 세트' : '초반 아이템', metrics: lxM3(B) }, B.rows(type).slice(0, v === 'set' ? 12 : LX_ROW_MAX).map(r => ({ icons: r.key.map(itemIconOf), title: r.key.map(itemNameOf).join(' + '), vals: lxVals3(B, type, r) })), { empty: '타임라인 표본을 모으는 중' });
 }
 
 // ── 스킬 우선순위 상자 (전체 / 6 / 10 / 15레벨) ──────────────────────
@@ -4910,7 +4872,7 @@ function lxSkillBody(c, type) {
     const B = c.B;
     if (type === 'skillpri') {
         const cards = B.rows('skillpri').map(r => ({ top: r.key.map(n => lxSkill(c, n, true)).join('<span class="lx-arrow is-sm">›</span>'), title: r.key.map(n => 'QWER'[n - 1]).join(' > '), vals: lxVals3(B, 'skillpri', r) }));
-        return lxRow({ title: '우선순위', metrics: LX_M3 }, cards, { empty: '타임라인 표본을 모으는 중', topH: 34 });
+        return lxRow({ title: '우선순위', metrics: lxM3(B) }, cards, { empty: '타임라인 표본을 모으는 중', topH: 34 });
     }
     // 레벨별 스킬 순서 — 세로로 한 줄씩 (순서 + 승률·픽률·판수)
     const list = B.rows(type).slice(0, 8);
@@ -5017,7 +4979,7 @@ function lxBindTabs(root, c) {
         'early': v => { document.getElementById('lx-early-body').innerHTML = lxEarlyBody(c, v); },
         'sets': v => {
             const B = c.B;
-            document.getElementById('lx-sets-body').innerHTML = lxRow({ title: '세트', metrics: LX_M3 },
+            document.getElementById('lx-sets-body').innerHTML = lxRow({ title: '세트', metrics: lxM3(B) },
                 B.rows(v).slice(0, 12).map(r => ({ icons: r.key.map(itemIconOf), title: r.key.map(itemNameOf).join(' › '), vals: lxVals3(B, v, r) })), { empty: '타임라인 표본을 모으는 중' });
         },
         'skill': v => { document.getElementById('lx-skill-body').innerHTML = lxSkillBody(c, v); },
