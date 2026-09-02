@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
         //   챔피언 통계 상세의 상성 카드에서 들어온다 — 주소는 그대로 살아 있다.
         //   **popstate 쪽도 같이 고칠 것** (이 저장소가 반복해서 겪은 함정)
         document.getElementById('stats-container').style.display = 'block';
-        if (pathParts[2] && pathParts[3]) showVersusPage(decodeURIComponent(pathParts[2]), decodeURIComponent(pathParts[3]));
+        if (pathParts[2] && pathParts[3]) showVersusPage(decodeURIComponent(pathParts[2]), decodeURIComponent(pathParts[3]), pathParts[4] || null);
         else showStats();
         setActiveNav('nav-stats-live');
     } else if (pathParts[1] === 'codex') {
@@ -459,7 +459,7 @@ window.addEventListener('popstate', (event) => {
         // ★ 진입부와 두 곳을 같이 고친다 (2026-09-02)
         const vs = currentPath.split('/');
         document.getElementById('stats-container').style.display = 'block';
-        if (vs[2] && vs[3]) showVersusPage(decodeURIComponent(vs[2]), decodeURIComponent(vs[3]));
+        if (vs[2] && vs[3]) showVersusPage(decodeURIComponent(vs[2]), decodeURIComponent(vs[3]), vs[4] || null);
         else showStats();
         setActiveNav('nav-stats-live');
     } else if (currentPath.startsWith('/codex')) {
@@ -4093,7 +4093,9 @@ const BUILD_MIN_GAMES = 5;
 //    화면은 **10판 이상만 순위에 올리고**, 그것도 없으면 있는 대로 보여주되 흐리게 둔다.
 //    비워 두면 고장으로 보인다 — 룬 패널의 "전부 1판이면 한 줄은 남긴다" 와 같은 판단이다.
 // ==========================================
-const MATCHUP_SHOW_MIN = 10;   // 순위에 올릴 최소 표본
+const MATCHUP_SHOW_MIN = 10;
+// ★ 서버 집계가 이 판수 미만인 조합을 아예 저장하지 않는다 (server.js MATCHUP_MIN)
+const MATCHUP_MIN_HINT = 5;   // 순위에 올릴 최소 표본
 const MATCHUP_SIDE_N = 5;      // 한쪽에 몇 명씩
 
 // ══════════════════════════════════════════════════════════════════════
@@ -4160,23 +4162,31 @@ function lxRow(label, cards, opts = {}) {
 }
 
 // ============================================================
-//  챔피언 vs 챔피언 맞대결 비교 — /versus/<A>/<B> (2026-09-02 신설, 로드맵 A-2)
+//  챔피언 vs 챔피언 비교 — /versus/<A>/<B>[/<pos>-<fpos>-<rel>] (2026-09-02, 로드맵 A-2)
 //
-//   ★★ 집계 추가 0 — `/api/champion-matchups?champ=A` 가 A 의 모든 상대 줄을 이미 준다.
-//     거기서 **같은 라인 적**(`rel:0` 이고 `fpos === pos`)이면서 `foe === B` 인 줄만 고른다.
-//     쌍이 양쪽 관점으로 두 번 저장돼 있어서 A 기준 한 번만 부르면 된다.
+//   ★★ **두 챔피언이 같은 판에 있었던 모든 관계**를 다룬다 (2026-09-02 확장, 사용자 요청
+//     "맞라인 아니어도 누르면 비교되게"). `champmatchups` 가 한 판의 나머지 9명을 전부 담고 있어서
+//     관계가 여럿이다 — 리신 vs 야스오는 6개다 (정글 vs 미드 189판 · 정글+미드 아군 104판 · …).
+//     표본 최다 관계를 기본으로 열고 나머지는 칩으로 고른다. 주소 4번째 칸이 `pos-fpos-rel` 이다.
 //
-//   ★ 담는 건 **맞대결뿐이다** (사용자 결정 2026-09-02). 같은 팀일 때(시너지)와 나란히 성적
-//     비교는 뺐다 — 그래서 **카이사+쓰레쉬처럼 라인이 겹치지 않는 쌍은 항상 빈 페이지**다.
-//     그 경우 안내와 함께 "이 챔피언이 자주 만나는 상대" 를 대신 깔아 되돌아갈 길을 준다.
-//
-//   ★★ 표본이 얇다. 실측(16.17): 같은 라인 맞대결 칸 8,044개 중 30판 이상은 1,560개(19%),
-//     100판 이상은 264개(3%)뿐이다. 그래서 **표본을 승률만큼 크게 적고**, `MATCHUP_SHOW_MIN`
-//     미만은 흐리게 하고, "그 라인에서의 평소 승률" 을 같이 놓아 34판 67.6% 가 과장으로 안 읽히게 한다.
-//
-//   ★ 진입은 챔피언 통계 상세의 상성 카드다 (헤더 메뉴는 안 늘렸다 — 사용자 결정).
-//     페이지 안에서 두 챔피언을 바꿀 수 있게 고르는 칸을 둔다.
-async function showVersusPage(engA, engB) {
+//   ★★ 빌드 비교는 `/api/versus-build` 가 **원본에서 그때그때 센 값**이다 (집계에 없는 자료 —
+//     그쪽 주석 참고). 그걸 **그 챔피언의 평소 빌드(`/api/champion-builds`)와 나란히** 놓는다.
+//     "에클립스 87.2%" 만으로는 뜻이 없고 "평소 82.1% → +5.1" 이라야 읽힌다.
+//   ★ 표본 컷은 없다 (사용자 결정) — 5판짜리 관계도 그린다. 대신 표본을 크게 적고
+//     `MATCHUP_SHOW_MIN` 미만이면 흐리게 해서 얇다는 걸 눈으로 알 수 있게 한다.
+//   ★ 픽률 분모가 둘이다 — 스킬 두 칸(선마·순서)은 `tlall`, 나머지는 `all` 이다 (집계와 같은 규칙).
+const VS_SHOW = { keystone: 3, perk: 6, item: 8, spell: 3, skillpri: 3, skillord6: 3 };
+
+// ★ 한국어 조사 — 받침이 있으면 을/이, 없으면 를/가. 챔피언 이름이 둘 다라서(그레이브즈를 · 리 신을)
+//   그냥 붙이면 어색하다. 마지막 글자의 종성만 보면 된다 (한글이 아니면 받침 있는 쪽으로).
+function josa(w, withBatchim, without) {
+    const s = String(w || "");
+    const c = s.charCodeAt(s.length - 1);
+    const ko = c >= 0xAC00 && c <= 0xD7A3;
+    return s + (!ko || (c - 0xAC00) % 28 !== 0 ? withBatchim : without);
+}
+
+async function showVersusPage(engA, engB, relKey) {
     hideAllContainers();
     setActiveNav('nav-stats-live');
     const box = document.getElementById('stats-container');
@@ -4198,7 +4208,6 @@ async function showVersusPage(engA, engB) {
         data = await res.json();
         if (!data.ready) throw new Error('not ready');
         window.statScope = data.scope;
-        // 박제된 패치는 상성 행이 파일에 있다 — 통계 상세와 같은 판별이라 그쪽 헬퍼를 그대로 쓴다
         mdata = data.archived
             ? archivedMatchupsFor(data.scope, a)
             : await fetch(`/api/champion-matchups?scope=${encodeURIComponent(data.scope)}&champ=${a}`).then(r => r.ok ? r.json() : null);
@@ -4210,16 +4219,20 @@ async function showVersusPage(engA, engB) {
     const engOf = id => championIdMap[id];
     const korOf = id => (window.korChampMap || {})[championIdMap[id]] || championIdMap[id] || id;
     const patch = patchDisplay(String(data.scope || '').replace('p:', ''));
+    const posName = c => (STAT_POS.find(p => p.code === c) || {}).name || '';
+    const posKey = c => (STAT_POS.find(p => p.code === c) || {}).key || '';
 
     // 그 라인에서의 평소 승률 — 맞대결 값을 읽는 기준선이다
     const laneWr = {};
-    (data.rows || []).forEach(r => { if (r.pos >= 0 && r.games) laneWr[`${r.champ}|${r.pos}`] = { wr: r.wins / r.games * 100, games: r.games }; });
+    (data.rows || []).forEach(r => { if (r.pos >= 0 && r.games) laneWr[`${r.champ}|${r.pos}`] = r.wins / r.games * 100; });
 
-    // ★ 같은 라인 적 줄만 (rel 0 · fpos === pos). 옛 행은 fpos 가 없어서 pos 로 물러난다
-    const rows = ((mdata && mdata.rows) || [])
-        .filter(r => (r.rel || 0) === 0 && (r.fpos == null ? r.pos : r.fpos) === r.pos)
+    // ★ 두 챔피언 사이의 관계 전부 (적·아군 · 라인 조합). 표본 순으로 칩이 된다
+    const rels = ((mdata && mdata.rows) || [])
         .filter(r => r.foe === b && r.games)
+        .map(r => ({ pos: r.pos, fpos: r.fpos == null ? r.pos : r.fpos, rel: r.rel || 0, games: r.games, wins: r.wins }))
         .sort((x, y) => y.games - x.games);
+    const keyOf = r => `${r.pos}-${r.fpos}-${r.rel}`;
+    const cur = rels.find(r => keyOf(r) === relKey) || rels[0] || null;
 
     const selOpts = (sel) => Object.keys(championIdMap)
         .map(k => ({ id: Number(k), eng: championIdMap[k], kor: korOf(Number(k)) }))
@@ -4227,45 +4240,22 @@ async function showVersusPage(engA, engB) {
         .sort((x, y) => String(x.kor).localeCompare(String(y.kor), 'ko'))
         .map(x => `<option value="${x.eng}"${x.id === sel ? ' selected' : ''}>${x.kor}</option>`).join('');
 
-    const laneCards = rows.map(r => {
-        const p = STAT_POS.find(x => x.code === r.pos);
-        const wrA = r.wins / r.games * 100;
-        const baseA = laneWr[`${a}|${r.pos}`];
-        const baseB = laneWr[`${b}|${r.pos}`];
-        const dim = r.games < MATCHUP_SHOW_MIN;
-        return `
-        <div class="versus-lane${dim ? ' is-dim' : ''}">
-            <div class="versus-lane-head">
-                ${p ? `<img src="${STAT_LANE_ICON[p.key]}" alt="">` : ''}
-                <span>${p ? p.name : '라인'}</span>
-                <span class="versus-games">${r.games.toLocaleString()}판</span>
-            </div>
-            <div class="versus-bar">
-                <i class="versus-bar-a" style="width:${wrA.toFixed(1)}%"></i>
-            </div>
-            <div class="versus-wr">
-                <span class="versus-wr-a${wrA >= 50 ? ' is-win' : ''}">${wrA.toFixed(1)}%</span>
-                <span class="versus-wr-b${wrA < 50 ? ' is-win' : ''}">${(100 - wrA).toFixed(1)}%</span>
-            </div>
-            <div class="versus-base">
-                <span>${korOf(a)} 평소 ${baseA ? baseA.wr.toFixed(1) + '%' : '—'}</span>
-                <span>${korOf(b)} 평소 ${baseB ? baseB.wr.toFixed(1) + '%' : '—'}</span>
-            </div>
-        </div>`;
-    }).join('');
+    const relLabel = r => r.rel
+        ? `${posName(r.pos)}+${posName(r.fpos)} 아군`
+        : `${posName(r.pos)} vs ${posName(r.fpos)}`;
 
-    // 맞대결이 없을 때 — 그 챔피언이 자주 만나는 상대를 대신 깔아 준다 (되돌아갈 길)
-    const others = ((mdata && mdata.rows) || [])
-        .filter(r => (r.rel || 0) === 0 && (r.fpos == null ? r.pos : r.fpos) === r.pos && r.games >= MATCHUP_SHOW_MIN)
-        .sort((x, y) => y.games - x.games).slice(0, 12)
-        .map(r => `
-            <div class="versus-alt" data-foe="${engOf(r.foe)}" title="${korOf(r.foe)} · ${r.games}판">
-                <img src="${champIconUrl(engOf(r.foe))}" alt="" loading="lazy">
-                <span>${korOf(r.foe)}</span>
-            </div>`).join('');
+    const chips = rels.map(r => `
+        <button class="versus-chip${cur && keyOf(r) === keyOf(cur) ? ' active' : ''}" data-rel="${keyOf(r)}">
+            ${r.rel ? '<span class="versus-chip-ally">아군</span>' : ''}
+            <img src="${STAT_LANE_ICON[posKey(r.pos)]}" alt="">
+            <span>${posName(r.pos)}</span>
+            <span class="versus-chip-x">${r.rel ? '+' : 'vs'}</span>
+            <img src="${STAT_LANE_ICON[posKey(r.fpos)]}" alt="">
+            <span>${posName(r.fpos)}</span>
+            <span class="versus-chip-n">${r.games.toLocaleString()}판</span>
+        </button>`).join('');
 
-    box.innerHTML = `
-    <div class="lx-page">
+    const head = `
         <div class="versus-head">
             <a href="/stats/${engOf(a)}" class="stat-back" data-back>← ${korOf(a)} 통계</a>
             <span class="versus-scope">마스터+ · ${patch} 패치</span>
@@ -4279,36 +4269,177 @@ async function showVersusPage(engA, engB) {
         <div class="versus-faces">
             <div class="versus-face"><img src="${champIconUrl(engOf(a))}" alt=""><span>${korOf(a)}</span></div>
             <div class="versus-face"><img src="${champIconUrl(engOf(b))}" alt=""><span>${korOf(b)}</span></div>
-        </div>
-        ${rows.length ? `<div class="versus-lanes">${laneCards}</div>
-            <p class="versus-foot">
-                같은 라인에서 마주친 판만 셉니다. 왼쪽이 ${korOf(a)}, 오른쪽이 ${korOf(b)} 의 승률입니다.
-                <b>평소</b> 는 상대를 가리지 않은 그 라인 승률이라, 맞대결 값이 평소보다 높으면 유리한 상대입니다.
-                ${MATCHUP_SHOW_MIN}판 미만은 흐리게 그립니다 — 표본이 얇으면 승률이 크게 흔들립니다.
-            </p>`
-            : `<div class="versus-none">
-                <div class="versus-none-title">${patch} 패치에 두 챔피언이 <b>같은 라인에서 만난 판</b>이 없습니다.</div>
-                <div class="versus-none-sub">라인이 겹치지 않는 조합(예: 원딜 ↔ 서포터)은 맞대결 자체가 생기지 않습니다.</div>
+        </div>`;
+
+    if (!cur) {
+        // 함께 나온 판이 아예 없을 때 — 자주 만나는 상대를 대신 깔아 되돌아갈 길을 준다
+        const others = ((mdata && mdata.rows) || [])
+            .filter(r => (r.rel || 0) === 0 && r.games >= MATCHUP_SHOW_MIN)
+            .sort((x, y) => y.games - x.games).slice(0, 12)
+            .map(r => `
+                <div class="versus-alt" data-foe="${engOf(r.foe)}" title="${korOf(r.foe)} · ${r.games}판">
+                    <img src="${champIconUrl(engOf(r.foe))}" alt="" loading="lazy">
+                    <span>${korOf(r.foe)}</span>
+                </div>`).join('');
+        box.innerHTML = `<div class="lx-page">${head}
+            <div class="versus-none">
+                <div class="versus-none-title">${patch} 패치에 두 챔피언이 <b>같은 판에 나온 기록</b>이 없습니다.</div>
+                <div class="versus-none-sub">표본 ${MATCHUP_MIN_HINT}판 미만인 조합은 집계에 담기지 않습니다.</div>
                 ${others ? `<div class="versus-alt-title">${korOf(a)} 가 자주 만나는 상대</div>
                     <div class="versus-alts">${others}</div>` : ''}
-            </div>`}
-    </div>`;
+            </div></div>`;
+        bindVersus(box, a, b, engOf, null);
+        return;
+    }
 
-    const go = (na, nb) => {
-        const url = `/versus/${na}/${nb}`;
-        window.history.replaceState({ page: 'versus', a: na, b: nb }, '', url);
-        showVersusPage(na, nb);
+    // ── 고른 관계의 승률 카드
+    const wrA = cur.wins / cur.games * 100;
+    const baseA = laneWr[`${a}|${cur.pos}`];
+    const baseB = laneWr[`${b}|${cur.fpos}`];
+    const dim = cur.games < MATCHUP_SHOW_MIN;
+    const wrCard = `
+        <div class="versus-lane${dim ? ' is-dim' : ''}">
+            <div class="versus-lane-head">
+                <img src="${STAT_LANE_ICON[posKey(cur.pos)]}" alt="">
+                <span>${relLabel(cur)}</span>
+                <span class="versus-games">${cur.games.toLocaleString()}판</span>
+            </div>
+            <div class="versus-bar"><i class="versus-bar-a" style="width:${wrA.toFixed(1)}%"></i></div>
+            <div class="versus-wr">
+                <span class="versus-wr-a${wrA >= 50 ? ' is-win' : ''}">${wrA.toFixed(1)}%</span>
+                <span class="versus-wr-b${wrA < 50 ? ' is-win' : ''}">${(100 - wrA).toFixed(1)}%</span>
+            </div>
+            <div class="versus-base">
+                <span>${korOf(a)} 평소 ${baseA != null ? baseA.toFixed(1) + '%' : '—'}</span>
+                <span>${korOf(b)} 평소 ${baseB != null ? baseB.toFixed(1) + '%' : '—'}</span>
+            </div>
+        </div>`;
+
+    box.innerHTML = `<div class="lx-page">${head}
+        ${rels.length > 1 ? `<div class="versus-chips">${chips}</div>` : ''}
+        ${wrCard}
+        <p class="versus-foot">
+            ${cur.rel ? '같은 팀으로 나온 판' : '적으로 만난 판'}만 셉니다. 왼쪽이 ${korOf(a)}, 오른쪽이 ${korOf(b)}의 승률입니다.
+            <b>평소</b>는 상대를 가리지 않은 그 라인 승률이라, 맞대결 값이 평소보다 높으면 유리한 쪽입니다.
+            ${MATCHUP_SHOW_MIN}판 미만은 흐리게 그립니다 — 표본이 얇으면 승률이 크게 흔들립니다.
+        </p>
+        <div id="versus-build">${skelLxHtml(false)}</div>
+    </div>`;
+    bindVersus(box, a, b, engOf, cur);
+
+    // ── 빌드 비교 (그 관계의 판만 세서 평소와 나란히)
+    try {
+        // ★ 룬·아이템 이름표를 먼저 받는다 — perkIcon/itemNameOf 가 그걸 읽는다.
+        //   통계 상세는 이미 부르고 있어서, 안 부르면 여기서만 조용히 빈 상자가 됐다 (실제로 그랬다).
+        await loadPerkData();
+        const [vb, builds] = await Promise.all([
+            fetch(`/api/versus-build?a=${a}&b=${b}&pos=${cur.pos}&fpos=${cur.fpos}&rel=${cur.rel}&scope=${encodeURIComponent(data.scope)}`)
+                .then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/champion-builds?scope=${encodeURIComponent(data.scope)}&champ=${a}`)
+                .then(r => r.ok ? r.json() : null).catch(() => null)
+        ]);
+        const el = document.getElementById('versus-build');
+        if (el) el.innerHTML = versusBuildHtml(vb, builds, cur, korOf(a), korOf(b));
+    } catch (e) {
+        const el = document.getElementById('versus-build');
+        if (el) el.innerHTML = '';
+    }
+}
+
+// 관계 칩·선택기·되돌아가기 배선 (두 갈래에서 같이 쓴다)
+function bindVersus(box, a, b, engOf, cur) {
+    const go = (na, nb, rk) => {
+        const url = `/versus/${na}/${nb}${rk ? '/' + rk : ''}`;
+        window.history.replaceState({ page: 'versus', a: na, b: nb, rel: rk }, '', url);
+        showVersusPage(na, nb, rk || null);
     };
-    document.getElementById('versus-a').addEventListener('change', (e) => go(e.target.value, engOf(b)));
-    document.getElementById('versus-b').addEventListener('change', (e) => go(engOf(a), e.target.value));
-    document.getElementById('versus-swap').addEventListener('click', () => go(engOf(b), engOf(a)));
+    const selA = document.getElementById('versus-a');
+    const selB = document.getElementById('versus-b');
+    if (selA) selA.addEventListener('change', (e) => go(e.target.value, engOf(b)));
+    if (selB) selB.addEventListener('change', (e) => go(engOf(a), e.target.value));
+    const sw = document.getElementById('versus-swap');
+    // ★ 자리를 바꾸면 관계도 뒤집는다 (pos 와 fpos 를 맞바꾼다) — 안 그러면 없는 관계를 가리킨다
+    if (sw) sw.addEventListener('click', () => go(engOf(b), engOf(a), cur ? `${cur.fpos}-${cur.pos}-${cur.rel}` : null));
     box.querySelectorAll('.versus-alt').forEach(el => el.addEventListener('click', () => go(engOf(a), el.dataset.foe)));
+    box.querySelectorAll('.versus-chip').forEach(el => el.addEventListener('click', () => go(engOf(a), engOf(b), el.dataset.rel)));
     const back = box.querySelector('[data-back]');
     if (back) back.addEventListener('click', (e) => {
         e.preventDefault();
         window.history.pushState({ page: 'stats', champ: engOf(a) }, '', `/stats/${engOf(a)}`);
         showChampStatPage(engOf(a));
     });
+}
+
+// ★ 빌드 비교 표. `vb` 가 그 관계의 값이고 `builds` 가 평소 값이다.
+//   ★ 분모가 둘이다 — 스킬 두 칸은 tlall, 나머지는 all (집계와 같은 규칙).
+function versusBuildHtml(vb, builds, cur, korA, korB) {
+    if (!vb || !vb.ready || !vb.games) return '';
+    const B = lxBuildData(builds, cur.pos);
+    const kk = k => (Array.isArray(k) ? k.join(',') : String(k));
+
+    // 평소 값 표 (type → key → 채택률)
+    const baseOf = (type) => {
+        const denom = (type === 'skillpri' || type === 'skillord6') ? B.tl : B.total;
+        const m = {};
+        B.rows(type).forEach(r => { if (denom) m[kk(r.key)] = r.games / denom * 100; });
+        return m;
+    };
+    const denomOf = type => (type === 'skillpri' || type === 'skillord6') ? vb.games : vb.games;
+
+    const render = {
+        keystone: k => {
+            const [style, key] = k;
+            return `<img class="vsb-ico is-round" src="${perkIcon(key)}" alt=""><span class="vsb-name">${perkName(key)}</span>`;
+        },
+        perk: k => `<img class="vsb-ico is-round" src="${perkIcon(k[0])}" alt=""><span class="vsb-name">${perkName(k[0])}</span>`,
+        item: k => `<img class="vsb-ico" src="${itemIconOf(k[0])}" alt=""><span class="vsb-name">${itemNameOf(k[0]) || k[0]}</span>`,
+        spell: k => `<span class="vsb-spells">${k.map(id => `<img class="vsb-ico" src="${spellIcon(id)}" alt="" title="${spellName(id)}">`).join('')}</span><span class="vsb-name">${k.map(id => spellName(id)).join(' + ')}</span>`,
+        skillpri: k => `<span class="vsb-name is-skill">${k.map(n => 'QWE'[n - 1]).join(' > ')}</span>`,
+        skillord6: k => `<span class="vsb-name is-skill">${k.map(n => 'QWER'[n - 1]).join('')}</span>`
+    };
+
+    const rowHtml = (type, label) => {
+        const list = (vb[type] || []).slice(0, VS_SHOW[type] || 6);
+        if (!list.length) return '';
+        const base = baseOf(type);
+        const denom = denomOf(type);
+        const cards = list.map(r => {
+            const cur2 = denom ? r.g / denom * 100 : 0;
+            const b0 = base[kk(r.k)];
+            const d = b0 == null ? null : cur2 - b0;
+            return `
+            <div class="vsb-card" title="${r.g}판 · 승률 ${(r.w / r.g * 100).toFixed(1)}%">
+                ${render[type](r.k)}
+                <span class="vsb-cur">${cur2.toFixed(1)}%</span>
+                <span class="vsb-base">평소 ${b0 == null ? '—' : b0.toFixed(1) + '%'}</span>
+                <span class="vsb-delta${d == null ? '' : (d >= 0 ? ' is-up' : ' is-down')}">${d == null ? '' : (d >= 0 ? '+' : '') + d.toFixed(1)}</span>
+            </div>`;
+        }).join('');
+        return `<div class="vsb-row"><div class="vsb-label">${label}</div><div class="vsb-cards">${cards}</div></div>`;
+    };
+
+    const body = [
+        rowHtml('keystone', '핵심 룬'),
+        rowHtml('perk', '룬'),
+        rowHtml('spell', '소환사 주문'),
+        rowHtml('item', '최종 아이템'),
+        rowHtml('skillpri', '선마 순서'),
+        rowHtml('skillord6', '스킬 순서 (6레벨)')
+    ].join('');
+    if (!body.trim()) return '';
+
+    return `
+    <div class="vsb-box">
+        <div class="vsb-head">
+            <span class="vsb-title">${cur.rel ? josa(korB, '과', '와') + ' 같은 팀일 때' : josa(korB, '을', '를') + ' 만났을 때'} ${korA} 빌드</span>
+            <span class="vsb-n">${vb.games.toLocaleString()}판 기준</span>
+        </div>
+        ${body}
+        <div class="vsb-foot">
+            왼쪽 값이 <b>이 상대와 만난 판</b>의 채택률이고, <b>평소</b>는 상대를 가리지 않은 같은 라인 채택률입니다.
+            차이가 크면 그 상대를 상대로 빌드를 바꾼다는 뜻입니다. 스킬 두 줄은 스킬 로그가 있는 판만 셉니다.
+        </div>
+    </div>`;
 }
 
 // ── 페이지 본체 ───────────────────────────────────────────────────────
@@ -4437,9 +4568,11 @@ async function showChampStatPage(engId, laneKey) {
         if (muBox) muBox.addEventListener('click', (ev) => {
             const card = ev.target.closest('.lx-card[data-foe]');
             if (!card) return;
-            const url = `/versus/${engId}/${card.dataset.foe}`;
-            window.history.pushState({ page: 'versus', a: engId, b: card.dataset.foe }, '', url);
-            showVersusPage(engId, card.dataset.foe);
+            // data-rel 은 `<상대 라인>-<적0/아군1>` 이라 내 라인을 앞에 붙여 관계 키를 만든다
+            const rk = `${ctx.pos}-${card.dataset.rel}`;
+            const url = `/versus/${engId}/${card.dataset.foe}/${rk}`;
+            window.history.pushState({ page: 'versus', a: engId, b: card.dataset.foe, rel: rk }, '', url);
+            showVersusPage(engId, card.dataset.foe, rk);
         });
         const trend = await trendP;
         document.getElementById('lx-trend').innerHTML = lxTrend(ctx, trend);
@@ -4665,11 +4798,11 @@ function lxMatchupRows(c, group, sort) {
             const name = (window.korChampMap && window.korChampMap[eng]) || eng || r.foe;
             return {
                 icons: [champIconUrl(eng)], dim: r.games < MATCHUP_SHOW_MIN,
-                // ★ 상대 카드만 누를 수 있다 (2026-09-02) — 같은 라인에서 만난 쌍이라야 vs 페이지에 담을 게 있다.
-                //   아군(시너지) 카드는 맞대결이 아니라서 안 건다 (사용자 결정: vs 페이지는 맞대결만).
-                attr: (group === 'counter' && eng && p.code === c.pos) ? ` data-foe="${eng}"` : '',
-                cls: (group === 'counter' && eng && p.code === c.pos) ? 'is-link' : '',
-                title: `${name} · ${r.games}판 · 승률 ${r.wr.toFixed(2)}%${(group === 'counter' && p.code === c.pos) ? ' · 눌러서 맞대결 비교' : ''}`,
+                // ★★ 카드를 **전부** 누를 수 있다 (2026-09-02, 사용자 요청 "맞라인 아니어도").
+                //   아군 시너지 카드도 vs 페이지가 다루므로(관계 칩) `rel` 을 같이 넘긴다.
+                attr: eng ? ` data-foe="${eng}" data-rel="${p.code}-${group === 'counter' ? 0 : 1}"` : '',
+                cls: eng ? 'is-link' : '',
+                title: `${name} · ${r.games}판 · 승률 ${r.wr.toFixed(2)}% · 눌러서 비교`,
                 vals: [
                     { v: r.wr.toFixed(2), cls: lxWr(r.wins, r.games) },
                     { v: lxSigned(r.d1), cls: lxDeltaCls(r.d1) },

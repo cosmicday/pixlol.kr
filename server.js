@@ -1890,7 +1890,7 @@ async function buildOneMatchupScope(scopeKey, matchCond) {
 //   API 캐시만 36줄(rune 까지만 들어간 순간)을 들고 있었다.
 //   ★ 그래서 사이클 끝에 통계 캐시를 통째로 비운다. 노출 창이 "재집계에 걸리는 시간" 으로 줄어든다.
 //   ★ `/api/champion-stats` 는 캐시를 안 쓰므로 여기 없다 (부분 결과가 보여도 다음 요청에 낫는다).
-const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'usage_', 'patchimpact_', 'duos_', 'lanetrend_'];
+const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'usage_', 'patchimpact_', 'duos_', 'lanetrend_', 'versusbuild_'];
 
 function flushStatCaches() {
     const keys = myCache.keys().filter(k => STAT_CACHE_PREFIXES.some(p => k.startsWith(p)));
@@ -3606,6 +3606,126 @@ app.get('/api/champion-builds', async (req, res) => {
     } catch (e) {
         console.error('[API] 룬 빌드 실패:', e.message);
         res.status(500).json({ error: '룬 통계를 불러오지 못했습니다.' });
+    }
+});
+
+// ==========================================
+//  vs 맞대결 빌드 — GET /api/versus-build?a=64&b=104&pos=1&fpos=1&rel=0&scope=p:16.17
+//    (2026-09-02 신설, 로드맵 A-2 확장 — 사용자 요청 "정글 리신이 정글 그레이브즈를 만났을 때
+//     아이템·스킬빌드·룬 통계가 어떻게 바뀌나")
+//
+//   ★★ 이건 **집계에 없는 자료다.** `champbuilds` 는 (챔피언 × 라인 × 빌드)로만 뭉쳐 있어서
+//     "상대가 누구였는지" 가 아예 안 담긴다. 미리 집계하려면 (챔피언 × 상대 × 라인쌍 × 빌드) 라
+//     행이 폭발한다 — 16.17 기준 관계만 72,646개다. 그래서 **원본(matchstats)에서 그때그때 센다.**
+//   ★ 실측 434ms (16.17 · 21,770판). `v` 인덱스를 타고 $project 로 필요한 칸만 남겨서 빠르다.
+//     응답은 30분 캐시라 같은 쌍을 다시 열면 즉시 나온다.
+//
+//   ★★ 화면은 이 값을 **그 챔피언의 평소 빌드(`/api/champion-builds`)와 나란히** 놓는다.
+//     "에클립스 86.8%" 만으로는 뜻이 없고 "평소 82.1% → 그브전 86.8% (+4.7)" 여야 읽힌다.
+//     그래서 **key 모양을 champbuilds 와 정확히 같게 맞춘다** — 특히
+//     `keystone` 은 `[주 계열 id, 핵심 룬 id]` 두 칸이고, `spell` 은 **작은 id 를 앞으로 정렬**하며
+//     (안 하면 점멸/강타와 강타/점멸이 갈려 표본이 반이 된다), `skillpri`·`skillord6` 은
+//     `buildTimelineFacet` 과 **같은 규칙으로** 뽑는다 (선마는 "5번째 포인트를 찍은 자리" 순).
+//
+//   ★ `rel` 은 0 이 적, 1 이 아군이다 (champmatchups 와 같은 뜻). 팀 판별은 슬림 문서 3번 칸(teamId).
+//   ★ 미러전 가드: A 와 B 가 같은 챔피언·같은 라인이면 filter 가 같은 자리를 두 번 집을 수 있어
+//     `i !== j` 를 못 박는다.
+//   ★ 스킬 두 칸은 `sk`(스킬 로그)가 있는 판만 센다 — 16.17 은 22,585/22,585 라 전부 있지만
+//     16.16 이하는 아예 없다 (`TL_MIN_PATCH`). 그래서 표본이 다른 칸과 다를 수 있다.
+const VERSUS_TOP = 12;   // 칸마다 상위 몇 개까지 내려줄지 (화면이 8개 안팎을 쓴다)
+
+app.get('/api/versus-build', async (req, res) => {
+    try {
+        const a = Number(req.query.a), b = Number(req.query.b);
+        const pos = Number(req.query.pos), fpos = Number(req.query.fpos);
+        const rel = Number(req.query.rel) === 1 ? 1 : 0;
+        if (![a, b, pos, fpos].every(Number.isFinite)) {
+            return res.status(400).json({ error: '잘못된 요청입니다.' });
+        }
+
+        const scopes = await StatScope.find({}).lean();
+        if (!scopes.length) return res.json({ ready: false, games: 0 });
+        const { scope } = pickStatScope(scopes, req.query.scope);
+        // 패치 scope 가 아니면(일별) 셀 뜻이 없다
+        if (!scope.startsWith('p:')) return res.json({ ready: false, games: 0, scope });
+
+        const cacheKey = `versusbuild_${scope}_${a}_${b}_${pos}_${fpos}_${rel}`;
+        const hit = myCache.get(cacheKey);
+        if (hit) return res.json(hit);
+
+        const at = (arr, i) => ({ $arrayElemAt: [arr, i] });
+        const P = (i, j) => at(at('$p', i), j);
+        const M = j => at('$me', j);
+        const grp = k => ({ $group: { _id: k, g: { $sum: 1 }, w: { $sum: '$w' } } });
+        const top = [{ $sort: { g: -1 } }, { $limit: VERSUS_TOP }];
+        // 스킬 L 의 포인트 수(n)와 5번째 포인트를 찍은 자리(at) — buildTimelineFacet 과 같은 식
+        const maxAt = L => ({ $reduce: {
+            input: { $range: [0, { $strLenCP: '$sk' }] }, initialValue: { n: 0, at: 99 },
+            in: { $cond: [
+                { $eq: [{ $substrCP: ['$sk', '$$this', 1] }, L] },
+                { n: { $add: ['$$value.n', 1] }, at: { $cond: [{ $eq: ['$$value.n', 4] }, '$$this', '$$value.at'] } },
+                '$$value'
+            ] }
+        } });
+
+        const rows = await MatchStat.aggregate([
+            { $match: { v: scope.slice(2) } },
+            { $project: { p: 1, sk: { $ifNull: ['$sk', []] } } },
+            // 내 자리와 상대 자리를 찾는다 (챔피언 + 라인으로)
+            { $project: {
+                p: 1, sk: 1,
+                mi: { $filter: { input: { $range: [0, 10] }, as: 'i',
+                    cond: { $and: [{ $eq: [P('$$i', 0), a] }, { $eq: [P('$$i', 1), pos] }] } } },
+                fi: { $filter: { input: { $range: [0, 10] }, as: 'i',
+                    cond: { $and: [{ $eq: [P('$$i', 0), b] }, { $eq: [P('$$i', 1), fpos] }] } } }
+            } },
+            { $match: { 'mi.0': { $exists: true }, 'fi.0': { $exists: true } } },
+            { $project: { p: 1, sk: 1, i: at('$mi', 0), j: at('$fi', 0) } },
+            { $match: { $expr: { $ne: ['$i', '$j'] } } },          // 미러전 가드
+            { $project: { me: at('$p', '$i'), sk: { $ifNull: [at('$sk', '$i'), ''] },
+                mt: P('$i', 3), ft: P('$j', 3) } },
+            { $match: { $expr: rel === 1 ? { $eq: ['$mt', '$ft'] } : { $ne: ['$mt', '$ft'] } } },
+            { $project: {
+                w: M(2),
+                keystone: [M(17), M(18)],
+                perk: [M(18), M(19), M(20), M(21), M(23), M(24)],
+                item: [M(9), M(10), M(11), M(12), M(13), M(14)],
+                // ★ 작은 id 를 앞으로 — 집계와 같은 규칙이라야 평소 값과 짝이 맞는다
+                spell: { $cond: [{ $lt: [M(15), M(16)] }, [M(15), M(16)], [M(16), M(15)]] },
+                ord: { $map: { input: { $range: [0, { $strLenCP: '$sk' }] }, as: 'i',
+                    in: { $add: [{ $indexOfCP: ['QWER', { $substrCP: ['$sk', '$$i', 1] }] }, 1] } } },
+                pri: { $map: { input: { $sortArray: { input: [
+                    { $mergeObjects: [{ l: 1 }, maxAt('Q')] },
+                    { $mergeObjects: [{ l: 2 }, maxAt('W')] },
+                    { $mergeObjects: [{ l: 3 }, maxAt('E')] }
+                ], sortBy: { at: 1, n: -1, l: 1 } } }, as: 's', in: '$$s.l' } }
+            } },
+            { $facet: {
+                n: [{ $group: { _id: null, games: { $sum: 1 }, wins: { $sum: '$w' } } }],
+                keystone: [grp('$keystone'), ...top],
+                perk: [{ $unwind: '$perk' }, { $match: { perk: { $gt: 0 } } }, grp(['$perk']), ...top],
+                item: [{ $unwind: '$item' }, { $match: { item: { $gt: 0, $nin: ITEM_CONSUMABLES } } }, grp(['$item']), ...top],
+                spell: [grp('$spell'), ...top],
+                // 선마는 9포인트 이상인 판만 (집계와 같은 조건 — 그래야 평소 값과 모집단이 같다)
+                skillpri: [{ $match: { 'ord.8': { $exists: true } } }, grp('$pri'), ...top],
+                skillord6: [{ $match: { 'ord.5': { $exists: true } } }, grp({ $slice: ['$ord', 6] }), ...top]
+            } }
+        ]).allowDiskUse(true);
+
+        const f = rows[0] || {};
+        const cell = (arr) => (arr || []).map(r => ({ k: r._id, g: r.g, w: r.w }));
+        const payload = {
+            ready: true, scope, a, b, pos, fpos, rel,
+            games: (f.n && f.n[0] && f.n[0].games) || 0,
+            wins: (f.n && f.n[0] && f.n[0].wins) || 0,
+            keystone: cell(f.keystone), perk: cell(f.perk), item: cell(f.item),
+            spell: cell(f.spell), skillpri: cell(f.skillpri), skillord6: cell(f.skillord6)
+        };
+        myCache.set(cacheKey, payload, 1800);
+        res.json(payload);
+    } catch (e) {
+        console.error('[API] vs 빌드 실패:', e.message);
+        res.status(500).json({ error: '맞대결 빌드를 불러오지 못했습니다.' });
     }
 });
 
