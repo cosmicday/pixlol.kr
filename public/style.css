@@ -8702,3 +8702,214 @@ main {
     line-height: 1.6;
     padding: 2px 0 4px;
 }
+
+/* ★★ 챔피언 vs 챔피언 맞대결 비교 (2026-09-02 신설, 로드맵 A-2).
+   진입은 챔피언 통계 상세의 상성 카드다 — 헤더 메뉴는 안 늘렸다 (사용자 결정).
+   ★ 클래스를 `.versus-*` 로 뗐다 — `.vs-list` 는 **챔피언 페이지의 상성 탭**이 이미 쓴다
+     (도감에서 트리가 둘이라 `.codex-rune-*` 로 뗀 것과 같은 이유). */
+.versus-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+/* ★ `.stat-back` 은 예전부터 쓰이던 클래스인데 **스타일이 한 번도 없었다** (2026-09-02 발견) —
+   브라우저 기본 링크 색(파랑)으로 나가고 있었다. 여기서 한 번만 정의한다. */
+.stat-back {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+@media (hover: hover) {
+    .stat-back:hover { color: var(--accent); }
+}
+
+.versus-scope {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-faint);
+}
+
+.versus-pick {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.versus-select { flex: 1; min-width: 0; max-width: 260px; }
+
+.versus-vs {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.versus-swap {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    color: var(--text-bright);
+    font-size: 14px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+@media (hover: hover) {
+    .versus-swap:hover { border-color: var(--accent); color: var(--accent); }
+}
+
+.versus-faces {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 18px;
+}
+
+.versus-face {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text-bright);
+}
+
+.versus-face img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+}
+
+.versus-lanes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.versus-lane {
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+/* ★ 표본이 얇은 줄은 흐리게 — 상성 표의 `MATCHUP_SHOW_MIN` 과 같은 기준이다 */
+.versus-lane.is-dim { opacity: 0.5; }
+
+.versus-lane-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.versus-lane-head img { width: 16px; height: 16px; }
+
+/* ★ 표본을 승률만큼 눈에 띄게 적는다 — 34판짜리 67.6% 를 그대로 크게 띄우면 과장이 된다 */
+.versus-games {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--text-bright);
+}
+
+.versus-bar {
+    height: 12px;
+    border-radius: 6px;
+    background: #241a3d;   /* ★ 채움(보라)과 대비가 서야 경계가 보인다 */
+    overflow: hidden;
+}
+
+.versus-bar-a {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+}
+
+.versus-wr {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 15px;
+    color: var(--text-muted);
+}
+
+.versus-wr .is-win {
+    color: var(--text-bright);
+    font-weight: 700;
+}
+
+.versus-base {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-faint);
+}
+
+.versus-foot {
+    margin-top: 14px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text-faint);
+}
+
+.versus-none {
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 24px 18px;
+    text-align: center;
+}
+
+.versus-none-title { font-size: 15px; color: var(--text-bright); }
+.versus-none-sub { margin-top: 8px; font-size: 13px; color: var(--text-faint); }
+
+.versus-alt-title {
+    margin: 20px 0 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.versus-alts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.versus-alt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 62px;
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.versus-alt img { width: 40px; height: 40px; border-radius: 50%; }
+
+@media (hover: hover) {
+    .versus-alt:hover { color: var(--accent); }
+}
+
+/* ★ 상성 카드가 눌리는 것이라는 표시 (같은 라인 적 카드에만 붙는다) */
+.lx-card.is-link { cursor: pointer; }
+
+@media (hover: hover) {
+    .lx-card.is-link:hover { background: rgba(167, 139, 250, 0.10); }
+}
+
+@media (max-width: 768px) {
+    .versus-pick { flex-wrap: wrap; }
+    .versus-select { max-width: none; flex: 1 1 40%; }
+    .versus-faces { gap: 24px; }
+    .versus-face img { width: 52px; height: 52px; }
+}
