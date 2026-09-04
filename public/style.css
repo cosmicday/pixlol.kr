@@ -8704,6 +8704,66 @@ main {
     border-radius: 0;
 }
 
+/* ==========================================
+   최근 같이 한 소환사 (2026-09-04, 로드맵 A-8) — 전적 사이드바
+   ★ 큐 필터를 따라가서 내용이 통째로 비는 때가 있다. 그때 카드를 안 그리는데,
+     `:empty` 로 자리까지 지워야 .pix-sidebar 의 flex gap(10px)이 안 남는다
+   ========================================== */
+#recent-mates-area:empty { display: none; }
+
+.mates-box { padding: 16px 18px 12px; }
+
+.mates-title {
+    color: #fff;
+    font-size: 14px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 아군 블록이 위에 있을 때만 적군 제목을 띄운다 (혼자 있으면 카드 위쪽에 빈 띠가 생긴다) */
+.mates-title.is-second { margin-top: 18px; }
+
+.mate-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* 폰에서 탭 자국이 눌어붙는 걸 막는다 (2026-08-19 부터 세 번 걸린 그 규칙) */
+@media (hover: hover) {
+    .mate-row:hover { background: rgba(167, 139, 250, 0.08); }
+}
+
+.mate-name {
+    flex: 1;
+    min-width: 0;
+    color: var(--text-bright);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mate-games { color: var(--text-muted); flex-shrink: 0; }
+
+.mate-wl {
+    color: var(--text-faint);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.mate-pct {
+    flex-shrink: 0;
+    width: 34px;
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
 .lp-card { padding: 16px 18px 12px; }
 
 .lp-card-head {

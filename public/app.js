@@ -1104,6 +1104,11 @@ async function executeSearch() {
             } catch (e) { }
         }
 
+        // ★ 최근 같이 한 소환사 (2026-09-04, 로드맵 A-8) — **자리만 만들어 둔다.**
+        //   큐 필터를 따라가야 해서 여기서 그리면 안 된다 — applyMatchFilters 가 채운다
+        //   (그게 첫 렌더·필터 클릭·더 보기 세 경로를 전부 거쳐 가는 유일한 자리다).
+        sidebarHtml += `<div id="recent-mates-area"></div>`;
+
         sidebar.innerHTML = sidebarHtml;
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
 
@@ -2147,6 +2152,85 @@ function renderArenaSummaryHtml(matches) {
         </div>`;
 }
 
+// ============================================================
+//  최근 같이 한 소환사 (2026-09-04, 로드맵 A-8) — 전적 사이드바
+//
+//  ★ 라이엇 호출 0 · 서버 수정 0 — 이미 받아 둔 전적의 participants 를 세기만 한다.
+//  ★★ 큐 필터를 그대로 따른다 (사용자 결정) — applyMatchFilters 가 거른 목록을 받으므로
+//    「솔로랭크」를 누르면 솔랭에서 만난 사람만, 「아레나」면 아레나에서 만난 사람만 나온다.
+//    그래서 renderSummaryStats 와 **같은 자리에서 같은 인자로** 불러야 한다.
+//  ★ 클릭은 2026-09-03 에 만든 [data-search-name] 위임이 받는다 — 새 리스너가 0이다.
+// ============================================================
+const MATE_MIN_GAMES = 2;   // 1판은 그냥 랜덤 매칭이라 뜻이 없다
+const MATE_TOP = 5;         // 사이드바 폭(350px)에 맞춘 개수
+
+function renderRecentMates(matchesToCalc) {
+    const area = document.getElementById('recent-mates-area');
+    if (!area) return;
+
+    // 리메이크는 뺀다 (renderSummaryStats 의 `played` 와 같은 규칙)
+    const played = (matchesToCalc || []).filter(g => !(g.isRemake || (!g.isArena && g.durationMin < 4)));
+
+    const ally = new Map(), foe = new Map();
+    played.forEach(g => {
+        const parts = g.participants || [];
+        const me = parts.find(p => p.isSearchedUser);
+        if (!me) return;
+
+        parts.forEach(p => {
+            if (p.isSearchedUser || !p.puuid) return;
+
+            // ★ 아레나의 teamId 는 진영이 아니라 "상위 절반 / 하위 절반" 이라 그대로 쓰면 안 된다.
+            //   조(subteam)로 갈라야 진짜 같은 편이 나온다 (CLAUDE.md 아레나 밴 절과 같은 함정)
+            const sameTeam = g.isArena ? (p.subteam === me.subteam) : (p.teamId === me.teamId);
+
+            // ★★ 승패는 언제나 **내 기준**이다 — 적군 줄의 "3승" 은 *내가 그 사람을 만나 이긴 판* 이다.
+            //   아레나는 승패가 없고 등수뿐이라 등수로 판정한다:
+            //   같은 조면 1등일 때만 승(요약 통계의 "우승 N회" 와 같은 정의),
+            //   적이면 내 등수가 그 사람보다 앞설 때 승 — 6조라 "3등 vs 5등" 도 이긴 것이다.
+            const iWon = g.isArena
+                ? (sameTeam
+                    ? me.placement === 1
+                    : (me.placement > 0 && p.placement > 0 && me.placement < p.placement))
+                : !!me.win;
+
+            const bag = sameTeam ? ally : foe;
+            const e = bag.get(p.puuid) || { name: p.summonerName, games: 0, wins: 0 };
+            e.games++;
+            if (iWon) e.wins++;
+            e.name = p.summonerName;   // 닉네임이 바뀌었으면 더 최근 판의 것으로 덮는다
+            bag.set(p.puuid, e);
+        });
+    });
+
+    const pick = (bag) => [...bag.values()]
+        .filter(e => e.games >= MATE_MIN_GAMES)
+        .sort((a, b) => b.games - a.games || (b.wins / b.games) - (a.wins / a.games))
+        .slice(0, MATE_TOP);
+
+    const rowsHtml = (list) => list.map(e => {
+        const pct = Math.round((e.wins / e.games) * 100);
+        const short = e.name.split('#')[0];   // 태그는 뗀다 — 사이드바가 좁다 (전체 이름은 title 에)
+        return `<div class="mate-row" data-search-name="${escapeHtml(e.name)}" title="${escapeHtml(e.name)}">
+                <span class="mate-name">${escapeHtml(short)}</span>
+                <span class="mate-games">${e.games}판</span>
+                <span class="mate-wl">${e.wins}승 ${e.games - e.wins}패</span>
+                <span class="mate-pct" style="color:${pct >= 50 ? 'var(--win)' : 'var(--lose-text)'}">${pct}%</span>
+            </div>`;
+    }).join('');
+
+    const a = pick(ally), f = pick(foe);
+
+    // ★ 둘 다 없으면 카드를 통째로 안 그린다 (홈 위젯·도감 채택률과 같은 정신).
+    //   CSS 의 `#recent-mates-area:empty { display: none }` 가 사이드바 flex gap 까지 지운다
+    if (!a.length && !f.length) { area.innerHTML = ''; return; }
+
+    area.innerHTML = `<div class="pix-box mates-box">
+            ${a.length ? `<h3 class="mates-title">같이 한 소환사</h3>${rowsHtml(a)}` : ''}
+            ${f.length ? `<h3 class="mates-title${a.length ? ' is-second' : ''}">상대한 소환사</h3>${rowsHtml(f)}` : ''}
+        </div>`;
+}
+
 function renderSummaryStats(matchesToCalc) {
     const statsArea = document.getElementById('summary-stats-area');
     if (!statsArea) return;
@@ -2390,6 +2474,7 @@ function applyMatchFilters() {
     // 여기서 또 만들면 같은 문구가 두 번 뜬다.
     if (games.length === 0) {
         renderSummaryStats([]);
+        renderRecentMates([]);
         return;
     }
 
@@ -2410,6 +2495,8 @@ function applyMatchFilters() {
     });
 
     renderSummaryStats(filteredMatches);
+    // ★ 요약 통계와 **같은 자리에서 같은 인자로** 부른다 — 한쪽만 부르면 표와 사이드바가 어긋난다
+    renderRecentMates(filteredMatches);
     const listDiv = document.getElementById('game-list');
     let emptyMsg = document.getElementById('empty-filter-msg');
 
