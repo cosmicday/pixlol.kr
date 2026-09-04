@@ -97,7 +97,7 @@
 | # | 무엇 | 어떻게 | 뭐가 걸려 있나 |
 |---|---|---|---|
 | 1 | **Railway `NODE_ENV` 값** | 변수 화면 한 줄 | production 이 아니면 요청마다 index.html 재생성 + **에러 스택이 응답 본문에 실린다.** 지금은 `IS_PROD` 가 `RAILWAY_PROJECT_ID` 로도 판정해서 막고 있지만 원래 값은 알아야 한다 |
-| 2 | **★ Railway 오리진(`*.up.railway.app`)이 밖에서 직접 열리나** | 그 주소로 `/api/ranking` 을 쳐 본다 | 열려 있으면 `cf-connecting-ip` 를 위조해 **세 리미터가 전부 무력화된다.** 그 뒤에 `/api/versus-build` 전수 스캔과 라이엇 프록시가 있다. 열려 있으면 **오리진 잠금이 정답**이고(Railway 방화벽 / CF Authenticated Origin Pulls / 공유 시크릿 헤더), 코드 수정(`cf-ray` 동반 확인)은 차선이다 — 감사 M-7 |
+| 2 | ~~**★ Railway 오리진이 밖에서 직접 열리나**~~ **→ 9/4 해결됨 (오리진 잠금 배포·실측 확인).** | 실측 | **열려 있었다** — `m9focdi9.up.railway.app` 에 `Host: pixlol.kr` + `cf-connecting-ip` 위조로 직타가 200 이었고 IP 를 매번 바꾸면 리미터가 무력화됐다. **공유 시크릿 헤더로 잠갔다** (아래 후속 절). 실측: 정상 경로 200 · 우회 직타 403 · riot.txt 직타 200(예외) |
 | 3 | ~~**Cloudflare 가 보안 헤더를 넣나**~~ **→ 9/4 확인: 안 넣는다.** | 프로덕션 응답 실측 | CSP·X-Frame-Options·HSTS·X-Content-Type-Options 전부 없음 · `X-Powered-By: Express` 노출 · CORS `*`. **helmet 작업이 확정됐다** (감사 L-15) — 같은 날 Fable 세션이 처리 예정/처리함 (아래 후속 절) |
 | 4 | **실기기 폰** | 직접 | `/mythic` 넘침이 진짜 0인지(헤드리스는 0으로 나옴) · 전적 카드 🔗/▾ 겹친 소형 타겟의 터치 오탐 |
 | 5 | 랭킹 숙련도 TOP5 아이콘 빈 칸 | 콘솔·응답 | **→ 9/4 확인: 데이터는 무죄** — `/api/ranking` 11,000명 전수에서 mastery 빈 사람 0명 (5개 미만 12명은 진짜 소수 챔프 유저). 남은 건 **아이콘 로드/매핑 실패 쪽** — 신규 챔피언 id 가 구버전 champion.json 에 없는 로크 함정 의심 |
@@ -172,8 +172,25 @@
 | 3 | **인게임 onclick `"` 이스케이프** (위 "발견" 항목) | 결정 필요 없음. S4 의 `data-search-name` + document 위임 패턴 그대로 |
 | 4 | radius 스냅 · 흰색 rgba 3단 (최우선 1-④⑤) | 결정 나면 기계적 치환. "지금 돌 가치가 있나" 부터 물을 것 |
 
-**Fable 세션이 맡은 것 (진행 상황은 이 절을 갱신할 것):** Railway 오리진 노출 확인·잠금(최우선 2-②) · 보안 헤더(helmet — **CSP 는 인라인 스크립트가 많아 함부로 넣으면 사이트가 죽는다**, 판단 필요) · 타임라인 원본 저장 결정·반영(최우선 1-②) · 숙련도 빈 칸 진단.
+**Fable 세션이 맡은 것 (진행 상황은 이 절을 갱신할 것):** ~~Railway 오리진 노출 확인·잠금~~ **→ 완료** · 보안 헤더(helmet — **CSP 는 인라인 스크립트가 많아 함부로 넣으면 사이트가 죽는다**, 판단 필요) · 타임라인 원본 저장 결정·반영(최우선 1-②) · 숙련도 빈 칸 진단.
 **사용자 몫 그대로:** NODE_ENV 값 · LpHist 자정 로그(`[LpHist] … 기록`이 안 찍혔으면 LP 데이터가 매일 유실 중) · 실기기 폰.
+
+#### ★★ 오리진 잠금 완료 (2026-09-04, 커밋 `8db5adb`) — 감사 M-7
+
+**Cloudflare 우회 직타가 실제로 뚫렸던 걸 실측 확인하고 공유 시크릿 헤더로 막았다.**
+
+- **구조**: `server.js` 의 `trust proxy` 바로 아래 미들웨어 하나. CF Transform Rule 이 모든 요청에 붙이는
+  `x-origin-guard` 헤더를 `crypto.timingSafeEqual` 로 검사해 **CF 를 거친 요청만** 통과. 헤더 없거나 틀리면 403
+- **★★ `ORIGIN_GUARD` env 가 있을 때만 켜지는 no-op 설계** — 없으면 완전 통과(로컬·미설정 배포 무영향).
+  덕분에 코드를 먼저 배포해도 무변화였고, 배포 순서 사고(전 요청 403)를 원천 차단
+- **★ 배포 순서 (다음에 비밀값 로테이션할 때도 동일)**: ① 코드 배포 → ② CF 룰 등록 → ③ 사이트 정상 확인 →
+  ④ **마지막에** Railway 변수. Railway 변수를 CF 룰보다 먼저 넣으면 **전 요청 403(사이트 다운)**
+- **★ riot.txt 는 `req.path === '/riot.txt'` 로 항상 예외** — 라이엇 심사 봇 경로가 불확실하고 파일 자체가 무해
+- **★ 비밀값은 Railway `ORIGIN_GUARD` 와 CF Transform Rule 두 곳에만 있다** (코드·git 엔 없음).
+  로테이션은 양쪽 값만 새로 맞추면 된다. **이 값이 이번 세션 대화 로그에 노출됐으니, 찜찜하면 한 번 로테이션할 것**
+- **★ CF 최신 UI**: Transform Rules 탭이 없어지고 **Rules → Overview → Create rule → "Request Header Transform Rule"**
+  안으로 들어갔다. "All incoming requests" 옵션이 안 보이면 필터 `Hostname equals pixlol.kr` 로 대체. "Set static" 선택
+- **★ 실측**: 정상 경로(CF) 200 · 우회 직타(IP 위조) 403 · riot.txt 직타 200. `m9focdi9.up.railway.app` 이 오리진 주소
 
 ## ★★★ 2026-09-02 세션 마무리 — 다음 세션이 먼저 볼 것
 
