@@ -7656,14 +7656,17 @@ function renderLivePlayer(p, side, showRunes = true, anyTier = false) {
             ${p.subStyle ? `<img src="${liveRuneIcon(p.subStyle)}" onerror="this.style.visibility='hidden'">` : '<span></span>'}
         </div>`;
     const nameHtml = `
-        <div class="live-name" title="${anon ? '비공개' : p.riotId}">
+        <div class="live-name" title="${anon ? '비공개' : escapeHtml(p.riotId)}">
             <span class="live-name-main${anon ? ' anon' : ''}">${name}</span>${tag ? `<span class="live-name-tag">#${tag}</span>` : ''}
         </div>`;
 
-    // 익명 사용자는 검색할 대상이 없으므로 클릭을 막는다
+    // 익명 사용자는 검색할 대상이 없으므로 클릭을 막는다.
+    // ★ 클릭은 [data-search-name] document 위임이 받는다 (2026-09-04). 예전엔 onclick 문자열에
+    //   riotId 를 박아서 홑따옴표만 막고 있었는데, 큰따옴표 하나면 속성을 탈출했다 —
+    //   전적 카드에서 이미 고친 함정(S4)이 인게임 패널 두 자리에만 안 옮겨져 있었다
     const clickAttr = anon
         ? 'class="live-player %SIDE% anon" title="Riot ID를 비공개한 사용자입니다"'
-        : `class="live-player %SIDE%" onclick="searchSummonerFromLive('${(p.riotId || '').replace(/'/g, "\\'")}')"`;
+        : `class="live-player %SIDE%" data-search-name="${escapeHtml(p.riotId || '')}"`;
 
     // 블루팀은 오른쪽 정렬, 레드팀은 왼쪽 정렬로 가운데를 향하게 배치
     return side === 'blue'
@@ -7675,11 +7678,6 @@ function renderLivePlayer(p, side, showRunes = true, anyTier = false) {
            </div>`;
 }
 
-window.searchSummonerFromLive = function (riotId) {
-    if (!riotId) return;
-    document.getElementById('dogu-search-input').value = riotId;
-    executeSearch();
-};
 
 // 인게임 패널은 공간이 넉넉해서 전적 목록보다 정식 명칭을 쓴다.
 const LIVE_QUEUE_NAMES = {
@@ -7720,9 +7718,9 @@ function renderLiveArenaSide(teams) {
                             const anon = !p.riotId || !p.riotId.trim();
                             const name = anon ? liveChampKorName(p.championId) : p.riotId.split('#')[0];
                             const tag = anon ? '' : (p.riotId.split('#')[1] || '');
-                            const click = anon ? '' : `onclick="searchSummonerFromLive('${(p.riotId || '').replace(/'/g, "\\'")}')"`;
+                            const click = anon ? '' : `data-search-name="${escapeHtml(p.riotId || '')}"`;
                             return `
-                                <div class="live-arena-player ${anon ? 'anon' : ''}" ${click} title="${anon ? '비공개' : p.riotId}">
+                                <div class="live-arena-player ${anon ? 'anon' : ''}" ${click} title="${anon ? '비공개' : escapeHtml(p.riotId)}">
                                     <img src="${liveChampIcon(p.championId)}" onerror="this.style.visibility='hidden'">
                                     <span class="live-arena-name">${name}</span>${tag ? `<span class="live-arena-tag">#${tag}</span>` : ''}
                                 </div>`;
@@ -8513,7 +8511,7 @@ window.selectChampion = async function (champId, champName) {
                 //   글자 크기는 본문 14px 보다 한 단계 작게 (인게임도 작다).
                 //   색은 <rules> 태그가 낸다 — app.js <style> 의 #5a5955, 인게임 실측값이다.
                 const rulesHtml = (rulesTpl && !rulesBad)
-                    ? `<div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 14px 0;"></div>`
+                    ? `<div style="border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 14px 0;"></div>`
                     + `<div class="skill-rules" style="line-height: 1.55; font-size: 13px;">${fill(rulesTpl)}</div>`
                     : '';
 
@@ -8546,10 +8544,10 @@ window.selectChampion = async function (champId, champName) {
                         //   글자 크기를 바꾸면 이 값도 같이 바뀌므로 calc 로 적어 둔다.
                         const iconPull = 'margin-top: calc((34px - 1.6 * 14px) / 2);';
                         const imgTag = icon
-                            ? `<img src="${icon}" style="width: 34px; height: 34px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12); flex-shrink: 0; ${iconPull}" onerror="this.style.visibility='hidden'">`
+                            ? `<img src="${icon}" style="width: 34px; height: 34px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; ${iconPull}" onerror="this.style.visibility='hidden'">`
                             : `<div style="width: 34px; flex-shrink: 0;"></div>`;
                         return `<div style="display: flex; gap: 12px; align-items: flex-start;">${imgTag}<div style="flex: 1; ${bodyStyle}">${fill(part)}</div></div>`;
-                    }).join('<div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 14px 0;"></div>')
+                    }).join('<div style="border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 14px 0;"></div>')
                         + rulesHtml;
                 }
 

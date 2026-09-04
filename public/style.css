@@ -33,6 +33,12 @@
     --lose:          #e84057;   /* 패배 빨강 — 띠·배경·16px+ 굵은 글자 (대비 4.31:1 — 작은 글자엔 미달) */
     --lose-text:     #f87171;   /* 패배 빨강의 **작은 글자용** (6.17:1). 12~13px 자리 11곳이 이걸 쓴다 (감사 3-2-1) */
 
+    /* ★ 흰색 테두리 3단 규칙 (2026-09-04, 감사 디자인). border 계열의 rgba(255,255,255,x) 는 이 셋만 쓴다 —
+       0.05(옅은 선) / 0.1(기본 선, 몸통) / 0.15(강조 선). 0.04~0.18 에 흩어져 있던 10종을 셋으로 모았고
+       옮긴 폭이 0.02~0.03 이라 화면 변화는 사실상 0 이다 (52곳 이동 · 64곳은 원래 3단이었다).
+       ★ background 는 일부러 뺐다 — 0.02~0.04 짜리 표면이 19곳이라 0.05 로 올리면 눈에 띄게 밝아진다.
+       변수로 안 뽑은 이유: border 축약(`1px solid rgba(...)`) 안에 들어가 자리가 제각각이라 var() 가 안 예쁘다 */
+
     /* ★ dogu.gg 공통 UI 사이트별 변수 (2026-08-22, DOGU_UI.md 2절). 값은 DOGU_UI_PLAN.md 색 표.
        헤더·히어로·검색창·푸터·배경은 public/dogu-ui.css 가 그리고, 여기선 **이 변수만** 바꾼다.
        `.dogu-*` 선택자를 이 파일에 쓰면 안 된다 — 한 사이트만 달라지면 통일이 무너진다 */
@@ -177,7 +183,7 @@ main {
     color: var(--text-muted);
     padding-bottom: 8px;
     margin-bottom: 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .home-tier-colhead img { width: 14px; height: 14px; }
@@ -344,7 +350,7 @@ main {
     color: var(--text-faint);
     font-size: 13px;
     background: rgba(255, 255, 255, 0.02);
-    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
     border-radius: 10px;
 }
 
@@ -789,7 +795,7 @@ main {
 .cf-left {
     width: 150px;
     flex-shrink: 0;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
     padding-right: 12px;
 }
 
@@ -811,7 +817,7 @@ main {
     padding: 6px 10px;
     margin-bottom: 8px;
     background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 6px;
     color: var(--text-bright);
     font-size: 12px;
@@ -915,8 +921,8 @@ main {
 .team-summary td {
     padding: 0 !important;
     background: rgba(0, 0, 0, 0.25);
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .ts-box {
@@ -1444,8 +1450,8 @@ main {
     justify-content: center;
     gap: 6px;
     padding: 0 8px;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .live-queue {
@@ -1516,8 +1522,8 @@ main {
         width: 100%;
         border-left: none;
         border-right: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         padding: 10px 0;
     }
 
@@ -2552,7 +2558,7 @@ main {
 .stats-select {
     background: var(--surface);
     color: var(--text-bright);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
     padding: 7px 12px;
     font-size: 13px;
@@ -2568,7 +2574,7 @@ main {
     display: flex;
     gap: 4px;
     background: var(--surface);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
     padding: 3px;
 }
@@ -2652,7 +2658,7 @@ main {
 .stats-build-row td {
     padding: 0 !important;
     background: #14142a;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .build-loading,
@@ -2716,7 +2722,7 @@ main {
     min-width: 46px;
     padding: 3px 4px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     color: var(--lx-gray);
     font-size: 10px;
@@ -2740,7 +2746,7 @@ main {
     align-items: center;
     gap: 1px;
     padding: 4px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.03);
     font-size: 12px;
@@ -2851,7 +2857,7 @@ main {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     padding: 10px 6px;
     margin-bottom: 8px;
@@ -2890,7 +2896,7 @@ main {
 }
 
 .lx-none { padding: 14px; font-size: 12px; color: var(--lx-gray); text-align: center; }
-.lx-foot { padding: 7px 12px 9px; font-size: 12px; color: var(--text-faint); border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.lx-foot { padding: 7px 12px 9px; font-size: 12px; color: var(--text-faint); border-top: 1px solid rgba(255, 255, 255, 0.05); }
 
 .lx-blk { min-width: 0; }
 .lx-blk-h { font-size: 12px; font-weight: 700; color: var(--text-bright); text-align: center; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; }
@@ -2937,7 +2943,7 @@ main {
 /* ── 상성 상자: 왼쪽 라벨(상성/시너지) + 탭 바 두 줄, 아래 라인별 카드 줄 */
 .lx-mu-tabs { border-bottom: 1px solid var(--lx-bd); }
 .lx-mu-tabrow { display: flex; align-items: stretch; }
-.lx-mu-tabrow + .lx-mu-tabrow { border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.lx-mu-tabrow + .lx-mu-tabrow { border-top: 1px solid rgba(255, 255, 255, 0.05); }
 .lx-mu-tablabel { width: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--accent); background: rgba(255, 255, 255, 0.03); border-right: 1px solid var(--lx-bd); }
 .lx-mu-tabrow .lx-tabbar { flex: 1; }
 .lx-mu-tabrow .lx-tabbtn { flex: 0 0 auto; padding: 0 14px; }
@@ -2954,7 +2960,7 @@ main {
     padding: 6px 4px 6px 0;
     text-align: center;
     font-size: 12px;
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .lx-row-head {
@@ -3005,15 +3011,15 @@ main {
 .lx-so { display: flex; flex-direction: column; gap: 3px; overflow-x: auto; }
 .lx-so-row { display: flex; align-items: center; gap: 2px; }
 .lx-so-row .lx-skl { margin-right: 3px; }
-.lx-so-cell { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; box-sizing: border-box; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 3px; font-size: 10px; font-weight: 700; color: #fff; }
+.lx-so-cell { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; box-sizing: border-box; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; font-size: 10px; font-weight: 700; color: #fff; }
 .lx-so-cell.on { background: #6d4fc7; border-color: #8b6de0; }
 .lx-so-cell.is-off { opacity: 0.35; }
 
 /* 스킬 우선순위 줄 — 레벨별 순서는 세로 목록 */
 .lx-seq-list { padding: 6px 10px; }
-.lx-seq { display: flex; align-items: center; gap: 12px; padding: 5px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.lx-seq { display: flex; align-items: center; gap: 12px; padding: 5px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 .lx-seq-cells { display: flex; gap: 2px; }
-.lx-seq-cell { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 3px; }
+.lx-seq-cell { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; }
 .lx-seq-cell.k1 { background: #23405f; } .lx-seq-cell.k2 { background: #2f4f2f; } .lx-seq-cell.k3 { background: #5a3f22; } .lx-seq-cell.k4 { background: #4d2a5c; }
 .lx-seq-vals { display: flex; gap: 10px; font-size: 12px; }
 
@@ -3034,7 +3040,7 @@ main {
 .lx-pk-page { padding: 8px 12px 0; font-size: 12px; color: var(--text-muted); }
 /* 조합별 승률 — 한 줄에 룬 페이지 아이콘 + 픽률 · 승률 · 판수 (2026-08-27) */
 .lx-combos { padding: 6px 12px; }
-.lx-combo { display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px 60px; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 12px; text-align: center; }
+.lx-combo { display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px 60px; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12px; text-align: center; }
 .lx-combo:last-child { border-bottom: 0; }
 .lx-combo-head { color: var(--text-faint); font-size: 12px; }
 .lx-combo-head .lx-combo-page { text-align: left; }
@@ -3789,7 +3795,7 @@ main {
         justify-content: center;
         font-size: 10px;
         background: #0f0f1a;
-        border: 1px solid rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     /* 뱃지(더블킬 등)는 폰 카드에서 접는다 — op.gg 모바일 접힌 카드에도 없고,
@@ -4189,7 +4195,7 @@ main {
 
 .load-more-btn:disabled {
     color: var(--text-faint);
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
     cursor: default;
 }
 
@@ -4323,7 +4329,7 @@ main {
 .arena-detail-table .arena-group-header th {
     background: rgba(255, 255, 255, 0.04);
     padding: 6px 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* 아레나 밴 줄 (표 맨 아래).
@@ -4331,7 +4337,7 @@ main {
    초상화는 협곡 팀 요약과 같은 .ts-ban 을 쓴다 — 두 벌을 두면 크기가 어긋난다. */
 .arena-ban-summary td {
     background: rgba(255, 255, 255, 0.02);
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .arena-ban-box {
@@ -4417,7 +4423,7 @@ main {
 }
 #champ-page-header {
     flex-shrink: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 .champ-detail-col > .champ-detail-pane {
     flex: 1;
@@ -4690,7 +4696,7 @@ main {
     aspect-ratio: 1215 / 717;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     overflow: hidden;
     flex-shrink: 0;
 }
@@ -5569,7 +5575,7 @@ main {
 /* 처음·끝 버튼은 못 눌러도 자리를 지킨다 (안 그러면 페이저가 좌우로 튄다) */
 .rank-pg:disabled {
     color: #3a3a4a;
-    border-color: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.05);
     cursor: default;
 }
 
@@ -5947,7 +5953,7 @@ main {
 
 .stat-table thead th {
     padding: 0 6px 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 700;
@@ -5963,7 +5969,7 @@ main {
 .stat-trow th,
 .stat-trow td {
     padding: 9px 6px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     font-weight: normal;
 }
 
@@ -6372,7 +6378,7 @@ main {
     scrollbar-gutter: stable;
     padding: 6px;
     background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 10px;
 }
 
@@ -7017,7 +7023,7 @@ main {
     width: 100%;
     box-sizing: border-box;
     background: #14142a;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     color: var(--text-bright);
     padding: 9px 12px;
@@ -7061,7 +7067,7 @@ main {
 
 .codex-cat {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
     padding: 4px 10px;
     border-radius: 6px;
@@ -7167,7 +7173,7 @@ main {
 
 .codex-view-btn {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
     padding: 4px 10px;
     border-radius: 6px;
@@ -7209,7 +7215,7 @@ main {
     gap: 8px;
     padding: 10px 0 8px;
     background: var(--surface);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 10px;
     font-size: 13px;
     font-weight: 600;
@@ -7331,7 +7337,7 @@ main {
 .codex-upgrade {
     margin-top: 14px;
     padding-top: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .codex-upgrade-head {
@@ -7354,7 +7360,7 @@ main {
 .codex-usage {
     margin-top: 14px;
     padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .codex-usage-head {
@@ -7408,7 +7414,7 @@ main {
     align-items: center;
     gap: 6px;
     background: #14142a;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 5px 9px 5px 5px;
 }
@@ -7496,7 +7502,7 @@ main {
     align-items: flex-start;
     padding-bottom: 14px;
     margin-bottom: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .codex-detail-img {
@@ -7566,7 +7572,7 @@ main {
     gap: 12px;
     margin-top: 18px;
     padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ★ nowrap 이 필요하다 — "상위 아이템" 이 62px 에서 두 줄로 갈라졌다.
@@ -7593,7 +7599,7 @@ main {
     align-items: center;
     gap: 6px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 7px;
     padding: 5px 9px 5px 5px;
     cursor: pointer;
@@ -7701,7 +7707,7 @@ main {
     align-items: center;
     gap: 3px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 7px;
     padding: 5px;
 }
@@ -8247,7 +8253,7 @@ main {
 /* 표·카드 묶음이 들어갈 상자 골격 — 사이트 공통 카드(#1a1a2e + 흐린 테두리)와 같은 톤 */
 .skel-box {
     background: var(--surface);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 18px 20px;
     display: flex;
@@ -8397,7 +8403,7 @@ main {
 }
 
 .pi-box {
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     background: #16162a;
     padding: 12px 14px 8px;
@@ -8654,7 +8660,7 @@ main {
     gap: 6px;
     padding: 5px 10px;
     background: var(--surface);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     color: var(--text-bright);
     font-size: 12px;
@@ -8840,7 +8846,7 @@ main {
 
 .versus-swap {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
     color: var(--text-bright);
     font-size: 14px;
@@ -9019,7 +9025,7 @@ main {
     gap: 5px;
     padding: 6px 10px;
     background: var(--surface);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     color: var(--text-muted);
     font-size: 12px;
