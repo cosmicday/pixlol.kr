@@ -428,6 +428,18 @@ if (ORIGIN_GUARD) {
     });
     console.log('[OriginGuard] 오리진 잠금 켜짐 (x-origin-guard 검사)');
 }
+
+// ★ 기본 보안 헤더 (2026-09-04 감사 L-15). helmet 을 쓰지 않고 부작용 없는 것만 직접 넣는다.
+//   ★★ CSP 는 일부러 안 넣는다 — 인라인 onclick 54곳·style= 401곳이라 unsafe-inline 없이는 사이트가 죽고,
+//     넣으면 방어 효과가 0 이라 의미가 없다. HSTS 도 서버에 안 넣는다(되돌리기 어려워 CF 에서 관리). cors 는 그대로.
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
+
 // ★ useClones:false (2026-09-03 감사 M-6) — 기본값 true 면 get 할 때마다 저장 객체를 깊은 복사한다.
 //   랭킹 응답은 11,000 객체라 캐시 적중일 때조차 요청마다 11,000회 클론이 돌았다.
 //   ★★ 대신 **캐시에서 꺼낸 객체를 호출부가 고치면 안 된다** — 고치면 캐시 본체가 바뀐다.
