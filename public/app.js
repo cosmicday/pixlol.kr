@@ -6249,7 +6249,13 @@ async function showRanking(targetPage = 1) {
     if (moreArea) moreArea.innerHTML = "";
 
     try {
-        const res = await fetch('/api/ranking');
+        // ★ 숙련도 아이콘 매핑(championIdMap)을 랭킹과 **같이** 기다린다 (2026-09-04).
+        //   안 기다리면 새로고침·직링크로 랭킹에 바로 들어올 때 map 이 비어 아이콘이 전부 빈 칸이 됐다.
+        //   이미 로드됐으면 fetchChampionMap 이 즉시 리턴하므로(중복 요청 없음) 지연도 0 이다.
+        const [res] = await Promise.all([
+            fetch('/api/ranking'),
+            fetchChampionMap()
+        ]);
 
         if (res.status === 429) {
             const retryAfter = res.headers.get('Retry-After');
