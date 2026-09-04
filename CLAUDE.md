@@ -1535,8 +1535,9 @@ SQL 전환도 같은 시점 — 통계 잡만 Railway Postgres 로, 검색·닉�
   뚫린다 — 둘 다 밝고 무채색이다. 실측으로 확인했다
 - **★ 1.9MB 를 직접 걸면 안 된다** — 파비콘은 모든 페이지가 받는다. 32px 2.7KB / 180px 60KB
 - 만든 스크립트는 일회성이라 저장소에 안 넣었다 (zlib 만으로 PNG 를 읽고 쓰는 100줄짜리).
-  다시 만들 일이 잦으면 `build_favicon.js` 로 넣을 것. **원본 1.9MB 는 public/ 에 그대로 있다** —
-  아무 데서도 안 쓰는데 배포에 실려 다니므로 지우거나 옮길지 판단이 필요하다
+  다시 만들 일이 잦으면 `build_favicon.js` 로 넣을 것. **원본 1.9MB 는 2026-09-03 에 루트 `_archive/` 로
+  옮겼다** (같이 옮긴 것: `mastersData.js` 1.0MB · `statsData.js` — 감사 L-13. public/ 밖이라 서빙은 안 되고
+  git 에는 남아 있다. 되살리려면 public/ 으로 되돌리면 된다)
 
 ### ★★ 08-19 에 드러난 규칙 둘 (계속 유효하다)
 
@@ -2608,7 +2609,9 @@ DD `rangeBurn` 도 25000 · bin `castRange` 도 25000 이라 **기계 대조로�
 - **★ 배포 중에 옛 app.js + 새 custom_values.js 가 섞일 걱정은 없다** —
   `server.js` 의 `renderIndexHtml()` 이 모든 `.js` 참조에 `?v=mtime` 을 붙이고
   index.html 은 `no-cache` 라, 한 번 받아오면 **항상 같은 배포의 한 세트**다
-  (열어 둔 탭도 옛 세트끼리라 안 깨진다). 정적 파일 자체는 `max-age=14400` 이다
+  (열어 둔 탭도 옛 세트끼리라 안 깨진다). 정적 파일은 **`.js`/`.css` 만 1년 immutable**(주소에 `?v` 가
+  붙으니까), 그 밖(png·ico·`lore/*.json`·`riot.txt`)은 `max-age=14400` 이다 (2026-09-03 — 그전엔 문서만
+  14400 이라 적혀 있고 코드엔 maxAge 가 아예 없어서 방문마다 전부 재검증했다)
 - 헬퍼 위치를 적어 둔 곳이 세 군데 더 있었다 — `index.html` 주석 · `add_level_graphs.js` 가
   찍는 머리글 · `build_champion_data.js` 주석. **셋 다 같이 고쳤다**
 

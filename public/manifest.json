@@ -1,0 +1,16 @@
+{
+    "name": "PIXLOL.KR: 리그오브레전드",
+    "short_name": "PIXLOL",
+    "description": "리그오브레전드 전적 검색 · 마스터+ 랭킹 · 챔피언 통계",
+    "lang": "ko",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#16112a",
+    "theme_color": "#16112a",
+    "icons": [
+        { "src": "/favicon_lol_32.png", "sizes": "32x32", "type": "image/png" },
+        { "src": "/favicon_lol_64.png", "sizes": "64x64", "type": "image/png" },
+        { "src": "/favicon_lol_180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+    ]
+}

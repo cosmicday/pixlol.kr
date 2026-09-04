@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 const fs = require('fs');
 const NodeCache = require('node-cache');
@@ -400,7 +401,18 @@ const PbeNote = mongoose.model('PbeNote', pbeNoteSchema);
 // ==========================================
 const app = express();
 app.set('trust proxy', 1);
-const myCache = new NodeCache({ stdTTL: 300 });
+// ★ IS_PROD (2026-09-03 감사 L-18). NODE_ENV 가 production 이 아니면 요청마다 index.html 을 다시 만들고
+//   (readFileSync + statSync ~15회) Express 기본 에러 핸들러가 스택을 응답에 실었다. Railway 변수 화면에서
+//   NODE_ENV 를 확인하기 전까지는 **Railway 표식(RAILWAY_PROJECT_ID)** 도 운영으로 친다 — 로컬 `node server.js` 는 그대로 개발
+const IS_PROD = process.env.NODE_ENV === 'production' || !!process.env.RAILWAY_PROJECT_ID;
+if (IS_PROD) app.set('env', 'production');
+// ★ useClones:false (2026-09-03 감사 M-6) — 기본값 true 면 get 할 때마다 저장 객체를 깊은 복사한다.
+//   랭킹 응답은 11,000 객체라 캐시 적중일 때조차 요청마다 11,000회 클론이 돌았다.
+//   ★★ 대신 **캐시에서 꺼낸 객체를 호출부가 고치면 안 된다** — 고치면 캐시 본체가 바뀐다.
+//     /api/summoner 의 expireAt 이 그 자리였고, 응답에서 `{...cached, expireAt}` 로 복사해 보낸다.
+//   ★ maxKeys 는 일부러 안 뒀다 — node-cache 는 상한에 닿으면 set() 이 ECACHEFULL 을 **던져서** 그 라우트가
+//     500 이 된다. 대신 사용자 입력이 키에 들어가는 자리(vs 빌드·신화상점 기간)를 검증·정규화해 키 폭을 막는다
+const myCache = new NodeCache({ stdTTL: 300, useClones: false });
 const API_KEY = process.env.API_KEY;
 
 // 라이엇 API 전용 호출기 (키를 헤더에 담아 전송)
@@ -430,6 +442,9 @@ let isBuildingStats = false;
 let statCounters = { scan: 0, seen: 0, fetch: 0, save: 0, skip: 0 };
 
 app.use(cors());
+// ★ 응답 압축 (2026-09-03 감사 M-6). 없어서 오리진→Cloudflare 구간이 통째로 비압축이었다 —
+//   /api/ranking 1.2MB · /api/champion-stats 117KB(gzip 16.8KB) 가 그대로 나갔다
+app.use(compression());
 
 // ==========================================
 // index.html 자산 버전 자동 주입
@@ -467,22 +482,76 @@ function renderIndexHtml() {
     });
 
     // 운영 환경에서만 캐싱. 로컬은 매번 다시 읽어야 파일을 고치는 즉시 반영된다.
-    if (process.env.NODE_ENV === 'production') indexHtmlCache = html;
+    if (IS_PROD) indexHtmlCache = html;
     return html;
+}
+
+// ★ og: 미리보기 카드 (2026-09-03, 기능 감사 F10). 경기 공유 링크(🔗)를 만들어 놨는데 카톡에 붙이면
+//   제목만 나가던 반쪽을 채운다. 주소 꼴 셋(/summoner · /stats/<챔프> · /versus/<A>/<B>)만 제목을 바꾸고
+//   나머지는 사이트 기본. 캐시된 index.html 위에 요청마다 <title> 앞에 끼워 넣는다 — DB 는 안 읽는다
+//   (경기 번호까지 있는 링크도 소환사 이름으로만 적는다. 경기 한 판을 위해 DB 를 열 만큼의 값이 아니다)
+const OG_SITE = 'PIXLOL.KR';
+const OG_DEFAULT_DESC = '리그오브레전드 전적 검색 · 마스터+ 랭킹 · 챔피언 통계 · 도감';
+const OG_POS_KR = { top: '탑', jungle: '정글', mid: '미드', middle: '미드', adc: '바텀', bottom: '바텀', bot: '바텀', support: '서포터', utility: '서포터' };
+const escOg = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const champKrName = (key) => {
+    if (!key) return null;
+    const k = String(key).toLowerCase();
+    for (const [ck, v] of Object.entries(champKeyMap)) if (ck.toLowerCase() === k) return v.name;
+    return null;
+};
+
+function buildOgTags(reqPath) {
+    let title = `${OG_SITE}: 리그오브레전드`, desc = OG_DEFAULT_DESC;
+    const seg = reqPath.split('/').map(s => { try { return decodeURIComponent(s); } catch (e) { return s; } });
+    if (seg[1] === 'summoner' && seg[2]) {
+        title = `${seg[2]} 전적 - ${OG_SITE}`;
+        desc = `${seg[2]} 의 최근 전적 · 티어 · 인게임 정보`;
+    } else if (seg[1] === 'stats' && seg[2] && !['patch', 'duo', 'trend'].includes(seg[2])) {
+        const kr = champKrName(seg[2]) || seg[2];
+        const pos = OG_POS_KR[String(seg[3] || '').toLowerCase()];
+        title = `${kr}${pos ? ` ${pos}` : ''} 통계 · 빌드 - ${OG_SITE}`;
+        desc = `${kr} 승률 · 픽률 · 룬 · 아이템 · 상성 (마스터+ 솔로랭크)`;
+    } else if (seg[1] === 'versus' && seg[2] && seg[3]) {
+        const a = champKrName(seg[2]) || seg[2], b = champKrName(seg[3]) || seg[3];
+        title = `${a} vs ${b} 맞대결 - ${OG_SITE}`;
+        desc = `${a} 와 ${b} 의 맞대결 승률 · 빌드 비교`;
+    }
+    const url = `https://pixlol.kr${reqPath}`;
+    return [
+        `<meta name="description" content="${escOg(desc)}">`,
+        `<meta property="og:type" content="website">`,
+        `<meta property="og:site_name" content="${OG_SITE}">`,
+        `<meta property="og:title" content="${escOg(title)}">`,
+        `<meta property="og:description" content="${escOg(desc)}">`,
+        `<meta property="og:url" content="${escOg(url)}">`,
+        `<meta property="og:image" content="https://pixlol.kr/favicon_lol_180.png">`,
+        `<meta name="twitter:card" content="summary">`
+    ].join('\n    ');
 }
 
 function sendIndexHtml(req, res) {
     // index.html 자체는 절대 캐시하면 안 된다.
     // 이 파일이 캐시되면 위에서 붙인 새 버전 번호가 전달되지 않는다.
     res.set('Cache-Control', 'no-cache');
-    res.type('html').send(renderIndexHtml());
+    const html = renderIndexHtml().replace('<title>', () => buildOgTags(req.path) + '\n    <title>');
+    res.type('html').send(html);
 }
 
 // express.static보다 먼저 잡아야 한다. 뒤에 두면 static이 원본을 그냥 내보낸다.
 app.get('/', sendIndexHtml);
 app.get('/index.html', sendIndexHtml);
 
-app.use(express.static(PUBLIC_DIR, { index: false }));
+// ★ 정적 자산 캐시 (2026-09-03, 감사 H-2). 예전엔 maxAge 기본값 0 이라 방문마다 전부 재검증(304)했다.
+//   .js/.css 는 renderIndexHtml 이 ?v=mtime 을 붙이므로 영구 캐시가 안전하고, 배포하면 주소가 바뀌어
+//   즉시 새 파일을 받는다. 그 밖(png·ico·lore/*.json·riot.txt)은 주소가 안 바뀌므로 4시간만.
+app.use(express.static(PUBLIC_DIR, {
+    index: false,
+    setHeaders(res, filePath) {
+        if (/\.(?:js|css)$/.test(filePath)) res.set('Cache-Control', 'public, max-age=31536000, immutable');
+        else res.set('Cache-Control', 'public, max-age=14400');
+    }
+}));
 
 // API 속도 제한 (Rate Limiting) - 1분에 30번
 const apiLimiter = rateLimit({
@@ -525,6 +594,9 @@ async function loadResolvedNames() {
     }
 }
 
+// ★ 챔피언 영문 키 → { id, name(한글) } (2026-09-03). og: 카드 제목용 — 서버에 챔피언 이름표가 없었다.
+//   버전을 받는 김에 champion.json 한 번(부팅 + 갱신 주기). 실패해도 빈 표라 화면엔 영문 키가 나갈 뿐이다
+let champKeyMap = {};
 async function updateVersion() {
     try {
         const res = await axios.get('https://ddragon.leagueoflegends.com/api/versions.json');
@@ -532,6 +604,14 @@ async function updateVersion() {
         console.log(`[Task] Data Dragon 최신 버전 갱신: ${currentVersion}`);
     } catch (e) {
         console.error("[Task] 버전 갱신 실패. 기본값을 사용합니다.");
+    }
+    try {
+        const { data } = await axios.get(`https://ddragon.leagueoflegends.com/cdn/${currentVersion}/data/ko_KR/champion.json`, { timeout: 10000 });
+        const next = {};
+        for (const c of Object.values(data?.data || {})) next[c.id] = { id: Number(c.key), name: c.name };
+        if (Object.keys(next).length) champKeyMap = next;
+    } catch (e) {
+        console.error(`[Task] champion.json 갱신 실패 (og 제목은 영문 키로): ${e.message}`);
     }
 }
 
@@ -1900,7 +1980,9 @@ async function buildOneMatchupScope(scopeKey, matchCond) {
 //   API 캐시만 36줄(rune 까지만 들어간 순간)을 들고 있었다.
 //   ★ 그래서 사이클 끝에 통계 캐시를 통째로 비운다. 노출 창이 "재집계에 걸리는 시간" 으로 줄어든다.
 //   ★ `/api/champion-stats` 는 캐시를 안 쓰므로 여기 없다 (부분 결과가 보여도 다음 요청에 낫는다).
-const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'usage_', 'patchimpact_', 'duos_', 'lanetrend_', 'versusbuild_'];
+//   ★ 통계 응답 캐시 접두사를 새로 만들면 여기에도 적을 것 — 'trend_' 가 빠져 있어서
+//     재집계 뒤에도 챔피언 추이 그래프만 최대 10분 옛 값이었다 (2026-09-03 감사 M-8).
+const STAT_CACHE_PREFIXES = ['builds_', 'matchups_', 'usage_', 'patchimpact_', 'duos_', 'lanetrend_', 'trend_', 'versusbuild_'];
 
 function flushStatCaches() {
     const keys = myCache.keys().filter(k => STAT_CACHE_PREFIXES.some(p => k.startsWith(p)));
@@ -2054,7 +2136,10 @@ async function ensureStatIndexes() {
         { col: 'statscopes', key: { scope: 1, kb: 1 }, unique: true },
         // PBE 글 창고 (2026-08-27). **TTL 없음** — 쌓는 게 목적이다
         { col: 'pbenotes', key: { tid: 1 }, unique: true },
-        { col: 'pbenotes', key: { date: -1 } }
+        { col: 'pbenotes', key: { date: -1 } },
+        // LP 추이 (2026-09-01). **TTL 없음** — 잡이 lastDay 기준으로 지운다.
+        //   puuid unique 가 곧 정합성 장치다 (saveLpHistory 가 E11000 을 "이미 했다" 로 삼킨다)
+        { col: 'lphistories', key: { puuid: 1 }, unique: true }
     ];
 
     // ★★ 못 쓰게 된 옛 인덱스. **지우기 전에 새 걸 만들면 안 된다** — `date` 단독 unique 가
@@ -2646,12 +2731,17 @@ async function buildFallbackResponse(fullName) {
 // 소환사 전적 검색 (폴백 로직 포함)
 app.get('/api/summoner/:name', async (req, res) => {
     const summonerName = req.params.name;
-    const cachedData = myCache.get(summonerName);
+    // ★ 캐시 키에 접두사를 준다 (2026-09-03 감사 M-9). 예전엔 닉네임 원문이 그대로 키라서
+    //   `/api/summoner/challenger_ranking_data` 가 랭킹 payload 를 돌려줬다 (통계·랭킹·신화상점과
+    //   같은 myCache 를 쓰는데 조회가 `#` 검증보다 먼저다). `mythic_x#KR1` 같은 닉네임이
+    //   clearMythicCache 의 `mythic_` 일괄 삭제에 걸리던 것도 같이 사라진다
+    const cacheKey = `summoner_${summonerName}`;
+    const cachedData = myCache.get(cacheKey);
 
     if (cachedData) {
         console.log(`[API] 전적 검색 캐시 적중: ${summonerName}`);
-        cachedData.expireAt = myCache.getTtl(summonerName);
-        return res.json(cachedData);
+        // ★ 캐시 객체를 고치지 않는다 — useClones:false 라 고치면 캐시 본체가 바뀐다 (감사 M-6 짝)
+        return res.json({ ...cachedData, expireAt: myCache.getTtl(cacheKey) });
     }
 
     try {
@@ -2700,7 +2790,9 @@ app.get('/api/summoner/:name', async (req, res) => {
             puuid: targetPuuid,
             version: currentVersion,
             profile: {
-                name: `${gameName}#${tagLine}`, level: summonerRes.data.summonerLevel, icon: `https://ddragon.leagueoflegends.com/cdn/${currentVersion}/img/profileicon/${summonerRes.data.profileIconId}.png`,
+                // ★ 화면에 나가는 이름은 라이엇이 준 정본이다 (2026-09-03 감사 L-17). 검색어 원문을 쓰면
+                //   `HIDE on bush#kr1` 로 친 대소문자가 프로필에 그대로 떴다. 아래 canonicalName 과 같은 값
+                name: `${accountData.gameName}#${accountData.tagLine}`, level: summonerRes.data.summonerLevel, icon: `https://ddragon.leagueoflegends.com/cdn/${currentVersion}/img/profileicon/${summonerRes.data.profileIconId}.png`,
                 tier: rankData?.tier || 'UNRANKED', rank: rankData?.rank || '', leaguePoints: rankData?.leaguePoints || 0,
                 wins: rankData?.wins || 0, losses: rankData?.losses || 0,
                 serverRank: serverRank
@@ -2731,10 +2823,9 @@ app.get('/api/summoner/:name', async (req, res) => {
         // ★ 같은 게임에 있던 참가자들도 닉네임만 저장 (자동완성 후보 축적)
         saveParticipantNames(allMatchDetails, targetPuuid);
 
-        myCache.set(summonerName, finalData);
-        finalData.expireAt = myCache.getTtl(summonerName);
+        myCache.set(cacheKey, finalData);
         console.log(`[API] 전적 데이터 처리 완료: ${summonerName}`);
-        res.json(finalData);
+        res.json({ ...finalData, expireAt: myCache.getTtl(cacheKey) });
 
     } catch (error) {
         if (error.response?.status === 429) {
@@ -2769,8 +2860,13 @@ app.get('/api/lp-history/:puuid', async (req, res) => {
 });
 
 app.get('/api/mastery/:puuid', async (req, res) => {
+    // /api/live · /api/matches 와 같은 검증 — 이 라우트만 빠져 있었다 (2026-09-03 감사 M-5)
+    const puuid = req.params.puuid;
+    if (!/^[\w-]{40,120}$/.test(puuid)) {
+        return res.status(400).json({ error: "잘못된 요청입니다." });
+    }
     try {
-        const response = await riotApi.get(`https://kr.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${req.params.puuid}/top?count=7`);
+        const response = await riotApi.get(`https://kr.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${encodeURIComponent(puuid)}/top?count=7`);
         res.json(response.data);
     } catch (error) { res.status(500).json({ error: '마스터리 데이터를 불러오지 못했습니다.' }); }
 });
@@ -2987,6 +3083,10 @@ function extractLiveGame(raw) {
             puuid: p.puuid,
             championId: p.championId,
             riotId: p.riotId || '',
+            // ★ 마스터+ 티어 배지 (2026-09-03, 기능 감사 F1 1단계). 상세 전적(buildHistoryEntry)과 같은
+            //   `[티어 한 글자, LP]` 꼴이고 같은 표(rankTierByPuuid)를 읽는다 — 라이엇 호출 0.
+            //   전 티어(마스터 미만)는 league-v4 ×10회/조회라 프로덕션 키 이후 (2단계)
+            rankTier: rankTierByPuuid.get(p.puuid) || null,
             spell1: p.spell1Id,
             spell2: p.spell2Id,
             mainRune: perkIds[0] || null,
@@ -3637,12 +3737,39 @@ app.get('/api/champion-builds', async (req, res) => {
 //   ★ 판 고르기는 `$expr` 한 덩어리다 — 나(a,pos)와 상대(b,fpos)가 같은 판에 있고 팀 관계가 `rel`
 //     인 판. **미러전 가드**로 상대 자리에서 내 자리를 뺀다(`$ne`), 안 그러면 같은 사람을 둘로 센다.
 //   ★ 실측 1.1초 안팎 (16.17 · 21,770판, 타임라인 facet 포함). 30분 캐시라 다시 열면 즉시 나온다.
-app.get('/api/versus-build', async (req, res) => {
+// ★★ 이 라우트만 요청 시점에 원본(matchstats)을 전수 스캔한다 (2026-09-03 감사 H-1).
+//   `$expr`+`$filter` 는 인덱스를 못 타서 실측 1.3초고, /api/champion-* 은 전부 집계본을 읽기만 한다.
+//   그래서 세 겹으로 막는다 — ① 입력을 정수·범위·실제 챔피언(그 scope 의 champstats 에 있는 id)으로
+//   거른다 (`a=1.5`·`a=99999` 가 전부 다른 캐시 키가 되어 매번 스캔하던 것) ② 전용 리미터
+//   ③ 같은 키가 동시에 오면 계산을 한 번만 하고 결과를 나눠 준다 (in-flight 맵)
+const versusLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    // ★ 캐시 적중도 한 회로 센다 (리미터가 핸들러보다 앞이다). 관계 칩·⇄ 를 몇 번 누르는 게 정상 사용이라
+    //   계획의 "5회쯤" 보다 넉넉히 잡았다. 미스 한 번이 1.3초짜리라 12회여도 DB 에는 충분한 상한이다
+    max: Number(process.env.VERSUS_RATE_MAX) || 12,
+    keyGenerator: (req) => ipKeyGenerator(req.headers['cf-connecting-ip'] || req.ip),
+    message: { error: '맞대결 빌드 조회가 너무 잦습니다. 잠시 후 다시 시도해주세요.' }
+});
+const versusInflight = new Map();   // cacheKey -> Promise<payload>
+
+// 그 scope 에 집계 줄이 있는 챔피언 id 집합 (10분 캐시). 없는 id 는 어차피 결과가 0건이라 스캔할 이유가 없다
+async function champIdSetOf(scope) {
+    const k = `champids_${scope}`;
+    let s = myCache.get(k);
+    if (s) return s;
+    const ids = await ChampStat.distinct('champ', { scope });
+    s = new Set(ids);
+    if (s.size) myCache.set(k, s, 600);
+    return s;
+}
+
+app.get('/api/versus-build', versusLimiter, async (req, res) => {
     try {
         const a = Number(req.query.a), b = Number(req.query.b);
         const pos = Number(req.query.pos), fpos = Number(req.query.fpos);
         const rel = Number(req.query.rel) === 1 ? 1 : 0;
-        if (![a, b, pos, fpos].every(Number.isFinite)) {
+        const okInt = (n, lo, hi) => Number.isInteger(n) && n >= lo && n <= hi;
+        if (!okInt(a, 1, 4000) || !okInt(b, 1, 4000) || !okInt(pos, 0, 4) || !okInt(fpos, 0, 4)) {
             return res.status(400).json({ error: '잘못된 요청입니다.' });
         }
 
@@ -3654,6 +3781,25 @@ app.get('/api/versus-build', async (req, res) => {
         const cacheKey = `versusbuild_${scope}_${a}_${b}_${pos}_${fpos}_${rel}`;
         const hit = myCache.get(cacheKey);
         if (hit) return res.json(hit);
+
+        const known = await champIdSetOf(scope);
+        if (known.size && (!known.has(a) || !known.has(b))) {
+            return res.status(400).json({ error: '없는 챔피언입니다.' });
+        }
+
+        if (versusInflight.has(cacheKey)) return res.json(await versusInflight.get(cacheKey));
+        const job = computeVersusBuild({ scope, a, b, pos, fpos, rel, cacheKey });
+        versusInflight.set(cacheKey, job);
+        try { res.json(await job); }
+        finally { versusInflight.delete(cacheKey); }
+    } catch (e) {
+        console.error('[API] vs 빌드 실패:', e.message);
+        res.status(500).json({ error: '맞대결 빌드를 불러오지 못했습니다.' });
+    }
+});
+
+async function computeVersusBuild({ scope, a, b, pos, fpos, rel, cacheKey }) {
+    {
 
         const at = (arr, i) => ({ $arrayElemAt: [arr, i] });
         const P = (i, j) => at(at('$p', i), j);
@@ -3696,12 +3842,9 @@ app.get('/api/versus-build', async (req, res) => {
                 .map(d => ({ pos: d.pos, type: d.type, key: d.key, games: d.games, wins: d.wins }))
         };
         myCache.set(cacheKey, payload, 1800);
-        res.json(payload);
-    } catch (e) {
-        console.error('[API] vs 빌드 실패:', e.message);
-        res.status(500).json({ error: '맞대결 빌드를 불러오지 못했습니다.' });
+        return payload;
     }
-});
+}
 
 // ==========================================
 // 도감 채택률 — 주문(2026-08-26) · 아이템·룬(2026-09-01)
@@ -4179,7 +4322,9 @@ app.get('/api/mythic-shop', async (req, res) => {
             q.section = req.query.section;
         }
 
-        const key = `mythic_range_${req.query.from || ''}_${req.query.to || ''}_${req.query.section || ''}_${limit}`;
+        // ★ 키는 **검증을 통과한 값**으로만 만든다 (2026-09-03 감사 M-11). 원문을 넣으면 `from=aaa`·`aab`… 가
+        //   결과는 전부 같은데 키만 달라 캐시가 무한히 쌓이고 그때마다 DB 를 다시 쳤다
+        const key = `mythic_range_${isDate(req.query.from) ? req.query.from : ''}_${isDate(req.query.to) ? req.query.to : ''}_${req.query.section || ''}_${limit}`;
         const hit = myCache.get(key);
         if (hit) return res.json(hit);
 
@@ -4396,8 +4541,10 @@ app.get('/api/patch-notes', async (req, res) => {
 });
 
 app.get('/api/ranking', async (req, res) => {
+    // ★ 문자열로 캐시한다 (2026-09-03 감사 M-6) — 11,000 객체를 요청마다 JSON.stringify 하던 것이 사라진다.
+    //   명단 갱신 때 myCache.del('challenger_ranking_data') 로 버리는 건 그대로다
     const cachedRanking = myCache.get('challenger_ranking_data');
-    if (cachedRanking) return res.json(cachedRanking);
+    if (cachedRanking) return res.type('json').send(cachedRanking);
     if (challengerList.length === 0) return res.status(503).json({ error: "랭킹 데이터를 수집 중입니다. 잠시 후 다시 시도해주세요." });
 
     // 티어는 한 글자로 줄여 보낸다. 1만 명 x 매 항목이라 글자 수가 곧 응답 크기다.
@@ -4425,8 +4572,9 @@ app.get('/api/ranking', async (req, res) => {
         refreshMs: rankRefreshMs(),
         players: processedPlayers
     };
-    myCache.set('challenger_ranking_data', finalRankingData, 600);
-    res.json(finalRankingData);
+    const body = JSON.stringify(finalRankingData);
+    myCache.set('challenger_ranking_data', body, 600);
+    res.type('json').send(body);
 });
 
 // 아레나 증강체 데이터
@@ -4453,11 +4601,15 @@ async function bootstrap() {
         process.exit(1);
     }
 
-    await startJobs();
+    // ★ 포트를 먼저 연다 (2026-09-03 감사 H-3). 예전엔 startJobs() 를 다 기다린 뒤에 listen 해서
+    //   배포마다 최악 90초(명단 조회 3티어 × 3회 재시도 × 10초) 동안 TCP 연결 자체가 안 받아졌다.
+    //   조회 라우트는 DB 만 읽으므로 잡이 덜 끝나도 대부분 정상이고, 명단이 아직 없는 자리는
+    //   /api/ranking 이 이미 503 안내를 준다 — 그 처리가 있다는 게 곧 "먼저 열어도 된다" 는 뜻이다
+    app.listen(PORT, () => console.log(`[System] 서버 실행 중: 포트 ${PORT}`));
+
+    startJobs().catch(e => console.error('[System] startJobs 실패:', e.message));
     refreshChampLaneStats();
     setInterval(refreshChampLaneStats, 60 * 60 * 1000);   // 1시간마다 갱신
-
-    app.listen(PORT, () => console.log(`[System] 서버 실행 중: 포트 ${PORT}`));
 }
 
 bootstrap();

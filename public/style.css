@@ -24,6 +24,15 @@
     --accent-mid:  #8b5cf6;   /* 배지·테두리 (8곳) */
     --accent-deep: #6b46c1;   /* 진한 채움·그라데이션 끝 (17곳) */
 
+    /* ★ 표면·승패 토큰 (2026-09-03, 감사 2장 색 제안 ①). 8/31 변수화가 "글자 회색 + 액센트" 까지만 가고
+       남아 있던 하드코딩의 몸통 — 값은 그대로라 화면 변화 0. 승/패는 style.css 와 app.js 인라인 두 벌이라
+       한쪽만 바꾸면 갈라지던 자리다. ★ 예외: app.js Chart.js 캔버스 색(7850~)은 var() 를 못 읽어 hex 그대로 */
+    --surface:       #1a1a2e;   /* 카드·상자 바탕 (42곳) */
+    --surface-hover: #2b1a52;   /* 보라 기운 강조 바탕·그라데이션 시작 (24곳) */
+    --win:           #5383e8;   /* 승리 파랑 — 글자·띠·그라데이션 (대비 4.69:1, 통과) */
+    --lose:          #e84057;   /* 패배 빨강 — 띠·배경·16px+ 굵은 글자 (대비 4.31:1 — 작은 글자엔 미달) */
+    --lose-text:     #f87171;   /* 패배 빨강의 **작은 글자용** (6.17:1). 12~13px 자리 11곳이 이걸 쓴다 (감사 3-2-1) */
+
     /* ★ dogu.gg 공통 UI 사이트별 변수 (2026-08-22, DOGU_UI.md 2절). 값은 DOGU_UI_PLAN.md 색 표.
        헤더·히어로·검색창·푸터·배경은 public/dogu-ui.css 가 그리고, 여기선 **이 변수만** 바꾼다.
        `.dogu-*` 선택자를 이 파일에 쓰면 안 된다 — 한 사이트만 달라지면 통일이 무너진다 */
@@ -64,7 +73,7 @@
    글꼴·글자색도 body.dogu-body 가 정한다 (Pretendard → Malgun Gothic 폴백 · #e6eefb) */
 body {
     font-family: 'Malgun Gothic', sans-serif;
-    color: #ffffff;
+    color: #fff;
     /* ★ 1.5 (2026-08-28, 글자 계단 정리). 예전 normal(≈1.2)은 스킬 설명·룬 설명처럼 긴 문단에서 너무 빽빽했다.
        표·버튼·배지처럼 한 줄짜리는 각자 line-height 를 갖고 있어 안 흔들린다 — 흔들리면 그 자리에 1.2~1.3 을 명시할 것 */
     line-height: 1.5;
@@ -154,7 +163,7 @@ main {
 }
 
 .home-tier-col {
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 10px;
@@ -288,7 +297,7 @@ main {
 }
 
 .shop-title-container h3 {
-    color: #ffffff;
+    color: #fff;
     margin: 0;
     font-size: 19px;
     font-weight: 600;
@@ -351,7 +360,7 @@ main {
 
 .mythic-item-card:hover {
     transform: translateY(-5px);
-    border-color: #ffffff;
+    border-color: #fff;
 }
 
 .mythic-item-img-box {
@@ -501,7 +510,7 @@ main {
     display: inline-block;
     margin-top: 6px;
     color: var(--accent);
-    font-weight: bold;
+    font-weight: 700;
     text-decoration: none;
 }
 
@@ -542,9 +551,9 @@ main {
     display: flex;
     align-items: center;
     /* ★ 사이트 유일의 그라데이션 배경이었다 → 다른 카드와 같은 단색 + 왼쪽 액센트 띠
-       (2026-08-31, 260830 디자인 8-3). 되돌리려면 linear-gradient(135deg, #2b1a52, #161625).
+       (2026-08-31, 260830 디자인 8-3). 되돌리려면 linear-gradient(135deg, var(--surface-hover), #161625).
        ★ border-left 는 border 축약 **뒤**에 — 앞에 두면 축약이 되돌린다 */
-    background: #1a1a2e;
+    background: var(--surface);
     padding: 30px;
     border-radius: 8px;
     margin-bottom: 10px;
@@ -568,7 +577,7 @@ main {
 }
 
 .pix-box {
-    background: #1a1a2e;
+    background: var(--surface);
     border-radius: 8px;
     padding: 15px;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -583,7 +592,7 @@ main {
 .pix-tier-icon {
     width: 72px;
     height: 72px;
-    background: #2b1a52;
+    background: var(--surface-hover);
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -607,19 +616,19 @@ main {
 
 .pix-tier-info h3 {
     font-size: 12px;
-    color: #ffffff;
+    color: #fff;
     margin-bottom: 2px;
 }
 
 .pix-tier-info .tier-rank {
     font-size: 18px;
-    font-weight: bold;
-    color: #ffffff;
+    font-weight: 700;
+    color: #fff;
 }
 
 .pix-tier-info .lp {
     font-size: 12px;
-    color: #ffffff;
+    color: #fff;
 }
 
 .filter-container {
@@ -634,7 +643,7 @@ main {
    배경 rgba(255,255,255,0.05) · 테두리 rgba(107,70,193,0.4) · active 는 accent-deep 채움 + glow */
 .filter-btn {
     padding: 8px 16px;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     color: var(--text-muted);
@@ -649,7 +658,7 @@ main {
 }
 
 .filter-btn.active {
-    background: #2b1a52;
+    background: var(--surface-hover);
     border-color: rgba(167, 139, 250, 0.5);
     color: var(--accent);
 }
@@ -793,7 +802,7 @@ main {
     font-size: 12px;
     color: var(--text-muted);
     margin-bottom: 6px;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .cf-search {
@@ -927,7 +936,7 @@ main {
     width: 46px;
     flex-shrink: 0;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
 }
 
@@ -994,11 +1003,11 @@ main {
 }
 
 .ts-row.blue .ts-obj-icon {
-    background-color: #5383e8;
+    background-color: var(--win);
 }
 
 .ts-row.red .ts-obj-icon {
-    background-color: #e84057;
+    background-color: var(--lose);
 }
 
 /* 0개는 흐리게.
@@ -1012,7 +1021,7 @@ main {
 .ts-obj-val {
     color: var(--text-bright);
     min-width: 8px;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 @media (max-width: 768px) {
@@ -1088,11 +1097,11 @@ main {
 }
 
 .tl-obj-marker.blue .tl-obj-marker-icon {
-    background-color: #5383e8;
+    background-color: var(--win);
 }
 
 .tl-obj-marker.red .tl-obj-marker-icon {
-    background-color: #e84057;
+    background-color: var(--lose);
 }
 
 .tl-obj-marker:hover .tl-obj-marker-icon {
@@ -1168,7 +1177,7 @@ main {
    그라데이션을 빌려 썼는데 그 규칙을 지우면서 (2026-08-22) 여기로 옮겼다 */
 .refresh-btn {
     background: linear-gradient(135deg, var(--accent-mid), var(--accent-deep));
-    font-weight: bold;
+    font-weight: 700;
     transition: filter 0.2s;
 }
 .refresh-btn:hover { filter: brightness(1.15); }
@@ -1243,12 +1252,12 @@ main {
 
 .live-player.blue {
     justify-content: flex-end;
-    border-right: 3px solid #5383e8;
+    border-right: 3px solid var(--win);
 }
 
 .live-player.red {
     justify-content: flex-start;
-    border-left: 3px solid #e84057;
+    border-left: 3px solid var(--lose);
 }
 
 .live-champ {
@@ -1296,7 +1305,7 @@ main {
 
 .live-name-main {
     color: var(--text-bright);
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .live-name-tag {
@@ -1317,6 +1326,22 @@ main {
 
 .live-player.anon:hover {
     background: transparent;
+}
+
+/* ★ 인게임 참가자 마스터+ 티어 배지 (2026-09-03, 기능 감사 F1) — 상세 전적의 .detail-tier-slot 과 같은 18px.
+   판에 한 명이라도 있을 때만 슬롯이 생긴다 (app.js renderLivePlayer 의 anyTier) */
+.live-tier-slot {
+    width: 18px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.live-tier-slot img {
+    width: 18px;
+    height: 18px;
+    display: block;
 }
 
 /* 아레나 인게임: 좌우 세 팀씩 */
@@ -1342,7 +1367,7 @@ main {
     flex-shrink: 0;
     text-align: center;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     color: var(--text-muted);
 }
 
@@ -1426,7 +1451,7 @@ main {
 .live-queue {
     color: #fff;
     font-size: 15px;
-    font-weight: bold;
+    font-weight: 700;
     text-align: center;
 }
 
@@ -1475,7 +1500,7 @@ main {
 .live-timer {
     color: #fff;
     font-size: 13px;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 @media (max-width: 768px) {
@@ -1525,12 +1550,12 @@ main {
 
 .pix-game.win {
     background: #28344e;
-    border-left: 6px solid #5383e8;
+    border-left: 6px solid var(--win);
 }
 
 .pix-game.lose {
     background: #59343b;
-    border-left: 6px solid #e84057;
+    border-left: 6px solid var(--lose);
 }
 
 .pix-game.remake {
@@ -1548,18 +1573,18 @@ main {
 }
 
 .pix-info .queue {
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
 }
 
 .pix-info .win-text {
-    font-weight: bold;
-    color: #5383e8;
+    font-weight: 700;
+    color: var(--win);
     font-size: 13px;
 }
 
 .pix-game.lose .pix-info .win-text {
-    color: #e84057;
+    color: var(--lose-text);
 }
 
 .pix-game.remake .pix-info .win-text {
@@ -1602,7 +1627,7 @@ main {
     background: rgba(0, 0, 0, 0.75);
     color: #fff;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     padding: 2px 4px;
     border-radius: 0;
     line-height: 1;
@@ -1635,10 +1660,11 @@ main {
 
 .pix-kda-score {
     font-size: 15px;
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
     letter-spacing: 1px;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
 .pix-kda-score .d {
@@ -1647,7 +1673,7 @@ main {
 
 .pix-kda-ratio {
     color: #8fa3b0;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 /* 평점 표기 두 벌 중 폰용은 기본 숨김 — 폰 카드 블록에서 서로 바꾼다 (2026-08-19) */
@@ -1668,7 +1694,7 @@ main {
 
 .pix-stats .kp {
     color: var(--text-muted);
-    font-weight: bold;
+    font-weight: 700;
 }
 
 /* ★ 아이템 아이콘 22 → 28 (2026-08-31, 260830 디자인 8-4 — 카드가 840 으로 넓어져 여유가 생겼고 op.gg 도 28).
@@ -1716,7 +1742,7 @@ main {
     padding: 2px 4px;
     border-radius: 4px;
     font-size: 10px;
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
     white-space: nowrap;
 }
@@ -1767,7 +1793,7 @@ main {
 
 .pix-badge.domination {
     background: linear-gradient(135deg, #b8860b, #daa520);
-    color: #1a1a2e;
+    color: var(--surface);
 }
 
 .pix-players {
@@ -1890,7 +1916,7 @@ main {
 
 .share-btn.copy-failed::after {
     content: '복사 실패';
-    color: #e84057;
+    color: var(--lose-text);
 }
 
 .toggle-btn svg {
@@ -1939,7 +1965,7 @@ main {
     color: rgba(255, 255, 255, 0.9);
     padding: 9px 0;
     font-size: 13px;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
     outline: none;
@@ -1947,18 +1973,18 @@ main {
 
 .detail-tab-btn:hover {
     background: #483463;
-    color: #ffffff;
+    color: #fff;
 }
 
 .detail-tab-btn.active {
     background: #2b1a44;
-    color: #ffffff;
+    color: #fff;
     border-bottom: 2px solid var(--accent);
 }
 
 .detail-tab-content {
     display: none;
-    background: #1a1a2e;
+    background: var(--surface);
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
     /* overflow: hidden 이면 툴팁(::after)이 박스 경계에서 잘린다.
@@ -2016,7 +2042,7 @@ main {
 
 .team-blue-header th {
     background: #2b4073 !important;
-    color: #ffffff !important;
+    color: #fff !important;
     padding: 6px 4px !important;
     border-top: 1px solid rgba(0, 0, 0, 0.4) !important;
     border-bottom: 2px solid rgba(0, 0, 0, 0.4) !important;
@@ -2025,7 +2051,7 @@ main {
 
 .team-red-header th {
     background: #612e3b !important;
-    color: #ffffff !important;
+    color: #fff !important;
     padding: 6px 4px !important;
     border-top: 1px solid rgba(0, 0, 0, 0.4) !important;
     border-bottom: 2px solid rgba(0, 0, 0, 0.4) !important;
@@ -2120,7 +2146,7 @@ main {
 }
 
 .detail-kda {
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
     font-size: 13px;
 }
@@ -2140,12 +2166,12 @@ main {
 
 .damage-bar {
     height: 100%;
-    background: #e84057;
+    background: var(--lose);
     transition: width 0.3s ease;
 }
 
 .team-blue .damage-bar {
-    background: #5383e8;
+    background: var(--win);
 }
 
 .damage-bar.taken {
@@ -2188,7 +2214,7 @@ main {
 
 .build-box {
     width: 100%;
-    background: #1a1a2e;
+    background: var(--surface);
     border-radius: 8px;
     padding: 20px;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -2198,7 +2224,7 @@ main {
 .build-title {
     color: #fff;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 700;
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -2266,7 +2292,7 @@ main {
     text-align: center;
     line-height: 1.1;
     display: none;
-    font-weight: bold;
+    font-weight: 700;
     white-space: nowrap;
     letter-spacing: -0.5px;
     margin-top: -2px;
@@ -2316,25 +2342,25 @@ main {
 .skill-active-1 {
     background: rgba(59, 130, 246, 0.2);
     color: #60a5fa;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .skill-active-2 {
     background: rgba(16, 185, 129, 0.2);
     color: #34d399;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .skill-active-3 {
     background: rgba(245, 158, 11, 0.2);
     color: #fbbf24;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .skill-active-4 {
     background: rgba(239, 68, 68, 0.2);
     color: #f87171;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .build-items {
@@ -2403,7 +2429,7 @@ main {
 }
 
 .stats-table-wrapper {
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     overflow: hidden;
@@ -2428,7 +2454,7 @@ main {
 .stats-table th:nth-child(7) { width: 14%; }
 
 .stats-table th {
-    background: #2b1a52;
+    background: var(--surface-hover);
     color: var(--accent);
     padding: 15px 10px;
     font-weight: 600;
@@ -2439,6 +2465,7 @@ main {
     padding: 12px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     vertical-align: middle;
+    font-variant-numeric: tabular-nums;   /* 승률·픽률 % 자릿폭 고정 (2026-09-03 감사 3-1-2) */
 }
 
 /* 줄 hover 도 마우스 기기에서만 — 폰에서는 탭 자국이 남는다 (아래 sortable-th 주석 참고) */
@@ -2472,8 +2499,8 @@ main {
 }
 
 .stats-champ-name {
-    font-weight: bold;
-    color: #ffffff;
+    font-weight: 700;
+    color: #fff;
     font-size: 14px;
 }
 
@@ -2523,7 +2550,7 @@ main {
 }
 
 .stats-select {
-    background: #1a1a2e;
+    background: var(--surface);
     color: var(--text-bright);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 8px;
@@ -2540,7 +2567,7 @@ main {
 .stats-band {
     display: flex;
     gap: 4px;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 8px;
     padding: 3px;
@@ -2562,7 +2589,7 @@ main {
 }
 
 .stats-band-btn.active {
-    background: #2b1a52;
+    background: var(--surface-hover);
     color: var(--accent);
     font-weight: 600;
 }
@@ -2639,15 +2666,15 @@ main {
 /* ══════════════════════════════════════════════════════════════
    챔피언 통계 상세 페이지 `/stats/<영문키>/<라인>` — 구조·순서는 lolalytics 를 옮긴 것(2026-08-26 밤),
    **색·모양은 2026-08-27 에 사이트 팔레트로 다시 입혔다** (사용자: "우리 사이트 페이지라기엔 이질감").
-   카드 #1a1a2e · 테두리 rgba(255,255,255,.1) · 둥글기 12/8px · 강조 var(--accent)(탭 활성 #2b1a52) ·
+   카드 var(--surface) · 테두리 rgba(255,255,255,.1) · 둥글기 12/8px · 강조 var(--accent)(탭 활성 var(--surface-hover)) ·
    승률 파랑 #60a5fa / 빨강 #f87171(전적 카드와 같은 관례) · 픽률 연보라 #c4b5fd · 글자 12px.
    그쪽 검정 바탕·청록 탭·초록 승률은 이 블록에 더 이상 없다. 마크업(app.js)은 안 바뀌었다.
    ══════════════════════════════════════════════════════════════ */
 .lx-page {
     --lx-teal: var(--accent);
-    --lx-teal-dim: #2b1a52;
+    --lx-teal-dim: var(--surface-hover);
     --lx-bd: rgba(255, 255, 255, 0.1);
-    --lx-box: #1a1a2e;
+    --lx-box: var(--surface);
     --lx-box2: rgba(255, 255, 255, 0.03);
     --lx-gray: var(--text-muted);
     max-width: 1200px;   /* 1040 → 1200 (2026-08-28 본문 폭 통일) */
@@ -2700,7 +2727,7 @@ main {
 .lx-lane b { font-weight: 600; color: var(--text-bright); font-size: 12px; }
 .lx-lane span { display: none; }
 .lx-lane.is-none { opacity: 0.35; cursor: default; }
-.lx-lane.active { border-color: rgba(167, 139, 250, 0.6); background: #2b1a52; box-shadow: 0 0 10px rgba(167, 139, 250, 0.25); }
+.lx-lane.active { border-color: rgba(167, 139, 250, 0.6); background: var(--surface-hover); box-shadow: 0 0 10px rgba(167, 139, 250, 0.25); }
 .lx-lane.active b { color: var(--accent); }
 
 @media (hover: hover) {
@@ -2773,7 +2800,7 @@ main {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #2b1a52;
+    background: var(--surface-hover);
     border: 2px solid rgba(167, 139, 250, 0.5);
     display: flex;
     align-items: center;
@@ -2856,7 +2883,7 @@ main {
     cursor: pointer;
 }
 
-.lx-tabbtn.active { background: #2b1a52; color: var(--accent); border-bottom-color: var(--accent); }
+.lx-tabbtn.active { background: var(--surface-hover); color: var(--accent); border-bottom-color: var(--accent); }
 
 @media (hover: hover) {
     .lx-tabbtn:hover { color: var(--text-bright); background: rgba(255, 255, 255, 0.06); }
@@ -3019,7 +3046,7 @@ main {
 .build-wr-down { color: #f87171; }
 .build-wr-dim { color: var(--text-faint); font-weight: 600; }
 .build-none { font-size: 12px; color: var(--text-faint); padding: 8px 2px; }
-.build-lane { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 4px; background: #2b1a52; color: var(--accent); font-size: 12px; font-weight: bold; }
+.build-lane { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 4px; background: var(--surface-hover); color: var(--accent); font-size: 12px; font-weight: 700; }
 .build-thin { color: #c9a227; margin-left: 6px; }
 .build-style { width: 18px; height: 18px; margin-right: 2px; }
 .build-perk { width: 24px; height: 24px; border-radius: 50%; background: rgba(0, 0, 0, 0.3); }
@@ -3073,7 +3100,7 @@ main {
     justify-content: center;
     width: 42px;
     height: 42px;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     cursor: pointer;
@@ -3085,7 +3112,7 @@ main {
 }
 
 .stats-filter-btn.active {
-    background: #2b1a52;
+    background: var(--surface-hover);
     border-color: var(--accent);
     box-shadow: 0 0 10px rgba(167, 139, 250, 0.3);
 }
@@ -3107,13 +3134,13 @@ main {
     width: auto;
     padding: 0 18px;
     color: rgba(255, 255, 255, 0.5);
-    font-weight: bold;
+    font-weight: 700;
     font-size: 14px;
 }
 
 .stats-filter-btn.all-btn:hover,
 .stats-filter-btn.all-btn.active {
-    color: #ffffff;
+    color: #fff;
 }
 
 /* ★ 픽률 커트라인 입력 (2026-08-19). 라인 버튼 줄의 오른쪽 끝에 붙는다.
@@ -3163,11 +3190,11 @@ main {
    "누른 버튼에 회색이 눌어붙는" 것처럼 보였다 — @media (hover:hover) 로 감싸면
    터치 기기는 아예 안 탄다 (버튼 색은 .active 가 담당하므로 잃는 게 없다).
    ★ 색은 반투명이 아니라 **단색 #3a2470** 이다 (2026-08-19 2차). 반투명 겹칠은
-   헤더 보라(#2b1a52) 위에서 탁하게 떠 보였다 — 사이트의 다른 hover(.mshop-goto 등)와
+   헤더 보라(var(--surface-hover)) 위에서 탁하게 떠 보였다 — 사이트의 다른 hover(.mshop-goto 등)와
    같은 단색 계단(#2b1a52 → #3a2470)으로 맞추고, 글자·화살표를 같이 밝힌다. */
 @media (hover: hover) {
     .sortable-th:hover {
-        color: #ffffff;
+        color: #fff;
         background: #3a2470;
     }
 
@@ -3177,7 +3204,7 @@ main {
 }
 
 .sortable-th.active {
-    color: #ffffff;
+    color: #fff;
 }
 
 .sort-icon {
@@ -3212,7 +3239,7 @@ main {
 
 .masters-left {
     width: 504px;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 25px;
@@ -3254,7 +3281,7 @@ main {
 .masters-right {
     flex: 1;
     min-width: 0;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     overflow: hidden;
@@ -3268,7 +3295,7 @@ main {
 }
 
 .master-table th {
-    background: #2b1a52;
+    background: var(--surface-hover);
     color: #10b981;
     padding: 15px;
     font-weight: normal;
@@ -3289,7 +3316,7 @@ main {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
 }
 
@@ -3309,7 +3336,7 @@ main {
     padding: 3px 6px;
     border-radius: 12px;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
 }
 
@@ -3328,7 +3355,7 @@ main {
     justify-content: center;
     align-items: center;
     gap: 12px;
-    color: #ffffff;
+    color: #fff;
     font-size: 28px;
     text-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
     width: fit-content;
@@ -3365,9 +3392,12 @@ main {
     white-space: pre !important;
     line-height: 1.4 !important;
     text-align: center !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transition: opacity 0.2s ease !important;
+    /* ★ opacity 가 아니라 display:none 으로 숨긴다 (2026-09-03, 감사 3-5-2).
+       숨어 있어도 absolute 상자가 자리를 차지해서 오른쪽 끝 요소의 긴 말풍선이 scrollWidth 를
+       늘렸다 — /mythic 타이머 +14px 실측. 픽률 추이 점 말풍선(.pi-dot::after)과 같은 함정이고,
+       헤드리스 측정에서 세 번 걸린 "[data-tooltip] 허상" 도 이걸로 사라진다.
+       display 는 transition 이 안 되므로 페이드는 없다 */
+    display: none !important;
     pointer-events: none !important;
     z-index: 9999 !important;
     box-shadow: none !important;
@@ -3375,8 +3405,7 @@ main {
 }
 
 [data-tooltip]:hover::after {
-    opacity: 1 !important;
-    visibility: visible !important;
+    display: block !important;
 }
 
 /* ★ 터치 기기에서는 hover 툴팁을 아예 안 그린다 (2026-08-18).
@@ -3397,7 +3426,7 @@ main {
     color: white;
     padding: 15px 25px;
     border-radius: 8px;
-    font-weight: bold;
+    font-weight: 700;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     z-index: 9999;
     opacity: 0;
@@ -3420,7 +3449,7 @@ main {
     display: inline-block;
     cursor: pointer;
     color: var(--accent);
-    font-weight: bold;
+    font-weight: 700;
     font-size: 0.85em;
     vertical-align: super;
     margin-left: 2px;
@@ -3495,7 +3524,7 @@ main {
 .graph-point .point-label {
     display: none;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     pointer-events: none;
 }
 
@@ -3787,7 +3816,7 @@ main {
     }
 
     .pix-kda-score .d {
-        color: #e84057;
+        color: var(--lose);
     }
 
     .pix-kda-ratio {
@@ -3977,7 +4006,7 @@ main {
     top: 100%;
     left: 0;
     width: 100%;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(167, 139, 250, 0.4);
     border-radius: 12px;
     margin-top: 8px;
@@ -4019,7 +4048,7 @@ main {
 .ac-name {
     font-size: 14px;
     color: #fff;
-    font-weight: bold;
+    font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4063,7 +4092,7 @@ main {
 }
 
 .cand-list {
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     overflow: hidden;
@@ -4092,7 +4121,7 @@ main {
     min-width: 34px;
     text-align: center;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     padding: 3px 6px;
     border-radius: 4px;
     color: #fff;
@@ -4114,7 +4143,7 @@ main {
     flex: 1;
     color: var(--text-bright);
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4142,12 +4171,12 @@ main {
     display: block;
     width: 100%;
     padding: 14px 0;
-    background: #1a1a2e;
+    background: var(--surface);
     color: var(--accent);
     border: 1px solid rgba(167, 139, 250, 0.35);
     border-radius: 10px;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
     outline: none;
@@ -4258,7 +4287,7 @@ main {
 
 .arena-team-rank {
     font-size: 10px;
-    font-weight: bold;
+    font-weight: 700;
     width: 14px;
     text-align: center;
     color: var(--text-muted);
@@ -4315,7 +4344,7 @@ main {
 .arena-ban-label {
     flex-shrink: 0;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     color: var(--text-muted);
 }
 
@@ -4329,7 +4358,7 @@ main {
 .arena-rank-badge {
     display: inline-block;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     padding: 2px 10px;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.08);
@@ -4381,7 +4410,7 @@ main {
     display: flex;
     flex-direction: column;
     height: 75vh;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     overflow: hidden;
@@ -4415,7 +4444,7 @@ main {
     width: 100%;
     flex: 1;
     min-height: 0;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     overflow-y: auto;
@@ -4431,7 +4460,7 @@ main {
        긴 스킬 설명이 칸을 밀어내 페이지에 가로 스크롤을 만든다. 내용이 들어맞을
        때는 아무 차이가 없고, 넘칠 때만 칸 안에서 줄바꿈되게 한다. */
     min-width: 0;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     height: 75vh;
@@ -4612,7 +4641,7 @@ main {
 
 .skin-item.active .skin-item-name {
     color: #fff;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .skin-view {
@@ -4767,7 +4796,7 @@ main {
     margin: 16px auto 0 auto;
     max-width: 640px;
     font-size: 19px;
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
     text-align: center;
     flex-shrink: 0;
@@ -4876,7 +4905,7 @@ main {
     align-items: center;
     gap: 8px;
     padding: 10px 18px;
-    background: #2b1a52;
+    background: var(--surface-hover);
     border: 1px solid var(--accent-deep);
     border-radius: 8px;
     color: #fff;
@@ -4935,7 +4964,7 @@ main {
     text-align: right;
     color: var(--text-muted);
     font-size: 13px;
-    font-weight: bold;
+    font-weight: 700;
     line-height: 1.7;
 }
 
@@ -5210,7 +5239,7 @@ main {
 .rank-table-wrap {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    background: #1a1a2e;
+    background: var(--surface);
     overflow-x: auto;
 }
 
@@ -5222,7 +5251,7 @@ main {
 }
 
 .rank-table thead {
-    background: #2b1a52;
+    background: var(--surface-hover);
     color: var(--accent);
 }
 
@@ -5279,14 +5308,14 @@ main {
 }
 
 .rank-table td.rank-name {
-    font-weight: bold;
+    font-weight: 700;
     color: var(--text-bright);
 }
 
 .rank-table .rank-lp {
     width: 100px;
     text-align: center;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 /* ★ LP·승률은 흰색이다 (2026-08-15). 예전엔 LP 가 티어 색을, 승률이 55% 기준
@@ -5296,6 +5325,7 @@ main {
    헤더의 보라색(thead { color: var(--accent) })이 흰색이 돼버린다. */
 .rank-table td.rank-lp {
     color: #fff;
+    font-variant-numeric: tabular-nums;   /* LP 자릿폭 고정 (2026-09-03) */
 }
 
 .rank-table th.rank-wr {
@@ -5361,6 +5391,7 @@ main {
     font-size: 12px;
     color: var(--text-faint);
     margin-left: 8px;
+    font-variant-numeric: tabular-nums;
 }
 
 /* -----------------------------------------
@@ -5456,7 +5487,7 @@ main {
 .rank-cutline {
     display: none;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     color: var(--text-faint);
     margin: 0 4px 8px 0;
     white-space: nowrap;
@@ -5481,7 +5512,7 @@ main {
 
 .rank-tier-name {
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     vertical-align: middle;
     color: #fff;
 }
@@ -5490,7 +5521,7 @@ main {
 .rank-tier-short {
     display: none;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     vertical-align: middle;
     color: #fff;
 }
@@ -5521,7 +5552,7 @@ main {
 
 .rank-pg {
     padding: 8px 14px;
-    background: #1a1a2e;
+    background: var(--surface);
     color: var(--text-muted);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 4px;
@@ -5531,7 +5562,7 @@ main {
 }
 
 .rank-pg:hover:not(:disabled) {
-    background: #2b1a52;
+    background: var(--surface-hover);
     color: #fff;
 }
 
@@ -5546,7 +5577,7 @@ main {
     background: var(--accent-deep);
     color: #fff;
     border-color: var(--accent);
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .rank-pg-jump {
@@ -5620,7 +5651,7 @@ main {
 .cutoff-card {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    background: #1a1a2e;
+    background: var(--surface);
     padding: 14px 16px 10px;
 }
 
@@ -5652,7 +5683,7 @@ main {
 /* 지금 컷. 그래프에서 제일 자주 볼 숫자라 크게 둔다 */
 .cutoff-now {
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
     white-space: nowrap;
 }
@@ -5919,7 +5950,7 @@ main {
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     color: var(--text-muted);
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     text-align: right;
 }
 
@@ -5945,7 +5976,7 @@ main {
 /* 18레벨 값이 결과값이라 이쪽을 강조한다 */
 .stat-trow td.stat-t18 {
     color: #fff;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 /* 스탯 이름 = 그래프를 여는 버튼 */
@@ -5983,7 +6014,7 @@ main {
 /* 지금 그래프를 띄운 스탯 */
 .stat-tname.on {
     color: #fff;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .stat-tname.on::after {
@@ -6265,7 +6296,7 @@ main {
     bottom: 10px;
     color: #fff;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     text-shadow: 0 0 4px #12121f, 0 0 4px #12121f;
 }
 
@@ -6499,7 +6530,7 @@ main {
     width: 100%;
     box-sizing: border-box;
     padding: 9px 12px;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     color: #fff;
@@ -6593,7 +6624,7 @@ main {
     aspect-ratio: 1 / 1;
     min-width: 0;
     padding: 5px;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     cursor: pointer;
@@ -6649,7 +6680,7 @@ main {
     border-radius: 6px;
     color: #fff;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
@@ -6742,7 +6773,7 @@ main {
     align-items: center;
     gap: 14px;
     padding: 12px 16px;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     color: inherit;
@@ -6836,7 +6867,7 @@ main {
 }
 
 .codex-tab {
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
     padding: 9px 18px;
@@ -6850,7 +6881,7 @@ main {
 .codex-tab:hover { color: var(--text-bright); }
 
 .codex-tab.active {
-    background: #2b1a52;
+    background: var(--surface-hover);
     border-color: rgba(167, 139, 250, 0.5);
     color: var(--accent);
 }
@@ -6924,7 +6955,7 @@ main {
     width: 168px;
     flex-shrink: 0;
     overflow-y: auto;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 8px 6px;
@@ -7058,7 +7089,7 @@ main {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px 8px;
     align-content: start;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 10px 6px 10px 10px;
@@ -7177,7 +7208,7 @@ main {
     align-items: center;
     gap: 8px;
     padding: 10px 0 8px;
-    background: #1a1a2e;
+    background: var(--surface);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     margin-bottom: 10px;
     font-size: 13px;
@@ -7290,7 +7321,7 @@ main {
     flex: 1;
     min-width: 0;
     overflow-y: auto;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 16px;
@@ -7770,7 +7801,7 @@ main {
     .codex-statbar-toggle {
         display: block;
         align-self: flex-start;
-        background: #1a1a2e;
+        background: var(--surface);
         border: 1px solid rgba(255, 255, 255, 0.1);
         color: var(--text-muted);
         padding: 7px 14px;
@@ -7876,7 +7907,7 @@ main {
 }
 
 .mshop-tab {
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
     padding: 9px 18px;
@@ -7890,13 +7921,13 @@ main {
 .mshop-tab:hover { color: var(--text-bright); }
 
 .mshop-tab.active {
-    background: #2b1a52;
+    background: var(--surface-hover);
     border-color: rgba(167, 139, 250, 0.5);
     color: var(--accent);
 }
 
 .mshop-body {
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 20px;
@@ -8113,7 +8144,7 @@ main {
 }
 
 .mshop-goto {
-    background: #2b1a52;
+    background: var(--surface-hover);
     border: 1px solid rgba(167, 139, 250, 0.5);
     color: var(--accent);
     padding: 9px 18px;
@@ -8215,7 +8246,7 @@ main {
 
 /* 표·카드 묶음이 들어갈 상자 골격 — 사이트 공통 카드(#1a1a2e + 흐린 테두리)와 같은 톤 */
 .skel-box {
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 18px 20px;
@@ -8279,7 +8310,7 @@ main {
     align-items: center;
     gap: 6px;
     padding: 10px 4px 8px;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     cursor: pointer;
@@ -8324,7 +8355,7 @@ main {
 .pi-detail-card {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    background: #1a1a2e;
+    background: var(--surface);
     padding: 18px 20px;
 }
 
@@ -8387,7 +8418,7 @@ main {
 
 .pi-box-val {
     font-size: 15px;
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
     white-space: nowrap;
 }
@@ -8622,7 +8653,7 @@ main {
     align-items: center;
     gap: 6px;
     padding: 5px 10px;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
     color: var(--text-bright);
@@ -8689,7 +8720,7 @@ main {
 
 .lp-card-now {
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 700;
     color: var(--accent);
 }
 
@@ -8791,7 +8822,7 @@ main {
 }
 
 .versus-lane {
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 12px 14px;
@@ -8860,7 +8891,7 @@ main {
 }
 
 .versus-none {
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 24px 18px;
@@ -8927,7 +8958,7 @@ main {
     align-items: center;
     gap: 5px;
     padding: 6px 10px;
-    background: #1a1a2e;
+    background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
     color: var(--text-muted);

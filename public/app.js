@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (type === 'augment' && arenaAugmentMap[id]) data = arenaAugmentMap[id];
 
         if (data) {
-            customTooltip.innerHTML = `<span style="color:#facc15; font-weight:bold; display:block; margin-bottom:4px; font-size:13px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">${data.name}</span>${data.desc}`;
+            customTooltip.innerHTML = `<span style="color:#facc15; font-weight: 700; display:block; margin-bottom:4px; font-size:13px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">${data.name}</span>${data.desc}`;
             customTooltip.style.display = 'block';
             moveTooltip(e);
         }
@@ -319,6 +319,11 @@ document.addEventListener('DOMContentLoaded', () => {
         //   index.html 에서 nav-search 가 기본 active 라, 아무도 안 바꾸면 그게 그대로 남는다.
         //   다른 분기(stats·codex·mythic·champions·masters)에는 다 있었다.
         setActiveNav('nav-ranking');
+    } else if (pathParts[1] === 'masters' && HIDE_UNFINISHED_PAGES) {
+        // ★ 가드를 분기 첫머리에서 본다 (2026-09-03 감사 L-12). 예전엔 컨테이너를 먼저 켜고(로딩 문구가 한 프레임
+        //   번쩍) showMasters 안의 goLobby() 가 setActiveNav(null) 한 뒤 다음 줄이 nav-masters 를 다시 켰다 —
+        //   홈에 있는데 숨겨진 탭이 활성인 상태. 되살릴 땐 HIDE_UNFINISHED_PAGES 만 끄면 아래 분기가 산다
+        goLobby();
     } else if (pathParts[1] === 'masters') {
         document.getElementById('masters-container').style.display = "block";
         document.getElementById('masters-container').innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:var(--text-muted);'>장인 데이터를 불러오는 중입니다...</div>";
@@ -917,6 +922,10 @@ async function executeSearch() {
     }
 
     hideAllContainers();
+    // ★ 랭킹 표에서 소환사를 눌러 들어오면 랭킹 밑줄이 남아 있었다 (2026-09-03 감사 3-6-2) —
+    //   라우터 직진입·popstate 에만 이 줄이 있고 페이지 안 검색 경로에는 없었다.
+    //   nav-search 는 hidden 이라 "아무 탭도 안 켜짐" 이 맞는 상태다
+    setActiveNav('nav-search');
     document.getElementById('result-container').style.display = "block";
     document.getElementById('user-profile').innerHTML = "";
     const sidebarArea = document.getElementById('sidebar-area');
@@ -931,12 +940,12 @@ async function executeSearch() {
         const response = await fetch(`/api/summoner/${encodeURIComponent(inputName)}`);
 
         if (response.status === 429) {
-            showErrorToast("서버 요청이 많아 지연되고 있습니다.\n잠시 후 다시 시도해주세요.");
+            renderSearchFail("서버 요청이 많아 지연되고 있습니다.\n잠시 후 다시 시도해주세요.");
             return;
         }
 
         if (response.status === 404) {
-            showErrorToast("해당 유저를 찾을 수 없습니다.\n정확한 닉네임과 태그로 검색해 주세요.");
+            renderSearchFail("해당 유저를 찾을 수 없습니다.\n정확한 닉네임과 태그로 검색해 주세요.");
             return;
         }
 
@@ -1032,7 +1041,7 @@ async function executeSearch() {
         let winRateHtml = '';
         if (totalGames > 0) {
             const winRate = ((wins / totalGames) * 100).toFixed(2);
-            const wrColor = winRate >= 50.00 ? '#5383e8' : '#e84057';
+            const wrColor = winRate >= 50.00 ? 'var(--win)' : 'var(--lose-text)';
             winRateHtml = `<div style="font-size: 12px; color: #ffffff; margin-top: 4px;">
                 ${wins}W ${losses}L <span style="color: ${wrColor}; margin-left: 5px;">${winRate}%</span>
             </div>`;
@@ -1079,12 +1088,12 @@ async function executeSearch() {
                         const champEngName = championIdMap[mastery.championId] || '0';
                         sidebarHtml += `
                             <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 8px; transition: background 0.2s;">
-                                <div style="font-size: 12px; color: var(--text-faint); width: 12px; text-align: center; font-weight: bold;">${index + 1}</div>
+                                <div style="font-size: 12px; color: var(--text-faint); width: 12px; text-align: center; font-weight: 700;">${index + 1}</div>
                                 <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${champEngName}.png" 
                                      style="width: 36px; height: 36px; border-radius: 4px; object-fit: cover; border: 2px solid var(--accent-mid);" 
                                      onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
                                 <div style="flex: 1;">
-                                        <div style="color: var(--text-bright); font-weight: bold; font-size: 13px;">Lv. ${mastery.championLevel}</div>
+                                        <div style="color: var(--text-bright); font-weight: 700; font-size: 13px;">Lv. ${mastery.championLevel}</div>
                                         <div style="color: var(--text-muted); font-size: 12px;">${mastery.championPoints.toLocaleString()} pts</div>
                                     </div>
                                 </div>
@@ -1150,9 +1159,35 @@ async function executeSearch() {
 
     } catch (e) {
         console.error("전적 화면 렌더링 에러:", e);
-        showErrorToast("서버 요청이 많아 지연되고 있습니다.\n잠시 후 다시 시도해주세요.");
+        renderSearchFail("서버 요청이 많아 지연되고 있습니다.\n잠시 후 다시 시도해주세요.");
     }
 }
+
+// ★ 검색이 실패했을 때 목록 자리에 상태를 남긴다 (2026-09-03 감사 3-6-1).
+//   예전엔 토스트만 띄우고 return 해서 **스켈레톤이 영영 남았다** — `/summoner/<없는 유저>` 직링크로
+//   들어오면 API 는 404 를 즉시 주는데 화면은 10초 뒤에도 뼈대 그대로였다. 토스트는 3초면 사라진다.
+//   공유 링크가 유입 경로라 죽은 링크의 첫인상이 빈 화면이면 안 된다. 토스트도 그대로 띄운다
+function renderSearchFail(message) {
+    showErrorToast(message);
+    const list = document.getElementById('game-list');
+    if (!list) return;
+    list.innerHTML = `<div class="stats-empty">${escapeHtml(message).replace(/\n/g, '<br>')}<br>
+        <a href="/" data-link class="stat-back">← 홈으로</a></div>`;
+}
+
+// ★ 참가자 이름 클릭 → 그 사람 검색 (2026-09-03 감사 H-4).
+//   예전엔 `onclick="...value='${p.summonerName}'"` 로 닉네임을 문자열에 박아서 `D'Arcy` 같은
+//   아포스트로피 하나에 **그 카드만 클릭이 통째로 죽었다** — 랭킹 표에서 이미 겪고 고친 함정인데
+//   전적 카드·상세 표 다섯 자리에는 안 옮겨져 있었다. data-search-name + 위임 하나다 —
+//   카드를 매번 새로 그려도 리스너는 살아 있다. 값은 escapeHtml 을 거쳐 속성에 들어간다
+document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-search-name]');
+    if (!el) return;
+    const input = document.getElementById('dogu-search-input');
+    if (!input) return;
+    input.value = el.dataset.searchName;
+    executeSearch();
+});
 
 // 스킬 빌드 표 생성
 function buildSkillTableHtml(game, myTimeline) {
@@ -1266,15 +1301,15 @@ function renderMatches(matches, append = false) {
 
         if (isArena) {
             if (myPlacement === 1) { resultClass = 'win arena-first'; queueColor = '#facc15'; }
-            else if (myPlacement >= 2 && myPlacement <= 3) { resultClass = 'win'; queueColor = '#5383e8'; }
-            else { resultClass = 'lose'; queueColor = '#e84057'; }
+            else if (myPlacement >= 2 && myPlacement <= 3) { resultClass = 'win'; queueColor = 'var(--win)'; }
+            else { resultClass = 'lose'; queueColor = 'var(--lose)'; }
             winText = placementText(myPlacement);
         } else if (isRemake) {
             resultClass = 'remake'; winText = '다시하기'; queueColor = '#7b7a8e';
         } else {
             resultClass = game.win ? 'win' : 'lose';
             winText = game.win ? '승리' : '패배';
-            queueColor = game.win ? '#5383e8' : '#e84057';
+            queueColor = game.win ? 'var(--win)' : 'var(--lose)';
         }
 
         let exactDateText = '상세 시간 정보 없음';
@@ -1339,11 +1374,11 @@ function renderMatches(matches, append = false) {
         const renderTeamList = (participantsArray, targetTeamId) => {
             return participantsArray.filter(p => p.teamId === targetTeamId).map(p => {
                 const shortName = p.summonerName.split('#')[0];
-                const isMeStyle = p.isSearchedUser ? "font-weight: bold; color: #fff;" : "";
+                const isMeStyle = p.isSearchedUser ? "font-weight: 700; color: #fff;" : "";
                 return `
-                    <div class="pix-player" onclick="document.getElementById('dogu-search-input').value='${p.summonerName}'; executeSearch();" style="cursor:pointer;" title="${p.summonerName} 검색">
+                    <div class="pix-player" data-search-name="${escapeHtml(p.summonerName)}" style="cursor:pointer;" title="${escapeHtml(p.summonerName)} 검색">
                         <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png" alt="${p.championName}">
-                        <span style="${isMeStyle}">${shortName}</span>
+                        <span style="${isMeStyle}">${escapeHtml(shortName)}</span>
                     </div>
                 `;
             }).join('');
@@ -1363,8 +1398,8 @@ function renderMatches(matches, append = false) {
                             ${t.members.map(p => `
                                 <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png"
                                      class="${p.isSearchedUser ? 'me' : ''}"
-                                     title="${p.summonerName}"
-                                     onclick="document.getElementById('dogu-search-input').value='${p.summonerName}'; executeSearch();">
+                                     title="${escapeHtml(p.summonerName)}"
+                                     data-search-name="${escapeHtml(p.summonerName)}">
                             `).join('')}
                         </div>`;
                     }).join('')}
@@ -1391,7 +1426,7 @@ function renderMatches(matches, append = false) {
                 <div class="kp">킬관여 ${game.kp}%</div>
                 <div style="display: flex; align-items: center; justify-content: flex-start; gap: 3px;">
                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/2055.png" style="width: 12px; height: 12px; border-radius: 50%; transform: translateY(1.5px);">
-                    <span style="color: #fff; font-weight: bold;">${me.visionWards}</span>
+                    <span style="color: #fff; font-weight: 700;">${me.visionWards}</span>
                     <span style="font-size: 12px; margin-left: 2px; cursor: help;" data-tooltip="와드 설치 / 와드 파괴">(+${me.wardsPlaced}/-${me.wardsKilled})</span>
                 </div>
                 <div>시야점수 ${me.visionScore}</div>
@@ -1525,7 +1560,7 @@ function renderMatches(matches, append = false) {
             const dmgPercent = maxDamage > 0 ? (p.damage / maxDamage) * 100 : 0;
             const dmgTakenPercent = maxDamageTaken > 0 ? (p.damageTaken / maxDamageTaken) * 100 : 0;
             const kdaRatio = p.deaths === 0 ? "Perfect" : ((p.kills + p.assists) / p.deaths).toFixed(2);
-            const isMeStyle = p.isSearchedUser ? 'background: rgba(255,255,255,0.08); font-weight: bold;' : '';
+            const isMeStyle = p.isSearchedUser ? 'background: rgba(255,255,255,0.08); font-weight: 700;' : '';
             const kpColor = 'var(--text-muted)';
 
             const totalMins = game.durationMin + (game.durationSec / 60);
@@ -1537,7 +1572,7 @@ function renderMatches(matches, append = false) {
                         <div class="champ-name-wrapper">
                             ${tierSlot(p)}
                             <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png">
-                            <div class="detail-summoner" onclick="document.getElementById('dogu-search-input').value='${p.summonerName}'; executeSearch();" title="${p.summonerName}">${p.summonerName}</div>
+                            <div class="detail-summoner" data-search-name="${escapeHtml(p.summonerName)}" title="${escapeHtml(p.summonerName)}">${escapeHtml(p.summonerName)}</div>
                         </div>
                     </td>
                     <td class="detail-spell-rune-col">
@@ -1552,12 +1587,12 @@ function renderMatches(matches, append = false) {
                             </div>
                         </div>
                     </td>
-                    <td style="color: #fff; font-size: 12px; font-weight: bold;">${p.champLevel || '-'}</td>
+                    <td style="color: #fff; font-size: 12px; font-weight: 700;">${p.champLevel || '-'}</td>
                     <td>
                         <div class="detail-kda">${p.kills} / <span class="d">${p.deaths}</span> / ${p.assists}</div>
                         <div style="color: var(--text-muted); font-size: 12px;">(${kdaRatio})</div>
                     </td>
-                    <td style="color: ${kpColor}; font-weight: bold; font-size: 12px;">${p.kp}%</td>
+                    <td style="color: ${kpColor}; font-weight: 700; font-size: 12px;">${p.kp}%</td>
                     <td>${pItems}</td>
                     <td style="color: var(--text-muted);">
                         <div style="color: var(--text-bright);">${p.cs} <span style="font-size: 12px; color: var(--text-muted);">(${pCsPerMin})</span></div>
@@ -1599,7 +1634,7 @@ function renderMatches(matches, append = false) {
 
                 const body = members.map(p => {
                     const kdaRatio = p.deaths === 0 ? "Perfect" : ((p.kills + p.assists) / p.deaths).toFixed(2);
-                    const isMeStyle = p.isSearchedUser ? 'background: rgba(255,255,255,0.08); font-weight: bold;' : '';
+                    const isMeStyle = p.isSearchedUser ? 'background: rgba(255,255,255,0.08); font-weight: 700;' : '';
                     const dmgPercent = maxDamage > 0 ? (p.damage / maxDamage) * 100 : 0;
                     const dmgTakenPercent = maxDamageTaken > 0 ? (p.damageTaken / maxDamageTaken) * 100 : 0;
 
@@ -1633,18 +1668,18 @@ function renderMatches(matches, append = false) {
                                 <div class="champ-name-wrapper">
                                     ${tierSlot(p)}
                                     <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png">
-                                    <div class="detail-summoner" onclick="document.getElementById('dogu-search-input').value='${p.summonerName}'; executeSearch();" title="${p.summonerName}">${p.summonerName}</div>
+                                    <div class="detail-summoner" data-search-name="${escapeHtml(p.summonerName)}" title="${escapeHtml(p.summonerName)}">${escapeHtml(p.summonerName)}</div>
                                 </div>
                             </td>
                             <td class="detail-spell-rune-col">
                                 <div class="detail-augments">${renderAugments(p.augments, 16) || '<span style="color:var(--text-faint);">-</span>'}</div>
                             </td>
-                            <td style="color: #fff; font-size: 12px; font-weight: bold;">${p.champLevel || '-'}</td>
+                            <td style="color: #fff; font-size: 12px; font-weight: 700;">${p.champLevel || '-'}</td>
                             <td>
                                 <div class="detail-kda">${p.kills} / <span class="d">${p.deaths}</span> / ${p.assists}</div>
                                 <div style="color: var(--text-muted); font-size: 12px;">(${kdaRatio})</div>
                             </td>
-                            <td style="color: var(--text-muted); font-weight: bold; font-size: 12px;">${p.kp}%</td>
+                            <td style="color: var(--text-muted); font-weight: 700; font-size: 12px;">${p.kp}%</td>
                             <td>${pItems}</td>
                             <td style="color: var(--text-bright); font-size: 12px;">${(p.gold || 0).toLocaleString()} G</td>
                             <td>
@@ -1726,7 +1761,7 @@ function renderMatches(matches, append = false) {
             if (primaryTree) {
                 runesHtml += `
                     <div class="rune-tree" style="justify-content: flex-start;">
-                        <div style="display:flex; align-items:center; gap:6px; color:#fff; font-weight:bold; margin-bottom:2px; height: 24px;">
+                        <div style="display:flex; align-items:center; gap:6px; color:#fff; font-weight: 700; margin-bottom:2px; height: 24px;">
                             <img src="https://ddragon.leagueoflegends.com/cdn/img/${primaryTree.icon}" style="width:24px;"> ${primaryTree.name}
                         </div>`;
                 primaryTree.slots.forEach((slot, index) => {
@@ -1749,7 +1784,7 @@ function renderMatches(matches, append = false) {
             if (subTree) {
                 runesHtml += `
                     <div class="rune-tree" style="justify-content: flex-start;">
-                        <div style="display:flex; align-items:center; gap:6px; color:#fff; font-weight:bold; margin-bottom:2px; height: 24px;">
+                        <div style="display:flex; align-items:center; gap:6px; color:#fff; font-weight: 700; margin-bottom:2px; height: 24px;">
                             <img src="https://ddragon.leagueoflegends.com/cdn/img/${subTree.icon}" style="width:24px;"> ${subTree.name}
                         </div>`;
                 subTree.slots.forEach((slot, index) => {
@@ -1890,7 +1925,7 @@ function renderAramSummaryHtml(matches) {
 
     const winRate = Math.round((wins / total) * 100);
     const winDeg = Math.round((wins / total) * 360);
-    const wrColor = winRate >= 50 ? '#5383e8' : '#e84057';
+    const wrColor = winRate >= 50 ? 'var(--win)' : 'var(--lose)';
     const avgK = (totalKills / total).toFixed(1);
     const avgD = (totalDeaths / total).toFixed(1);
     const avgA = (totalAssists / total).toFixed(1);
@@ -1906,30 +1941,30 @@ function renderAramSummaryHtml(matches) {
     const metric = (label, value) => `
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; padding:3px 0;">
             <span style="color:var(--text-muted);">${label}</span>
-            <span style="color:#ffffff; font-weight:bold;">${value}</span>
+            <span style="color:#ffffff; font-weight: 700;">${value}</span>
         </div>`;
 
     return `
-        <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
+        <div style="background: linear-gradient(135deg, var(--surface-hover), #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
 
             <div style="display: flex; align-items: center; gap: 22px; width: 195px;">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="color: #ffffff; font-size: 12px;">${total}전 ${wins}승 ${losses}패</div>
-                    <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${winDeg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;">
-                        <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; color: ${wrColor};">
+                    <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(var(--win) ${winDeg}deg, var(--lose) 0); display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: ${wrColor};">
                             ${winRate}%
                         </div>
                     </div>
                 </div>
 
                 <div style="display: flex; flex-direction: column; justify-content: center; gap: 6px; text-align: left;">
-                    <div style="font-size: 12px; color: #ffffff; font-weight: bold;">
-                        ${avgK} / <span style="color: #e84057;">${avgD}</span> / ${avgA}
+                    <div style="font-size: 12px; color: #ffffff; font-weight: 700;">
+                        ${avgK} / <span style="color: var(--lose-text);">${avgD}</span> / ${avgA}
                     </div>
-                    <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">
+                    <div style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;">
                         ${kdaRatio} <span style="font-size: 14px; font-weight: normal; color: #ffffff;">: 1</span>
                     </div>
-                    <div style="font-size: 12px; color: #e84057; font-weight: bold;">
+                    <div style="font-size: 12px; color: var(--lose-text); font-weight: 700;">
                         킬관여 ${avgKp}%
                     </div>
                 </div>
@@ -1997,9 +2032,9 @@ function renderRoleRowsHtml(matches, mode) {
         const wr = Math.round((d.wins / d.games) * 100);
         const tail = mode === 'arena'
             ? `<span style="color: #ffffff; width: 56px;">${d.games}게임</span>
-               <span style="color: #facc15; font-weight: bold;">우승 ${d.firsts}회</span>`
+               <span style="color: #facc15; font-weight: 700;">우승 ${d.firsts}회</span>`
             : `<span style="color: #ffffff;">(${d.wins}승 ${d.games - d.wins}패
-                   <span style="color: ${wr >= 50 ? '#e84057' : '#ffffff'}; font-weight: bold;">${wr}%</span>)</span>`;
+                   <span style="color: ${wr >= 50 ? 'var(--lose-text)' : '#ffffff'}; font-weight: 700;">${wr}%</span>)</span>`;
         return `
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                 <img src="${ROLE_ICON}${r}.png" alt="${ROLE_KO[r]}" style="width: 28px; height: 28px;">
@@ -2048,7 +2083,7 @@ function renderArenaSummaryHtml(matches) {
     const kdaRatio = totalDeaths === 0 ? 'Perfect' : ((totalKills + totalAssists) / totalDeaths).toFixed(2);
     const avgKp = Math.round(totalKp / total);
 
-    const placeColor = (n) => n === 1 ? '#facc15' : (n <= 3 ? '#5383e8' : '#e84057');
+    const placeColor = (n) => n === 1 ? '#facc15' : (n <= 3 ? 'var(--win)' : 'var(--lose)');
     const top3Deg = Math.round((top3Rate / 100) * 360);
     const avgColor = placeColor(Math.round(Number(avgPlace)) || 6);
 
@@ -2060,32 +2095,32 @@ function renderArenaSummaryHtml(matches) {
         return `
             <div data-tooltip="${n}위: ${val}게임" style="display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:6px; height: 90px; width: 22px;">
                 <div style="width: 12px; background: ${isTop ? placeColor(n) : '#31313c'}; height: ${h}px; border-radius: 2px;"></div>
-                <div style="font-size: 10px; color: ${isTop ? placeColor(n) : 'var(--text-faint)'}; font-weight: bold;">${n}</div>
+                <div style="font-size: 10px; color: ${isTop ? placeColor(n) : 'var(--text-faint)'}; font-weight: 700;">${n}</div>
             </div>`;
     }).join('');
 
     return `
-        <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
+        <div style="background: linear-gradient(135deg, var(--surface-hover), #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
 
             <div style="display: flex; align-items: center; gap: 22px; width: 195px;">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="color: #ffffff; font-size: 12px;">${total}전 · ${firsts}회 우승</div>
-                    <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${top3Deg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;" data-tooltip="3위 안에 든 비율 ${top3Rate}%">
+                    <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(var(--win) ${top3Deg}deg, var(--lose) 0); display: flex; align-items: center; justify-content: center;" data-tooltip="3위 안에 든 비율 ${top3Rate}%">
                         <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: ${avgColor};">
-                            <div style="font-size: 15px; font-weight: bold;">${avgPlace}위</div>
+                            <div style="font-size: 15px; font-weight: 700;">${avgPlace}위</div>
                             <div style="font-size: 9px; color: var(--text-muted);">평균 등수</div>
                         </div>
                     </div>
                 </div>
 
                 <div style="display: flex; flex-direction: column; justify-content: center; gap: 6px; text-align: left;">
-                    <div style="font-size: 12px; color: #ffffff; font-weight: bold;">
-                        ${avgK} / <span style="color: #e84057;">${avgD}</span> / ${avgA}
+                    <div style="font-size: 12px; color: #ffffff; font-weight: 700;">
+                        ${avgK} / <span style="color: var(--lose-text);">${avgD}</span> / ${avgA}
                     </div>
-                    <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">
+                    <div style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;">
                         ${kdaRatio} <span style="font-size: 14px; font-weight: normal; color: #ffffff;">: 1</span>
                     </div>
-                    <div style="font-size: 12px; color: #e84057; font-weight: bold;">
+                    <div style="font-size: 12px; color: var(--lose-text); font-weight: 700;">
                         킬관여 ${avgKp}%
                     </div>
                 </div>
@@ -2169,7 +2204,7 @@ function renderSummaryStats(matchesToCalc) {
     } else {
         // '전체'인데 협곡 판이 하나도 없는 경우 — 섞어서 평균 내지 않고 안내만
         statsArea.innerHTML = `
-            <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 22px 30px; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4); text-align: center; color: var(--text-muted); font-size: 13px; line-height: 1.7;">
+            <div style="background: linear-gradient(135deg, var(--surface-hover), #161625); border-radius: 8px; padding: 22px 30px; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4); text-align: center; color: var(--text-muted); font-size: 13px; line-height: 1.7;">
                 협곡 전적이 없어 종합 통계를 낼 수 없습니다.<br>
                 <span style="font-size: 12px; color: var(--text-faint);">칼바람 · 아레나 · 봇은 각각의 필터 버튼에서 확인할 수 있습니다.</span>
             </div>`;
@@ -2227,17 +2262,17 @@ function renderSummaryStats(matchesToCalc) {
         const cWinRate = Math.round((data.wins / data.games) * 100);
         const cKda = data.deaths === 0 ? 'Perfect' : ((data.kills + data.assists) / data.deaths).toFixed(2);
         let kdaColor = "#ffffff";
-        if (cKda >= 5 || cKda === 'Perfect') kdaColor = "#e84057"; else if (cKda >= 4) kdaColor = "#5383e8"; else if (cKda >= 3) kdaColor = "#10b981";
-        const wrColor = cWinRate >= 60 ? "#e84057" : (cWinRate >= 50 ? "#e84057" : "#ffffff");
+        if (cKda >= 5 || cKda === 'Perfect') kdaColor = "var(--lose)"; else if (cKda >= 4) kdaColor = "var(--win)"; else if (cKda >= 3) kdaColor = "#10b981";
+        const wrColor = cWinRate >= 60 ? "var(--lose-text)" : (cWinRate >= 50 ? "var(--lose-text)" : "#ffffff");
 
         return `
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                 <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${cName}.png" style="width: 28px; height: 28px; border-radius: 50%;" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
                 <div style="flex: 1; display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                    <span style="color: ${wrColor}; font-weight: bold; width: 34px;">${cWinRate}%</span>
+                    <span style="color: ${wrColor}; font-weight: 700; width: 34px;">${cWinRate}%</span>
                     <!-- ★ 62px 이면 두 자리 승패("10승 / 15패")에서 줄이 넘어간다. 76px = 숫자 두 자리분 -->
                     <span style="color: #ffffff; width: 76px; white-space: nowrap;">(${data.wins}승 / ${data.games - data.wins}패)</span>
-                    <span style="color: ${kdaColor}; font-weight: bold;">${cKda}:1 평점</span>
+                    <span style="color: ${kdaColor}; font-weight: 700;">${cKda}:1 평점</span>
                 </div>
             </div>
         `;
@@ -2285,29 +2320,29 @@ function renderSummaryStats(matchesToCalc) {
         `;
     };
 
-    const wrColor = winRate >= 50 ? '#5383e8' : '#e84057';
+    const wrColor = winRate >= 50 ? 'var(--win)' : 'var(--lose)';
 
     statsArea.innerHTML = `
-        <div style="background: linear-gradient(135deg, #2b1a52, #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
+        <div style="background: linear-gradient(135deg, var(--surface-hover), #161625); border-radius: 8px; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border: 1px solid rgba(107, 70, 193, 0.4);">
             
             <div style="display: flex; align-items: center; gap: 22px; width: 195px;">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="color: #ffffff; font-size: 12px;">${totalGames}전 ${wins}승 ${losses}패</div>
-                    <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(#5383e8 ${winDeg}deg, #e84057 0); display: flex; align-items: center; justify-content: center;">
-                        <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; color: ${wrColor};">
+                    <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(var(--win) ${winDeg}deg, var(--lose) 0); display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: ${wrColor};">
                             ${winRate}%
                         </div>
                     </div>
                 </div>
                 
                 <div style="display: flex; flex-direction: column; justify-content: center; gap: 6px; text-align: left;">
-                    <div style="font-size: 12px; color: #ffffff; font-weight: bold;">
-                        ${avgK} / <span style="color: #e84057;">${avgD}</span> / ${avgA}
+                    <div style="font-size: 12px; color: #ffffff; font-weight: 700;">
+                        ${avgK} / <span style="color: var(--lose-text);">${avgD}</span> / ${avgA}
                     </div>
-                    <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">
+                    <div style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;">
                         ${kdaRatio} <span style="font-size: 14px; font-weight: normal; color: #ffffff;">: 1</span>
                     </div>
-                    <div style="font-size: 12px; color: #e84057; font-weight: bold;">
+                    <div style="font-size: 12px; color: var(--lose-text); font-weight: 700;">
                         킬관여 ${avgKp}%
                     </div>
                 </div>
@@ -2706,10 +2741,18 @@ document.addEventListener('mouseover', (e) => {
 // ==========================================
 // [6] 즐겨찾기 및 최근기록 로직
 // ==========================================
-function getFavorites() { return JSON.parse(localStorage.getItem('pix_favorites') || '[]'); }
+// ★ 값이 한 번 깨지면(확장 프로그램·옛 형식) 즐겨찾기·최근검색이 통째로 죽고 뒤 코드까지 멈추던 것 —
+//   파싱 실패는 빈 목록으로 (2026-09-03 감사 L-14)
+function readLocalList(key) {
+    try {
+        const v = JSON.parse(localStorage.getItem(key) || '[]');
+        return Array.isArray(v) ? v : [];
+    } catch (e) { return []; }
+}
+function getFavorites() { return readLocalList('pix_favorites'); }
 function saveFavorites(favs) { localStorage.setItem('pix_favorites', JSON.stringify(favs)); }
 
-function getRecents() { return JSON.parse(localStorage.getItem('pix_recent') || '[]'); }
+function getRecents() { return readLocalList('pix_recent'); }
 function saveRecents(recents) { localStorage.setItem('pix_recent', JSON.stringify(recents)); }
 
 // 현재 보고 있는 소환사. 즐겨찾기 버튼 상태를 갱신할 때 쓴다.
@@ -2857,7 +2900,7 @@ window.drawSteps = (id, color, pairs) => {
     const rows = pairs.map(([lv, val]) => `
         <div style="display:flex; justify-content:space-between; gap:14px; padding:2px 0;">
             <span style="color:#fff;">Lv.${lv}</span>
-            <span style="color:${color}; font-weight:bold;">${val}</span>
+            <span style="color:${color}; font-weight: 700;">${val}</span>
         </div>`).join('');
 
     return `<span class="custom-footnote">[${id}]
@@ -2869,34 +2912,34 @@ window.drawSteps = (id, color, pairs) => {
 };
 
 const TOOLTIP_STYLE_CSS = `
-            mainText { display: block; font-size: 14px; line-height: 1.6; color: #ddd; } stats { display: block; color: #a78bfa; font-size: 13px; margin-bottom: 12px; font-weight: bold; background: rgba(167, 139, 250, 0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(167, 139, 250, 0.1); }
+            mainText { display: block; font-size: 14px; line-height: 1.6; color: #ddd; } stats { display: block; color: #a78bfa; font-size: 13px; margin-bottom: 12px; font-weight: 700; background: rgba(167, 139, 250, 0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(167, 139, 250, 0.1); }
             /* ★ 아래 색은 인게임 툴팁 스크린샷에서 픽셀을 직접 뽑은 값이다 (2026-08-09).
                  렐 W / 쉬바나 Q / 바드 P / 우디르 Q / 로크 W 를 썼고,
                  색이 나타나는 좌표가 해당 단어 위치와 맞는지 역으로 검증했다.
                  겹치는 태그는 서로 다른 스크린샷에서 같은 값이 나와 교차 확인됐다
                  (magicdamage 는 렐·쉬바나·바드 3장에서 동일).
                  ※ "구분이 잘 되게" 가 아니라 "인게임과 같게" 가 기준이다. 색끼리 비슷해도 그대로 둔다. */
-            magicdamage { color: #0acbe6; font-weight: bold; } physicaldamage { color: #f26522; font-weight: bold; } truedamage { color: #cdfafa; font-weight: bold; }
+            magicdamage { color: #0acbe6; font-weight: 700; } physicaldamage { color: #f26522; font-weight: 700; } truedamage { color: #cdfafa; font-weight: 700; }
             /* health 는 유미 P 처럼 <healing><health>…</health></healing> 로 중첩돼 있어
                같은 색을 쓴다. heal 도 같은 의미라 함께 묶었다 (실측한 건 healing 뿐). */
-            healing, heal, health { color: #60e08f; font-weight: bold; } shield { color: #4dd0eb; font-weight: bold; }
+            healing, heal, health { color: #60e08f; font-weight: 700; } shield { color: #4dd0eb; font-weight: 700; }
             scalearmor { color: #f0ba57; } scalemr { color: #4fdfff; } scalemana { color: #189ce7; }
-            keywordmajor { color: #dddd77; font-weight: bold; }
-            speed { color: #fffdc9; font-weight: bold; } status { color: #ad76c4; font-weight: bold; }
-            attackspeed { color: #ffe384; font-weight: bold; }
-            spellname, onhit, scalelevel, attention, unique { color: #f0e6d2; font-weight: bold; }
-            recast { color: #d67351; font-weight: bold; }
+            keywordmajor { color: #dddd77; font-weight: 700; }
+            speed { color: #fffdc9; font-weight: 700; } status { color: #ad76c4; font-weight: 700; }
+            attackspeed { color: #ffe384; font-weight: 700; }
+            spellname, onhit, scalelevel, attention, unique { color: #f0e6d2; font-weight: 700; }
+            recast { color: #d67351; font-weight: 700; }
             scalead { color: #eb8d34; } scaleap { color: #786cff; }
-            keywordstealth { color: #d182be; font-weight: bold; }
-            evolve { color: #bc3598; font-weight: bold; }
-            danger { color: #ff0000; font-weight: bold; }
+            keywordstealth { color: #d182be; font-weight: 700; }
+            evolve { color: #bc3598; font-weight: 700; }
+            danger { color: #ff0000; font-weight: 700; }
             /* ★ 인게임 실측값은 #5a5955 인데 우리 배경이 인게임 툴팁보다 어두워서
                  거의 안 읽혔다. 밝기만 올린 값이다 (색상·채도는 그대로). 2026-08-12 */
             rules { color: #918f86; }
             /* 라벨류는 전부 "기본 지속 효과:" 색으로 통일한다.
                인게임은 스킬마다 미묘하게 다르지만(니코 W 는 사용 시만 연노랑,
                갈리오 W 는 충전 시작 시가 또 다름) 통일하는 쪽이 읽기 낫다는 판단. */
-            active, passive, charge, release, toggle, tap, hold { display: block; margin-top: 8px; color: #f0e6d2; font-weight: bold; }
+            active, passive, charge, release, toggle, tap, hold { display: block; margin-top: 8px; color: #f0e6d2; font-weight: 700; }
             /* ★ 이 태그들이 **파트 맨 앞**에 올 때는 위 여백을 없앤다 (2026-08-10).
                하위 스킬 파트는 각자 자기 <div> 에 들어가므로 첫 태그의 margin-top 8px 이
                텍스트만 아래로 밀어 **옆 아이콘과 수평이 어긋난다.**
@@ -2909,11 +2952,11 @@ const TOOLTIP_STYLE_CSS = `
             /* scalehealth 와 lifesteal 은 실제로 같은 초록이다 (블라디미르 P / 아트록스 E).
                keyword 와 keywordstealth 도 같은 분홍보라다 (블라디미르 W / 니코 W).
                "구분이 안 된다" 가 아니라 라이엇이 원래 같은 색을 쓴다. */
-            scalehealth, lifesteal { color: #1f995c; font-weight: bold; }
-            keyword { color: #d182be; font-weight: bold; }
-            armorpen { color: #f95f55; font-weight: bold; }
-            omnivamp { color: #cb0c2d; font-weight: bold; }
-            specialrules { color: #f0e6d2; font-weight: bold; }
+            scalehealth, lifesteal { color: #1f995c; font-weight: 700; }
+            keyword { color: #d182be; font-weight: 700; }
+            armorpen { color: #f95f55; font-weight: 700; }
+            omnivamp { color: #cb0c2d; font-weight: 700; }
+            specialrules { color: #f0e6d2; font-weight: 700; }
             /* 아래는 인게임에서 색이 안 들어가는 자리다. 본문색을 그대로 따라간다. 전부 실측 확인:
                keywordname 탐 켄치 R "고정"·"심연 잠수", slow 가렌 W "60%의 강인함",
                level 애니비아 P, stattracking 드레이븐 P (뒤 둘은 스샷에 강조색 자체가 없었다). */
@@ -2935,8 +2978,8 @@ const TOOLTIP_STYLE_CSS = `
             .skill-rules release, .skill-rules toggle, .skill-rules tap, .skill-rules hold
                 { display: inline; margin-top: 0; }
             /* --- 문장에 안 쓰이는 태그. 확인 대상이 아니다 --- */
-            gold { color: #ffd700; font-weight: bold; }
-            b { font-weight: bold; }
+            gold { color: #ffd700; font-weight: 700; }
+            b { font-weight: 700; }
             i { font-style: italic; }
             /* ★ <font color=...> 는 라이엇이 원문에 색을 직접 박아 둔 것이고,
                  그 값이 인게임 색과 정확히 일치한다 (바드 P 의 "고대의 종" #cccc00,
@@ -2944,15 +2987,15 @@ const TOOLTIP_STYLE_CSS = `
                  예전엔 여기서 color 를 !important 로 덮어써서 44곳의 라이엇 지정색이
                  전부 죽어 있었다 (아펠리오스 무기색·바드 종·아우렐리온 솔 별가루 등).
                  font-size 는 원문에 <font size='18'> 같은 게 있어 글자가 튀므로 계속 막는다. */
-            font { display: inline; font-size: inherit !important; font-weight: bold; }
+            font { display: inline; font-size: inherit !important; font-weight: 700; }
             /* ★ 아래 5종은 **도감(아이템·룬)에만 나오는 태그**다 (2026-08-16).
                  위 색들과 달리 인게임 스크린샷 실측이 아니라 뜻에 맞춰 고른 값이다 —
                  나중에 실측하면 여기만 고치면 된다. 도감 36종 중 나머지 31종은
                  스킬 툴팁에서 이미 실측해 둔 값을 그대로 쓴다. */
-            raritylegendary { color: #ff9b00; font-weight: bold; }   /* 아이템 "전설" 표기 */
-            raritygeneric { color: #f0e6d2; font-weight: bold; }
+            raritylegendary { color: #ff9b00; font-weight: 700; }   /* 아이템 "전설" 표기 */
+            raritygeneric { color: #f0e6d2; font-weight: 700; }
             scalelethality { color: #f95f55; }                        /* armorpen 과 같은 계열이라 맞췄다 */
-            statgood { color: #60e08f; font-weight: bold; }
+            statgood { color: #60e08f; font-weight: 700; }
             /* 룬 설명의 커스텀 엘리먼트. 인게임에선 hover 하면 용어 설명이 뜨는 자리인데
                우리는 그 툴팁이 없으므로 점선 밑줄로 "용어" 라는 것만 표시한다. */
             lol-uikit-tooltipped-keyword { color: inherit; border-bottom: 1px dotted rgba(255,255,255,0.35); }
@@ -5826,165 +5869,6 @@ async function showStats() {
     });
 }
 
-/* ▼▼ 2026-08-15 이전의 샘플 데이터 버전. 실제 집계로 대체했고 statsData.js 도 안 쓴다.
-      되살릴 일은 없지만 표 구조 참고용으로 한동안 남겨 둔다.
-async function showStatsLegacy() {
-    if (HIDE_UNFINISHED_PAGES) { goLobby(); return; }
-
-    if (window.location.pathname !== '/stats') window.history.pushState({ page: 'stats' }, '', '/stats');
-    hideAllContainers();
-    const statsContainer = document.getElementById('stats-container');
-    statsContainer.style.display = "block";
-    statsContainer.innerHTML = "<div style='text-align:center; padding:50px; color:var(--text-muted);'>데이터를 불러오는 중입니다...</div>";
-
-    let apiStats = [];
-
-    try {
-        let korToEngMap = {};
-        try {
-            const ddragonRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/champion.json`);
-            const ddragonData = await ddragonRes.json();
-            // 클래식 챔피언은 한글 이름이 정규와 같아서, 걸러내지 않으면
-            // korToEngMap["가렌"]이 Jade_Garen으로 덮어써진다.
-            for (let key in ddragonData.data) {
-                const c = ddragonData.data[key];
-                if (isClassicChamp(c.id)) continue;
-                korToEngMap[c.name] = c.id;
-            }
-        } catch (e) {
-            console.warn("챔피언 이름 변환 데이터 로드 실패", e);
-        }
-
-        const defaultLaneMap = { "가렌": "top", "갈리오": "mid", "갱플랭크": "top", "그라가스": "top", "그레이브즈": "jungle", "그웬": "top", "나르": "top", "나미": "support", "나서스": "top", "나피리": "jungle", "노틸러스": "support", "녹턴": "jungle", "누누와 윌럼프": "jungle", "니달리": "jungle", "니코": "mid", "닐라": "adc", "다리우스": "top", "다이애나": "jungle", "드레이븐": "adc", "라이즈": "mid", "라칸": "support", "람머스": "jungle", "럭스": "support", "럼블": "top", "레나타 글라스크": "support", "레넥톤": "top", "레오나": "support", "렉사이": "jungle", "렐": "support", "렝가": "jungle", "루시안": "adc", "룰루": "support", "르블랑": "mid", "리 신": "jungle", "리븐": "top", "리산드라": "mid", "릴리아": "jungle", "마스터 이": "jungle", "마오카이": "jungle", "말자하": "mid", "말파이트": "top", "멜": "mid", "모데카이저": "top", "모르가나": "support", "문도 박사": "top", "미스 포츈": "adc", "밀리오": "support", "바드": "support", "바루스": "adc", "바이": "jungle", "베이가": "mid", "베인": "adc", "벡스": "mid", "벨베스": "jungle", "벨코즈": "support", "볼리베어": "top", "브라움": "support", "브라이어": "jungle", "브랜드": "jungle", "블라디미르": "mid", "블리츠크랭크": "support", "비에고": "jungle", "빅토르": "mid", "뽀삐": "support", "사미라": "adc", "사이온": "top", "사일러스": "mid", "샤코": "jungle", "세나": "support", "세라핀": "support", "세주아니": "jungle", "세트": "top", "소나": "support", "소라카": "support", "쉔": "top", "쉬바나": "jungle", "스몰더": "adc", "스웨인": "support", "스카너": "jungle", "시비르": "adc", "신 짜오": "jungle", "신드라": "mid", "신지드": "top", "쓰레쉬": "support", "아리": "mid", "아무무": "jungle", "아우렐리온 솔": "mid", "아이번": "jungle", "아지르": "mid", "아칼리": "mid", "아크샨": "mid", "아트록스": "top", "아펠리오스": "adc", "알리스타": "support", "암베사": "top", "애니": "mid", "애니비아": "mid", "애쉬": "adc", "야스오": "mid", "에코": "jungle", "엘리스": "jungle", "오공": "jungle", "오로라": "mid", "오른": "top", "오리아나": "mid", "올라프": "top", "요네": "mid", "요릭": "top", "우디르": "jungle", "우르곳": "top", "워윅": "jungle", "유나라": "adc", "유미": "support", "이렐리아": "top", "이블린": "jungle", "이즈리얼": "adc", "일라오이": "top", "자르반 4세": "jungle", "자야": "adc", "자이라": "support", "자크": "jungle", "자헨": "top", "잔나": "support", "잭스": "top", "제드": "mid", "제라스": "support", "제리": "adc", "제이스": "top", "조이": "mid", "직스": "adc", "진": "adc", "질리언": "support", "징크스": "adc", "초가스": "top", "카르마": "support", "카밀": "top", "카사딘": "mid", "카서스": "jungle", "카시오페아": "mid", "카이사": "adc", "카직스": "jungle", "카타리나": "mid", "칼리스타": "adc", "케넨": "top", "케이틀린": "adc", "케인": "jungle", "케일": "top", "코그모": "adc", "코르키": "adc", "퀸": "top", "크산테": "top", "클레드": "top", "키아나": "mid", "킨드레드": "jungle", "타릭": "support", "탈론": "mid", "탈리야": "jungle", "탐 켄치": "support", "트런들": "top", "트리스타나": "adc", "트린다미어": "top", "트위스티드 페이트": "mid", "트위치": "adc", "티모": "top", "파이크": "support", "판테온": "top", "피들스틱": "jungle", "피오라": "top", "피즈": "mid", "하이머딩거": "top", "헤카림": "jungle", "흐웨이": "mid" };
-
-        apiStats = statsData.map(champ => {
-            let calcTierClass = "tier-d";
-            if (champ.tier) {
-                if (champ.tier.includes('S')) calcTierClass = "tier-s"; else if (champ.tier.includes('A')) calcTierClass = "tier-a";
-                else if (champ.tier.includes('B')) calcTierClass = "tier-b"; else if (champ.tier.includes('C')) calcTierClass = "tier-c";
-                else if (champ.tier.includes('D')) calcTierClass = "tier-d"; else if (champ.tier.includes('E')) calcTierClass = "tier-e";
-            }
-            return {
-                id: korToEngMap[champ.name] || "0", name: champ.name || "알수없음", tier: champ.tier || "A", tierClass: calcTierClass,
-                lane: defaultLaneMap[champ.name] || "top", laneRate: champ.laneRate || 0, win: champ.win || 0, pick: champ.pick || 0, ban: champ.ban || 0
-            };
-        });
-    } catch (error) {
-        statsContainer.innerHTML = `<div style='text-align:center; padding:50px; color:#f87171;'>데이터 로드 실패: ${error.message}</div>`;
-        return;
-    }
-
-    const laneIconMap = {
-        "top": "https://s-lol-web.op.gg/images/icon/icon-position-top.svg", "jungle": "https://s-lol-web.op.gg/images/icon/icon-position-jungle.svg",
-        "mid": "https://s-lol-web.op.gg/images/icon/icon-position-mid.svg", "adc": "https://s-lol-web.op.gg/images/icon/icon-position-adc.svg",
-        "support": "https://s-lol-web.op.gg/images/icon/icon-position-support.svg"
-    };
-
-    const tierWeights = { "S+": 19, "S": 18, "S-": 17, "A+": 16, "A": 15, "A-": 14, "B+": 13, "B": 12, "B-": 11, "C+": 10, "C": 9, "C-": 8, "D+": 7, "D": 6, "D-": 5, "E+": 4, "E": 3, "E-": 2, "F": 1 };
-
-    let currentLane = 'all'; let currentSortCol = 'tier'; let currentSortDir = 'desc';
-
-    statsContainer.innerHTML = `
-        <div class="stats-header">
-            <h1 class="ranking-title">한국서버 에메랄드+ 챔피언 통계 (버전: 16.4)</h1>
-            <p style="color: var(--text-muted); margin-top: 10px; font-size: 14px;">API 키 이슈로 이전 버전 통계가 제공됩니다.</p>
-        </div>
-        <div class="stats-filter-container">
-            <button class="stats-filter-btn all-btn active" data-lane="all">ALL</button>
-            <button class="stats-filter-btn" data-lane="top" title="탑"><img src="${laneIconMap['top']}"></button>
-            <button class="stats-filter-btn" data-lane="jungle" title="정글"><img src="${laneIconMap['jungle']}"></button>
-            <button class="stats-filter-btn" data-lane="mid" title="미드"><img src="${laneIconMap['mid']}"></button>
-            <button class="stats-filter-btn" data-lane="adc" title="바텀"><img src="${laneIconMap['adc']}"></button>
-            <button class="stats-filter-btn" data-lane="support" title="서포터"><img src="${laneIconMap['support']}"></button>
-        </div>
-        <div class="stats-table-wrapper">
-            <table class="stats-table">
-                <thead>
-                    <tr>
-                        <th class="sortable-th" data-sort="name" style="text-align: left; padding-left: 20px;">Name <span class="sort-icon">▲</span></th>
-                        <th class="sortable-th active" data-sort="tier">Tier <span class="sort-icon">▼</span></th>
-                        <th>Lane</th>
-                        <th class="sortable-th" data-sort="win">Win <span class="sort-icon">▼</span></th>
-                        <th class="sortable-th" data-sort="pick">Pick <span class="sort-icon">▼</span></th>
-                        <th class="sortable-th" data-sort="ban">Ban <span class="sort-icon">▼</span></th>
-                    </tr>
-                </thead>
-                <tbody id="stats-tbody"></tbody>
-            </table>
-        </div>
-    `;
-
-    function renderStatsTable() {
-        const tbody = document.getElementById('stats-tbody');
-        let processedStats = currentLane === 'all' ? [...apiStats] : apiStats.filter(c => c.lane === currentLane);
-
-        if (currentSortCol) {
-            processedStats.sort((a, b) => {
-                let valA = a[currentSortCol], valB = b[currentSortCol];
-                if (currentSortCol === 'tier') { valA = tierWeights[valA] || -10; valB = tierWeights[valB] || -10; }
-                if (valA < valB) return currentSortDir === 'desc' ? 1 : -1;
-                if (valA > valB) return currentSortDir === 'desc' ? -1 : 1;
-                return 0;
-            });
-        }
-
-        if (processedStats.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="padding: 40px; color: var(--text-muted);">데이터가 없습니다.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = processedStats.map(champ => `
-            <tr>
-                <td class="stats-champ-info">
-                    <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${champ.id}.png" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
-                    <span class="stats-champ-name">${champ.name}</span>
-                </td>
-                <td><span class="stats-tier ${champ.tierClass}">${champ.tier}</span></td>
-                <td class="stats-lane">
-                    <img src="${laneIconMap[champ.lane]}">
-                    <div class="stats-lane-rate">${Number(champ.laneRate).toFixed(2)}%</div>
-                </td>
-                <td><div style="color: #10b981; font-weight: bold;">${Number(champ.win).toFixed(2)}%</div></td>
-                <td style="color: var(--text-bright);">${Number(champ.pick).toFixed(2)}%</td>
-                <td style="color: var(--text-bright);">${Number(champ.ban).toFixed(2)}%</td>
-            </tr>
-        `).join('');
-    }
-
-    renderStatsTable();
-
-    const filterBtns = document.querySelectorAll('.stats-filter-btn');
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            e.currentTarget.classList.add('active');
-            currentLane = e.currentTarget.dataset.lane;
-            renderStatsTable();
-        });
-    });
-
-    const sortableThs = document.querySelectorAll('.sortable-th');
-    sortableThs.forEach(th => {
-        th.addEventListener('click', (e) => {
-            const col = e.currentTarget.dataset.sort;
-            if (currentSortCol === col) currentSortDir = currentSortDir === 'desc' ? 'asc' : 'desc';
-            else { currentSortCol = col; currentSortDir = col === 'name' ? 'asc' : 'desc'; }
-
-            sortableThs.forEach(h => {
-                h.classList.remove('active', 'asc');
-                h.querySelector('.sort-icon').textContent = h.dataset.sort === 'name' ? '▲' : '▼';
-            });
-
-            const activeTh = e.currentTarget;
-            activeTh.classList.add('active');
-            if (currentSortDir === 'asc') { activeTh.classList.add('asc'); activeTh.querySelector('.sort-icon').textContent = '▲'; }
-            else { activeTh.querySelector('.sort-icon').textContent = '▼'; }
-
-            renderStatsTable();
-        });
-    });
-}
-▲▲ 샘플 데이터 버전 끝 ▲▲ */
 
 let fullRankingData = [];
 let currentRankingPage = 1;
@@ -6665,11 +6549,11 @@ function renderMasterTable() {
         if (tUpper === "C" || tUpper.includes("CHALLENGER")) tierBadgeClass = "c"; else if (tUpper === "GM" || tUpper.includes("GRANDMASTER")) tierBadgeClass = "gm"; else if (tUpper.includes("D")) tierBadgeClass = "d"; else if (tUpper.includes("E")) tierBadgeClass = "e";
 
         const fullTierName = getFullTierName(player.tier);
-        const lpDisplay = player.lp > 0 ? `<span style="font-weight: bold; color: #fff; font-size: 16px;">${player.lp} <span style="font-weight: normal; color: var(--text-muted); font-size: 12px;">LP</span></span>` : '';
+        const lpDisplay = player.lp > 0 ? `<span style="font-weight: 700; color: #fff; font-size: 16px;">${player.lp} <span style="font-weight: normal; color: var(--text-muted); font-size: 12px;">LP</span></span>` : '';
 
         tableHtml += `
             <tr>
-                <td style="text-align: center; color: #fff; font-weight: bold;">${index + 1}</td>
+                <td style="text-align: center; color: #fff; font-weight: 700;">${index + 1}</td>
                 <td>
                     <div class="master-summoner">
                         <img src="https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${currentChampId}.png" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/profileicon/0.png'">
@@ -6678,8 +6562,8 @@ function renderMasterTable() {
                 </td>
                 <td><div class="master-tier"><span class="tier-badge ${tierBadgeClass}" style="white-space: nowrap;">${fullTierName}</span> ${lpDisplay}</div></td>
                 <td style="text-align: center; color: var(--text-bright);">${player.games}</td>
-                <td style="text-align: center; color: #10b981; font-weight: bold;">${Number(player.winRate).toFixed(2)}%</td>
-                <td style="text-align: center; color: var(--text-bright); font-weight: bold;">${Number(player.kda).toFixed(2)}</td>
+                <td style="text-align: center; color: #10b981; font-weight: 700;">${Number(player.winRate).toFixed(2)}%</td>
+                <td style="text-align: center; color: var(--text-bright); font-weight: 700;">${Number(player.kda).toFixed(2)}</td>
             </tr>
         `;
     });
@@ -7653,7 +7537,7 @@ const LIVE_NO_RUNE_QUEUES = new Set([
     2450    // 아수라장 클래식 스타일
 ]);   // 일반 칼바람(450/720)은 룬이 있으므로 제외
 
-function renderLivePlayer(p, side, showRunes = true) {
+function renderLivePlayer(p, side, showRunes = true, anyTier = false) {
     // 스트리머 모드(Riot ID 익명화)를 켠 사람은 riotId가 비어서 온다.
     // 이름 자리를 챔피언 이름으로 채운다. (포우·op.gg도 같은 방식)
     const anon = !p.riotId || !p.riotId.trim();
@@ -7661,6 +7545,13 @@ function renderLivePlayer(p, side, showRunes = true) {
     const tag = anon ? '' : (p.riotId.split('#')[1] || '');
 
     const champ = `<img class="live-champ" src="${liveChampIcon(p.championId)}" onerror="this.style.visibility='hidden'">`;
+    // ★ 마스터+ 티어 배지 (2026-09-03, 기능 감사 F1) — 상세 전적의 tierSlot() 과 같은 규칙:
+    //   판에 한 명이라도 있어야 18px 슬롯을 만든다 (아무도 없는 판에 빈 칸을 두면 이름만 밀린다).
+    //   좌우 대칭 배치라 배지는 초상화의 **바깥쪽**(블루는 오른쪽 끝, 레드는 왼쪽 끝)에 둔다
+    const tier = !anyTier ? '' : `<span class="live-tier-slot">${p.rankTier
+        ? `<img src="${RANK_MEDAL_BASE}${rankTierInfo(p.rankTier[0]).icon}.png" alt=""
+               title="${rankTierInfo(p.rankTier[0]).name} · ${p.rankTier[1].toLocaleString()} LP" loading="lazy">`
+        : ''}</span>`;
     const spells = `
         <div class="live-spells">
             ${spellImg(p.spell1)}
@@ -7684,10 +7575,10 @@ function renderLivePlayer(p, side, showRunes = true) {
     // 블루팀은 오른쪽 정렬, 레드팀은 왼쪽 정렬로 가운데를 향하게 배치
     return side === 'blue'
         ? `<div ${clickAttr.replace('%SIDE%', 'blue')}>
-               ${runes}${spells}${nameHtml}${champ}
+               ${runes}${spells}${nameHtml}${champ}${tier}
            </div>`
         : `<div ${clickAttr.replace('%SIDE%', 'red')}>
-               ${champ}${nameHtml}${spells}${runes}
+               ${tier}${champ}${nameHtml}${spells}${runes}
            </div>`;
 }
 
@@ -7767,13 +7658,15 @@ function renderLiveGameHtml(g) {
 
     const blueTeam = byLane(g.teams.blue);
     const redTeam = byLane(g.teams.red);
+    // 마스터+ 가 한 명이라도 있어야 배지 슬롯을 만든다 (상세 전적과 같은 규칙)
+    const anyTier = blueTeam.concat(redTeam).some(p => p.rankTier);
 
     return `
         <div class="live-game-box">
             ${g.isArena && g.subteams
             ? renderLiveArenaSide(g.subteams.slice(0, 3))
             : `<div class="live-team blue">
-                ${blueTeam.map(p => renderLivePlayer(p, 'blue', showRunes)).join('')}
+                ${blueTeam.map(p => renderLivePlayer(p, 'blue', showRunes, anyTier)).join('')}
             </div>`}
 
             <div class="live-center">
@@ -7792,7 +7685,7 @@ function renderLiveGameHtml(g) {
             ${g.isArena && g.subteams
             ? renderLiveArenaSide(g.subteams.slice(3, 6))
             : `<div class="live-team red">
-                ${redTeam.map(p => renderLivePlayer(p, 'red', showRunes)).join('')}
+                ${redTeam.map(p => renderLivePlayer(p, 'red', showRunes, anyTier)).join('')}
             </div>`}
         </div>`;
 }
@@ -8409,7 +8302,7 @@ window.selectChampion = async function (champId, champName) {
                          style="width: 48px; height: 48px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
                     <div style="text-align: left; display: flex; align-items: center; gap: 15px;">
                         <div>
-                            <div style="color: var(--accent); font-weight: bold; font-size: 13px; margin-bottom: 2px;">${champ.title}</div>
+                            <div style="color: var(--accent); font-weight: 700; font-size: 13px; margin-bottom: 2px;">${champ.title}</div>
                             <h2 style="color: #fff; font-size: 26px; margin: 0; line-height: 1;">${champ.name}</h2>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 2px;">
@@ -8445,8 +8338,8 @@ window.selectChampion = async function (champId, champName) {
                     return match;
                 });
             }
-            text = text.replace(/{{\s*[^}]+\s*}}/g, '<span style="color:var(--accent); font-weight:bold;">[스탯 비례]</span>');
-            text = text.replace(/@[^@]+@/g, '<span style="color:var(--accent); font-weight:bold;">[스탯 비례]</span>');
+            text = text.replace(/{{\s*[^}]+\s*}}/g, '<span style="color:var(--accent); font-weight: 700;">[스탯 비례]</span>');
+            text = text.replace(/@[^@]+@/g, '<span style="color:var(--accent); font-weight: 700;">[스탯 비례]</span>');
             return cleanTooltipText(text);
         };
 
@@ -8742,8 +8635,8 @@ ${TOOLTIP_STYLE_CSS}        </style>
                                 <!-- ★ 폼이 두 개인 챔피언의 **첫 번째 폼** 이름 (미니 나르·인간 형태…).
                                      아래 두 번째 폼 박스엔 원래부터 있던 라벨인데 본체 쪽엔 없어서
                                      어느 폼 설명인지 알 수 없었다. 같은 모양으로 맞춘다 (2026-08-10). -->
-                                <div id="champ-skill-form" style="color: var(--accent); font-size: 12px; font-weight: bold; margin-bottom: 2px; display: none;"></div>
-                                <h3 id="champ-skill-name-header" style="color: #fff; font-size: 18px; font-weight: bold; margin: 0;"></h3>
+                                <div id="champ-skill-form" style="color: var(--accent); font-size: 12px; font-weight: 700; margin-bottom: 2px; display: none;"></div>
+                                <h3 id="champ-skill-name-header" style="color: #fff; font-size: 18px; font-weight: 700; margin: 0;"></h3>
                             </div>
                         </div>
                         <div class="champ-skill-meta">
@@ -8768,8 +8661,8 @@ ${TOOLTIP_STYLE_CSS}        </style>
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <img id="champ-skill2-icon" src="" style="width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
                             <div>
-                                <div id="champ-skill2-form" style="color: var(--accent); font-size: 12px; font-weight: bold; margin-bottom: 2px;"></div>
-                                <h3 id="champ-skill2-name" style="color: #fff; font-size: 18px; font-weight: bold; margin: 0;"></h3>
+                                <div id="champ-skill2-form" style="color: var(--accent); font-size: 12px; font-weight: 700; margin-bottom: 2px;"></div>
+                                <h3 id="champ-skill2-name" style="color: #fff; font-size: 18px; font-weight: 700; margin: 0;"></h3>
                             </div>
                         </div>
                         <div class="champ-skill-meta">
@@ -8837,7 +8730,7 @@ ${TOOLTIP_STYLE_CSS}        </style>
         detailArea.innerHTML = `
             <div class="champ-detail-inner">
                 <div class="champ-tab-bar">
-                    <button class="champ-tab-btn active" data-tab="skills" onclick="switchChampTab(event, 'skills')" style="padding: 15px 20px; background: transparent; border: none; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; border-bottom: 3px solid var(--accent);">스킬</button>
+                    <button class="champ-tab-btn active" data-tab="skills" onclick="switchChampTab(event, 'skills')" style="padding: 15px 20px; background: transparent; border: none; color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; border-bottom: 3px solid var(--accent);">스킬</button>
                     <button class="champ-tab-btn" data-tab="stats" onclick="switchChampTab(event, 'stats')" style="padding: 15px 20px; background: transparent; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스탯</button>
                     <button class="champ-tab-btn" data-tab="skins" onclick="switchChampTab(event, 'skins')" style="padding: 15px 20px; background: transparent; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">스킨</button>
                     <button class="champ-tab-btn" data-tab="lore" onclick="switchChampTab(event, 'lore')" style="padding: 15px 20px; background: transparent; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent;">배경</button>
@@ -9537,7 +9430,7 @@ window.playSkill = function (index) {
         for (let key in (skill.stats || {})) {
             const v = skill.stats[key];
             if (!key.trim() || v === null || v === undefined || v === '') continue;
-            lines += `<div>${key} <span style="color:var(--text-bright); font-weight:bold;">${v}</span></div>`;
+            lines += `<div>${key} <span style="color:var(--text-bright); font-weight: 700;">${v}</span></div>`;
         }
         statsHeaderEl.innerHTML = lines;
     }
