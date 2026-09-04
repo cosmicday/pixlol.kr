@@ -3228,10 +3228,16 @@ app.get('/api/timeline/:matchId', async (req, res) => {
     }
 
     try {
-        // 1. DB에 이미 있으면 그대로 반환
+        // 1. DB에 detail(+ 옛 배포가 저장해 둔 timeline)이 있으면 확인
         const cached = await MatchCache.findOne({ matchId });
         if (cached?.timeline) {
             return res.json(extractTimeline(cached.timeline, cached.detail, puuid));
+        }
+
+        // 1-b. ★ 원본은 DB 대신 서버 메모리(myCache, 5분)에 둔다 — 새로고침 직후 재조회를 여기서 받는다
+        const memTl = myCache.get(`timeline_${matchId}`);
+        if (memTl) {
+            return res.json(extractTimeline(memTl, cached?.detail || null, puuid));
         }
 
         // 2. 없으면 라이엇에서 받아옴
@@ -3239,8 +3245,10 @@ app.get('/api/timeline/:matchId', async (req, res) => {
             `https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline`
         );
 
-        // 3. DB에 저장 (매치가 이미 있으면 timeline만 채움)
-        MatchCache.updateOne({ matchId }, { $set: { timeline } }).catch(() => { });
+        // 3. ★★ DB 에 원본을 저장하지 않는다 (2026-09-04). 한 개 617KB 라 2026-08-15 에 287판이 173MB(용량 절반)를
+        //    먹었던 필드다. 프론트 matchTimelineCache 가 세션 내 재조회를 막고, 새로고침 직후는 위 5분 메모리 캐시가 받는다.
+        //    ★ 통계 수집(MatchStat 의 sk/it)은 완전히 다른 경로라 무관하다 — 거긴 toSlimTimeline 으로 슬림만 저장한다.
+        myCache.set(`timeline_${matchId}`, timeline);
 
         const detail = cached?.detail || null;
         res.json(extractTimeline(timeline, detail, puuid));
