@@ -406,6 +406,28 @@ app.set('trust proxy', 1);
 //   NODE_ENV 를 확인하기 전까지는 **Railway 표식(RAILWAY_PROJECT_ID)** 도 운영으로 친다 — 로컬 `node server.js` 는 그대로 개발
 const IS_PROD = process.env.NODE_ENV === 'production' || !!process.env.RAILWAY_PROJECT_ID;
 if (IS_PROD) app.set('env', 'production');
+
+// ★★ 오리진 잠금 (2026-09-04 감사 M-7 · 실측으로 우회 확정). Cloudflare 를 우회해 오리진(m9focdi9.up.railway.app)에
+//   직접 붙으면 cf-connecting-ip 를 매 요청 다른 값으로 위조해 세 리미터가 전부 무력화된다 (그 뒤에 versus-build
+//   전수 스캔·라이엇 프록시가 있다). CF Transform Rule 이 모든 요청에 붙이는 x-origin-guard 헤더를 서버가 확인해
+//   **CF 를 거친 요청만** 통과시킨다.
+//   ★ ORIGIN_GUARD 가 설정됐을 때만 켠다 — 없으면 완전 통과(로컬 `node server.js`·변수 미설정 배포 무영향, no-op).
+//   ★★ 배포 순서: ① 이 코드 배포(무변화) → ② CF 룰 등록 → ③ 브라우저로 사이트 확인 → ④ 마지막에 Railway 변수.
+//     Railway 변수를 CF 룰보다 먼저 넣으면 서버는 검사를 켜는데 CF 는 헤더를 안 붙여 **전 요청 403(사이트 다운)** 이 된다.
+//   ★ riot.txt(라이엇 도메인 인증)는 검증 봇 경로가 불확실하고 파일 자체가 무해하므로 항상 예외 — 잠겨도 심사에 지장 없게.
+const ORIGIN_GUARD = process.env.ORIGIN_GUARD || '';
+if (ORIGIN_GUARD) {
+    const guardBuf = Buffer.from(ORIGIN_GUARD);
+    app.use((req, res, next) => {
+        if (req.path === '/riot.txt') return next();
+        const got = req.headers['x-origin-guard'];
+        if (typeof got === 'string' && got.length === ORIGIN_GUARD.length) {
+            try { if (crypto.timingSafeEqual(Buffer.from(got), guardBuf)) return next(); } catch (_) {}
+        }
+        res.status(403).type('text/plain').send('forbidden');
+    });
+    console.log('[OriginGuard] 오리진 잠금 켜짐 (x-origin-guard 검사)');
+}
 // ★ useClones:false (2026-09-03 감사 M-6) — 기본값 true 면 get 할 때마다 저장 객체를 깊은 복사한다.
 //   랭킹 응답은 11,000 객체라 캐시 적중일 때조차 요청마다 11,000회 클론이 돌았다.
 //   ★★ 대신 **캐시에서 꺼낸 객체를 호출부가 고치면 안 된다** — 고치면 캐시 본체가 바뀐다.
