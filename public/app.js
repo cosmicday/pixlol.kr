@@ -1441,7 +1441,7 @@ function renderMatches(matches, append = false) {
             const dpm = totalMins > 0 ? Math.round(me.damage / totalMins) : 0;
             statsHtml = `
                 <div class="kp">킬관여 ${game.kp}%</div>
-                <div>CS ${me.cs} <span style="font-size:11px;">(${game.csPerMin})</span></div>
+                <div>CS ${me.cs} <span style="font-size:12px;">(${game.csPerMin})</span></div>
                 <div>DPM ${dpm.toLocaleString()}</div>
             `;
         }
@@ -1944,7 +1944,7 @@ function renderAramSummaryHtml(matches) {
     const avgLenSec = Math.round(((totalMins / total) - avgLenMin) * 60);
 
     const metric = (label, value) => `
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; padding:3px 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:3px 0;">
             <span style="color:var(--text-muted);">${label}</span>
             <span style="color:#ffffff; font-weight: 700;">${value}</span>
         </div>`;
@@ -2100,7 +2100,7 @@ function renderArenaSummaryHtml(matches) {
         return `
             <div data-tooltip="${n}위: ${val}게임" style="display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:6px; height: 90px; width: 22px;">
                 <div style="width: 12px; background: ${isTop ? placeColor(n) : '#31313c'}; height: ${h}px; border-radius: 2px;"></div>
-                <div style="font-size: 10px; color: ${isTop ? placeColor(n) : 'var(--text-faint)'}; font-weight: 700;">${n}</div>
+                <div style="font-size: 12px; color: ${isTop ? placeColor(n) : 'var(--text-faint)'}; font-weight: 700;">${n}</div>
             </div>`;
     }).join('');
 
@@ -2113,7 +2113,7 @@ function renderArenaSummaryHtml(matches) {
                     <div style="width: 88px; height: 88px; border-radius: 50%; background: conic-gradient(var(--win) ${top3Deg}deg, var(--lose) 0); display: flex; align-items: center; justify-content: center;" data-tooltip="3위 안에 든 비율 ${top3Rate}%">
                         <div style="width: 64px; height: 64px; background: #201435; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: ${avgColor};">
                             <div style="font-size: 15px; font-weight: 700;">${avgPlace}위</div>
-                            <div style="font-size: 9px; color: var(--text-muted);">평균 등수</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">평균 등수</div>
                         </div>
                     </div>
                 </div>
@@ -6607,7 +6607,7 @@ function renderMasterTable() {
         return 0;
     });
 
-    const getSortIcon = (col) => currentMasterSortCol !== col ? "<span style='color:var(--text-faint); font-size:11px; margin-left:4px;'>↕</span>" : (currentMasterSortAsc ? "<span style='color:#10b981; font-size:11px; margin-left:4px;'>▲</span>" : "<span style='color:#10b981; font-size:11px; margin-left:4px;'>▼</span>");
+    const getSortIcon = (col) => currentMasterSortCol !== col ? "<span style='color:var(--text-faint); font-size:12px; margin-left:4px;'>↕</span>" : (currentMasterSortAsc ? "<span style='color:#10b981; font-size:12px; margin-left:4px;'>▲</span>" : "<span style='color:#10b981; font-size:12px; margin-left:4px;'>▼</span>");
     const getFullTierName = (tierStr) => {
         if (!tierStr) return "";
         let t = tierStr.toUpperCase().trim();
@@ -8398,8 +8398,8 @@ window.selectChampion = async function (champId, champName) {
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 2px;">
                             <!-- ★ PICK/BAN → 픽 대사/밴 대사 + 아웃라인(보조 버튼) 꼴 (2026-08-31, 260830 디자인 6번 — 뜻이 안 보인다는 지적) -->
-                            <button onclick="playChampVoice('${champ.key}', 'pick')" style="background: transparent; border: 1px solid rgba(167, 139, 250, 0.5); color: var(--text-bright); border-radius: 8px; padding: 2px 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s; outline: none; white-space: nowrap;" onmouseover="this.style.background='rgba(107, 70, 193, 0.3)'" onmouseout="this.style.background='transparent'">픽 대사</button>
-                            <button onclick="playChampVoice('${champ.key}', 'ban')" style="background: transparent; border: 1px solid rgba(167, 139, 250, 0.5); color: var(--text-bright); border-radius: 8px; padding: 2px 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s; outline: none; white-space: nowrap;" onmouseover="this.style.background='rgba(107, 70, 193, 0.3)'" onmouseout="this.style.background='transparent'">밴 대사</button>
+                            <button onclick="playChampVoice('${champ.key}', 'pick')" style="background: transparent; border: 1px solid rgba(167, 139, 250, 0.5); color: var(--text-bright); border-radius: 8px; padding: 2px 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; outline: none; white-space: nowrap;" onmouseover="this.style.background='rgba(107, 70, 193, 0.3)'" onmouseout="this.style.background='transparent'">픽 대사</button>
+                            <button onclick="playChampVoice('${champ.key}', 'ban')" style="background: transparent; border: 1px solid rgba(167, 139, 250, 0.5); color: var(--text-bright); border-radius: 8px; padding: 2px 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; outline: none; white-space: nowrap;" onmouseover="this.style.background='rgba(107, 70, 193, 0.3)'" onmouseout="this.style.background='transparent'">밴 대사</button>
                         </div>
                     </div>
                 </div>

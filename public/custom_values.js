@@ -62,7 +62,7 @@ const customValues = {
             "p6": "6", // ShredDuration
             "p7": "25", // ShredAmount*100
             "p8": "25", // ASPerTick*100
-            "p9": "4 / 7 / 10 / 13 / 16 (+ 총 공격력의 40 / 43 / 46 / 49 / 52%)의 130%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>139%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalDamage
+            "p9": "4 / 7 / 10 / 13 / 16 (+ 총 공격력의 40 / 43 / 46 / 49 / 52%)의 130%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>139%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalDamage
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "9 / 8.25 / 7.5 / 6.75 / 6",
@@ -173,7 +173,7 @@ const customValues = {
         },
         "Q": {
             "p1": "1", // GameModeInteger
-            "p2": "10 / 40 / 70 / 100 / 130 (+ 총 공격력의 100%)의 200%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>230%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // ShotCrit
+            "p2": "10 / 40 / 70 / 100 / 130 (+ 총 공격력의 100%)의 200%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>230%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // ShotCrit
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "4.5",
@@ -204,7 +204,7 @@ const customValues = {
             "p6": "2 ~ 0.5 (레벨에 따라)", // BarrelDecayTime
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "재충전 대기시간 17 / 16 / 15 / 14 / 13초 (재사용 0.5초)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>최대: 3 / 3 / 4 / 4 / 5개</div></span></span>",
+            "cooldown": "재충전 대기시간 17 / 16 / 15 / 14 / 13초 (재사용 0.5초)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>최대: 3 / 3 / 4 / 4 / 5개</div></span></span>",
             "cost": "-",
             "stats": {
                 "사거리": "1000",
@@ -311,7 +311,7 @@ const customValues = {
         "P": {
             "p1": "총 공격력의 70 ~ 100 (레벨에 따라)%", // SingleBulletDamage
             "p2": "총 공격력의 70 ~ 100 (레벨에 따라)%", // MultiBulletDamage
-            "p3": "50%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>65%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageMult
+            "p3": "50%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>65%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageMult
             "p4": "25", // StructureDamageReduction*100
             "cooldown": "-",
             "cost": "-",
@@ -483,7 +483,7 @@ const customValues = {
             "cost": "-",
             "form1": "미니 나르",
             "stats": {
-                "사거리": "1100<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>돌아올 때 3000</div></span></span>",
+                "사거리": "1100<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>돌아올 때 3000</div></span></span>",
                 "스킬 폭": "110",
                 "시전시간": "0.25",
                 "투사체 속도": "2500"
@@ -1082,7 +1082,7 @@ const customValues = {
     },
     "Neeko": { // 니코
         "P": {
-            "cooldown": "6<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>실제 재사용 대기시간</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>2초</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>6초는 인게임 툴팁 표시값입니다</div></span></span>", // PassiveCooldown
+            "cooldown": "6<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>실제 재사용 대기시간</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>2초</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>6초는 인게임 툴팁 표시값입니다</div></span></span>", // PassiveCooldown
             "cost": "-"
         },
         "Q": {
@@ -1304,7 +1304,7 @@ const customValues = {
                 "사거리": "900",
                 "스킬 폭": "200",
                 "시전시간": "0.25",
-                "투사체 속도": "1900<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>바깥쪽 원호 2100</div></span></span>"
+                "투사체 속도": "1900<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>바깥쪽 원호 2100</div></span></span>"
             }
         },
         "W": {
@@ -2334,9 +2334,9 @@ const customValues = {
         },
         "R": {
             "p1": "3", // Duration
-            "p2": "22 + 치명타 확률의 100%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>130%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // TotalNumShots
+            "p2": "22 + 치명타 확률의 100%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>130%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // TotalNumShots
             "p3": "15 / 30 / 45 (+ 총 공격력의 25% + 주문력의 15%)", // DamagePerBullet
-            "p4": "22 + 치명타 확률의 100% x (15 / 30 / 45 + 총 공격력의 25% + 주문력의 15%)<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>22 + 치명타 확률의 130% x (15 / 30 / 45 + 총 공격력의 25% + 주문력의 15%)</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // TotalDamage
+            "p4": "22 + 치명타 확률의 100% x (15 / 30 / 45 + 총 공격력의 25% + 주문력의 15%)<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>22 + 치명타 확률의 130% x (15 / 30 / 45 + 총 공격력의 25% + 주문력의 15%)</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // TotalDamage
             "p5": "100", // CritValueMod*100
             "p6": "200", // PercentDamageAmpToMinions
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
@@ -2771,7 +2771,7 @@ const customValues = {
             "p4": "5 / 10 / 15 / 20 / 25 + 총 공격력의 17.5%", // SubesquentDamage
             "p5": "35 / 70 / 105 / 140 / 175 (+ 총 공격력의 122.5%)", // SingleTotalDamage
             "p6": "75", // BaseOnHitMultiplier*100
-            "p7": "20 / 40 / 60 / 80 / 100 (+ 총 공격력의 70%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>130%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritBonus
+            "p7": "20 / 40 / 60 / 80 / 100 (+ 총 공격력의 70%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>130%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritBonus
             "p8": "(20 / 40 / 60 / 80 / 100 + 총 공격력의 70%)의 175%", // SingleCritTotalDamage
             "p9": "60 / 85 / 110 / 135 / 160", // BonusMonsterDamage
             "p10": "20 / 19.5 / 19 / 18.5 / 18", // BasicAttackCDR
@@ -3317,7 +3317,7 @@ const customValues = {
         },
         "Q": {
             "p1": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 100% + 주문력의 35%)", // TotalDamageTooltip
-            "p2": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 100% + 주문력의 35%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // TotalDamageCrit
+            "p2": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 100% + 주문력의 35%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // TotalDamageCrit
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "7 / 6 / 5 / 4 / 3",
@@ -3362,7 +3362,7 @@ const customValues = {
             "p2": "14 / 16 / 18", // BaseWaves
             "p3": "20 / 30 / 40 (+ 총 공격력의 60% + 주문력의 25%)", // PhysicalDamagePerWave
             "p4": "280 / 480 / 720 (+ 총 공격력의 840 / 960 / 1080% + 주문력의 350 / 400 / 450%)", // TotalPhysicalDamage
-            "p5": "20 / 30 / 40 (+ 총 공격력의 60% + 주문력의 25%)의 130%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>139%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamagePerWave
+            "p5": "20 / 30 / 40 (+ 총 공격력의 60% + 주문력의 25%)의 130%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>139%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamagePerWave
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 110 / 100",
@@ -4233,7 +4233,7 @@ const customValues = {
             "cooldown": "120 / 100 / 80",
             "cost": "현재 체력의 5% 소모",
             "stats": {
-                "사거리": "12000<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>2차 시전 돌진은 전역</div></span></span>",
+                "사거리": "12000<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>2차 시전 돌진은 전역</div></span></span>",
                 "스킬 폭": "320",
                 "시전시간": "1",
                 "투사체 속도": "2000",
@@ -4454,7 +4454,7 @@ const customValues = {
             "p4": "25 / 40 / 55 / 70 / 85 (+ 총 공격력의 70%)", // TotalDamage
             "p5": "125", // HealModVsMonsters*100
             "p6": "100", // HealModVsMinions*100
-            "p7": "100% (+ 70%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>100% (+ 91%)</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // HealthCritDamage
+            "p7": "100% (+ 70%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>100% (+ 91%)</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // HealthCritDamage
             "p8": "10 / 15 / 20 / 25 / 30", // MinDamageOnHit
             "p9": "80", // MonsterCapOnHit
             "p10": "60", // ActiveCritMod*100
@@ -4682,7 +4682,7 @@ const customValues = {
         },
         "Q": {
             "p1": "0 / 5 / 10 / 15 / 20 (+ 총 공격력의 110%)", // DamageCalc
-            "p2": "0 / 5 / 10 / 15 / 20 (+ 총 공격력의 110%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalDamageCalc
+            "p2": "0 / 5 / 10 / 15 / 20 (+ 총 공격력의 110%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalDamageCalc
             "p3": "100", // LifestealMod*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -4785,7 +4785,7 @@ const customValues = {
             "cooldown": "12 / 11 / 10 / 9 / 8",
             "cost": "35 / 40 / 45 / 50 / 55",
             "stats": {
-                "사거리": "800<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>밀려난 유닛은 최대 1350까지</div></span></span>",
+                "사거리": "800<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>밀려난 유닛은 최대 1350까지</div></span></span>",
                 "효과 범위": "130",
                 "스킬 폭": "160",
                 "시전시간": "0.25",
@@ -4893,7 +4893,7 @@ const customValues = {
         "Q": {
             "p1": "2.5 / 2.75 / 3 / 3.25 / 3.5", // StealthDuration
             "p2": "25 / 35 / 45 / 55 / 65 (+ 추가 공격력의 60%)", // TotalDamage
-            "p3": "160%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>178%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // QCritDamageMod
+            "p3": "160%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>178%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // QCritDamageMod
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "13 / 12.5 / 12 / 11.5 / 11",
@@ -5422,7 +5422,7 @@ const customValues = {
             "cooldown": "8 / 7.25 / 6.5 / 5.75 / 5",
             "cost": "140 / 130 / 120 / 110 / 100",
             "stats": {
-                "사거리": "400<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>영혼검 회수는 전역</div></span></span>",
+                "사거리": "400<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>영혼검 회수는 전역</div></span></span>",
                 "스킬 폭": "160",
                 "투사체 속도": "2000 ~ 5000"
             }
@@ -5531,7 +5531,7 @@ const customValues = {
                 "효과 범위": "150",
                 "스킬 폭": "120",
                 "시전시간": "0.25",
-                "투사체 속도": "1600<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>용 형태 1575</div></span></span>"
+                "투사체 속도": "1600<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>용 형태 1575</div></span></span>"
             }
         },
         "R": {
@@ -5818,8 +5818,8 @@ const customValues = {
             "stats": {
                 "사거리": "1200",
                 "스킬 폭": "180",
-                "시전시간": "0.25 ~ 0.1<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 100%당 50% 감소, 최대 60%</div></span></span>",
-                "투사체 속도": "1450<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>돌아올 때 1200</div></span></span>"
+                "시전시간": "0.25 ~ 0.1<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>추가 공격 속도 100%당 50% 감소, 최대 60%</div></span></span>",
+                "투사체 속도": "1450<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>돌아올 때 1200</div></span></span>"
             }
         },
         "W": {
@@ -5905,7 +5905,7 @@ const customValues = {
             "cooldown": "11",
             "cost": "60",
             "stats": {
-                "사거리": "650<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>도전 대상 1100</div></span></span>",
+                "사거리": "650<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>도전 대상 1100</div></span></span>",
                 "효과 범위": "250",
                 "돌진 속도": "2500"
             }
@@ -6090,7 +6090,7 @@ const customValues = {
             "cost": "70",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/thresh/hud/icons2d/thresh_q3.png"],
             "stats": {
-                "사거리": "1075<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>기절·끌어당김은 전역</div></span></span>",
+                "사거리": "1075<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>기절·끌어당김은 전역</div></span></span>",
                 "스킬 폭": "140",
                 "시전시간": "0.5",
                 "투사체 속도": "1900"
@@ -6621,7 +6621,7 @@ const customValues = {
             "p1": "8 / 16 / 24 / 32 / 40 (+ 총 공격력의 25%)", // DamageToDeal
             "p2": "25", // OnHitDamageReduction*100
             "p3": "30", // AttackSpeedCoefficient*100
-            "p4": "8 / 16 / 24 / 32 / 40 (+ 총 공격력의 25%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalCalc
+            "p4": "8 / 16 / 24 / 32 / 40 (+ 총 공격력의 25%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "18 / 16.5 / 15 / 13.5 / 12",
@@ -6764,7 +6764,7 @@ const customValues = {
         "R": {
             "p1": "125 / 175 / 225 (+ 추가 공격력의 20% + 주문력의 100%)", // MaxDamage
             "p2": "?", // f1
-            "p3": "100% (+ 치명타 확률의 3000%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>100% (+ 치명타 확률의 3900%)</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageModCalc
+            "p3": "100% (+ 치명타 확률의 3000%)<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>100% (+ 치명타 확률의 3900%)</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CritDamageModCalc
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
             "cooldown": "120 / 110 / 100",
@@ -7130,14 +7130,14 @@ const customValues = {
             "p4": "20 / 45 / 70 / 95 / 120 (+ 총 공격력의 치명타 피해량의 105%)", // TotalDamageCrit
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "4 ~ 1.33<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.67%당 1% 감소, 최대 67%</div></span></span>",
+            "cooldown": "4 ~ 1.33<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.67%당 1% 감소, 최대 67%</div></span></span>",
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yasuo/hud/icons2d/yasuo_q2.png", "https://raw.communitydragon.org/latest/game/assets/characters/yasuo/hud/icons2d/yasuo_q3.png"],
             "stats": {
-                "사거리": "475<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>회오리 1150</div></span></span>",
+                "사거리": "475<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>회오리 1150</div></span></span>",
                 "효과 범위": "215",
-                "스킬 폭": "80<span class='custom-footnote'>[3]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>회오리 180</div></span></span>",
-                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[4]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
+                "스킬 폭": "80<span class='custom-footnote'>[3]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>회오리 180</div></span></span>",
+                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[4]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
                 "투사체 속도": "1200 (회오리)"
             }
         },
@@ -7433,7 +7433,7 @@ const customValues = {
             "cost": "60",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/aurora/hud/icons2d/auroraq2.png"],
             "stats": {
-                "사거리": "900<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>표식 대상 재사용은 전역</div></span></span>",
+                "사거리": "900<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>표식 대상 재사용은 전역</div></span></span>",
                 "스킬 폭": "180",
                 "시전시간": "0.25",
                 "투사체 속도": "1600"
@@ -7447,7 +7447,7 @@ const customValues = {
             "cooldown": "22 / 21 / 20 / 19 / 18",
             "cost": "80",
             "stats": {
-                "사거리": "300<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>지형 넘으면 450</div></span></span>",
+                "사거리": "300<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>지형 넘으면 450</div></span></span>",
                 "시전시간": "0.25",
                 "돌진 속도": "350"
             }
@@ -7704,13 +7704,13 @@ const customValues = {
             "p4": "25 / 50 / 75 / 100 / 125 (+ 총 공격력의 치명타 피해량의 110%)", // TotalDamageCrit
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "4 ~ 1.33<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.67%당 1% 감소, 최대 67%</div></span></span>",
+            "cooldown": "4 ~ 1.33<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.67%당 1% 감소, 최대 67%</div></span></span>",
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yone/hud/icons2d/yoneq3.png"],
             "stats": {
-                "사거리": "450<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>회오리 1050</div></span></span>",
-                "스킬 폭": "80<span class='custom-footnote'>[3]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>회오리 160</div></span></span>",
-                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[4]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
+                "사거리": "450<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>회오리 1050</div></span></span>",
+                "스킬 폭": "80<span class='custom-footnote'>[3]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>회오리 160</div></span></span>",
+                "시전시간": "0.35 ~ 0.175<span class='custom-footnote'>[4]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>추가 공격 속도 24%당 0.035초 감소, 최대 50%</div></span></span>",
                 "투사체 속도": "1500",
                 "돌진 속도": "1500"
             }
@@ -7725,11 +7725,11 @@ const customValues = {
             "p7": "30 ~ 330 (레벨에 따라)", // MinimumDamageMinions
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "14 ~ 6<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.51%당 1% 감소, 최대 62.5%</div></span></span>",
+            "cooldown": "14 ~ 6<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.51%당 1% 감소, 최대 62.5%</div></span></span>",
             "cost": "-",
             "stats": {
                 "사거리": "700",
-                "시전시간": "0.5 ~ 0.19<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.68%당 1% 감소, 최대 62.5%</div></span></span>"
+                "시전시간": "0.5 ~ 0.19<span class='custom-footnote'>[2]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>추가 공격 속도 1.68%당 1% 감소, 최대 62.5%</div></span></span>"
             }
         },
         "E": {
@@ -7743,7 +7743,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/yone/hud/icons2d/yonee2.png"],
             "stats": {
-                "사거리": "300<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>귀환 돌진은 전역</div></span></span>",
+                "사거리": "300<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>귀환 돌진은 전역</div></span></span>",
                 "시전시간": "0.225 (재사용)",
                 "돌진 속도": "1200"
             }
@@ -8022,7 +8022,7 @@ const customValues = {
             "cooldown": "80 / 70 / 60 / 50 / 40",
             "cost": "55",
             "stats": {
-                "효과 범위": "4000<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>패시브 감지는 전역</div></span></span>",
+                "효과 범위": "4000<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>패시브 감지는 전역</div></span></span>",
                 "시전시간": "0.5"
             }
         },
@@ -8151,7 +8151,7 @@ const customValues = {
             "stats": {
                 "사거리": "850",
                 "스킬 폭": "120",
-                "투사체 속도": "950<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>부착 강화 시 1650</div></span></span>"
+                "투사체 속도": "950<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>부착 강화 시 1650</div></span></span>"
             }
         },
         "W": {
@@ -8254,7 +8254,7 @@ const customValues = {
             "cost": "50",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/irelia/hud/icons2d/irelia_e2.png"],
             "stats": {
-                "사거리": "850<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>검이 모이는 거리는 전역</div></span></span>",
+                "사거리": "850<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>검이 모이는 거리는 전역</div></span></span>",
                 "스킬 폭": "140",
                 "투사체 속도": "2000"
             }
@@ -8574,7 +8574,7 @@ const customValues = {
             "stats": {
                 "사거리": "1100",
                 "스킬 폭": "100",
-                "시전시간": "0.25 ~ 0.1<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>추가 공격 속도 100%당 0.07초 감소, 최대 60%</div></span></span>",
+                "시전시간": "0.25 ~ 0.1<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>추가 공격 속도 100%당 0.07초 감소, 최대 60%</div></span></span>",
                 "투사체 속도": "700"
             }
         },
@@ -8656,7 +8656,7 @@ const customValues = {
             "p5": "100", // KillAmmoRefundChamp*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "없음<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>씨앗 재충전 18 / 16 / 14 / 12 / 10초</div></span></span>",
+            "cooldown": "없음<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>씨앗 재충전 18 / 16 / 14 / 12 / 10초</div></span></span>",
             "cost": "씨앗 1개",
             "stats": {
                 "사거리": "850",
@@ -9122,7 +9122,7 @@ const customValues = {
             "p4": "60", // ExcessAttackSpeedToADMult*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
-            "cooldown": "1.52<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>1레벨 기준, 공격 속도에 따라 감소</div></span></span>",
+            "cooldown": "1.52<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>1레벨 기준, 공격 속도에 따라 감소</div></span></span>",
             "cost": "-",
             "stats": {
                 "사거리": "700",
@@ -9134,7 +9134,7 @@ const customValues = {
             "p1": "30 / 70 / 110 / 150 / 190 (+ 총 공격력의 120% + 주문력의 50%)", // TotalDamage
             "p2": "2", // SlowDuration
             "p3": "30 / 35 / 40 / 45 / 50", // SlowPercent*100
-            "p4": "30 / 70 / 110 / 150 / 190 (+ 총 공격력의 120% + 주문력의 50%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // WallDamage
+            "p4": "30 / 70 / 110 / 150 / 190 (+ 총 공격력의 120% + 주문력의 50%)의 150%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>165%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // WallDamage
             "p5": "50", // CriticalEffectiveness*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",
@@ -9320,7 +9320,7 @@ const customValues = {
             "cost": "-",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/zoe/hud/icons2d/zoe_w2.png"],
             "stats": {
-                "효과 범위": "전역<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>파편 떨어뜨리기</div></span></span>",
+                "효과 범위": "전역<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>파편 떨어뜨리기</div></span></span>",
                 "스킬 폭": "240",
                 "투사체 속도": "2000"
             }
@@ -10299,7 +10299,7 @@ const customValues = {
             "cooldown": "160 / 140 / 120",
             "cost": "100",
             "stats": {
-                "사거리": "1000<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>던지는 거리 1200</div></span></span>"
+                "사거리": "1000<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>던지는 거리 1200</div></span></span>"
             }
         },
     },
@@ -10374,7 +10374,7 @@ const customValues = {
         "P": {
             "p1": "5", // AttacksPerHeadshot
             "p2": "2", // BrushAttackTotal
-            "p3": "총 공격력의 60 ~ 100 (레벨에 따라) + 치명타 확률의 100%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>130%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // HeadShotBonusDamage
+            "p3": "총 공격력의 60 ~ 100 (레벨에 따라) + 치명타 확률의 100%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>130%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // HeadShotBonusDamage
             "p4": "35 / 80 / 125 / 170 / 215 (+ 추가 공격력의 30%)", // spell.CaitlynW:HeadshotBonusDamage
             "cooldown": "-",
             "cost": "-",
@@ -10481,7 +10481,7 @@ const customValues = {
             "cost": "40 / 45 / 50 / 55 / 60",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_w_ass.png", "https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_w_slay.png"],
             "stats": {
-                "사거리": "700<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>그림자 암살자 900</div></span></span>",
+                "사거리": "700<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>그림자 암살자 900</div></span></span>",
                 "스킬 폭": "350",
                 "시전시간": "0.55"
             }
@@ -10512,7 +10512,7 @@ const customValues = {
             "cost": "100",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_r2_ass.png", "https://raw.communitydragon.org/latest/game/assets/characters/kayn/hud/icons2d/kayn_r2_slay.png"],
             "stats": {
-                "사거리": "550<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>그림자 암살자 750</div></span></span>",
+                "사거리": "550<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>그림자 암살자 750</div></span></span>",
                 "효과 범위": "300",
                 "시전시간": "0.1"
             }
@@ -10665,7 +10665,7 @@ const customValues = {
         "P": {
             "p1": "20", // AttackConversion*100
             "p2": "총 공격력의 20%", // BasicAttackTOOLTIP
-            "p3": "총 공격력의 40%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:11px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:12px; color:#ff9900; font-weight:bold;'>46%</div><div style='font-size:10px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalStrikeTOOLTIP
+            "p3": "총 공격력의 40%<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; margin-bottom:5px; white-space:nowrap;'>무한의 대검 보유 시</div><div style='font-size:13px; color:#ff9900; font-weight:bold;'>46%</div><div style='font-size:12px; color:#9aa4af; margin-top:5px; white-space:nowrap;'>치명타 피해량 200% → 230%</div></span></span>", // CriticalStrikeTOOLTIP
             "cooldown": "-",
             "cost": "-"
         },
@@ -10722,7 +10722,7 @@ const customValues = {
             "cost": "35",
             "icons": ["https://raw.communitydragon.org/latest/game/assets/characters/corki/hud/icons2d/corki_r_bigone.png"],
             "stats": {
-                "사거리": "1225<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>세 번째 미사일 1500</div></span></span>",
+                "사거리": "1225<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>세 번째 미사일 1500</div></span></span>",
                 "효과 범위": "150",
                 "스킬 폭": "80",
                 "시전시간": "0.175",
@@ -11221,7 +11221,7 @@ const customValues = {
                 "사거리": "900",
                 "스킬 폭": "150",
                 "시전시간": "0.25",
-                "투사체 속도": "2571<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>돌아올 때 3000</div></span></span>"
+                "투사체 속도": "2571<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>돌아올 때 3000</div></span></span>"
             }
         },
         "E": {
@@ -11538,7 +11538,7 @@ const customValues = {
             "p1": "20 / 35 / 50 / 65 / 80", // MaximumBonusAD
             "p2": "30 / 40 / 50 / 60 / 70 (+ 주문력의 30%)", // BaseHeal
             "p3": "0.5 / 0.95 / 1.4 / 1.85 / 2.3 (+ 주문력의 1.2%)", // HealPerFury
-            "p4": "<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:12px; color:#fff; white-space:nowrap;'>최대: 80 / 135 / 190 / 245 / 300 (+ 주문력의 150%)</div></span></span>", // MaximumHeal
+            "p4": "<span class='custom-footnote'>[1]<span class='custom-footnote-content'><div style='font-size:13px; color:#fff; white-space:nowrap;'>최대: 80 / 135 / 190 / 245 / 300 (+ 주문력의 150%)</div></span></span>", // MaximumHeal
             "p5": "10", // RemainingHealthThreshold*100
             "v1": "", // 구분선 아래 피해량 줄 (직접 작성),
             "v2": "",

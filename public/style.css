@@ -191,7 +191,7 @@ main {
 /* ★ 수치 칸에 라벨을 못 넣어서(폭) 열 머리에 한 번만 적는다 */
 .home-tier-colnote {
     margin-left: auto;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-dim);
 }
 
@@ -244,7 +244,7 @@ main {
 }
 
 .home-tier-num {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-faint);
     margin-left: auto;
     white-space: nowrap;
@@ -1747,7 +1747,7 @@ main {
 .pix-badge {
     padding: 2px 4px;
     border-radius: 4px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     color: #fff;
     white-space: nowrap;
@@ -3793,7 +3793,7 @@ main {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 10px;
+        font-size: 11px;
         background: #0f0f1a;
         border: 1px solid rgba(255, 255, 255, 0.15);
     }
@@ -3839,7 +3839,7 @@ main {
         padding-left: 0;
         text-align: left;
         align-items: flex-start;
-        font-size: 10.5px;
+        font-size: 11px;
         gap: 3px;
     }
 
@@ -4292,7 +4292,7 @@ main {
 }
 
 .arena-team-rank {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     width: 14px;
     text-align: center;
@@ -4828,7 +4828,7 @@ main {
 .skin-view-desc {
     margin: 10px auto 0 auto;
     max-width: 640px;
-    font-size: 13.5px;
+    font-size: 14px;
     color: var(--text-muted);
     /* ★ 1.7 이 맞다. 한때 1.5 로 조였는데 **불필요한 조임이었다** (2026-08-13).
        크로마 줄이 2단(59px)이던 시절의 계산이었고, 한 줄(30px)로 합치면서 이미 여유가
@@ -6229,7 +6229,7 @@ main {
     margin-top: 5px;
     transform: translateX(-50%);
     color: var(--text-dim);
-    font-size: 10px;
+    font-size: 11px;
 }
 
 .g-ax-first {
@@ -6245,7 +6245,7 @@ main {
     position: absolute;
     margin-bottom: 8px;
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: 11px;
     white-space: nowrap;
 }
 
@@ -6310,7 +6310,7 @@ main {
 .g-cmp {
     display: block;
     margin-top: 1px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: normal;
     font-style: normal;
 }
@@ -6822,7 +6822,7 @@ main {
 }
 .patch-page-pbe-mark i {
     font-style: normal;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-faint);
 }
 .patch-page-pbe-mark.is-detail { color: var(--accent); }
@@ -6835,7 +6835,7 @@ main {
 .patch-page-desc {
     overflow: hidden;
     color: var(--text-muted);
-    font-size: 12.5px;
+    font-size: 13px;
     font-style: normal;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -6850,7 +6850,7 @@ main {
     border: 1px solid rgba(167, 139, 250, 0.35);
     border-radius: 6px;
     color: var(--accent);
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 700;
 }
 
@@ -7845,7 +7845,7 @@ main {
     .codex-rune-node { width: 78px; padding: 5px 2px; }
     .codex-rune-icon { width: 34px; height: 34px; }
     .codex-rune-node.is-key .codex-rune-icon { width: 46px; height: 46px; }
-    .codex-rune-label { font-size: 10px; }
+    .codex-rune-label { font-size: 12px; }
 
     /* ★ 폰에서는 탭과 무관하게 폭을 다 쓴다 (데스크톱 고정폭은 2026-08-27 에 없앴고
        선택자는 남겨 둔다 — 다시 탭별 폭을 줄 때 여기도 같이 봐야 하는 자리라서). */
@@ -7872,9 +7872,9 @@ main {
     #patch-container { margin: 20px auto; }
     .patch-page-item { gap: 10px; padding: 10px 12px; }
     .patch-page-thumb { width: 96px; height: 54px; }
-    .patch-page-title { font-size: 13.5px; }
+    .patch-page-title { font-size: 14px; }
     .patch-page-desc { display: none; }
-    .patch-page-ver { padding: 3px 7px; font-size: 11.5px; }
+    .patch-page-ver { padding: 3px 7px; font-size: 12px; }
 
     .codex-tabs { padding: 0; }
     .codex-tab { flex: 1; padding: 9px 6px; }
@@ -8349,7 +8349,7 @@ main {
 }
 
 .pi-champ-tag {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--accent);
 }
 
@@ -9042,7 +9042,7 @@ main {
     border-radius: 4px;
     background: rgba(96, 165, 250, 0.18);
     color: #60a5fa;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 @media (hover: hover) {
