@@ -2766,7 +2766,14 @@ async function startJobs() {
             process.exit(3);
         }
         // ★ 마무리 — 새 셈(cnt2)을 cnt 로 옮긴다. 이번에 아무에게서도 안 보인 판(cnt2 없음)은 손대지 않는다.
-        const moved = await MatchSeen.updateMany({ day, cnt2: { $exists: true } }, [{ $set: { cnt: '$cnt2' } }, { $unset: 'cnt2' }]);
+        // ★★ mongoose 9 부터는 업데이트에 배열(집계 파이프라인)을 넘길 때 `updatePipeline: true` 를 줘야 한다 (2026-09-12).
+        //   8 까지는 그냥 됐다. 안 주면 "Cannot pass an array to query updates unless the `updatePipeline` option is set."
+        //   가 던져지고 startJobs 가 통째로 죽는다 — 훑기를 다 하고 마지막 한 줄에서 터져 cnt2 가 안 옮겨졌다.
+        const moved = await MatchSeen.updateMany(
+            { day, cnt2: { $exists: true } },
+            [{ $set: { cnt: '$cnt2' } }, { $unset: 'cnt2' }],
+            { updatePipeline: true }
+        );
         const left = await MatchSeen.countDocuments({ day, done: { $ne: true }, cnt: { $gte: STAT_MIN_K } });
         console.log(`[Rescan] 끝 — ${seen.toLocaleString()}명 · 관측 ${sightings.toLocaleString()}건 · cnt 갱신 ${moved.modifiedCount.toLocaleString()}판 · 5명 이상 미처리 ${left.toLocaleString()}판 (평소 수집이 이어받는다)`);
         process.exit(0);
