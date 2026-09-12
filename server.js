@@ -89,6 +89,7 @@ const rankSnapshotSchema = new mongoose.Schema({
     //   등장 횟수(cnt)가 하한조차 못 되어 어떤 판이 5명 이상인지 모른다.
     scanDone: { type: Boolean, default: false },
     rescanDone: { type: [String], default: undefined },   // ★ 다시 훑기(RESCAN_DAY) 진행 표시 — 끊겨도 이어 돈다
+    rescanHeartbeat: { type: Date },                       // ★ 다시 훑기가 살아 있다는 표시 — 3분 안이면 두 벌째는 안 뜬다
     // ★ 7일이다 (2026-09-10, 5 → 7). matchseens(5일) 이 남아 있는 동안은 그 날짜 명단도 있어야
     //   수집이 k 를 제대로 세고 scanDone 을 볼 수 있다. 하루 0.9MB 라 7일이면 6MB 남짓.
     createdAt: { type: Date, expires: '7d', default: Date.now }
@@ -2672,6 +2673,14 @@ async function startJobs() {
         // ★ `RESCAN_LIMIT=3` 은 연습용 — 앞 N명만 보고 코드 3 으로 끝낸다 (cnt 로 옮기지 않는다). 본 실행이 이어받는다
         const LIMIT = Number(process.env.RESCAN_LIMIT) || 0;
         const targets = snap.puuids.filter(p => !doneSet.has(p)).slice(0, LIMIT || undefined);
+        // ★★ 두 벌이 돌면 같은 사람을 두 번 세어 cnt2 가 부풀린다 (2026-09-12). 3분 안에 살아 있다는 표시가 있으면 물러난다 —
+        //   코드 0 으로 끝내서 실행기가 다시 띄우지 않게 한다 (실행기는 코드 3 만 재시작한다).
+        if (snap.rescanHeartbeat && Date.now() - new Date(snap.rescanHeartbeat).getTime() < 3 * 60 * 1000) {
+            console.log(`[Rescan] ${day} 다시 훑기가 이미 돌고 있다 (${new Date(snap.rescanHeartbeat).toISOString()}) — 이 실행은 물러난다`);
+            process.exit(0);
+        }
+        const beat = () => RankSnapshot.updateOne({ day }, { $set: { rescanHeartbeat: new Date() } }).catch(() => { });
+        await beat();
         const from = Math.floor(Date.parse(`${day}T00:00:00+09:00`) / 1000);
         const to = from + 86400;
         console.log(`[Rescan] ${day} 명단 ${snap.puuids.length.toLocaleString()}명 중 남은 ${targets.length.toLocaleString()}명 · 간격 ${GAP}ms → 예상 ${(targets.length * GAP / 3600000).toFixed(1)}시간`);
@@ -2680,6 +2689,7 @@ async function startJobs() {
         // 감시견 — 백필과 같다 (10분 무진행이면 코드 3, 실행기가 다시 띄운다)
         let wdSeen = -1, wdMoved = Date.now();
         const watchdog = setInterval(() => {
+            beat();
             if (seen !== wdSeen) { wdSeen = seen; wdMoved = Date.now(); return; }
             if (Date.now() - wdMoved > 10 * 60 * 1000) {
                 console.error(`[Rescan] 10분째 진행이 없다 (${seen}/${targets.length}) — 멈춘 것으로 보고 종료한다. 다시 띄우면 이어진다`);
@@ -2715,16 +2725,26 @@ async function startJobs() {
                 if (fail <= 5) console.warn(`[Rescan] ${puuid.slice(0, 8)} 포기 ${err?.response?.status || err?.message}`);
                 // 포기한 사람은 진행 표시에 안 넣는다 — 다시 띄우면 그 사람부터 다시 본다
             } else {
-                if (ids.length) {
-                    await MatchSeen.bulkWrite(ids.map(id => ({
-                        updateOne: {
-                            filter: { matchId: id },
-                            update: { $inc: { cnt2: 1 }, $setOnInsert: { day, cnt: 0, createdAt: new Date() } },
-                            upsert: true
-                        }
-                    })), { ordered: false });
-                    sightings += ids.length;
+                // ★ DB 쓰기가 막히면(용량 잠금 등) 죽지 말고 1분씩 쉬며 다시 쓴다 — 죽으면 이 사람 몫을 잃는다.
+                //   진행(seen)이 안 늘면 감시견이 10분 뒤 코드 3 으로 끝내고 실행기가 다시 띄운다.
+                let wrote = !ids.length;
+                for (let w = 0; w < 10 && !wrote; w++) {
+                    try {
+                        await MatchSeen.bulkWrite(ids.map(id => ({
+                            updateOne: {
+                                filter: { matchId: id },
+                                update: { $inc: { cnt2: 1 }, $setOnInsert: { day, cnt: 0, createdAt: new Date() } },
+                                upsert: true
+                            }
+                        })), { ordered: false });
+                        wrote = true;
+                        sightings += ids.length;
+                    } catch (e) {
+                        console.warn(`[Rescan] DB 쓰기 실패 — 60초 쉬고 다시: ${e.message.slice(0, 80)}`);
+                        await sleep(60000);
+                    }
                 }
+                if (!wrote) { fail++; await sleep(GAP); continue; }
                 batch.push(puuid);
             }
             seen++;
