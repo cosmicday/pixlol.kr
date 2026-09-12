@@ -134,6 +134,14 @@ const apexDriftSchema = new mongoose.Schema({
     gMax: { type: Number },      // 그마 최고 LP  — cMin 보다 높으면 그만큼 흐른 것이다
     gMin: { type: Number },      // 그마 최저 LP
     mMax: { type: Number },      // 마스터 최고 LP
+    // ★★ 등수 기준 컷 (2026-09-12 추가). **컷라인은 이 두 값으로 낸다.**
+    //   티어 최저 LP(cMin/gMin)로 내면 **딱지가 밀린 사람이 섞이는 순간 통째로 끌려 내려간다** —
+    //   라이엇은 티어 딱지를 밤에 한 번만 다시 박으므로, 그 뒤 LP 가 내려간 사람은
+    //   "그마 딱지 + 1200등 점수" 상태로 남는다. 9/1 그마컷이 1183 으로 찍힌 게 그것이다
+    //   (실제 1000등은 1333, 그 1183 짜리는 다음 날 마스터 959 로 떨어졌다).
+    //   등수 기준은 그 사람이 1000등 밖에 있으므로 영향을 안 받는다. 자세한 건 docs/랭킹.md 의 9/12 절.
+    lp300: { type: Number },     // 300등의 LP  = 챌린저 컷
+    lp1000: { type: Number },    // 1000등의 LP = 그랜드마스터 컷
     createdAt: { type: Date, expires: '7d', default: Date.now }
 });
 apexDriftSchema.index({ t: -1 });
@@ -143,23 +151,29 @@ const ApexDrift = mongoose.model('ApexDrift', apexDriftSchema);
 // 컷라인 그래프용 — 하루 한 줄 (2026-08-18 신설 · 2026-08-19 정의 변경)
 //   랭킹 탭 오른쪽 그래프가 읽는다. ★ TTL 이 없다 (하루 한 줄 x 100B, 1년 36KB).
 //
-//   ★★ **등수 기준이 아니라 티어 소속 기준이다** (2026-08-19).
-//     `lpChal` = 챌린저 최저 LP · `lpGm` = 그마 최저 LP.
-//     예전엔 `lp300`/`lp1000`(300등·1000등의 LP)이었는데, 재계산 전에 재면 그 300등이
-//     **그마**이고 1000등이 **마스터**라 "티어 컷" 이 아니었다 — 8/18 실측이
-//     300등 1830 / 챌린저 최저 1773, 1000등 1330 / 그마 최저 1175 로 갈렸다.
-//   ★★ **필드 이름을 같이 바꾼 이유가 이것이다.** 이름을 두고 뜻만 바꾸면 옛 점과 새 점이
-//     한 그래프에 섞여도 아무도 못 알아챈다.
-//   ★ 화면의 "현재 커트라인" 숫자는 **여전히 300등·1000등의 LP** 다 (app.js 의 `lpAt`).
-//     저건 실시간 값이라 "지금 몇 점이면 300등 안인가" 라는 뜻이고 목적이 다르다 —
-//     **일부러 다른 기준이니 맞추려 하지 말 것.**
+//   ★★ **등수 기준이다 — 300등 / 1000등의 LP** (2026-09-12 확정. 8/19~9/12 은 티어 소속 기준이었다).
+//     라이엇 상위 티어는 **상위 300등 = 챌린저 · 301~1000등 = 그마**라 그게 컷의 정의다.
+//     `lpChal` = 300등의 LP · `lpGm` = 1000등의 LP.
+//   ★★ **왜 되돌렸나**: 티어 소속 기준(그마 최저 LP)은 **딱지가 밀린 사람 한 명에 통째로 끌려간다.**
+//     9/1 그마컷이 1183 으로 찍혔는데 진짜 1000등은 1333 이었다 (그 1183 짜리는 강등 대기였고
+//     다음 날 마스터 959). 열흘 중 다섯 날에 그런 낙오자가 있었다.
+//   ★★ **8/19 에 등수 기준을 버린 근거는 「기준」이 아니라 「시각」 문제였다.** 그때 실측한
+//     300등 1830 / 챌린저 최저 1773 은 **23:45(재계산 10분 전)** 값이라 등수와 딱지가 한참
+//     어긋난 순간이었다. 같은 날 표본 선택을 `c300+g1000` 최대(=재계산 직후)로 바꾸면서 그건
+//     이미 해결됐고, 그 뒤로는 두 기준이 **깨끗한 날엔 0~2 LP 차이**다 (9/1~9/11 실측).
+//     기준까지 같이 바꾼 것이 이번 구멍을 만들었다.
+//   ★ 그래서 화면의 "현재 커트라인" 숫자(app.js 의 `lpAt(300)`/`lpAt(1000)`)와 **기준이 같아졌다.**
+//     저건 실시간 값이고 이건 그날 재계산 직후 값이라 시각만 다르다.
+//   ★ `src` 가 그 줄을 어느 규칙으로 냈는지 적는다 — `tier`(8/17~8/31, 소급 불가) ·
+//     `rank-lph`(9/1~9/11, lphistories 자정 명단으로 되찍음) · `rank`(9/12~, 잡이 직접).
 //   ★ apexdrifts 의 `c300`/`g1000` 은 **인원 수**라 이름만 비슷하고 뜻이 다르다.
 // ==========================================
 const rankCutoffSchema = new mongoose.Schema({
     day: { type: String, required: true, unique: true },   // 한국시간 날짜 (YYYY-MM-DD)
     t: { type: Date, default: Date.now },                  // 채택한 표본의 시각
-    lpChal: { type: Number },    // 챌린저 최저 LP = 챌린저 컷
-    lpGm: { type: Number }       // 그마 최저 LP   = 그랜드마스터 컷
+    lpChal: { type: Number },    // 300등의 LP  = 챌린저 컷
+    lpGm: { type: Number },      // 1000등의 LP = 그랜드마스터 컷
+    src: { type: String }        // 어느 규칙으로 낸 줄인가 (tier / rank-lph / rank)
 });
 const RankCutoff = mongoose.model('RankCutoff', rankCutoffSchema);
 
@@ -939,15 +953,21 @@ async function saveApexDrift() {
     const c1000 = top1000.filter(p => p.tier === 'challengerleagues').length;
     const g1000 = top1000.filter(p => p.tier === 'grandmasterleagues').length;
 
+    // ★ 명단은 LP 내림차순이라 자리를 그대로 세면 등수다. 위 가드(RANK_SET_MIN=5000 + 티어 셋 다 있음)
+    //   를 지났으니 1000명은 보장된다.
+    const lp300 = challengerList[299]?.leaguePoints;
+    const lp1000 = challengerList[999]?.leaguePoints;
+
     await ApexDrift.create({
-        t: new Date(), c300, c1000, g1000,
+        t: new Date(), c300, c1000, g1000, lp300, lp1000,
         cMin: c.min, gMax: g.max, gMin: g.min, mMax: m.max
     });
 
     // 0 으로 떨어지는 순간이 곧 티어 재계산 시각이다
     console.log(`[Apex] 어긋남 챌린저 ${300 - c300}명(300등) · ${300 - c1000}명(1000등)` +
         ` · 그마 ${700 - g1000}명` +
-        ` (챌 최저 ${c.min} / 그마 최고 ${g.max} / 마스터 최고 ${m.max})`);
+        ` (컷 300등 ${lp300} / 1000등 ${lp1000}` +
+        ` · 챌 최저 ${c.min} / 그마 최고 ${g.max} / 마스터 최고 ${m.max})`);
 
 }
 
@@ -958,13 +978,15 @@ async function saveApexDrift() {
 //
 //   ★★ **고르는 기준은 `c300 + g1000` 이 가장 큰 표본이다.**
 //     c300 = 상위 300등 안의 챌린저 수(최대 300) · g1000 = 상위 1000등 안의 그마 수(최대 700).
-//     **둘 다 클수록 LP 순위와 티어 소속이 덜 어긋난 순간**이고, 그 순간의 티어 최저 LP 가
+//     **둘 다 클수록 LP 순위와 티어 소속이 덜 어긋난 순간**이고, 그 순간의 **300등·1000등 LP** 가
 //     곧 그날의 진짜 컷이다. 합이 999~1000 이면 재계산 직후를 집은 것이다.
+//     ★ 꺼내 쓰는 값은 `lp300`/`lp1000` 이다 (2026-09-12). `cMin`/`gMin` 은 어긋남을
+//       보는 눈금으로만 남겨 뒀다 — 그걸 컷으로 쓰면 딱지가 밀린 한 명에 끌려간다.
 //     · 동점이면 **먼저 나온 표본**을 쓴다 (`>` 비교) — 재계산 직후 가장 이른 시점이다.
 //   ★★ 예전 방식(창의 **첫 성공 한 줄**을 그대로 저장)이 왜 틀렸나: 23:45 는 재계산 10분
 //     전이라 **하루 중 어긋남이 가장 큰 순간**이었다. 8/18 실측이 챌린저 8명·그마 20명
 //     어긋난 상태였고, 그래서 "300등의 LP"(1830)가 실제 챌린저 컷(1773)과 57 차이 났다.
-//   ★★ **표본을 따로 들고 있지 않는다** — `apexdrifts` 가 이미 분마다 c300·g1000·cMin·gMin
+//   ★★ **표본을 따로 들고 있지 않는다** — `apexdrifts` 가 이미 분마다 c300·g1000·lp300·lp1000
 //     을 저장하므로 그걸 되읽는다. 재시작해도 안전하고, **규칙이 바뀌면 소급해서 다시 뽑을 수
 //     있다** (apexdrifts TTL 7일 안에서). 백필로 8/17·8/18 을 이 규칙으로 다시 찍었다.
 //   ★★ **명단 갱신 잡에 안 묶여 있다 (2026-08-19).** `scheduleCutoffJob()` 이 **한국시간
@@ -988,7 +1010,8 @@ async function pickCutoffSample(day) {
     const to = new Date(from.getTime() + CUTOFF_WINDOW_MIN * 60000);
 
     const rows = await ApexDrift.find({ t: { $gte: from, $lt: to } }).sort({ t: 1 }).lean();
-    const ok = rows.filter(r => typeof r.cMin === 'number' && typeof r.gMin === 'number'
+    // ★ lp300/lp1000 이 있는 줄만 — 2026-09-12 이전 형식(cMin/gMin 뿐)을 집으면 옛 규칙 값이 섞인다
+    const ok = rows.filter(r => typeof r.lp300 === 'number' && typeof r.lp1000 === 'number'
         && typeof r.c300 === 'number' && typeof r.g1000 === 'number');
     if (!ok.length) return null;
 
@@ -1009,12 +1032,12 @@ async function saveRankCutoff() {
 
     const r = await RankCutoff.updateOne(
         { day },
-        { $setOnInsert: { day, t: best.t, lpChal: best.cMin, lpGm: best.gMin } },
+        { $setOnInsert: { day, t: best.t, lpChal: best.lp300, lpGm: best.lp1000, src: 'rank' } },
         { upsert: true }
     );
     const hhmm = new Date(best.t.getTime() + 9 * 3600000).toISOString().slice(11, 19);
     if (r.upsertedCount) {
-        console.log(`[Cutoff] ${day} 챌린저컷 ${best.cMin} / 그마컷 ${best.gMin}` +
+        console.log(`[Cutoff] ${day} 챌린저컷 ${best.lp300} / 그마컷 ${best.lp1000}` +
             ` (표본 ${n}개 중 ${hhmm} 채택 · c300+g1000=${best.c300 + best.g1000})`);
     } else {
         console.log(`[Cutoff] ${day} 는 이미 있다 — 건너뜀`);
