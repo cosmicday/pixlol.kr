@@ -1186,8 +1186,8 @@ function renderSearchFail(message) {
     showErrorToast(message);
     const list = document.getElementById('game-list');
     if (!list) return;
-    list.innerHTML = `<div class="stats-empty">${escapeHtml(message).replace(/\n/g, '<br>')}<br>
-        <a href="/" data-link class="stat-back">← 홈으로</a></div>`;
+    const [failTitle, ...failRest] = String(message).split('\n');
+    list.innerHTML = emptyBoxHtml(failTitle, failRest.join(' '), null, { text: '← 홈으로', href: '/', internal: true });
 }
 
 // ★ 참가자 이름 클릭 → 그 사람 검색 (2026-09-03 감사 H-4).
@@ -4401,7 +4401,7 @@ async function showVersusPage(engA, engB, relKey) {
         .find(k => String(championIdMap[k]).toLowerCase() === String(name || '').toLowerCase()));
     const a = idOf(engA), b = idOf(engB);
     if (!Number.isFinite(a) || !Number.isFinite(b)) {
-        box.innerHTML = `<div class="stats-empty">알 수 없는 챔피언입니다. <a href="/stats" class="stat-back">← 통계로</a></div>`;
+        box.innerHTML = emptyBoxHtml('알 수 없는 챔피언입니다', '주소의 챔피언 이름을 확인해 주세요.', null, { text: '← 통계로', href: '/stats', internal: true });
         return;
     }
 
@@ -4415,7 +4415,7 @@ async function showVersusPage(engA, engB, relKey) {
             ? archivedMatchupsFor(data.scope, a)
             : await fetch(`/api/champion-matchups?scope=${encodeURIComponent(data.scope)}&champ=${a}`).then(r => r.ok ? r.json() : null);
     } catch (e) {
-        box.innerHTML = `<div class="stats-empty">통계를 불러오지 못했습니다. <a href="/stats" class="stat-back">← 통계로</a></div>`;
+        box.innerHTML = emptyBoxHtml('통계를 불러오지 못했습니다', '잠시 뒤 다시 열어 주세요.', null, { text: '← 통계로', href: '/stats', internal: true });
         return;
     }
 
@@ -4596,7 +4596,7 @@ async function showChampStatPage(engId, laneKey) {
     const champ = Number(Object.keys(championIdMap)
         .find(k => String(championIdMap[k]).toLowerCase() === String(engId).toLowerCase()));
     if (!Number.isFinite(champ)) {
-        box.innerHTML = `<div class="stats-empty">알 수 없는 챔피언입니다.</div>`;
+        box.innerHTML = emptyBoxHtml('알 수 없는 챔피언입니다', '주소의 챔피언 이름을 확인해 주세요.', null, { text: '← 통계로', href: '/stats', internal: true });
         return;
     }
     const eng = championIdMap[champ];
@@ -4619,7 +4619,7 @@ async function showChampStatPage(engId, laneKey) {
             }
         }
     } catch (e) {
-        box.innerHTML = `<div class="stats-empty">통계를 불러오지 못했습니다.</div>`;
+        box.innerHTML = emptyBoxHtml('통계를 불러오지 못했습니다', '잠시 뒤 다시 열어 주세요.', null, { text: '← 통계로', href: '/stats', internal: true });
         return;
     }
     window.statScope = data.scope;
@@ -4632,7 +4632,7 @@ async function showChampStatPage(engId, laneKey) {
     const mine = (data.rows || []).filter(r => r.champ === champ);
     const all = mine.find(r => r.pos === -1) || mine[0];
     if (!all || !all.games) {
-        box.innerHTML = `<div class="stats-empty">${kor} 의 표본이 없습니다. <a href="/stats" class="stat-back">← 통계로</a></div>`;
+        box.innerHTML = emptyBoxHtml(`${kor} 의 표본이 없습니다`, '이번 패치에서 집계된 판이 아직 없습니다.', null, { text: '← 통계로', href: '/stats', internal: true });
         return;
     }
     const byLane = mine.filter(r => r.pos >= 0 && r.games).sort((a, b) => a.pos - b.pos);
@@ -6677,7 +6677,7 @@ async function showMasters(requestedChampId = null) {
     hideAllContainers();
     const mastersContainer = document.getElementById('masters-container');
     mastersContainer.style.display = "block";
-    mastersContainer.innerHTML = "<div style='text-align:center; padding:100px 0; min-height:100vh; color:var(--text-muted);'>데이터를 준비 중입니다...</div>";
+    mastersContainer.innerHTML = "<div style='text-align:center; padding:100px 0; color:var(--text-muted);'>데이터를 준비 중입니다...</div>";   // min-height:100vh 제거 (S-1 잔여, 2026-09-12)
 
     try {
         const ddragonRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/data/ko_KR/champion.json`);
@@ -6825,9 +6825,9 @@ function renderMasterTable() {
                         <th style="width: 8%; text-align: center;">#</th>
                         <th style="width: 40%;">소환사명</th>
                         <th style="width: 16%; cursor: pointer;" onclick="sortMasterData('tier')">티어 ${getSortIcon('tier')}</th>
-                        <th style="width: 12%; text-align: center; cursor: pointer;" onclick="sortMasterData('games')">판수 ${getSortIcon('games')}</th>
-                        <th style="width: 12%; text-align: center; cursor: pointer;" onclick="sortMasterData('winRate')">승률 ${getSortIcon('winRate')}</th>
-                        <th style="width: 12%; text-align: center; cursor: pointer;" onclick="sortMasterData('kda')">평점 ${getSortIcon('kda')}</th>
+                        <th style="width: 12%; text-align: right; cursor: pointer;" onclick="sortMasterData('games')">판수 ${getSortIcon('games')}</th>
+                        <th style="width: 12%; text-align: right; cursor: pointer;" onclick="sortMasterData('winRate')">승률 ${getSortIcon('winRate')}</th>
+                        <th style="width: 12%; text-align: right; cursor: pointer;" onclick="sortMasterData('kda')">평점 ${getSortIcon('kda')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -6851,9 +6851,9 @@ function renderMasterTable() {
                     </div>
                 </td>
                 <td><div class="master-tier"><span class="tier-badge ${tierBadgeClass}" style="white-space: nowrap;">${fullTierName}</span> ${lpDisplay}</div></td>
-                <td style="text-align: center; color: var(--text-bright);">${player.games}</td>
-                <td style="text-align: center; color: #10b981; font-weight: 700;">${Number(player.winRate).toFixed(2)}%</td>
-                <td style="text-align: center; color: var(--text-bright); font-weight: 700;">${Number(player.kda).toFixed(2)}</td>
+                <td style="text-align: right; color: var(--text-bright); font-variant-numeric: tabular-nums;">${player.games}</td>
+                <td style="text-align: right; color: #10b981; font-weight: 700; font-variant-numeric: tabular-nums;">${Number(player.winRate).toFixed(2)}%</td>
+                <td style="text-align: right; color: var(--text-bright); font-weight: 700; font-variant-numeric: tabular-nums;">${Number(player.kda).toFixed(2)}</td>
             </tr>
         `;
     });
@@ -8512,7 +8512,8 @@ async function showChampions(requestedChampId = null, classicMode = false) {
         activeChampRoles.clear();
 
         if (champList.length === 0) {
-            champsContainer.innerHTML = `<div style='text-align:center; padding:100px 0; min-height:60vh; color:var(--text-muted);'>표시할 챔피언이 없습니다.</div>`;
+            // 공통 빈 상태 상자 (M-8 잔여, 2026-09-12). min-height:60vh 도 같이 뺀다 (S-1 과 같은 이유)
+            champsContainer.innerHTML = emptyBoxHtml('표시할 챔피언이 없습니다', '챔피언 자료를 못 받았습니다. 잠시 뒤 다시 열어 주세요.');
             return;
         }
 
@@ -10229,14 +10230,11 @@ async function showCandidates(name) {
     } catch (e) { }
 
     if (!list || list.length === 0) {
-        box.innerHTML = `
-            <div class="cand-wrap">
-                <div style="text-align:center; padding:70px 20px; color:var(--text-muted); line-height:1.9;">
-                    <div style="font-size: 17px; color:#fff; margin-bottom:12px;">'${escapeHtml(name)}' 님을 찾지 못했습니다.</div>
-                    태그까지 함께 입력하면 정확하게 찾을 수 있습니다.<br>
-                    <span style="font-size:13px; color:var(--text-faint);">예) ${escapeHtml(name)}#KR1</span>
-                </div>
-            </div>`;
+        // 공통 빈 상태 상자 (M-8 잔여, 2026-09-12): 여기만 맨몸 텍스트로 남아 있던 네 번째 문법이었다
+        box.innerHTML = `<div class="cand-wrap">${emptyBoxHtml(
+            `'${name}' 님을 찾지 못했습니다`,
+            `태그까지 함께 입력하면 정확하게 찾을 수 있습니다. 예) ${name}#KR1`,
+            null, { text: '← 홈으로', href: '/', internal: true })}</div>`;
         return;
     }
 
@@ -10461,9 +10459,13 @@ window.copyMatchLink = async function (e, btn, matchId) {
 // ★ 빈 상태·오류 상자 — 공통 DoguUI.emptyHtml (DOGU_UI.md 15-2, 2026-09-11 C편).
 //   retryId 를 주면 그 id 의 「다시 시도」 버튼을 그리고, 클릭은 bindRetry 로 부르는 쪽이 건다.
 //   예전엔 .stats-empty(맨몸 글자) · .mythic-empty(점선 상자) · .patch-page-empty(맨몸+링크) 세 문법이었다 (M-8)
-function emptyBoxHtml(title, body, retryId) {
-    if (!window.DoguUI) return `<div class="stats-empty">${escapeHtml(title)}${body ? '<br>' + escapeHtml(body) : ''}</div>`;
-    return DoguUI.emptyHtml({ icon: '📭', title, body: body || '', retry: retryId ? { text: '다시 시도', id: retryId } : null });
+function emptyBoxHtml(title, body, retryId, link) {
+    if (!window.DoguUI) return `<div class="stats-empty">${escapeHtml(title)}${body ? '<br>' + escapeHtml(body) : ''}${link ? `<br><a href="${escapeHtml(link.href)}" class="stat-back">${escapeHtml(link.text)}</a>` : ''}</div>`;
+    return DoguUI.emptyHtml({
+        icon: '📭', title, body: body || '',
+        link: link || null, linkAttr: link && link.internal ? 'data-link' : '',
+        retry: retryId ? { text: '다시 시도', id: retryId } : null
+    });
 }
 function bindRetry(id, fn) {
     const b = document.getElementById(id);

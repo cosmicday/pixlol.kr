@@ -1225,8 +1225,10 @@ main {
     background-color: var(--lose);
 }
 
-.tl-obj-marker:hover .tl-obj-marker-icon {
-    transform: scale(1.3);
+@media (hover: hover) {   /* 폰 탭 잔상 방지 (2026-09-12 E·F) */
+    .tl-obj-marker:hover .tl-obj-marker-icon {
+        transform: scale(1.3);
+    }
 }
 
 .tl-toggle-row {
@@ -4018,7 +4020,7 @@ main {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 11px;
+        font-size: 12px;   /* 11 → 12 (m-2, 2026-09-12): 폰 전용 축소 금지 (13절). 데스크와 같은 12 */
         background: #0f0f1a;
         border: 1px solid rgba(255, 255, 255, 0.15);
     }
@@ -4064,7 +4066,7 @@ main {
         padding-left: 0;
         text-align: left;
         align-items: flex-start;
-        font-size: 11px;
+        font-size: 12px;   /* 11 → 12 (m-2, 2026-09-12): .pix-game 상속값과 같게 — 폰 전용 축소 금지 (13절) */
         gap: 3px;
     }
 
@@ -4301,9 +4303,9 @@ main {
 .cand-wrap {
     max-width: 760px;
     margin: 40px auto;
-    padding-bottom: 60px;
+    padding: 0 16px 60px;   /* 좌우 16 (규격 14-5, 2026-09-12): 폰에서 상자가 화면 끝에 붙었다 */
     animation: fadeIn 0.4s ease;
-    min-height: 60vh;
+    /* min-height: 60vh 제거 (S-1 과 같은 이유, 2026-09-12): 후보가 0~2명일 때 화면 하나가 통째로 비었다 */
 }
 
 .cand-count {
@@ -5565,7 +5567,7 @@ main {
 
 .rank-table .rank-lp {
     width: 100px;
-    text-align: center;
+    text-align: right;   /* 가운데 → 오른쪽 (M-2 잔여, 2026-09-12): 숫자 열 규격 14-4 */
     font-weight: 700;
 }
 
@@ -5580,7 +5582,8 @@ main {
 }
 
 .rank-table th.rank-wr {
-    text-align: center;
+    text-align: left;   /* 가운데 → 값(td)과 같은 왼쪽 (2026-09-12 E·F): 「54.1% (852W 723L)」 복합 셀이라 오른쪽 정렬 대상이 아니다 */
+    padding-left: 20px;
 }
 
 /* ★★ 폭을 정할 때 기준은 가장 긴 전적 표기다 — 1.1만 명 중 최장이
@@ -5880,7 +5883,9 @@ main {
      지정값보다 넓어진다 — 승률 칸이 173 지정인데 195px 이던 게 그 증상이었다.
      칸 폭을 바꾸면 여기 합계도 같이 고칠 것. */
 #result-container.is-ranking {
-    max-width: calc(var(--dogu-wrap) - 32px);   /* 공통 1120 − 좌우 16 (2026-09-10) */
+    /* 내용 폭은 그대로 1168 — 통을 --dogu-wrap(1200) 으로 두고 좌우 16 을 패딩이 먹는다 (2026-09-12 E·F, 14-5).
+       calc(-32) + 패딩 0 이던 옛 꼴은 파일 끝 E·F 절의 좌우 16 과 겹쳐 내용이 1136 으로 좁아졌을 것이다 */
+    max-width: var(--dogu-wrap);
 }
 
 
@@ -6145,6 +6150,7 @@ main {
         max-width: none;
     }
 
+    .rank-table th.rank-wr,
     .rank-table td.rank-wr {
         text-align: center;
         padding-left: 4px;
@@ -6212,7 +6218,7 @@ main {
 .stat-table thead th {
     padding: 0 6px 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-muted);
+    color: var(--text-faint);   /* muted → faint (규격 14-4 표 머리, 2026-09-12): 다른 표 셋과 같은 단 */
     font-size: 12px;
     font-weight: 700;
     text-align: right;
@@ -6521,8 +6527,10 @@ main {
 
 /* 커서가 그래프 위에 있으면 고정 끝 라벨을 감춘다.
    안 그러면 18레벨 점에 커서를 올렸을 때 "Lv.18 · 2356" 과 "2356" 이 겹쳐 찍힌다. */
-.g-plot:hover .g-end {
-    opacity: 0;
+@media (hover: hover) {   /* 폰에서 한 번 누르면 양 끝 라벨이 영영 사라졌다 (2026-09-12 E·F) */
+    .g-plot:hover .g-end {
+        opacity: 0;
+    }
 }
 
 .g-end {
@@ -8085,7 +8093,7 @@ main {
     gap: 5px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 9px;
+    border-radius: var(--dogu-r-ctl);   /* 9 → 8 토큰 (2026-09-12 E·F): 계단 밖 반경 */
     padding: 6px 6px 5px;
 }
 
@@ -8948,7 +8956,7 @@ main {
     left: 4px;
     transform: translateY(-100%);
     padding-bottom: 2px;
-    font-size: 11px;
+    font-size: 12px;   /* 11 → 12 (m-2, 2026-09-12): 축 눈금이 아니라 읽는 라벨 */
     color: var(--text-faint);
     white-space: nowrap;
 }
@@ -8988,9 +8996,9 @@ main {
 #duo-container,
 #trend-container {
     display: none;
-    max-width: calc(var(--dogu-wrap) - 32px);   /* 공통 1120 − 좌우 16 (2026-09-10) */
-    margin: 40px auto;
-    padding-bottom: 50px;
+    max-width: var(--dogu-wrap);   /* calc(-32) + 패딩 0 → 통 1200 + 좌우 16 (2026-09-12 E·F, 14-5). 내용 폭은 그대로 1168 */
+    margin: var(--dogu-page-top) auto 0;   /* 40 → 24 (14-5 페이지 첫 요소 위. 다른 통은 A~D 에서 이미 토큰) */
+    padding-bottom: var(--dogu-page-bottom);   /* 50 → 60 (14-5 페이지 하단) */
     animation: fadeIn 0.6s ease;
 }
 
@@ -9118,7 +9126,7 @@ main {
 
 @media (max-width: 768px) {
     #duo-container,
-    #trend-container { margin: 20px auto; padding: 0 16px 40px; }
+    #trend-container { margin: var(--dogu-page-top) auto 0; padding: 0 16px 40px; }   /* 20 → 24 (다른 폰 통과 같은 토큰) */
     .duo-pair { gap: 5px; padding-left: 8px; }
     .duo-champ { gap: 5px; font-size: 12px; }
     .duo-champ img { width: 26px; height: 26px; }
@@ -9498,7 +9506,7 @@ main {
 
 /* 폰에서는 칩·필터를 34 로 (2026-09-10 통일 3편, DOGU_UI.md 14-3) */
 @media (max-width: 768px) {
-    .filter-btn, .champ-filter-btn, .stats-band-btn, .profile-fav-btn, .codex-cat, .codex-view-btn { height: 34px; }
+    .filter-btn, .champ-filter-btn, .stats-band-btn, .profile-fav-btn, .codex-cat, .codex-view-btn { height: var(--dogu-ctl-md); }
 }
 
 /* =========================================
@@ -9531,4 +9539,31 @@ main {
 /* 결정 2: 세그먼트 탭은 28 알약, 폰(≤768)에서는 34 (규격 14-3) */
 @media (max-width: 768px) {
     .codex-tab, .mshop-tab, .duo-tab, .stats-filter-btn { height: var(--dogu-ctl-md); }
+}
+
+/* =========================================
+   취약점 수정 E·F 편 (2026-09-12) — 잔여·경미. 여기도 소스 순서로 앞 규칙을 이겨야 하는 것들
+   ========================================= */
+/* 14-5 폭·여백: 페이지 통은 --dogu-wrap + 좌우 16 (홈 위젯 통이 이미 쓰는 꼴).
+   전엔 calc(--dogu-wrap - 32) 에 좌우 패딩이 없어서, 1200 보다 좁고 768 보다 넓은 화면(태블릿·창 줄인 데스크)에서
+   내용이 화면 끝에 그대로 붙었다. box-sizing: border-box 라 1200 이상에서는 내용 폭(1168)·위치가 전과 똑같다.
+   ★★ 769 이상에서만 건다. 폰(≤768)은 통마다 이미 정해 둔 값이 있고, 통계·전적·장인은 **일부러 전폭**이다 —
+      실측으로 확인: ≤768 에도 16 을 주면 통계 표의 라인 「100%」 와 승률 「55.1%」 가 붙어 겹친다.
+   .lx-page 는 14-6 예외라 건드리지 않는다 */
+@media (min-width: 769px) {
+    #result-container,
+    #stats-container,
+    #masters-container,
+    #codex-container,
+    #patch-container,
+    #mythic-container,
+    #patch-impact-container,
+    #duo-container,
+    #trend-container,
+    #champions-container {
+        max-width: var(--dogu-wrap);
+        /* longhand 라 #champions-container 의 인라인 padding-bottom 과 안 부딪힌다 (챔피언 탭에서 이미 쓰는 수법) */
+        padding-left: 16px;
+        padding-right: 16px;
+    }
 }
