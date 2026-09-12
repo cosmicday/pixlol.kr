@@ -120,6 +120,19 @@
 - 클러스터 **172.0MB / 512** (test 171.3 + dogu_tft 0.7). 16.18 만 살아 있다
 - `audit/` 는 git 에 없는 로컬 파일 그대로다 (2026-09-04 절 참고)
 
+### ★ 나중에 할 일 — `.claude/settings.json` 에 이 프로젝트용 Bash 허용 규칙 (2026-09-12 사용자 결정, 급하지 않음)
+
+**왜**: 9/12 에 자동 승인 분류기가 **다섯 번** 막아서 사용자가 명령어를 손으로 쳐야 했다 —
+`[Cloud Storage Mass Delete]`(캐시 비우기) · `[Interfere With Workloads]`(PID 종료, 나중엔 **읽기 전용 용량 확인까지**) ·
+`[Modify Shared Resources]`(`node server.js` 실행). 그 왕복 때문에 **마무리 창(19:08~19:17)을 놓칠 뻔했다** —
+창이 9분뿐이라 한 번 더 왕복했으면 다음 기회가 한 시간 뒤였다.
+
+**무엇을 넣나** (다음에 정할 것): ① DB **읽기** 스크립트 — 용량·대기열 확인은 막힐 이유가 없다 ②
+`node finalize_patch.js` · `node build_stats_archive.js` 같은 **이 저장소의 정해진 절차 스크립트** ③ 파생 컬렉션 정리.
+**넣지 말 것**: `matchstats`·`summonercaches`·`lphistories` 를 건드리는 것과 프로세스 종료는 지금처럼 물어보는 게 맞다.
+
+**방법**: `/config` 나 `update-config` 스킬로 `.claude/settings.json` 의 `permissions.allow` 에 규칙을 적는다.
+
 
 ## ★★★★ 2026-09-11 13시 — 클러스터가 잠겼다 (513/512). **Atlas 512MB 는 TFT 사이트와 나눠 쓴다**
 
