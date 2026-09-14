@@ -923,7 +923,17 @@ const STAT_MIN_K = 5;                        // 이 인원 이상일 때만 deta
 //   이렇게 하면 **정오에 순회가 완전히 끝나서 등장 횟수(k 하한)가 확정된 뒤에**
 //   detail 을 받는다. 순회 도중에 받으면 아직 덜 세어진 판을 놓칠 수 있다.
 //   덤으로 두 잡의 호출이 시간대로 갈려서 순간 호출량도 낮아진다.
-const SCAN_PER_CYCLE = 16;                   // 분당 matchlist 호출 (순회 단계)
+const SCAN_PER_CYCLE = Number(process.env.SCAN_PER_CYCLE) || 16;        // 분당 matchlist 호출 (순회 단계)
+// ★★ 2026-09-14 — 순회는 밀렸을 때만 스스로 빨라진다.
+//   순회는 **자정까지 끝내야 하는 일**이다 — 자정이 지나면 대상일이 다음 날로 넘어가고,
+//   못 끝낸 날은 `scanDone` 이 안 찍혀 **그 날짜 일별 통계가 통째로 버려진다** (9/8 · 9/14 실측).
+//   남은 인원을 자정까지 남은 분으로 나눠 **필요한 만큼만** 올린다.
+//   평소(자정에 시작)엔 16 그대로다 — 11,500명 / 1,440분 = 8 이라 가속이 안 걸린다.
+const SCAN_PER_CYCLE_MAX = Number(process.env.SCAN_PER_CYCLE_MAX) || 24; // 가속 상한
+// ★★ 라이엇 예산 가드 — 2분 창 100회 중 이만큼 썼으면 그 사이클을 접는다.
+//   ★ 추측하지 말고 헤더를 읽으라(2026-09-10 교훈) — 응답의 `X-App-Rate-Limit-Count` 가 그 순간 사용량이다.
+//   수집(판당 2회)과 사용자 전적검색도 같은 예산을 쓰므로 저녁엔 여유가 줄어든다. 그럴 때 스스로 물러난다.
+const APP_LIMIT_GUARD = Number(process.env.APP_LIMIT_GUARD) || 80;
 const FETCH_PER_CYCLE = 10;                  // 분당 detail 호출 (수집 단계)
 
 // 한국시간 날짜
@@ -1351,7 +1361,15 @@ async function scanMatchlists() {
 
         // 이 날짜를 아직 안 훑은 사람만. 다 훑었으면 쉰다 (그때부터 수집 단계다).
         //   ★ 오늘 명단 + 대상일 명단이다. 오늘 빠진 사람도 어제 게임은 했다.
-        const targets = scanTargets(day).slice(0, SCAN_PER_CYCLE).map(puuid => ({ puuid }));
+        const pool = scanTargets(day);
+        // ★ 자정까지 남은 분에 남은 인원을 나눠 필요 속도를 낸다 (가속은 상한까지만)
+        const minLeft = Math.max(1, Math.floor((86400000 - ((Date.now() + 9 * 3600000) % 86400000)) / 60000));
+        const perCycle = Math.min(SCAN_PER_CYCLE_MAX, Math.max(SCAN_PER_CYCLE, Math.ceil(pool.length / minLeft)));
+        if (perCycle > SCAN_PER_CYCLE && scanSpeedLogged !== day + perCycle) {
+            scanSpeedLogged = day + perCycle;
+            console.log(`[Stat] 순회 가속 — ${day} 남은 ${pool.length}명 / 자정까지 ${minLeft}분 → 분당 ${perCycle}명`);
+        }
+        const targets = pool.slice(0, perCycle).map(puuid => ({ puuid }));
         if (targets.length === 0) {
             // ★ 순회가 끝난 날짜에 표시를 남긴다 (하루 한 번). 수집이 다음 날 이 날짜의 잔량을
             //   따라잡을지 정하는 근거다 — 메모리에만 두면 재시작 때 잃어서 스냅샷 문서에 적는다.
@@ -1392,6 +1410,13 @@ async function scanMatchlists() {
                 // upsert 도 못 한다). 그런 사람은 메모리에만 두고 넘어간다.
                 SummonerCache.updateOne({ puuid: p.puuid }, { matchScanDay: day }).catch(() => { });
 
+                // ★ 이 사람까지 온전히 끝낸 뒤에만 접는다 — 도장을 먼저 찍고 물러나면 그 사람 판을 잃는다
+                const used = Number(String(res.headers['x-app-rate-limit-count'] || '').split(':')[0]);
+                if (used >= APP_LIMIT_GUARD) {
+                    console.warn(`[Stat] 라이엇 예산 ${used}/100 — 이번 사이클은 접는다`);
+                    break;
+                }
+
             } catch (err) {
                 const status = err.response?.status;
                 if (status === 429) {
@@ -1422,6 +1447,7 @@ const RANK_SET_MIN = 5000;
 //   두 날짜의 명단이 필요해졌다. 오래된 날짜는 지워서 두 개 넘게 안 쌓인다.
 const statRankCacheByDay = new Map();
 let statRankWarnedDay = null;
+let scanSpeedLogged = '';   // 순회 가속 로그를 바뀔 때만 찍으려고
 let scanDoneMarkedDay = null;
 
 // 그 날짜의 순회가 끝까지 돌았나 (스냅샷 문서의 scanDone). 날짜별로 한 번만 읽는다 —
