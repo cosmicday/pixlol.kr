@@ -934,6 +934,11 @@ const SCAN_PER_CYCLE_MAX = Number(process.env.SCAN_PER_CYCLE_MAX) || 24; // 가�
 //   ★ 추측하지 말고 헤더를 읽으라(2026-09-10 교훈) — 응답의 `X-App-Rate-Limit-Count` 가 그 순간 사용량이다.
 //   수집(판당 2회)과 사용자 전적검색도 같은 예산을 쓰므로 저녁엔 여유가 줄어든다. 그럴 때 스스로 물러난다.
 const APP_LIMIT_GUARD = Number(process.env.APP_LIMIT_GUARD) || 80;
+// ★★ 순회를 자정이 아니라 **자정 몇 분 전**까지 끝내는가 (기본 4시간).
+//   순회만 간신히 끝내면 `scanDone` 은 찍히지만 **그날 경기를 받을 시간이 안 남는다** —
+//   수집은 분당 10판이라 하루치(약 3,700판)에 6시간이 든다. 순회가 아슬아슬하게 끝나면
+//   자정 넘어서까지 밀려 다음 날 순회와 예산을 다투게 된다 (대기열 TTL 5일 안이라 잃지는 않는다).
+const SCAN_FINISH_MARGIN_MIN = Number(process.env.SCAN_FINISH_MARGIN_MIN) || 240;
 const FETCH_PER_CYCLE = 10;                  // 분당 detail 호출 (수집 단계)
 
 // 한국시간 날짜
@@ -1363,11 +1368,12 @@ async function scanMatchlists() {
         //   ★ 오늘 명단 + 대상일 명단이다. 오늘 빠진 사람도 어제 게임은 했다.
         const pool = scanTargets(day);
         // ★ 자정까지 남은 분에 남은 인원을 나눠 필요 속도를 낸다 (가속은 상한까지만)
-        const minLeft = Math.max(1, Math.floor((86400000 - ((Date.now() + 9 * 3600000) % 86400000)) / 60000));
+        const toMidnight = Math.floor((86400000 - ((Date.now() + 9 * 3600000) % 86400000)) / 60000);
+        const minLeft = Math.max(1, toMidnight - SCAN_FINISH_MARGIN_MIN);
         const perCycle = Math.min(SCAN_PER_CYCLE_MAX, Math.max(SCAN_PER_CYCLE, Math.ceil(pool.length / minLeft)));
         if (perCycle > SCAN_PER_CYCLE && scanSpeedLogged !== day + perCycle) {
             scanSpeedLogged = day + perCycle;
-            console.log(`[Stat] 순회 가속 — ${day} 남은 ${pool.length}명 / 자정까지 ${minLeft}분 → 분당 ${perCycle}명`);
+            console.log(`[Stat] 순회 가속 — ${day} 남은 ${pool.length}명 / 목표까지 ${minLeft}분(자정 ${toMidnight}분 전) → 분당 ${perCycle}명`);
         }
         const targets = pool.slice(0, perCycle).map(puuid => ({ puuid }));
         if (targets.length === 0) {
@@ -1674,19 +1680,30 @@ const dailySkipLogged = new Set(); // 원본이 빠져 건너뛴 일별 scope �
 //   가장 부푼 며칠만 여기 걸린다.
 //   ★★★ 2026-09-11 13시에 실제로 잠겼다 (513/512MB). 두 가지를 그때 배웠다 —
 //     ① **Atlas 512MB 는 클러스터 전체다.** 같은 클러스터의 `dogu_tft`(TFT 사이트) DB 가 논리 ~52MB 를 같이 먹는다.
-//        `mongoose.connection.db.stats()` 는 이 DB 만 재므로 **모든 DB 를 더해서** 봐야 한다 (아래 `clusterLogicalMB`).
+//        `mongoose.connection.db.stats()` 는 이 DB 만 재므로 **모든 DB 를 더해서** 봐야 한다 (아래 `clusterUsedMB`).
+//     ★★★ 2026-09-14 — **논리(dataSize)가 아니라 파일(storageSize)로 재야 한다.**
+//       그전까지 `dataSize + indexSize` 를 썼는데 Atlas 화면은 `storageSize + indexSize` 를 보여 준다.
+//       실측(9/14): 논리 196MB · 파일 **432MB** — 사용자가 화면에서 428 을 보고 짚어 알았다.
+//       둘이 어긋나는 이유는 둘이다 — 평소엔 압축 때문에 파일 < 논리 이고,
+//       **대량 삭제 뒤에는 반납이 안 돼서(M0 는 compact 금지) 파일 ≫ 논리** 가 된다.
+//       9/12 에 16.17 원본 56,888판을 지운 자리 253MB 가 껍데기로 남아 「여유 340MB」 를 착각했다.
+//       ★★ 그래서 **둘 중 큰 쪽 + 인덱스** 로 잰다 — 쓰기가 밀리는 순간은 둘 중 어느 쪽이든 512 를
+//       넘길 때이고, 어느 쪽이 큰지는 「최근에 많이 지웠나」에 따라 뒤집히기 때문이다.
+//       ★ 껍데기는 **그 컬렉션만** 다시 쓴다 — champbuilds 세대 교체(+57MB)에는 아무 도움이 안 된다.
 //     ② 「옛 세대 먼저 삭제」로도 부족할 수 있다 — 새 세대 52MB 가 들어갈 자리 자체가 없으면 넣다가 막힌다.
 //        그럴 땐 집계를 멈추는 게 아니라 **용량을 비우는 게 답이다** (사용자 지시: 통계는 항상 돈다).
 //        9/11 에는 TFT DB(`dogu_tft`) 53MB 를 통째로 비우고 수집을 멈춰 풀었다.
-const STAT_TIGHT_MB = Number(process.env.STAT_TIGHT_MB) || 450;
+// ★ 2026-09-14: 450 → 400. 기준을 파일(storageSize)로 바꾸면서 같이 낮췄다 —
+//   세대 교체가 순간 **+57MB**(champbuilds 17만줄 실측) 라 450 이면 507/512 로 붙는다.
+const STAT_TIGHT_MB = Number(process.env.STAT_TIGHT_MB) || 400;
 let statTightMode = false;
-async function clusterLogicalMB() {
+async function clusterUsedMB() {
     const client = mongoose.connection.getClient();
     let sum = 0;
     const dbs = await client.db('admin').command({ listDatabases: 1 }).catch(() => null);
     const names = dbs ? dbs.databases.map(d => d.name).filter(n => n !== 'admin' && n !== 'local') : [mongoose.connection.db.databaseName];
     for (const n of names) {
-        try { const s = await client.db(n).stats(); sum += (s.dataSize + s.indexSize) / 1048576; }
+        try { const s = await client.db(n).stats(); sum += (Math.max(s.dataSize, s.storageSize) + s.indexSize) / 1048576; }
         catch (e) { if (n === mongoose.connection.db.databaseName) throw e; }
     }
     return sum;
@@ -2297,9 +2314,9 @@ async function buildChampStats() {
     try {
         // ★ 논리 합(dataSize + indexSize)이 Atlas 가 세는 값이다 — storageSize 를 보면 틀린다 (8/16·9/9 교훈)
         try {
-            const logicalMB = await clusterLogicalMB();
-            const tight = logicalMB > STAT_TIGHT_MB;
-            if (tight !== statTightMode) console.log(`[Stat] 클러스터 논리 합 ${logicalMB.toFixed(0)}MB — 세대 교체를 ${tight ? '「옛 세대 먼저 삭제」로 바꾼다' : '평소대로 되돌린다'} (기준 ${STAT_TIGHT_MB}MB)`);
+            const usedMB = await clusterUsedMB();
+            const tight = usedMB > STAT_TIGHT_MB;
+            if (tight !== statTightMode) console.log(`[Stat] 클러스터 사용 ${usedMB.toFixed(0)}MB — 세대 교체를 ${tight ? '「옛 세대 먼저 삭제」로 바꾼다' : '평소대로 되돌린다'} (기준 ${STAT_TIGHT_MB}MB)`);
             statTightMode = tight;
         } catch (e) {
             console.warn('[Stat] db.stats 실패, 세대 교체는 평소대로:', e.message);
