@@ -9559,6 +9559,7 @@ main {
     #masters-container,
     #codex-container,
     #patch-container,
+    #esports-container,
     #mythic-container,
     #patch-impact-container,
     #duo-container,
@@ -9570,3 +9571,201 @@ main {
         padding-right: 16px;
     }
 }
+
+/* ==========================================================================
+   e스포츠 — 대회 일정 · 순위표 (2026-09-16)
+   ★ 새 레이아웃은 없다 — 칩은 `.codex-tab`, 카드는 `.patch-page-item` 과 같은 결,
+     순위표는 `.stats-table` 을 그대로 쓴다 (2026-09-03 디자인 감사 5장의 구성안)
+   ========================================================================== */
+#esports-container {
+    display: none;
+    max-width: calc(var(--dogu-wrap) - 32px);
+    margin: var(--dogu-page-top) auto 0;
+    padding-bottom: var(--dogu-page-bottom);
+    animation: fadeIn 0.6s ease;
+}
+
+/* 제목 오른쪽 출처 한 줄 — .stats-header 가 flex 라 margin-left:auto 로 끝에 붙는다 */
+.es-src { margin-left: auto; color: var(--text-faint); font-size: 12px; font-weight: 400; }
+
+/* ★ 칩이 12개라 `.codex-tabs`(줄바꿈 없음)를 그대로 못 쓴다 — 버튼 모양만 `.codex-tab` 을 빌린다 */
+.es-leagues { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+/* ★ 줄바꿈은 칩 **사이**에서만 — 안 막으면 폰에서 '퍼스트 스탠드'·'케스파컵' 이 칩 안에서 세로로 쪼개진다 */
+.es-leagues .codex-tab { white-space: nowrap; }
+
+.es-h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 22px 0 10px;
+    white-space: nowrap;
+    color: var(--text-bright);
+    font-size: 15px;
+    font-weight: 800;
+}
+.es-h2:first-of-type { margin-top: 0; }
+
+.es-none {
+    margin: 0;
+    padding: 18px;
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--dogu-r-card);
+    color: var(--text-faint);
+    font-size: 13px;
+    text-align: center;
+}
+
+/* 소스가 막혀 창고 값을 쓰는 중임을 밝히는 줄 */
+.es-stale {
+    margin: 0 0 14px;
+    padding: 10px 14px;
+    background: rgba(167, 139, 250, 0.08);
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    border-radius: var(--dogu-r-card);
+    color: var(--text-muted);
+    font-size: 12px;
+}
+.es-stale b { color: var(--accent); }
+
+.es-day { margin-bottom: 14px; }
+.es-day-head { margin: 0 0 8px; color: var(--text-muted); font-size: 12px; font-weight: 700; }
+.es-list { display: flex; flex-direction: column; gap: 8px; }
+
+/* 한 줄 = [시간] [왼팀] [스코어] [오른팀] [리그·차수].
+   ★ 양쪽을 1fr 로 둬야 가운데 스코어 축이 카드 정중앙에 선다 — 팀 이름 길이가 제각각이라
+     flex 로 두면 축이 줄마다 좌우로 흔들린다 */
+.es-match {
+    display: grid;
+    grid-template-columns: 54px 1fr 72px 1fr 132px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--dogu-r-card);
+    color: inherit;
+    text-decoration: none;
+    transition: background var(--dogu-ease), border-color var(--dogu-ease);
+}
+
+@media (hover: hover) {
+    .es-match:hover { background: #22203c; border-color: rgba(167, 139, 250, 0.45); }
+}
+
+.es-match.is-live { border-color: rgba(232, 64, 87, 0.5); }
+
+.es-time { color: var(--text-muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.es-live { color: var(--lose-text); font-size: 12px; font-style: normal; font-weight: 800; }
+
+.es-side { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.es-side.is-left { justify-content: flex-end; }
+.es-side.is-right { justify-content: flex-start; }
+.es-side.is-lose { opacity: 0.55; }
+
+.es-logo { flex: none; width: 26px; height: 26px; object-fit: contain; }
+
+.es-name {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.es-side.is-win .es-name { color: var(--text-bright); }
+
+/* ★ 팀 이름을 두 벌 넣고 여기서 고른다 — 폰에서 "Hanwha Life Esports" 는 칸을 뚫는다 */
+.es-name-code { display: none; }
+
+.es-score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--text-faint);
+    font-size: 15px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+.es-score b.is-win { color: var(--text-bright); }
+.es-score i { color: var(--text-dim); font-size: 12px; font-style: normal; }
+.es-vs { color: var(--text-dim); font-size: 12px; font-weight: 700; text-align: center; }
+
+.es-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    min-width: 0;
+    text-align: right;
+}
+.es-league {
+    padding: 1px 6px;
+    background: rgba(167, 139, 250, 0.14);
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    border-radius: var(--dogu-r-badge);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+}
+.es-meta i {
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--text-faint);
+    font-size: 12px;
+    font-style: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.es-more {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--dogu-r-card);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background var(--dogu-ease), color var(--dogu-ease), border-color var(--dogu-ease);
+}
+@media (hover: hover) {
+    .es-more:hover { background: var(--surface-hover); border-color: rgba(167, 139, 250, 0.45); color: var(--text-bright); }
+}
+
+.es-standings { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.es-group-head { margin: 0 0 8px; color: var(--text-muted); font-size: 12px; font-weight: 700; }
+
+/* ★ `.stats-table` 의 th 폭은 7칸 기준(28/10/12…)이라 4칸짜리엔 안 맞는다.
+   같은 특이성이면 순서 싸움이 되므로 `.stats-table.es-table` 로 한 단 올려 덮는다 */
+.stats-table.es-table th:nth-child(1) { width: 16%; }
+.stats-table.es-table th:nth-child(2) { width: 52%; }
+.stats-table.es-table th:nth-child(3) { width: 16%; }
+.stats-table.es-table th:nth-child(4) { width: 16%; }
+.es-table .es-table-team { text-align: left; }
+.es-table-flex { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.es-table-flex img { flex: none; width: 22px; height: 22px; object-fit: contain; }
+.es-table-flex b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+@media (max-width: 768px) {
+    #esports-container { margin: var(--dogu-page-top) auto 0; padding: 0 16px 40px; }
+
+    /* ★ 다섯 칸을 폰에 욱여넣으면 팀 이름이 사라진다 — 리그·차수 줄을 아래로 내린다 */
+    .es-match { grid-template-columns: 44px 1fr 56px 1fr; gap: 6px; padding: 10px 12px; }
+    .es-meta { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: flex-start; gap: 6px; text-align: left; }
+    .es-logo { width: 22px; height: 22px; }
+    .es-name-full { display: none; }
+    .es-name-code { display: inline; }
+    .es-standings { grid-template-columns: 1fr; }
+    .es-src { width: 100%; margin-left: 0; }
+}
+
+/* 순위표 각주 — 원본 순위가 승패와 어긋나 다시 매겼을 때만 나온다 */
+.es-note { margin: 10px 0 0; color: var(--text-faint); font-size: 12px; }
+.es-note b { color: var(--text-muted); }

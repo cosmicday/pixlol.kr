@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('patch-container').style.display = "block";
         showPatchNotes(pathParts[2] ? decodeURIComponent(pathParts[2]) : 'live');
     } else if (pathParts[1] === 'esports') {
-        showEsports();
+        showEsports(pathParts[2] ? decodeURIComponent(pathParts[2]) : null);
     } else if (pathParts[1] === 'broadcast') {
         showBroadcast();
     } else if (pathParts[1] === 'champions') {
@@ -491,7 +491,7 @@ window.addEventListener('popstate', (event) => {
         // ★ 진입부와 여기 두 곳을 항상 같이 고친다
         showPatchNotes(currentPath.split('/')[2] || 'live');
     } else if (currentPath.startsWith('/esports')) {
-        showEsports();
+        showEsports(currentPath.split('/')[2] ? decodeURIComponent(currentPath.split('/')[2]) : null);
     } else if (currentPath.startsWith('/broadcast')) {
         showBroadcast();
     } else if (currentPath.startsWith('/champions')) {
@@ -870,7 +870,252 @@ function showComingPage(containerId, title, path, navId) {
         (window.DoguUI ? DoguUI.comingSoonHtml(DOGU_BRAND) : '');
     setActiveNav(navId);
 }
-function showEsports() { showComingPage('esports-container', 'e스포츠', '/esports', 'nav-esports'); }
+// ===== e스포츠 — 대회 일정 · 순위표 (2026-09-16) =====
+// ★ 데이터는 서버 `/api/esports/*` 하나뿐이다 (lolesports 프록시 + 창고). 근거·함정은 server.js 의 그 절에.
+// ★★ 주소 규칙 그대로다 — **메뉴 진입만 pushState**, 페이지 안에서 리그를 바꾸는 건 replaceState 로 덮어쓴다
+//   (도감 탭·신화상점 구획과 같다). 라우터는 진입부 `pathParts` 와 `popstate` **두 곳**을 같이 고쳤다
+let esportsData = null;          // 일정 응답 — 칩을 옮겨도 다시 안 받는다
+const esportsStandings = {};     // 리그 slug → 순위표 응답 (없으면 그때 받는다)
+let esportsLeague = null;        // 고른 리그 slug. null = 전체
+let esportsPastShown = 20;       // 지난 경기를 몇 개까지 펼쳤나
+
+function esportsLeagueOf(slug) {
+    const list = (esportsData && esportsData.leagues) || [];
+    return list.find(l => l.slug === slug) || null;
+}
+
+async function showEsports(league) {
+    // ★ 리그 이름표는 서버 응답에 들어 있다 — 아직 없으면 그대로 담아 두고 응답이 온 뒤에 가린다
+    esportsLeague = league || null;
+    esportsPastShown = 20;
+
+    const path = '/esports' + (esportsLeague ? '/' + esportsLeague : '');
+    if (!window.location.pathname.startsWith('/esports')) {
+        window.history.pushState({ page: 'esports' }, '', path);     // 메뉴 진입 — 이력을 쌓는다
+    } else if (window.location.pathname !== path) {
+        window.history.replaceState({ page: 'esports' }, '', path);  // 페이지 안 이동 — 덮어쓴다
+    }
+
+    hideAllContainers();
+    const box = document.getElementById('esports-container');
+    box.style.display = 'block';
+    setActiveNav('nav-esports');
+
+    if (esportsData) { renderEsports(); return; }
+
+    box.innerHTML = `
+        <div class="stats-header"><h1 class="ranking-title">e스포츠</h1></div>
+        <div class="es-leagues">${Array.from({ length: 8 }, () =>
+            '<div class="skel" style="width:64px;height:28px;border-radius:999px"></div>').join('')}</div>
+        <div class="es-list">${Array.from({ length: 6 }, () =>
+            '<div class="skel" style="height:56px;border-radius:10px"></div>').join('')}</div>`;
+
+    try {
+        const res = await fetch('/api/esports/schedule');
+        esportsData = await res.json();
+    } catch (e) { esportsData = null; }
+
+    // ★ 그리는 사이에 다른 화면으로 옮겼으면 버린다 (패치노트와 같은 가드)
+    if (!window.location.pathname.startsWith('/esports')) return;
+    renderEsports();
+}
+
+function renderEsports() {
+    const box = document.getElementById('esports-container');
+    if (!box) return;
+    const d = esportsData;
+
+    if (!d || !d.ok || !Array.isArray(d.events)) {
+        box.innerHTML = `<div class="stats-header"><h1 class="ranking-title">e스포츠</h1></div>` +
+            emptyBoxHtml('일정을 불러오지 못했습니다', '잠시 뒤 다시 시도하거나 공식 일정 페이지에서 볼 수 있습니다.', 'es-retry') +
+            `<p class="patch-page-empty-link"><a class="patch-note-x-link" href="https://lolesports.com/ko-KR/schedule" target="_blank" rel="noopener">lolesports 에서 보기 →</a></p>`;
+        bindRetry('es-retry', () => { esportsData = null; showEsports(esportsLeague); });
+        return;
+    }
+
+    // 없는 slug 로 들어왔으면 전체로 (주소를 직접 친 경우)
+    if (esportsLeague && !esportsLeagueOf(esportsLeague)) {
+        esportsLeague = null;
+        window.history.replaceState({ page: 'esports' }, '', '/esports');
+    }
+
+    const events = esportsLeague ? d.events.filter(e => e.league === esportsLeague) : d.events;
+    const upcoming = events.filter(e => e.state !== 'completed').sort((a, b) => new Date(a.t) - new Date(b.t));
+    const past = events.filter(e => e.state === 'completed').sort((a, b) => new Date(b.t) - new Date(a.t));
+    const pastCut = past.slice(0, esportsPastShown);
+
+    const chips = [{ slug: '', short: '전체' }].concat(d.leagues || []).map(l =>
+        `<button class="codex-tab${(l.slug || null) === esportsLeague ? ' active' : ''}" data-es-league="${escapeHtml(l.slug)}">${escapeHtml(l.short || l.name)}</button>`
+    ).join('');
+
+    // ★ 소스가 막혀 창고 값을 쓰는 중이면 밝힌다 — 지난 일정이 그대로 보이는 것보다 낫다
+    const staleNote = d.stale
+        ? `<p class="es-stale">지금 일정을 새로 받지 못해 <b>${esportsWhen(d.fetchedAt)}</b>에 받아 둔 내용을 보여주고 있습니다.</p>`
+        : '';
+
+    const moreBtn = past.length > pastCut.length
+        ? `<button class="es-more" id="es-more">지난 경기 더 보기 (${past.length - pastCut.length})</button>` : '';
+
+    box.innerHTML = `
+        <div class="stats-header"><h1 class="ranking-title">e스포츠</h1>
+            <span class="es-src">일정 제공 · lolesports</span></div>
+        <div class="es-leagues">${chips}</div>
+        ${staleNote}
+        <h2 class="es-h2">예정된 경기</h2>
+        ${upcoming.length ? esportsDaysHtml(upcoming) :
+            `<p class="es-none">예정된 경기가 없습니다.</p>`}
+        <h2 class="es-h2">지난 경기</h2>
+        ${pastCut.length ? esportsDaysHtml(pastCut) : `<p class="es-none">지난 경기가 없습니다.</p>`}
+        ${moreBtn}
+        <div id="es-standings"></div>`;
+
+    const more = document.getElementById('es-more');
+    if (more) more.addEventListener('click', () => { esportsPastShown += 20; renderEsports(); });
+
+    if (esportsLeague) loadEsportsStandings(esportsLeague);
+}
+
+// 날짜 머리글 + 그 날 경기들
+function esportsDaysHtml(list) {
+    const days = [];
+    list.forEach(e => {
+        const key = esportsDayKey(e.t);
+        const last = days[days.length - 1];
+        if (last && last.key === key) last.items.push(e);
+        else days.push({ key, t: e.t, items: [e] });
+    });
+    return days.map(dy => `<div class="es-day">
+        <h3 class="es-day-head">${escapeHtml(esportsDayLabel(dy.t))}</h3>
+        <div class="es-list">${dy.items.map(esportsMatchHtml).join('')}</div>
+    </div>`).join('');
+}
+
+function esportsDayKey(iso) {
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function esportsDayLabel(iso) {
+    const W = ['일', '월', '화', '수', '목', '금', '토'];
+    const d = new Date(iso); d.setHours(0, 0, 0, 0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const diff = Math.round((d - today) / 86400000);
+    const base = `${d.getMonth() + 1}월 ${d.getDate()}일 (${W[d.getDay()]})`;
+    if (diff === 0) return `오늘 · ${base}`;
+    if (diff === 1) return `내일 · ${base}`;
+    if (diff === -1) return `어제 · ${base}`;
+    return base;
+}
+
+function esportsTime(iso) {
+    const d = new Date(iso);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+// '2026-10-20' → '2026년 10월 20일' (순위표 period 는 날짜만 오는 문자열이다)
+function esportsDateText(s) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
+    return m ? `${m[1]}년 ${+m[2]}월 ${+m[3]}일` : String(s || '');
+}
+
+function esportsWhen(ms) {
+    if (!ms) return '이전';
+    const d = new Date(ms);
+    return `${d.getMonth() + 1}월 ${d.getDate()}일 ${esportsTime(d.toISOString())}`;
+}
+
+// ★ 팀 이름은 두 벌을 넣고 CSS 가 고른다 — 데스크톱은 풀네임("Hanwha Life Esports"),
+//   폰은 약칭("HLE"). 폰에서 풀네임은 세 줄이 된다
+function esportsSideHtml(t, side, done) {
+    const win = done && t.outcome === 'win';
+    const img = t.img ? `<img class="es-logo" src="${escapeHtml(t.img)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<span class="es-logo"></span>';
+    const name = `<span class="es-name"><b class="es-name-full">${escapeHtml(t.name || t.code || 'TBD')}</b><b class="es-name-code">${escapeHtml(t.code || 'TBD')}</b></span>`;
+    return `<span class="es-side is-${side}${win ? ' is-win' : ''}${done && !win ? ' is-lose' : ''}">${side === 'left' ? name + img : img + name}</span>`;
+}
+
+function esportsMatchHtml(e) {
+    const lg = esportsLeagueOf(e.league);
+    const live = e.state === 'inProgress';
+    const done = e.state === 'completed';
+    const [a, b] = [e.teams[0] || {}, e.teams[1] || {}];
+
+    // 진행 중이면 그 리그 라이브 방송으로, 아니면 리그 페이지로 (실측: 둘 다 200)
+    const href = `https://lolesports.com/ko-KR/${live ? 'live' : 'leagues'}/${encodeURIComponent(e.league)}`;
+
+    const mid = done || live
+        ? `<span class="es-score"><b${a.outcome === 'win' ? ' class="is-win"' : ''}>${a.score != null ? a.score : 0}</b><i>:</i><b${b.outcome === 'win' ? ' class="is-win"' : ''}>${b.score != null ? b.score : 0}</b></span>`
+        : `<span class="es-vs">VS</span>`;
+
+    const meta = `<span class="es-meta">
+            <b class="es-league">${escapeHtml(lg ? lg.short : e.league)}</b>
+            <i>${escapeHtml([e.block, e.bo ? 'BO' + e.bo : ''].filter(Boolean).join(' · '))}</i>
+        </span>`;
+
+    return `<a class="es-match${live ? ' is-live' : ''}${done ? ' is-done' : ''}" href="${href}" target="_blank" rel="noopener">
+        <span class="es-time">${live ? '<em class="es-live">LIVE</em>' : esportsTime(e.t)}</span>
+        ${esportsSideHtml(a, 'left', done)}${mid}${esportsSideHtml(b, 'right', done)}
+        ${meta}</a>`;
+}
+
+async function loadEsportsStandings(slug) {
+    const box = document.getElementById('es-standings');
+    if (!box) return;
+
+    if (!esportsStandings[slug]) {
+        box.innerHTML = `<h2 class="es-h2">순위표</h2><div class="skel" style="height:180px;border-radius:10px"></div>`;
+        try {
+            const res = await fetch('/api/esports/standings?league=' + encodeURIComponent(slug));
+            esportsStandings[slug] = await res.json();
+        } catch (e) { esportsStandings[slug] = { ok: false }; }
+        // 받는 사이에 다른 리그·화면으로 옮겼으면 버린다
+        if (esportsLeague !== slug || !document.getElementById('es-standings')) return;
+    }
+
+    const d = esportsStandings[slug];
+    const target = document.getElementById('es-standings');
+    if (!target) return;
+
+    // ★★ 순위표가 없는 경우가 둘이다 — ① 대진표뿐인 토너먼트(플레이오프만 남은 대회) ②
+    //   **아직 시작 안 한 대회**. ②는 일정 칸까지 통째로 비어서(월즈 2026 이 10/20 시작이라 지금이 그렇다)
+    //   화면에 아무것도 안 남는다 — 그 자리에 대회 기간을 적어 준다
+    if (!d || !d.ok || !d.groups || !d.groups.length) {
+        const p = d && d.period;
+        target.innerHTML = (p && p.start && p.start > new Date().toISOString().slice(0, 10))
+            ? `<h2 class="es-h2">다음 대회</h2><p class="es-none">${escapeHtml(esportsDateText(p.start))} ~ ${escapeHtml(esportsDateText(p.end))} 예정 · 대진이 나오면 위 일정에 표시됩니다.</p>`
+            : '';
+        return;
+    }
+
+    const period = d.period && d.period.start
+        ? `<span class="es-src">${escapeHtml(d.period.start)} ~ ${escapeHtml(d.period.end || '')}</span>` : '';
+
+    target.innerHTML = `<h2 class="es-h2">순위표 ${period}</h2>
+        <div class="es-standings">${d.groups.map(g => `
+            <div class="es-group">
+                ${g.section || g.stage ? `<h3 class="es-group-head">${escapeHtml(g.section || g.stage)}</h3>` : ''}
+                <div class="stats-table-wrapper"><table class="stats-table es-table">
+                    <thead><tr><th>순위</th><th>팀</th><th>승</th><th>패</th></tr></thead>
+                    <tbody>${g.rows.map(r => `<tr>
+                        <td>${r.ord}</td>
+                        <td class="es-table-team"><span class="es-table-flex">
+                            ${r.img ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''}
+                            <b class="es-name-full">${escapeHtml(r.name)}</b><b class="es-name-code">${escapeHtml(r.code)}</b>
+                        </span></td>
+                        <td>${r.w}</td><td>${r.l}</td></tr>`).join('')}</tbody>
+                </table></div>
+            </div>`).join('')}</div>` +
+        // ★ 원본 순위가 승패와 어긋나 우리가 다시 매긴 경우에만 밝힌다 (server.js 의 그 절 참고)
+        (d.groups.some(g => g.resorted)
+            ? `<p class="es-note">※ 제공된 순위가 승패와 어긋나 <b>승률 순</b>으로 다시 매겼습니다 — 동률은 공동 순위이고 세트 득실은 반영하지 않습니다.</p>`
+            : '');
+}
+
+// 리그 칩 — 페이지 안 이동이라 **이력은 덮어쓴다** (도감 4칸 줄과 같은 위임 리스너 하나)
+document.addEventListener('click', (e) => {
+    const b = e.target.closest('.codex-tab[data-es-league]');
+    if (!b) return;
+    showEsports(b.dataset.esLeague || null);
+});
 function showBroadcast() { showComingPage('broadcast-container', '방송', '/broadcast', 'nav-broadcast'); }
 
 function hideAllContainers() {

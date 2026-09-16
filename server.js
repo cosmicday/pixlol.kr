@@ -424,6 +424,19 @@ const pbeNoteSchema = new mongoose.Schema({
 });
 pbeNoteSchema.index({ date: -1 });
 const PbeNote = mongoose.model('PbeNote', pbeNoteSchema);
+// ★★ e스포츠 일정·순위표 창고 (2026-09-16) — lolesports 가 막혀도 **마지막으로 받은 것**을 계속 보여준다.
+//   Leaguepedia(Fandom) 폴백을 먼저 재 봤는데 익명으로는 못 쓴다 —
+//   `api.php?action=cargoquery` 는 무조건 `ratelimited`, `Special:CargoExport` 는 Cloudflare 403 이다
+//   (브라우저 UA 로도 같다. 계정 + Special:BotPasswords 가 있어야 뚫린다).
+//   그래서 폴백을 「성공한 응답 박제」로 잡았다 — PBE 노트 창고(pbenotes)와 같은 문법이다.
+//   ★ 문서는 최대 12개(schedule + 리그별 standings 11)이고 한 개가 30KB 안쪽이라 용량 손잡이에 안 걸린다
+const esportsCacheSchema = new mongoose.Schema({
+    key: { type: String, required: true, unique: true },   // 'schedule' · 'standings_lck'
+    payload: { type: mongoose.Schema.Types.Mixed },
+    at: { type: Number }
+});
+const EsportsCache = mongoose.model('EsportsCache', esportsCacheSchema);
+
 
 // ==========================================
 // [2] 전역 변수 및 서버(Express) 세팅
@@ -2494,6 +2507,8 @@ async function ensureStatIndexes() {
         //     POST 의 11000 처리도 영영 안 탄다 — 하루 한 번짜리라 드물지만 막을 수 있는 건 막는다.
         //     ★ 2026-08-17에 `date` 단독에서 `date + section` 으로 바뀌었다 — 같은 날짜에
         //       일일과 주간이 따로 들어와야 하기 때문이다. 옛 인덱스는 아래 legacy 가 지운다.
+        // e스포츠 일정·순위표 창고 (2026-09-16). 문서 12개짜리라 TTL 없이 덮어쓴다
+        { col: 'esportscaches', key: { key: 1 }, unique: true },
         { col: 'mythicshops', key: { date: 1, section: 1 }, unique: true },
         { col: 'mythicshops', key: { 'items.catalogId': 1, date: -1 } },   // "마지막 등장일" 조회용
         { col: 'mythicshops', key: { section: 1, date: -1 } },             // 구획별 최신 조회용
@@ -5144,6 +5159,175 @@ app.get('/api/patch-notes', async (req, res) => {
         myCache.set('patch_notes', payload, full ? 1800 : 300);
     }
     res.json(cut(payload));
+});
+
+
+// ==========================================
+// e스포츠 — 대회 일정 · 순위표 (2026-09-16)
+// ==========================================
+// ★★★ 소스는 lolesports.com 이 **자기 프론트에서 쓰는 API** 다. 라이엇 개발자 키와 무관하고
+//   (키가 웹에 박혀 있는 공개 고정값이다) 우리 라이엇 호출 예산도 안 먹는다.
+//   ★ 공식 문서가 있는 API 가 아니라 언제든 모양이 바뀌거나 막힐 수 있다 — 그래서
+//     성공한 응답을 `esportscaches` 에 박아 두고, 실패하면 그걸 `stale: true` 로 준다.
+//   ★ 바깥 호출이라 캐시가 곧 방어다 (5분, 진행 중인 경기가 있으면 1분).
+const ESPORTS_GW = 'https://esports-api.lolesports.com/persisted/gw';
+const ESPORTS_KEY = '0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z';
+
+// ★ 주소·칩의 열쇠는 `slug` 다 (`/esports/lck`). `id` 는 lolesports 내부 번호이고
+//   `name` 은 그쪽이 ko-KR 로 주는 이름 그대로, `short` 만 우리가 칩 폭에 맞춰 줄인 것이다.
+//   (getLeagues 실측 2026-09-16 — 전체 48개 중 주요 11개. 사용자 결정)
+const ESPORTS_LEAGUES = [
+    { slug: 'worlds',                 id: '98767975604431411',  name: '월드 챔피언십',     short: '월즈' },
+    { slug: 'msi',                    id: '98767991325878492',  name: 'MSI',               short: 'MSI' },
+    { slug: 'first_stand',            id: '113464388705111224', name: 'First Stand',       short: '퍼스트 스탠드' },
+    { slug: 'lck',                    id: '98767991310872058',  name: 'LCK',               short: 'LCK' },
+    { slug: 'lck_challengers_league', id: '98767991335774713',  name: 'LCK 챌린저스',      short: 'LCK CL' },
+    { slug: 'kespa_cup',              id: '116929044967296666', name: 'KeSPA Cup',         short: '케스파컵' },
+    { slug: 'lpl',                    id: '98767991314006698',  name: 'LPL',               short: 'LPL' },
+    { slug: 'lec',                    id: '98767991302996019',  name: 'LEC',               short: 'LEC' },
+    { slug: 'lcs',                    id: '98767991299243165',  name: 'LCS',               short: 'LCS' },
+    { slug: 'lcp',                    id: '113476371197627891', name: 'LCP',               short: 'LCP' },
+    { slug: 'ewc_lol',                id: '116838530616006090', name: 'Esports World Cup', short: 'EWC' }
+];
+
+// ★ 팀 로고가 `http://static.lolesports.com/...` 로 온다 — 그대로 걸면 mixed content 로 막힌다.
+//   https 로도 200 인 걸 확인했다 (2026-09-16 실측)
+function esportsImg(u) { return u ? String(u).replace(/^http:\/\//, 'https://') : null; }
+
+// 응답을 화면이 쓰는 만큼만 남긴다 (한 경기 ~300B). 원본은 판당 1KB 가 넘는다
+function slimEsportsEvent(e) {
+    const m = e.match || {};
+    return {
+        id: m.id || null,
+        t: e.startTime,                                    // ISO(UTC). 한국 시각 변환은 화면이 한다
+        state: e.state,                                    // unstarted · inProgress · completed
+        block: e.blockName || '',                          // '플레이오프' · '결승' · '7주 차'
+        league: (e.league && e.league.slug) || '',
+        bo: (m.strategy && m.strategy.count) || 0,
+        teams: (m.teams || []).map(t => ({
+            name: t.name || '', code: t.code || '', img: esportsImg(t.image),
+            score: t.result ? t.result.gameWins : null,
+            outcome: t.result ? t.result.outcome : null,   // win · loss
+            w: t.record ? t.record.wins : null,            // 그 시즌 전적
+            l: t.record ? t.record.losses : null
+        }))
+    };
+}
+
+// ★ 마지막으로 성공한 응답. 메모리가 먼저이고, 비었으면(배포 직후) DB 창고가 그 뒤를 받는다
+const lastGoodEsports = {};
+async function esportsFallback(key) {
+    if (lastGoodEsports[key]) return lastGoodEsports[key];
+    try {
+        const doc = await EsportsCache.findOne({ key }).lean();
+        if (doc && doc.payload) { lastGoodEsports[key] = doc.payload; return doc.payload; }
+    } catch (e) { /* DB 까지 막혔으면 그냥 실패로 */ }
+    return null;
+}
+function saveEsports(key, payload) {
+    lastGoodEsports[key] = payload;
+    EsportsCache.updateOne({ key }, { $set: { payload, at: Date.now() } }, { upsert: true })
+        .catch(err => console.warn('[Esports] 창고 저장 실패:', err.message));
+}
+
+function esportsGet(path, params) {
+    return axios.get(ESPORTS_GW + path, {
+        params: Object.assign({ hl: 'ko-KR' }, params),
+        headers: { 'x-api-key': ESPORTS_KEY },
+        timeout: 10000
+    });
+}
+
+app.get('/api/esports/schedule', async (req, res) => {
+    const hit = myCache.get('esports_schedule');
+    if (hit) return res.json(hit);
+
+    try {
+        // ★ 리그 11개를 콤마로 한 번에 묻는다 — 한 페이지 80경기에 앞뒤 3주가 다 들어온다 (실측)
+        const r = await esportsGet('/getSchedule', { leagueId: ESPORTS_LEAGUES.map(l => l.id).join(',') });
+        const events = ((r.data && r.data.data && r.data.data.schedule && r.data.data.schedule.events) || [])
+            .filter(e => e.type === 'match' && e.match)   // 방송 쇼(type: 'show')는 경기가 아니다
+            .map(slimEsportsEvent);
+        if (!events.length) throw new Error('일정이 비어 있다');
+
+        const payload = { ok: true, events, leagues: ESPORTS_LEAGUES, fetchedAt: Date.now() };
+        // ★ 진행 중인 경기가 있으면 1분 — 세트 스코어가 경기 중에 올라간다
+        myCache.set('esports_schedule', payload, events.some(e => e.state === 'inProgress') ? 60 : 300);
+        saveEsports('schedule', payload);
+        res.json(payload);
+    } catch (err) {
+        console.warn('[Esports] 일정 수집 실패:', err.message);
+        const fb = await esportsFallback('schedule');
+        if (fb) return res.json(Object.assign({}, fb, { stale: true }));
+        res.status(503).json({ ok: false, error: '일정을 불러오지 못했습니다.' });
+    }
+});
+
+app.get('/api/esports/standings', async (req, res) => {
+    const lg = ESPORTS_LEAGUES.find(l => l.slug === String(req.query.league || ''));
+    if (!lg) return res.status(400).json({ ok: false, error: '없는 리그입니다.' });
+
+    const key = 'standings_' + lg.slug;
+    const hit = myCache.get('esports_' + key);
+    if (hit) return res.json(hit);
+
+    try {
+        const tr = await esportsGet('/getTournamentsForLeague', { leagueId: lg.id });
+        const tours = ((tr.data && tr.data.data && tr.data.data.leagues && tr.data.data.leagues[0]
+            && tr.data.data.leagues[0].tournaments) || []);
+        if (!tours.length) throw new Error('대회 목록이 비어 있다');
+
+        // 오늘이 낀 대회 → 없으면 맨 앞(목록이 최신 순이다 — 실측)
+        const today = new Date().toISOString().slice(0, 10);
+        const cur = tours.find(t => t.startDate <= today && today <= t.endDate) || tours[0];
+
+        const sr = await esportsGet('/getStandings', { tournamentId: cur.id });
+        const stages = ((sr.data && sr.data.data && sr.data.data.standings
+            && sr.data.data.standings[0] && sr.data.data.standings[0].stages) || []);
+
+        const groups = [];
+        stages.forEach(s => (s.sections || []).forEach(sec => {
+            const rows = (sec.rankings || []).reduce((acc, rk) => acc.concat((rk.teams || []).map(t => ({
+                ord: rk.ordinal, name: t.name || '', code: t.code || '', img: esportsImg(t.image),
+                w: t.record ? t.record.wins : 0, l: t.record ? t.record.losses : 0
+            }))), []);
+            // ★★ `rankings` 가 빈 스테이지가 있다 (플레이오프·플레이-인 — 그건 순위표가 아니라 대진표다).
+            //   그런 칸은 통째로 건너뛴다. LCK 2026 시즌3 실측: 그룹 2칸만 남고 나머지 셋은 빠진다
+            if (!rows.length) return;
+
+            // ★★★ `ordinal` 을 그대로 믿으면 안 된다 (2026-09-16 실측).
+            //   LEC·LCS·LPL 의 정규 리그는 승률 내림차순으로 정상인데, **LCK·LCK CL 의 그룹은 어긋난다** —
+            //   레전드/라이즈 그룹의 ordinal 은 순위가 아니라 **그룹 배정 시드**라서 그대로 그리면
+            //   「1위 GEN 5승 3패 · 4위 DK 6승 2패」 같은 줄이 나온다 (라이즈 그룹은 4위 2-6, 5위 5-3 이었다).
+            //   ★ 그래서 어긋날 때만 승률로 다시 매긴다 — 이미 맞는 리그는 **손대지 않는다**.
+            //     원본이 맞을 땐 세트 득실 같은 타이브레이크가 이미 반영된 값이라 우리 정렬이 오히려 나쁘다
+            const rate = r => (r.w + r.l) ? r.w / (r.w + r.l) : 0;
+            const sorted = rows.every((r, i) => i === 0 || rate(rows[i - 1]) >= rate(r));
+            if (!sorted) {
+                rows.sort((a, b) => rate(b) - rate(a) || b.w - a.w);   // 동률은 원래 차례 유지 (JS sort 는 안정 정렬)
+                let ord = 0;
+                rows.forEach((r, i) => {
+                    if (i === 0 || rate(rows[i - 1]) !== rate(r) || rows[i - 1].w !== r.w) ord = i + 1;   // 동률은 공동 순위
+                    r.ord = ord;
+                });
+            }
+            groups.push({ stage: s.name || '', section: sec.name || '', rows, resorted: !sorted });
+        }));
+
+        const payload = {
+            ok: true, league: lg.slug, groups,
+            period: { start: cur.startDate || '', end: cur.endDate || '' },
+            fetchedAt: Date.now()
+        };
+        myCache.set('esports_' + key, payload, 1800);
+        if (groups.length) saveEsports(key, payload);   // 빈 순위표를 창고에 덮어쓰지 않는다
+        res.json(payload);
+    } catch (err) {
+        console.warn('[Esports] 순위표 수집 실패(' + lg.slug + '):', err.message);
+        const fb = await esportsFallback(key);
+        if (fb) return res.json(Object.assign({}, fb, { stale: true }));
+        res.status(503).json({ ok: false, error: '순위표를 불러오지 못했습니다.' });
+    }
 });
 
 app.get('/api/ranking', async (req, res) => {
