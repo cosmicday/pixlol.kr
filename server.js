@@ -55,7 +55,11 @@ const MatchCache = mongoose.model('MatchCache', matchCacheSchema);
 const matchSeenSchema = new mongoose.Schema({
     matchId: { type: String, required: true, unique: true },
     day: { type: String },                      // 이 경기가 속한 날짜 (KST "2026-08-14")
-    cnt: { type: Number, default: 1 },          // 명단 유저 몇 명에게서 보였나
+    cnt: { type: Number, default: 1 },          // 명단 유저 몇 명에게서 보였나 (= seen 의 개수)
+    // ★★ 본 사람 표식(puuid 앞 8자) 모음 (2026-09-16). cnt 를 `$inc` 로 세면 **같은 사람의 두 번째
+    //   훑기가 그대로 +1** 이 된다 — 배포 겹침과 자정 경계로 실제로 샜다 (scanMatchlists 주석 참고).
+    //   집합으로 모아 그 개수를 cnt 로 쓰면 몇 번을 훑어도 값이 같다. 판당 10칸 x 9바이트라 하루 0.4MB.
+    seen: { type: [String], default: undefined },
     cnt2: { type: Number },                     // ★ 다시 훑기(RESCAN_DAY)가 새로 세는 칸. 끝나면 cnt 로 옮기고 지운다
     done: { type: Boolean, default: false },    // detail 처리를 끝냈나
     // ★ 5일이다 (2026-09-10, 3 → 5). 9/9 쓰기 잠금으로 수집이 이틀 밀렸을 때 3일짜리 목록이
@@ -1389,21 +1393,49 @@ async function scanMatchlists() {
 
         for (const p of targets) {
             try {
-                // ★ endTime 까지 준다. 하루가 통째로 닫힌 구간이라 전원이 같은 창을 본다.
+                // ★ 하루가 통째로 닫힌 구간이라 전원이 같은 창을 본다.
                 //   count 는 100(최대)로 둔다 — 하루 100판을 넘기는 사람은 없고,
                 //   모자라면 그 사람 판이 통째로 누락되므로 넉넉한 쪽이 안전하다.
+                // ★★ 끝을 `to - 1` 로 준다 (2026-09-16). 라이엇은 **경기가 끝난 시각(초)** 으로 거르고
+                //   **양 끝을 다 포함한다** — 실측으로 확인했다. `to` 를 그대로 주면 자정 정각에 끝난 판이
+                //   그날 창과 다음 날 창(`from` 이 같은 초다)에 **둘 다** 들어가 같은 판을 두 번 센다.
+                //   9/10 의 어떤 판은 그래서 cnt 가 15(실제 8명)였다. 다음 날 창이 그 1초를 가져가므로 구멍은 없다.
                 const res = await riotApi.get(
                     `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${p.puuid}/ids` +
-                    `?queue=${STAT_QUEUE}&startTime=${from}&endTime=${to}&start=0&count=100`
+                    `?queue=${STAT_QUEUE}&startTime=${from}&endTime=${to - 1}&start=0&count=100`
                 );
                 const ids = res.data || [];
 
                 if (ids.length > 0) {
                     // 한 번에 밀어 넣는다. 낱개로 보내면 DB 왕복만 그만큼이다.
-                    await MatchSeen.bulkWrite(ids.map(id => ({
+                    // ★★★ 같은 사람이 두 번 훑어도 한 번만 세게 한다 (2026-09-16).
+                    //   예전엔 `$inc: { cnt: 1 }` 이라 **두 번째 훑기가 그대로 +1** 이었다. 두 자리에서 샜다:
+                    //     ① **배포 겹침** — 새 서버가 부팅하며 순회 도장을 읽은 뒤(`loadResolvedNames`)
+                    //        옛 컨테이너가 2~3초 더 훑는다. 그 사이 훑힌 사람은 새 서버 눈에 "안 훑음" 이라
+                    //        다시 훑고, 그 사람 판이 전부 +1 이 된다. 실측 겹침 1.5~3.3초 (배포마다 한두 명).
+                    //        도장 쓰기(`SummonerCache.updateOne`)를 안 기다리는 것도 같은 방향으로 샌다.
+                    //     ② **자정 경계** — 위 `to - 1` 주석.
+                    //   결과: 9/10 경기 11판이 실제 3~4명인데 5로 세어져 통계에 들어갔다 (2026-09-16 삭제).
+                    //   → 본 사람 표식을 집합으로 모으고 **그 개수**를 cnt 로 쓴다. 몇 번을 훑어도 같은 값이라
+                    //     배포·경계는 물론 실수로 띄운 두 번째 서버까지 견딘다.
+                    //   ★ `$max` 로 옛 cnt 를 지킨다 — 이 코드가 뜨기 전에 쌓인 문서는 `seen` 이 비어 있어서
+                    //     그냥 개수로 덮으면 cnt 가 1 로 **떨어져** 5명 문턱 아래로 사라진다 (수집에서 통째로 누락).
+                    //   ★ mongoose 모델이 아니라 드라이버(`.collection`)로 보낸다 — 파이프라인 업데이트라
+                    //     mongoose 9 의 `updatePipeline` 규칙(반복 함정 9번)에 걸린다. 넣는 값은 원래 형대로다.
+                    const tag = p.puuid.slice(0, 8);
+                    await MatchSeen.collection.bulkWrite(ids.map(id => ({
                         updateOne: {
                             filter: { matchId: id },
-                            update: { $inc: { cnt: 1 }, $setOnInsert: { day, createdAt: new Date() } },
+                            update: [
+                                {
+                                    $set: {
+                                        day: { $ifNull: ['$day', day] },
+                                        createdAt: { $ifNull: ['$createdAt', new Date()] },
+                                        seen: { $setUnion: [{ $ifNull: ['$seen', []] }, [tag]] }
+                                    }
+                                },
+                                { $set: { cnt: { $max: [{ $size: '$seen' }, { $ifNull: ['$cnt', 0] }] } } }
+                            ],
                             upsert: true
                         }
                     })), { ordered: false });
