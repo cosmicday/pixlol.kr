@@ -2926,6 +2926,8 @@ async function startJobs() {
     scheduleRankUpdate();
     // ★ 컷라인은 명단 갱신과 별개로 하루 한 번(한국시간 자정) 혼자 돈다. 라이엇 호출 0.
     scheduleCutoffJob();
+    // 방송 탭 유튜브 — 매시 00·20·40분 (2026-09-17). 로컬(READONLY_JOBS)에서는 안 돌고 요청 때만 받는다
+    scheduleBroadcastYoutube();
     // ★ 랭커 LP 일별 기록 — 자정 +2분, 라이엇 호출 0 (2026-09-01)
     scheduleLpHistoryJob();
     setInterval(resolveNamesInBackground, 60 * 1000);
@@ -5365,16 +5367,22 @@ const broadcastChannels = (() => {
 const BC_YT_EXCLUDE = new Set((broadcastChannels.exclude || []).map(c => c.id));
 const BC_YT_INCLUDE = (broadcastChannels.include || []).map(c => c.id).filter(id => !BC_YT_EXCLUDE.has(id));
 
+// ★★ 유튜브는 요청과 무관하게 **매시 00·20·40분**에 서버가 스스로 받는다 (2026-09-17 사용자 결정).
+//   방문이 뜸해도 명단(lastLive·새 채널 찾기)이 자라야 하기 때문이다. 단 READONLY_JOBS=1(로컬)에서는
+//   예전처럼 요청이 올 때만 받는다 — 로컬이 같은 키로 20분마다 돌면 할당량을 나눠 먹는다.
 // ★ 유튜브 하루 할당량 10,000 유닛 계산 — 명단 확인 1회 = 채널 수 + 50개당 1 (60채널 ≈ 64유닛).
-//   12분마다면 하루 120회 × 64 = 7,680. 새 채널 찾기(search, 1회 100유닛)를 2시간마다 = 1,200. 합 ~8,900.
+//   20분마다 하루 72회 × 64 = 4,608. 새 채널 찾기(search, 1회 100유닛)를 2시간마다 = 1,200. 합 ~5,800.
+//   배포마다 부팅 때 한 번 더 받을 수 있다(그 슬롯의 박제가 없을 때만, 64유닛).
 //   **채널 수(BC_YT_MAX)나 주기를 늘리면 이 합을 다시 셀 것**
-const BC_TTL = { soop: 90 * 1000, chzzk: 90 * 1000, youtube: 12 * 60 * 1000 };
+const BC_YT_SLOT_MS = 20 * 60 * 1000;
+const BC_TTL = { soop: 90 * 1000, chzzk: 90 * 1000, youtube: BC_YT_SLOT_MS };
 const BC_RETRY_MS = 60 * 1000;                // 실패하면 이만큼은 다시 안 부른다
 const BC_YT_QUOTA_BACKOFF = 60 * 60 * 1000;   // 할당량이 바닥나면 한 시간 쉰다
 const BC_YT_SEARCH_MS = 2 * 60 * 60 * 1000;
 const BC_YT_MAX = 60;                         // 한 번에 확인할 자동 명단 채널 수
 const BC_YT_ACTIVE_DAYS = 14;                 // 이 기간 방송이 안 잡힌 채널은 확인 대상에서 빠진다
-const BC_CHZZK_MAX_PAGES = 100;
+const BC_CHZZK_MAX_PAGES = 100;   // 공식 API 는 20개씩
+const BC_CHZZK_WEB_MAX_PAGES = 20; // 비공식 카테고리 API 는 50개씩 (실측 128개 = 4페이지)
 const BC_SOOP_LOL = '00040019';               // SOOP 카테고리 「리그 오브 레전드」 (broad/category/list 실측)
 const BC_UA = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36' };
 
@@ -5462,7 +5470,63 @@ async function bcFetchSoop() {
 }
 
 // ---- 치지직 ----
+// ★★ 공식 API 에는 카테고리 조건이 **없다** (2026-09-17 재확인 — categoryId·liveCategory·category 를 붙여도 무시된다.
+//   공식 카테고리 API 는 이름 검색뿐). 그래서 치지직 웹이 자기 화면에서 쓰는 **비공식** 카테고리 목록을 먼저 쓴다 —
+//   키 없이 롤 방송 128개를 4번 · 0.2초에 다 준다 (공식은 65번 · 1.4초에 시청자 2명 이상 75개).
+//   문서가 없는 주소라 언제든 바뀌거나 막힐 수 있다 → 실패하면 공식 API 로 넘어간다 (e스포츠 탭의 lolesports 와 같은 처지)
+function bcChzzkItem(l, ch) {
+    return {
+        p: 'chzzk',
+        id: String(l.liveId),
+        title: l.liveTitle || '',
+        name: ch.channelName || '',
+        viewers: bcNum(l.concurrentUserCount),
+        // ★ 썸네일 주소에 `{type}` 자리표시가 들어 있다 — 크기(360·480·720·1080)로 바꿔 넣어야 한다
+        thumb: ch.thumb ? String(ch.thumb).replace('{type}', '480') : null,
+        avatar: ch.channelImageUrl || null,
+        url: `https://chzzk.naver.com/live/${encodeURIComponent(ch.channelId)}`,
+        start: l.openDate ? Date.parse(l.openDate.replace(' ', 'T') + '+09:00') || null : null
+    };
+}
+
+let bcChzzkWebFailLogged = false;
 async function bcFetchChzzk() {
+    try {
+        const out = await bcFetchChzzkWeb();
+        bcChzzkWebFailLogged = false;
+        return out;
+    } catch (err) {
+        if (!bcChzzkWebFailLogged) {   // 막히면 90초마다 찍힐 테니 한 번만
+            console.warn('[Broadcast] 치지직 비공식 카테고리 API 실패 → 공식 API 로:', err.response ? err.response.status : '', err.message);
+            bcChzzkWebFailLogged = true;
+        }
+        return bcFetchChzzkOpen();
+    }
+}
+
+async function bcFetchChzzkWeb() {
+    const out = [];
+    let next = null;
+    for (let page = 0; page < BC_CHZZK_WEB_MAX_PAGES; page++) {
+        const r = await axios.get('https://api.chzzk.naver.com/service/v2/categories/GAME/League_of_Legends/lives', {
+            // 다음 페이지 열쇠는 { concurrentUserCount, liveId } 두 값이다 (실측)
+            params: Object.assign({ size: 50 }, next || {}),
+            headers: BC_UA, timeout: 10000
+        });
+        const c = r.data && r.data.content;
+        if (!c || !Array.isArray(c.data)) throw new Error('응답 모양이 다르다');
+        for (const l of c.data) {
+            const ch = l.channel || {};
+            if (l.liveCategory !== 'League_of_Legends' || l.adult || l.blindType || !ch.channelId) continue;
+            out.push(bcChzzkItem(l, Object.assign({ thumb: l.liveImageUrl || l.defaultThumbnailImageUrl }, ch)));
+        }
+        next = c.page && c.page.next;
+        if (!next || !c.data.length) break;
+    }
+    return out;
+}
+
+async function bcFetchChzzkOpen() {
     const cid = process.env.CHZZK_CLIENT_ID, secret = process.env.CHZZK_CLIENT_SECRET;
     if (!cid || !secret) throw Object.assign(new Error('치지직 키 없음'), { reason: 'nokey' });
     const out = [];
@@ -5477,18 +5541,7 @@ async function bcFetchChzzk() {
         const list = c.data || [];
         for (const l of list) {
             if (l.liveCategory !== 'League_of_Legends' || l.adult) continue;
-            out.push({
-                p: 'chzzk',
-                id: String(l.liveId),
-                title: l.liveTitle || '',
-                name: l.channelName || '',
-                viewers: bcNum(l.concurrentUserCount),
-                // ★ 썸네일 주소에 `{type}` 자리표시가 들어 있다 — 크기(360·480·720·1080)로 바꿔 넣어야 한다
-                thumb: l.liveThumbnailImageUrl ? String(l.liveThumbnailImageUrl).replace('{type}', '480') : null,
-                avatar: l.channelImageUrl || null,
-                url: `https://chzzk.naver.com/live/${encodeURIComponent(l.channelId)}`,
-                start: l.openDate ? Date.parse(l.openDate.replace(' ', 'T') + '+09:00') || null : null
-            });
+            out.push(bcChzzkItem(l, { thumb: l.liveThumbnailImageUrl, channelName: l.channelName, channelImageUrl: l.channelImageUrl, channelId: l.channelId }));
         }
         next = c.page && c.page.next;
         // 시청자 순이라 1명 이하가 나오면 뒤는 볼 필요가 없다
@@ -5542,7 +5595,7 @@ async function bcFetchYoutube() {
         const last = await YtChannel.findOne({ searchAt: { $gt: 0 } }).sort({ searchAt: -1 }).select('searchAt').lean();
         bcYtSearchAt = last ? last.searchAt : 0;
     }
-    if (Date.now() - bcYtSearchAt > BC_YT_SEARCH_MS) {
+    if (Date.now() - bcYtSearchAt > BC_YT_SEARCH_MS - 60 * 1000) {
         try { await bcYtDiscover(); }
         catch (err) {
             if (bcYtQuotaHit(err)) throw err;
@@ -5606,15 +5659,20 @@ async function bcFetchYoutube() {
 
 const bcFetchers = { soop: bcFetchSoop, chzzk: bcFetchChzzk, youtube: bcFetchYoutube };
 
-function bcRefresh(p) {
+function bcRefresh(p, force) {
     const st = bcState[p];
     const now = Date.now();
-    if (st.ok && now - st.at < BC_TTL[p]) return Promise.resolve();
+    if (!force && st.ok && now - st.at < BC_TTL[p]) return Promise.resolve();
     if (now < st.nextTry) return Promise.resolve();
     if (bcInflight[p]) return bcInflight[p];
     bcInflight[p] = bcFetchers[p]()
         .then(items => {
             st.items = items; st.at = Date.now(); st.ok = true; st.reason = null; st.nextTry = 0;
+            if (p === 'youtube' && bcYtScheduled) {
+                // 배포 직후 다음 정시까지 비어 있지 않게 박제해 둔다 (esportscaches 창고를 같이 쓴다. 문서 1개 ~5KB)
+                EsportsCache.updateOne({ key: 'broadcast_youtube' }, { $set: { payload: { items, at: st.at }, at: st.at } }, { upsert: true })
+                    .catch(e => console.warn('[Broadcast] 유튜브 박제 실패:', e.message));
+            }
         })
         .catch(err => {
             st.reason = err.reason || (p === 'youtube' && bcYtQuotaHit(err) ? 'quota' : 'error');
@@ -5626,11 +5684,39 @@ function bcRefresh(p) {
     return bcInflight[p];
 }
 
+// ---- 유튜브 정시 갱신 (매시 00·20·40분) ----
+// ★ 한국시간과 UTC 는 분이 같으므로 epoch 를 20분으로 나눈 경계가 곧 00·20·40분이다
+let bcYtScheduled = false;
+async function scheduleBroadcastYoutube() {
+    if (!process.env.YOUTUBE_API_KEY) return;
+    bcYtScheduled = true;
+    const slotStart = Math.floor(Date.now() / BC_YT_SLOT_MS) * BC_YT_SLOT_MS;
+    try {
+        // 이번 슬롯에 이미 받은 게 있으면(배포 직전 옛 서버가 받았다) 그걸 쓰고 할당량을 아낀다
+        const doc = await EsportsCache.findOne({ key: 'broadcast_youtube' }).lean();
+        const snap = doc && doc.payload;
+        if (snap && Array.isArray(snap.items) && snap.at >= slotStart) {
+            Object.assign(bcState.youtube, { items: snap.items, at: snap.at, ok: true, reason: null });
+            console.log(`[Broadcast] 유튜브 박제 복원 (${snap.items.length}개)`);
+        } else {
+            bcRefresh('youtube', true);
+        }
+    } catch (e) {
+        bcRefresh('youtube', true);
+    }
+    const tick = () => {
+        const wait = (Math.floor(Date.now() / BC_YT_SLOT_MS) + 1) * BC_YT_SLOT_MS - Date.now() + 5000;
+        setTimeout(() => { bcRefresh('youtube', true); tick(); }, wait);
+    };
+    tick();
+}
+
 let bcPayloadCache = { key: '', body: '' };
 app.get('/api/broadcast', async (req, res) => {
     const ps = Object.keys(bcState);
     // 받아 둔 게 없는 플랫폼만 기다린다. 있으면 그대로 주고 뒤에서 갱신한다
     await Promise.all(ps.map(p => {
+        if (p === 'youtube' && bcYtScheduled) return null;   // 정시 작업이 맡는다
         const job = bcRefresh(p);
         return bcState[p].at ? null : job;
     }));

@@ -1243,7 +1243,7 @@ function renderBroadcast() {
         ? `<button class="es-more" id="bc-more">더 보기 (${list.length - cut.length})</button>` : '';
 
     const ytNote = live.some(p => p.key === 'youtube')
-        ? `<p class="bc-note">※ SOOP·치지직은 1~2분마다, 유튜브는 약 12분마다 새로 받습니다. 유튜브는 롤 방송 채널 명단을 두고 확인하는 방식이라 빠지는 방송이 있을 수 있고, 시청자 수를 숨긴 방송은 맨 뒤에 놓입니다.</p>`
+        ? `<p class="bc-note">※ SOOP·치지직은 1~2분마다, 유튜브는 매시 00·20·40분에 새로 받습니다. 유튜브는 롤 방송 채널 명단을 두고 확인하는 방식이라 빠지는 방송이 있을 수 있고, 시청자 수를 숨긴 방송은 맨 뒤에 놓입니다.</p>`
         : '';
 
     box.innerHTML = `
