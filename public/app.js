@@ -1241,6 +1241,15 @@ const BC_PLATFORMS = [
     { key: 'chzzk',   label: '치지직' },
     { key: 'youtube', label: '유튜브' }
 ];
+// 플랫폼 표식 — 칩과 카드 배지가 같이 쓴다 (2026-09-17 저녁, 브랜드 가이드 확인 뒤. 근거는 docs/방송.md 「플랫폼 아이콘」 절)
+//   유튜브 — API 브랜딩 가이드가 「유튜브 콘텐츠로 가는 링크」에 아이콘 사용을 승인 없이 허용. 색(#FF0000)·비례를 안 바꾼다
+//   치지직 — 공식 브랜드 가이드의 아이콘 파일 그대로 (비상업·변형 금지 조건. ★ 사이트에 광고를 붙이면 이 아이콘부터 뺄 것)
+//   SOOP  — 브랜드 가이드가 「플랫폼 밖 사용은 서면 동의 필요」라 로고를 안 쓴다. 색 점 + 이름만
+function bcPlatMark(key) {
+    if (key === 'youtube') return '<svg class="bc-mark is-youtube" viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5.5" fill="#FF0000"/><path d="M11.2 5.6v8.8L18.6 10z" fill="#fff"/></svg>';
+    if (key === 'chzzk') return '<img class="bc-mark is-chzzk" src="/chzzk_icon_40.png" alt="" width="20" height="20">';
+    return `<i class="bc-dot is-${key}"></i>`;
+}
 const BC_PAGE = 60;           // 한 번에 그리는 카드 수
 const BC_POLL_MS = 2 * 60 * 1000; // 페이지에 머무는 동안 다시 받는 주기 (서버는 매시 00·20·40분에 바뀐다 — 싼 메모리 응답이라 자주 물어도 된다)
 let bcData = null;
@@ -1316,7 +1325,7 @@ function bcCardHtml(b) {
         : `<span class="bc-avatar is-empty">${escapeHtml((b.name || '?').slice(0, 1))}</span>`;
     return `<a class="bc-card is-${b.p}" href="${escapeHtml(b.url)}" target="_blank" rel="noopener" title="${escapeHtml(b.title)}">
         <span class="bc-thumb">${thumb}
-            <em class="bc-plat is-${b.p}"><i class="bc-dot is-${b.p}"></i>${escapeHtml(plat ? plat.label : b.p)}</em>
+            <em class="bc-plat is-${b.p}">${bcPlatMark(b.p)}${escapeHtml(plat ? plat.label : b.p)}</em>
             <b class="bc-viewers${b.viewers == null ? ' is-hidden' : ''}">${bcViewers(b.viewers)}</b>
         </span>
         <span class="bc-body">${avatar}
@@ -1370,7 +1379,7 @@ function renderBroadcast() {
 
     const chips = [{ key: '', label: '전체', n: d.items.length }]
         .concat(live.map(p => ({ key: p.key, label: p.label, n: pf[p.key].count })))
-        .map(c => `<button class="codex-tab${(c.key || null) === bcPlatform ? ' active' : ''}" data-bc-platform="${c.key}">${c.key ? `<i class="bc-dot is-${c.key}"></i>` : ''}${escapeHtml(c.label)} <span class="bc-chip-n">${c.n}</span></button>`)
+        .map(c => `<button class="codex-tab${(c.key || null) === bcPlatform ? ' active' : ''}" data-bc-platform="${c.key}">${c.key ? bcPlatMark(c.key) : ''}${escapeHtml(c.label)} <span class="bc-chip-n">${c.n}</span></button>`)
         .join('');
 
     // ★ 새로 못 받아 예전 값을 보여 주는 플랫폼을 밝힌다

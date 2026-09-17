@@ -9956,8 +9956,13 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
 .bc-chip-n { margin-left: 2px; color: var(--text-faint); font-size: 12px; font-variant-numeric: tabular-nums; }
 .codex-tab.active .bc-chip-n { color: inherit; opacity: 0.75; }
 
-/* 플랫폼 색 점 — 칩과 카드 배지가 같이 쓴다 */
+/* 플랫폼 표식 — 칩과 카드 배지가 같이 쓴다. 유튜브는 인라인 SVG(색·비례 고정), 치지직은 공식 아이콘 PNG, SOOP 은 색 점 (근거: app.js bcPlatMark) */
 .bc-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; vertical-align: 1px; }
+.bc-mark { flex: none; display: inline-block; margin-right: 5px; vertical-align: -3px; }
+.bc-mark.is-youtube { width: 20px; height: 14px; }
+.bc-mark.is-chzzk { width: 16px; height: 16px; border-radius: 3px; }
+.codex-tab .bc-mark { vertical-align: -4px; }
+.codex-tab .bc-mark.is-chzzk { width: 16px; height: 16px; }
 .bc-dot.is-soop { background: #2b6bff; }
 .bc-dot.is-chzzk { background: #00c07f; }
 .bc-dot.is-youtube { background: #e5202e; }
@@ -10065,6 +10070,9 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
 }
 .bc-plat { left: 8px; display: inline-flex; align-items: center; }
 .bc-plat .bc-dot { margin-right: 5px; vertical-align: 0; }
+.bc-plat .bc-mark { vertical-align: 0; }
+.bc-plat .bc-mark.is-youtube { width: 18px; height: 13px; }
+.bc-plat .bc-mark.is-chzzk { width: 14px; height: 14px; }
 
 .bc-viewers {
     right: 8px;
@@ -10134,6 +10142,8 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
 
 @media (max-width: 768px) {
     #broadcast-container { margin: var(--dogu-page-top) auto 0; padding: 0 16px 40px; }
+    /* ★ 도감 768 규칙(.codex-tab { flex: 1 })이 딸려와서, 아이콘 때문에 둘째 줄로 내려간 칩이 한 줄을 통째로 차지한다 — 내용 폭으로 */
+    .bc-bar .es-leagues .codex-tab { flex: 0 0 auto; padding: 0 10px; }
     .bc-tools { width: 100%; margin-left: 0; }
     .bc-search-box { flex: 1 1 140px; width: auto; }
     .bc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
