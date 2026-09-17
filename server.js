@@ -2917,8 +2917,6 @@ async function startJobs() {
     //   여기서 멈추므로 조회 API 와 화면은 그대로 살아 있다.
     if (process.env.READONLY_JOBS === '1') {
         console.log('[System] READONLY_JOBS=1 — 백그라운드 잡을 띄우지 않는다 (조회만 가능)');
-        // 방송 탭 정시 작업만 로컬에서 시험할 때 (유튜브 할당량을 프로덕션과 나눠 먹으니 잠깐만)
-        if (process.env.BROADCAST_SCHEDULE === '1') scheduleBroadcast();
         return;
     }
 
@@ -2928,8 +2926,6 @@ async function startJobs() {
     scheduleRankUpdate();
     // ★ 컷라인은 명단 갱신과 별개로 하루 한 번(한국시간 자정) 혼자 돈다. 라이엇 호출 0.
     scheduleCutoffJob();
-    // 방송 탭 — 매시 00·20·40분 (2026-09-17). 로컬(READONLY_JOBS)에서는 안 돌고 요청 때만 받는다
-    scheduleBroadcast();
     // ★ 랭커 LP 일별 기록 — 자정 +2분, 라이엇 호출 0 (2026-09-01)
     scheduleLpHistoryJob();
     setInterval(resolveNamesInBackground, 60 * 1000);
@@ -5690,16 +5686,21 @@ function bcRefresh(p, force) {
 // ★ 한국시간과 UTC 는 분이 같으므로 epoch 를 20분으로 나눈 경계가 곧 00·20·40분이다
 // ★ 부팅 때 **이번 슬롯에 받은 박제**가 있으면(배포 직전 옛 서버가 받았다) 그걸 쓴다 — 유튜브 할당량을 아끼고
 //   같은 슬롯에 두 번 안 받는다. 없으면 곧바로 한 번 받는다 → 배포 직후에도 화면이 비지 않는다
-let bcScheduled = false;
-async function scheduleBroadcast() {
-    bcScheduled = true;
+// 로컬(READONLY_JOBS=1)은 요청 모드. 로컬에서 정시 작업을 시험하려면 BROADCAST_SCHEDULE=1 (유튜브 할당량을 같이 먹으니 잠깐만)
+const bcScheduled = process.env.READONLY_JOBS !== '1' || process.env.BROADCAST_SCHEDULE === '1';
+let bcBoot = null;
+function scheduleBroadcast() {
+    if (!bcBoot) bcBoot = bcBootRun();
+    return bcBoot;
+}
+async function bcBootRun() {
     const slotStart = Math.floor(Date.now() / BC_SLOT_MS) * BC_SLOT_MS;
     for (const p of Object.keys(bcState)) {
         try {
             const doc = await EsportsCache.findOne({ key: 'broadcast_' + p }).lean();
             const snap = doc && doc.payload;
             if (snap && Array.isArray(snap.items) && snap.at >= slotStart) {
-                Object.assign(bcState[p], { items: snap.items, at: snap.at, ok: true, reason: null });
+                if (snap.at > bcState[p].at) Object.assign(bcState[p], { items: snap.items, at: snap.at, ok: true, reason: null });
                 console.log(`[Broadcast] ${p} 박제 복원 (${snap.items.length}개)`);
                 continue;
             }
@@ -5718,7 +5719,7 @@ app.get('/api/broadcast', async (req, res) => {
     const ps = Object.keys(bcState);
     await Promise.all(ps.map(p => {
         // 정시 모드: 바깥 호출은 정시 작업만 한다. 부팅 직후 첫 수집이 도는 중이면 그것만 기다린다
-        if (bcScheduled) return bcState[p].at ? null : (bcInflight[p] || null);
+        if (bcScheduled) return bcState[p].at ? null : Promise.resolve(bcBoot).then(() => bcInflight[p]);
         // 로컬(요청 모드): 받아 둔 게 없는 플랫폼만 기다린다. 있으면 그대로 주고 뒤에서 갱신한다
         const job = bcRefresh(p);
         return bcState[p].at ? null : job;
@@ -5811,6 +5812,10 @@ async function bootstrap() {
     //   조회 라우트는 DB 만 읽으므로 잡이 덜 끝나도 대부분 정상이고, 명단이 아직 없는 자리는
     //   /api/ranking 이 이미 503 안내를 준다 — 그 처리가 있다는 게 곧 "먼저 열어도 된다" 는 뜻이다
     app.listen(PORT, () => console.log(`[System] 서버 실행 중: 포트 ${PORT}`));
+
+    // 방송 탭 정시 작업 (2026-09-17). ★ startJobs 안에 두면 안 된다 — 거기는 명단 조회 등을 수십 초 기다린 뒤라
+    //   그 사이 들어온 요청이 옛 방식으로 받아 버리고, 늦게 온 박제 복원이 더 새 값을 덮었다 (배포 실측)
+    if (bcScheduled) scheduleBroadcast();
 
     startJobs().catch(e => console.error('[System] startJobs 실패:', e.message));
     refreshChampLaneStats();
