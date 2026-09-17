@@ -1116,7 +1116,158 @@ document.addEventListener('click', (e) => {
     if (!b) return;
     showEsports(b.dataset.esLeague || null);
 });
-function showBroadcast() { showComingPage('broadcast-container', '방송', '/broadcast', 'nav-broadcast'); }
+// ===== 방송 — 롤 생방송 목록 (2026-09-17) =====
+// ★ 데이터는 서버 `/api/broadcast` 하나뿐이다 (SOOP · 치지직 · 유튜브를 서버가 합쳐 시청자 순으로 준다).
+//   근거·함정은 server.js 의 「방송」 절과 docs/방송.md.
+// ★ 플랫폼 칩은 주소를 안 바꾼다 — `/broadcast` 하나라 라우터(진입부·popstate)는 원래 있던 한 줄 그대로다
+const BC_PLATFORMS = [
+    { key: 'soop',    label: 'SOOP' },
+    { key: 'chzzk',   label: '치지직' },
+    { key: 'youtube', label: '유튜브' }
+];
+const BC_PAGE = 60;           // 한 번에 그리는 카드 수
+const BC_POLL_MS = 90 * 1000; // 페이지에 머무는 동안 다시 받는 주기 (서버 SOOP·치지직 주기와 같다)
+let bcData = null;
+let bcFetchedAt = 0;
+let bcPlatform = null;        // null = 전체
+let bcShown = BC_PAGE;
+let bcTimer = null;
+
+async function showBroadcast() {
+    if (!window.location.pathname.startsWith('/broadcast')) {
+        window.history.pushState({ page: 'broadcast' }, '', '/broadcast');   // 메뉴 진입 — 이력을 쌓는다
+    }
+    hideAllContainers();
+    const box = document.getElementById('broadcast-container');
+    box.style.display = 'block';
+    setActiveNav('nav-broadcast');
+    bcShown = BC_PAGE;
+
+    if (!bcTimer) bcTimer = setInterval(() => {
+        // 다른 화면으로 옮겼으면 멈춘다
+        if (!window.location.pathname.startsWith('/broadcast')) { clearInterval(bcTimer); bcTimer = null; return; }
+        loadBroadcast(true);
+    }, BC_POLL_MS);
+
+    if (bcData && Date.now() - bcFetchedAt < 60 * 1000) { renderBroadcast(); return; }
+    if (!bcData) {
+        box.innerHTML = `
+            <div class="stats-header"><h1 class="ranking-title">방송</h1></div>
+            <div class="es-leagues">${Array.from({ length: 4 }, () =>
+                '<div class="skel" style="width:72px;height:28px;border-radius:999px"></div>').join('')}</div>
+            <div class="bc-grid">${Array.from({ length: 8 }, () =>
+                '<div class="skel" style="aspect-ratio:16/13;border-radius:10px"></div>').join('')}</div>`;
+    }
+    await loadBroadcast(false);
+}
+
+async function loadBroadcast(quiet) {
+    try {
+        const res = await fetch('/api/broadcast');
+        const d = await res.json();
+        if (d && d.ok) { bcData = d; bcFetchedAt = Date.now(); }
+        else if (!quiet) bcData = bcData || d;
+    } catch (e) {
+        if (!quiet && !bcData) bcData = { ok: false };
+    }
+    // ★ 받는 사이에 다른 화면으로 옮겼으면 버린다
+    if (!window.location.pathname.startsWith('/broadcast')) return;
+    renderBroadcast();
+}
+
+function bcViewers(n) {
+    return n == null ? '비공개' : Number(n).toLocaleString('ko-KR');
+}
+
+function bcSince(ms) {
+    if (!ms) return '';
+    const min = Math.max(0, Math.floor((Date.now() - ms) / 60000));
+    if (min < 60) return `${min}분째`;
+    const h = Math.floor(min / 60);
+    return h < 48 ? `${h}시간째` : `${Math.floor(h / 24)}일째`;
+}
+
+function bcCardHtml(b) {
+    const plat = BC_PLATFORMS.find(p => p.key === b.p);
+    const thumb = b.thumb
+        ? `<img src="${escapeHtml(b.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : '';
+    const avatar = b.avatar
+        ? `<img class="bc-avatar" src="${escapeHtml(b.avatar)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'">`
+        : `<span class="bc-avatar is-empty">${escapeHtml((b.name || '?').slice(0, 1))}</span>`;
+    return `<a class="bc-card" href="${escapeHtml(b.url)}" target="_blank" rel="noopener" title="${escapeHtml(b.title)}">
+        <span class="bc-thumb">${thumb}
+            <em class="bc-plat is-${b.p}">${escapeHtml(plat ? plat.label : b.p)}</em>
+            <b class="bc-viewers${b.viewers == null ? ' is-hidden' : ''}">${bcViewers(b.viewers)}</b>
+        </span>
+        <span class="bc-body">${avatar}
+            <span class="bc-text">
+                <b class="bc-title">${escapeHtml(b.title || '(제목 없음)')}</b>
+                <i class="bc-name">${escapeHtml(b.name)}${b.start ? ` · ${bcSince(b.start)}` : ''}</i>
+            </span>
+        </span>
+    </a>`;
+}
+
+function renderBroadcast() {
+    const box = document.getElementById('broadcast-container');
+    if (!box) return;
+    const d = bcData;
+
+    if (!d || !d.ok || !Array.isArray(d.items)) {
+        box.innerHTML = `<div class="stats-header"><h1 class="ranking-title">방송</h1></div>` +
+            emptyBoxHtml('방송 목록을 불러오지 못했습니다', '잠시 뒤 다시 시도해 주세요.', 'bc-retry');
+        bindRetry('bc-retry', () => { bcData = null; showBroadcast(); });
+        return;
+    }
+
+    const pf = d.platforms || {};
+    // 키가 없어 아예 안 도는 플랫폼은 칩도 안 그린다 (로컬에서 키 없이 띄운 경우)
+    const live = BC_PLATFORMS.filter(p => pf[p.key] && !(pf[p.key].error === 'nokey' && !pf[p.key].count));
+    if (bcPlatform && !live.some(p => p.key === bcPlatform)) bcPlatform = null;
+
+    const list = bcPlatform ? d.items.filter(b => b.p === bcPlatform) : d.items;
+    const cut = list.slice(0, bcShown);
+
+    const chips = [{ key: '', label: '전체', n: d.items.length }]
+        .concat(live.map(p => ({ key: p.key, label: p.label, n: pf[p.key].count })))
+        .map(c => `<button class="codex-tab${(c.key || null) === bcPlatform ? ' active' : ''}" data-bc-platform="${c.key}">${escapeHtml(c.label)} <span class="bc-chip-n">${c.n}</span></button>`)
+        .join('');
+
+    // ★ 새로 못 받아 예전 값을 보여 주는 플랫폼을 밝힌다
+    const staleList = live.filter(p => pf[p.key].stale || (pf[p.key].error && pf[p.key].error !== 'nokey'));
+    const staleNote = staleList.length
+        ? `<p class="es-stale">${staleList.map(p => `<b>${p.label}</b>`).join(', ')} 목록을 지금 새로 받지 못해 ${pf[staleList[0].key].at ? '예전에 받아 둔 내용을' : '빈 목록을'} 보여주고 있습니다.</p>`
+        : '';
+
+    const moreBtn = list.length > cut.length
+        ? `<button class="es-more" id="bc-more">더 보기 (${list.length - cut.length})</button>` : '';
+
+    const ytNote = live.some(p => p.key === 'youtube')
+        ? `<p class="bc-note">※ SOOP·치지직은 1~2분마다, 유튜브는 약 12분마다 새로 받습니다. 유튜브는 롤 방송 채널 명단을 두고 확인하는 방식이라 빠지는 방송이 있을 수 있고, 시청자 수를 숨긴 방송은 맨 뒤에 놓입니다.</p>`
+        : '';
+
+    box.innerHTML = `
+        <div class="stats-header"><h1 class="ranking-title">방송</h1>
+            <span class="es-src">리그 오브 레전드 생방송 · 시청자 순</span></div>
+        <div class="es-leagues">${chips}</div>
+        ${staleNote}
+        ${cut.length ? `<div class="bc-grid">${cut.map(bcCardHtml).join('')}</div>`
+            : `<p class="es-none">지금 방송 중인 롤 방송이 없습니다.</p>`}
+        ${moreBtn}
+        ${ytNote}`;
+
+    const more = document.getElementById('bc-more');
+    if (more) more.addEventListener('click', () => { bcShown += BC_PAGE; renderBroadcast(); });
+}
+
+// 플랫폼 칩 — 주소는 그대로, 화면만 다시 그린다
+document.addEventListener('click', (e) => {
+    const b = e.target.closest('.codex-tab[data-bc-platform]');
+    if (!b) return;
+    bcPlatform = b.dataset.bcPlatform || null;
+    bcShown = BC_PAGE;
+    renderBroadcast();
+});
 
 function hideAllContainers() {
     document.querySelectorAll('.page-container').forEach(container => {

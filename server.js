@@ -436,6 +436,17 @@ const esportsCacheSchema = new mongoose.Schema({
     at: { type: Number }
 });
 const EsportsCache = mongoose.model('EsportsCache', esportsCacheSchema);
+// ★ 방송 탭 — 유튜브 롤 방송 채널 자동 명단 (2026-09-17). 채널 하나 ~200B 라 수백 개여도 0.1MB 다.
+//   `_id` 가 채널 ID(UC…)라 따로 unique 인덱스가 필요 없다. 쓰는 곳은 server.js 의 「방송」 절
+const ytChannelSchema = new mongoose.Schema({
+    _id: { type: String },
+    name: { type: String },
+    found: { type: Number },      // 처음 잡힌 시각
+    lastLive: { type: Number },   // 마지막으로 방송 중인 걸 본 시각 — 14일 지나면 확인 대상에서 빠진다
+    searchAt: { type: Number },   // 마지막으로 `롤` 검색에 걸린 시각 — 재부팅 뒤 검색 주기를 이어가는 데 쓴다
+    hits: { type: Number, default: 0 }
+}, { versionKey: false });
+const YtChannel = mongoose.model('YtChannel', ytChannelSchema, 'ytchannels');
 
 
 // ==========================================
@@ -2509,6 +2520,8 @@ async function ensureStatIndexes() {
         //       일일과 주간이 따로 들어와야 하기 때문이다. 옛 인덱스는 아래 legacy 가 지운다.
         // e스포츠 일정·순위표 창고 (2026-09-16). 문서 12개짜리라 TTL 없이 덮어쓴다
         { col: 'esportscaches', key: { key: 1 }, unique: true },
+        // 방송 탭 유튜브 채널 명단 (2026-09-17). 확인 대상을 「최근 방송한 순」으로 뽑는다. TTL 없음 — 작다
+        { col: 'ytchannels', key: { lastLive: -1 } },
         { col: 'mythicshops', key: { date: 1, section: 1 }, unique: true },
         { col: 'mythicshops', key: { 'items.catalogId': 1, date: -1 } },   // "마지막 등장일" 조회용
         { col: 'mythicshops', key: { section: 1, date: -1 } },             // 구획별 최신 조회용
@@ -5328,6 +5341,319 @@ app.get('/api/esports/standings', async (req, res) => {
         if (fb) return res.json(Object.assign({}, fb, { stale: true }));
         res.status(503).json({ ok: false, error: '순위표를 불러오지 못했습니다.' });
     }
+});
+
+// ==========================================
+// 방송 — 롤 생방송 목록 (SOOP · 치지직 · 유튜브, 2026-09-17)
+// ==========================================
+// ★★ 세 곳 다 **공식 API** 다. 키는 `.env` 의 SOOP_CLIENT_ID · CHZZK_CLIENT_ID/SECRET · YOUTUBE_API_KEY.
+//   키가 없는 플랫폼은 조용히 빠진다 (로컬에서 키 없이 띄워도 나머지는 돈다).
+// ★★ 잡이 아니라 **요청이 올 때만** 받는다 — 보는 사람이 없으면 바깥 호출도 0 이다.
+//   받아 둔 게 있으면 그걸 바로 주고 뒤에서 새로 받는다(stale-while-revalidate). 처음 한 번만 기다린다.
+//   그래서 READONLY_JOBS 와 무관하게 로컬에서도 화면이 뜬다 (유튜브 할당량은 같은 키라 같이 먹는다 — 아래 계산).
+// ★ DB 에는 유튜브 채널 명단(`ytchannels`)만 쓴다. 방송 목록 자체는 메모리에만 있다.
+//
+// 플랫폼별로 「롤 방송만」 고르는 방법이 다르다 (2026-09-17 실측, docs/방송.md):
+//   SOOP   — 공식 카테고리 조건이 있다 (롤 = 00040019). 60개씩 2~3페이지면 전부다
+//   치지직 — 카테고리 조건이 **없다.** 전체를 시청자 순으로 넘기며 liveCategory 로 거른다 (1,300개 · 65페이지 · 1.4초)
+//   유튜브 — 게임 조건이 **없다.** 채널 명단을 두고 「업로드 목록 맨 앞이 라이브인가」로 본다 (48 중 47 적중).
+//            RSS 피드는 49/50 이 404·500 이라 못 쓴다. `/channel/ID/live` 페이지는 1.2MB 라 안 쓴다
+const broadcastChannels = (() => {
+    try { return require('./broadcast_channels.js'); }
+    catch (e) { console.warn('[Broadcast] broadcast_channels.js 를 못 읽었다:', e.message); return { include: [], exclude: [] }; }
+})();
+const BC_YT_EXCLUDE = new Set((broadcastChannels.exclude || []).map(c => c.id));
+const BC_YT_INCLUDE = (broadcastChannels.include || []).map(c => c.id).filter(id => !BC_YT_EXCLUDE.has(id));
+
+// ★ 유튜브 하루 할당량 10,000 유닛 계산 — 명단 확인 1회 = 채널 수 + 50개당 1 (60채널 ≈ 64유닛).
+//   12분마다면 하루 120회 × 64 = 7,680. 새 채널 찾기(search, 1회 100유닛)를 2시간마다 = 1,200. 합 ~8,900.
+//   **채널 수(BC_YT_MAX)나 주기를 늘리면 이 합을 다시 셀 것**
+const BC_TTL = { soop: 90 * 1000, chzzk: 90 * 1000, youtube: 12 * 60 * 1000 };
+const BC_RETRY_MS = 60 * 1000;                // 실패하면 이만큼은 다시 안 부른다
+const BC_YT_QUOTA_BACKOFF = 60 * 60 * 1000;   // 할당량이 바닥나면 한 시간 쉰다
+const BC_YT_SEARCH_MS = 2 * 60 * 60 * 1000;
+const BC_YT_MAX = 60;                         // 한 번에 확인할 자동 명단 채널 수
+const BC_YT_ACTIVE_DAYS = 14;                 // 이 기간 방송이 안 잡힌 채널은 확인 대상에서 빠진다
+const BC_CHZZK_MAX_PAGES = 100;
+const BC_SOOP_LOL = '00040019';               // SOOP 카테고리 「리그 오브 레전드」 (broad/category/list 실측)
+const BC_UA = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36' };
+
+// 유튜브는 명단 채널이 다른 게임을 켜도 알 길이 없다 — 제목에 다른 게임 이름이 있으면 뺀다 (사용자 결정 2026-09-17).
+// ★ 「롤토체스」 는 '롤' 을 품고 있어 아래 BC_LOL_RE 에도 걸린다. 제외가 먼저라 괜찮다
+// ★ 짧은 줄임말(발로·로아·마크)은 넣지 않는다 — 다른 낱말 안에 흔히 들어 있어 롤 방송까지 빠진다
+// ★ 아래 뒷줄(리니지~)은 2026-09-17 실측에서 `롤` 검색에 실제로 딸려 온 게임들이다
+const BC_OTHER_GAME_RE = new RegExp([
+    '배그|배틀그라운드|pubg|발로란트|valorant|오버워치|overwatch|서든|메이플|로스트\s*아크|마인크래프트|minecraft',
+    '피파|fc\s*온라인|롤토체스|롤체|tft|전략적\s*팀\s*전투|이터널\s*리턴|스타크래프트|디아블로|패스\s*오브\s*엑자일|gta',
+    '최적화|포맷|포멧',
+    '리니지|아이온|림버스|팰월드|dk\s*온라인|열혈강호|에오스|디아\s*[24]|레저렉션|래더|닌텐도|역전재판|lofi|이클립스',
+    '원신|붕괴|니케|블루\s*아카이브|명조|몬스터\s*헌터|몬헌|엘든|던파|던전앤파이터|사이퍼즈|하스스톤|카트라이더|애니모'
+].join('|'), 'i');
+
+// ★★ 새 채널 찾기(`롤` 검색)는 **제목에 롤 신호가 있어야** 명단에 넣는다 (2026-09-17 실측).
+//   검색어가 `롤` 이어도 게임 카테고리 전체가 딸려 온다 — 제목 조건을 빼 봤더니 38채널 중 절반이 리니지·디아2 였다.
+//   신호 = 롤 용어 + 챔피언 이름. 챔피언 이름은 **세 글자 이상**만 쓴다 (아리·진·세트·조이·유미·애니 는 흔한 낱말이다).
+//   두 글자는 헷갈릴 일 없는 것만 따로 둔다. 큰코3 「취두부미션」 처럼 신호가 없는 날엔 못 잡지만, 다른 날 제목으로 잡힌다
+const BC_LOL_RE = /롤|리그s*오브s*레전드|leagues*ofs*legends|lol|lck|솔랭|자랭|칼바람|협곡|원딜|서폿|챌린저|그마|마딱|다딱|에딱|플딱|골딱|칼챔|정글러|미드s*라이너|탑s*라이너/i;
+const BC_CHAMP_2 = ['워윅', '럭스', '잭스', '제드', '베인', '리븐', '가렌', '티모', '피즈', '샤코', '벡스', '직스', '케일', '카서스', '갈리오'];
+function bcLolSignal(title) {
+    if (BC_LOL_RE.test(title)) return true;
+    for (const c of Object.values(champKeyMap)) {
+        const n = c.name || '';
+        if (n.length >= 3 && title.includes(n)) return true;
+    }
+    return BC_CHAMP_2.some(n => title.includes(n));
+}
+const BC_HANGUL_RE = /[가-힣]/;
+
+const bcState = {
+    soop:    { items: [], at: 0, ok: false, nextTry: 0, reason: null },
+    chzzk:   { items: [], at: 0, ok: false, nextTry: 0, reason: null },
+    youtube: { items: [], at: 0, ok: false, nextTry: 0, reason: null }
+};
+const bcInflight = {};
+let bcYtSearchAt = null;   // null = 아직 DB 에서 안 읽음
+
+function bcHttps(u) { return u ? String(u).replace(/^\/\//, 'https://').replace(/^http:\/\//, 'https://') : null; }
+function bcNum(v) { const n = Number(v); return Number.isFinite(n) ? n : null; }
+
+// 동시에 limit 개씩만 부른다 (유튜브 명단 60채널)
+async function bcMapLimit(list, limit, fn) {
+    const out = new Array(list.length);
+    let i = 0;
+    const workers = Array.from({ length: Math.min(limit, list.length) }, async () => {
+        while (i < list.length) { const k = i++; out[k] = await fn(list[k]); }
+    });
+    await Promise.all(workers);
+    return out;
+}
+
+// ---- SOOP ----
+async function bcFetchSoop() {
+    const id = process.env.SOOP_CLIENT_ID;
+    if (!id) throw Object.assign(new Error('SOOP 키 없음'), { reason: 'nokey' });
+    const out = [];
+    for (let page = 1; page <= 10; page++) {
+        // ★ GET 만 된다 (POST 는 405, 실측)
+        const r = await axios.get('https://openapi.sooplive.co.kr/broad/list', {
+            params: { client_id: id, select_key: 'cate', select_value: BC_SOOP_LOL, order_type: 'view_cnt', page_no: page },
+            headers: BC_UA, timeout: 10000
+        });
+        const list = (r.data && r.data.broad) || [];
+        for (const b of list) {
+            if (b.broad_cate_no !== BC_SOOP_LOL) continue;
+            if (String(b.is_password) === '1') continue;          // 비밀번호 방
+            if (Number(b.broad_grade) >= 19) continue;            // 19세
+            out.push({
+                p: 'soop',
+                id: String(b.broad_no),
+                title: b.broad_title || '',
+                name: b.user_nick || b.user_id || '',
+                viewers: bcNum(b.total_view_cnt),                 // ★ 이름과 달리 현재 시청자로 보인다 (docs/방송.md)
+                thumb: bcHttps(b.broad_thumb),
+                avatar: bcHttps(b.profile_img),
+                url: `https://play.sooplive.co.kr/${encodeURIComponent(b.user_id)}/${encodeURIComponent(b.broad_no)}`,
+                start: b.broad_start ? Date.parse(b.broad_start.replace(' ', 'T') + '+09:00') || null : null
+            });
+        }
+        if (list.length < 60) break;   // 한 페이지 60개 — 덜 차면 끝
+    }
+    return out;
+}
+
+// ---- 치지직 ----
+async function bcFetchChzzk() {
+    const cid = process.env.CHZZK_CLIENT_ID, secret = process.env.CHZZK_CLIENT_SECRET;
+    if (!cid || !secret) throw Object.assign(new Error('치지직 키 없음'), { reason: 'nokey' });
+    const out = [];
+    let next = null;
+    for (let page = 0; page < BC_CHZZK_MAX_PAGES; page++) {
+        const r = await axios.get('https://openapi.chzzk.naver.com/open/v1/lives', {
+            params: Object.assign({ size: 20 }, next ? { next } : {}),
+            headers: Object.assign({ 'Client-Id': cid, 'Client-Secret': secret }, BC_UA),
+            timeout: 10000
+        });
+        const c = (r.data && r.data.content) || {};
+        const list = c.data || [];
+        for (const l of list) {
+            if (l.liveCategory !== 'League_of_Legends' || l.adult) continue;
+            out.push({
+                p: 'chzzk',
+                id: String(l.liveId),
+                title: l.liveTitle || '',
+                name: l.channelName || '',
+                viewers: bcNum(l.concurrentUserCount),
+                // ★ 썸네일 주소에 `{type}` 자리표시가 들어 있다 — 크기(360·480·720·1080)로 바꿔 넣어야 한다
+                thumb: l.liveThumbnailImageUrl ? String(l.liveThumbnailImageUrl).replace('{type}', '480') : null,
+                avatar: l.channelImageUrl || null,
+                url: `https://chzzk.naver.com/live/${encodeURIComponent(l.channelId)}`,
+                start: l.openDate ? Date.parse(l.openDate.replace(' ', 'T') + '+09:00') || null : null
+            });
+        }
+        next = c.page && c.page.next;
+        // 시청자 순이라 1명 이하가 나오면 뒤는 볼 필요가 없다
+        const last = list[list.length - 1];
+        if (!next || !list.length || (last && last.concurrentUserCount <= 1)) break;
+    }
+    return out;
+}
+
+// ---- 유튜브 ----
+function bcYtGet(path, params) {
+    return axios.get('https://www.googleapis.com/youtube/v3/' + path, {
+        params: Object.assign({ key: process.env.YOUTUBE_API_KEY }, params), timeout: 10000
+    });
+}
+function bcYtQuotaHit(err) {
+    const errs = err && err.response && err.response.data && err.response.data.error && err.response.data.error.errors;
+    return Array.isArray(errs) && errs.some(e => /quota|rateLimit/i.test(e.reason || ''));
+}
+
+// 새 채널 찾기 — `롤` 로 라이브를 검색해 한국어 롤 제목인 채널을 명단에 넣는다 (100유닛)
+// ★ order=viewCount 를 주면 결과가 15개로 줄어든다 (실측, 안 주면 50개 + 다음 페이지). 그래서 안 준다
+async function bcYtDiscover() {
+    const r = await bcYtGet('search', {
+        part: 'snippet', type: 'video', eventType: 'live', regionCode: 'KR', relevanceLanguage: 'ko',
+        videoCategoryId: 20, maxResults: 50, q: '롤'
+    });
+    const now = Date.now();
+    const ops = [];
+    for (const it of (r.data.items || [])) {
+        const sn = it.snippet || {};
+        const title = sn.title || '';
+        if (!sn.channelId || BC_YT_EXCLUDE.has(sn.channelId)) continue;
+        if (!BC_HANGUL_RE.test(title) || !bcLolSignal(title) || BC_OTHER_GAME_RE.test(title)) continue;
+        ops.push({ updateOne: {
+            filter: { _id: sn.channelId },
+            update: { $set: { name: sn.channelTitle || '', lastLive: now, searchAt: now }, $setOnInsert: { found: now }, $inc: { hits: 1 } },
+            upsert: true
+        } });
+    }
+    if (ops.length) await YtChannel.bulkWrite(ops, { ordered: false });
+    bcYtSearchAt = now;
+    console.log(`[Broadcast] 유튜브 새 채널 찾기 — 후보 ${ops.length}개 반영`);
+}
+
+async function bcFetchYoutube() {
+    if (!process.env.YOUTUBE_API_KEY) throw Object.assign(new Error('유튜브 키 없음'), { reason: 'nokey' });
+
+    if (bcYtSearchAt === null) {
+        // 재부팅(배포)마다 검색을 다시 돌리면 100유닛씩 샌다 — 마지막 검색 시각을 DB 에서 잇는다
+        const last = await YtChannel.findOne({ searchAt: { $gt: 0 } }).sort({ searchAt: -1 }).select('searchAt').lean();
+        bcYtSearchAt = last ? last.searchAt : 0;
+    }
+    if (Date.now() - bcYtSearchAt > BC_YT_SEARCH_MS) {
+        try { await bcYtDiscover(); }
+        catch (err) {
+            if (bcYtQuotaHit(err)) throw err;
+            bcYtSearchAt = Date.now();   // 검색만 실패하면 명단 확인은 그대로 간다 (다음 검색은 2시간 뒤)
+            console.warn('[Broadcast] 유튜브 새 채널 찾기 실패:', err.message);
+        }
+    }
+
+    const since = Date.now() - BC_YT_ACTIVE_DAYS * 86400 * 1000;
+    const auto = await YtChannel.find({ lastLive: { $gte: since } }).sort({ lastLive: -1 }).limit(BC_YT_MAX + 20).select('_id').lean();
+    const ids = [...new Set(BC_YT_INCLUDE.concat(auto.map(c => c._id)))].filter(id => !BC_YT_EXCLUDE.has(id)).slice(0, BC_YT_INCLUDE.length + BC_YT_MAX);
+    if (!ids.length) return [];
+
+    // ① 채널마다 업로드 목록 맨 앞 3개 (1유닛씩). 라이브가 켜져 있으면 대개 맨 앞이다
+    const heads = await bcMapLimit(ids, 8, async (ch) => {
+        try {
+            const r = await bcYtGet('playlistItems', { part: 'contentDetails', maxResults: 3, playlistId: 'UU' + ch.slice(2) });
+            return (r.data.items || []).map(x => x.contentDetails && x.contentDetails.videoId).filter(Boolean);
+        } catch (err) {
+            if (bcYtQuotaHit(err)) throw err;
+            return [];   // 업로드가 없는 채널은 404 — 그냥 넘어간다
+        }
+    });
+    const vids = [...new Set(heads.flat())];
+
+    // ② 후보 영상의 라이브 여부·시청자 수 (50개당 1유닛)
+    const out = [];
+    const liveCh = new Set();
+    for (let i = 0; i < vids.length; i += 50) {
+        const r = await bcYtGet('videos', { part: 'snippet,liveStreamingDetails', id: vids.slice(i, i + 50).join(',') });
+        for (const v of (r.data.items || [])) {
+            const sn = v.snippet || {};
+            const ld = v.liveStreamingDetails || {};
+            if (sn.liveBroadcastContent !== 'live' || ld.actualEndTime) continue;
+            if (BC_YT_EXCLUDE.has(sn.channelId) || liveCh.has(sn.channelId)) continue;   // 한 채널 동시 송출은 하나만
+            liveCh.add(sn.channelId);
+            // 방송 중인 건 봤으니 명단 유지 — 롤이 아닌 걸 켰어도 채널은 그대로 둔다
+            if (BC_OTHER_GAME_RE.test(sn.title || '')) continue;
+            const th = sn.thumbnails || {};
+            out.push({
+                p: 'youtube',
+                id: v.id,
+                title: sn.title || '',
+                name: sn.channelTitle || '',
+                viewers: bcNum(ld.concurrentViewers),   // ★ 시청자 수를 숨긴 방송은 값이 없다 → null (맨 뒤)
+                thumb: (th.medium || th.high || th.default || {}).url || null,
+                avatar: null,
+                url: `https://www.youtube.com/watch?v=${encodeURIComponent(v.id)}`,
+                start: ld.actualStartTime ? Date.parse(ld.actualStartTime) : null
+            });
+        }
+    }
+    if (liveCh.size) {
+        const now = Date.now();
+        YtChannel.bulkWrite([...liveCh].map(id => ({
+            updateOne: { filter: { _id: id }, update: { $set: { lastLive: now }, $setOnInsert: { found: now, hits: 0 } }, upsert: true }
+        })), { ordered: false }).catch(err => console.warn('[Broadcast] 유튜브 명단 갱신 실패:', err.message));
+    }
+    return out;
+}
+
+const bcFetchers = { soop: bcFetchSoop, chzzk: bcFetchChzzk, youtube: bcFetchYoutube };
+
+function bcRefresh(p) {
+    const st = bcState[p];
+    const now = Date.now();
+    if (st.ok && now - st.at < BC_TTL[p]) return Promise.resolve();
+    if (now < st.nextTry) return Promise.resolve();
+    if (bcInflight[p]) return bcInflight[p];
+    bcInflight[p] = bcFetchers[p]()
+        .then(items => {
+            st.items = items; st.at = Date.now(); st.ok = true; st.reason = null; st.nextTry = 0;
+        })
+        .catch(err => {
+            st.reason = err.reason || (p === 'youtube' && bcYtQuotaHit(err) ? 'quota' : 'error');
+            // 키가 없으면 다시 볼 일이 없다 (env 는 재시작해야 바뀐다)
+            st.nextTry = Date.now() + (st.reason === 'nokey' ? 365 * 86400e3 : st.reason === 'quota' ? BC_YT_QUOTA_BACKOFF : BC_RETRY_MS);
+            if (st.reason !== 'nokey') console.warn(`[Broadcast] ${p} 수집 실패:`, err.response ? err.response.status : '', err.message);
+        })
+        .finally(() => { delete bcInflight[p]; });
+    return bcInflight[p];
+}
+
+let bcPayloadCache = { key: '', body: '' };
+app.get('/api/broadcast', async (req, res) => {
+    const ps = Object.keys(bcState);
+    // 받아 둔 게 없는 플랫폼만 기다린다. 있으면 그대로 주고 뒤에서 갱신한다
+    await Promise.all(ps.map(p => {
+        const job = bcRefresh(p);
+        return bcState[p].at ? null : job;
+    }));
+
+    // 분 단위를 섞는다 — 「오래된 값」 표시가 시간이 지나면 바뀌어야 한다
+    const key = Math.floor(Date.now() / 60000) + '|' + ps.map(p => bcState[p].at + ':' + bcState[p].reason).join('|');
+    if (bcPayloadCache.key !== key) {
+        const items = ps.flatMap(p => bcState[p].items)
+            .sort((a, b) => (b.viewers == null ? -1 : b.viewers) - (a.viewers == null ? -1 : a.viewers));
+        const platforms = {};
+        for (const p of ps) {
+            const st = bcState[p];
+            platforms[p] = {
+                at: st.at || null,
+                count: st.items.length,
+                // 받아 둔 게 있는데 지금 실패 중이거나, 주기의 3배를 넘겼으면 「오래된 값」
+                stale: !!st.at && (!!st.reason || Date.now() - st.at > BC_TTL[p] * 3),
+                error: st.reason
+            };
+        }
+        bcPayloadCache = { key, body: JSON.stringify({ ok: true, items, platforms, ttl: BC_TTL }) };
+    }
+    res.type('json').send(bcPayloadCache.body);
 });
 
 app.get('/api/ranking', async (req, res) => {

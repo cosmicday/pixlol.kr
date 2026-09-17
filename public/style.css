@@ -9560,6 +9560,7 @@ main {
     #codex-container,
     #patch-container,
     #esports-container,
+    #broadcast-container,
     #mythic-container,
     #patch-impact-container,
     #duo-container,
@@ -9769,3 +9770,138 @@ main {
 /* 순위표 각주 — 원본 순위가 승패와 어긋나 다시 매겼을 때만 나온다 */
 .es-note { margin: 10px 0 0; color: var(--text-faint); font-size: 12px; }
 .es-note b { color: var(--text-muted); }
+
+/* ==========================================================================
+   방송 — 롤 생방송 목록 (2026-09-17)
+   ★ 칩·안내 줄·「더 보기」 는 e스포츠 것(.es-leagues · .es-stale · .es-more · .es-none)을 그대로 쓴다.
+     새로 만든 건 카드 격자 하나다
+   ========================================================================== */
+#broadcast-container {
+    display: none;
+    max-width: calc(var(--dogu-wrap) - 32px);
+    margin: var(--dogu-page-top) auto 0;
+    padding-bottom: var(--dogu-page-bottom);
+    animation: fadeIn 0.6s ease;
+}
+
+.bc-chip-n { margin-left: 2px; color: var(--text-faint); font-size: 12px; font-variant-numeric: tabular-nums; }
+.codex-tab.active .bc-chip-n { color: inherit; opacity: 0.75; }
+
+.bc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 14px;
+}
+
+.bc-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--dogu-r-card);
+    color: inherit;
+    text-decoration: none;
+    transition: background var(--dogu-ease), border-color var(--dogu-ease);
+}
+@media (hover: hover) {
+    .bc-card:hover { background: #22203c; border-color: rgba(167, 139, 250, 0.45); }
+}
+
+/* 썸네일 자리는 그림이 없어도(이미지 오류·없음) 16:9 를 지킨다 */
+.bc-thumb {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+    background: rgba(255, 255, 255, 0.05);
+}
+.bc-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.bc-plat,
+.bc-viewers {
+    position: absolute;
+    top: 8px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1.5;
+}
+.bc-plat { left: 8px; color: #fff; }
+.bc-plat.is-soop { background: #2b6bff; }
+.bc-plat.is-chzzk { background: #00c07f; color: #06231a; }
+.bc-plat.is-youtube { background: #e5202e; }
+
+.bc-viewers {
+    right: 8px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+}
+.bc-viewers::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin: 0 5px 1px 0;
+    border-radius: 50%;
+    background: var(--lose);
+    vertical-align: middle;
+}
+.bc-viewers.is-hidden { color: rgba(255, 255, 255, 0.7); font-weight: 600; }
+
+.bc-body { display: flex; gap: 10px; padding: 10px 12px 12px; min-width: 0; }
+
+.bc-avatar {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: rgba(255, 255, 255, 0.1);
+}
+.bc-avatar.is-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.bc-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+
+/* 제목은 두 줄까지 */
+.bc-title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    color: var(--text-bright);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+    word-break: break-all;
+}
+.bc-name {
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-style: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bc-note { margin: 16px 0 0; color: var(--text-faint); font-size: 12px; line-height: 1.6; }
+
+@media (max-width: 768px) {
+    #broadcast-container { margin: var(--dogu-page-top) auto 0; padding: 0 16px 40px; }
+    .bc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .bc-body { padding: 8px 10px 10px; gap: 8px; }
+    .bc-avatar { width: 26px; height: 26px; }
+    .bc-plat, .bc-viewers { top: 6px; padding: 1px 5px; }
+    .bc-plat { left: 6px; }
+    .bc-viewers { right: 6px; }
+}
