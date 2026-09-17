@@ -1126,7 +1126,7 @@ const BC_PLATFORMS = [
     { key: 'youtube', label: '유튜브' }
 ];
 const BC_PAGE = 60;           // 한 번에 그리는 카드 수
-const BC_POLL_MS = 90 * 1000; // 페이지에 머무는 동안 다시 받는 주기 (서버 SOOP·치지직 주기와 같다)
+const BC_POLL_MS = 2 * 60 * 1000; // 페이지에 머무는 동안 다시 받는 주기 (서버는 매시 00·20·40분에 바뀐다 — 싼 메모리 응답이라 자주 물어도 된다)
 let bcData = null;
 let bcFetchedAt = 0;
 let bcPlatform = null;        // null = 전체
@@ -1242,8 +1242,8 @@ function renderBroadcast() {
     const moreBtn = list.length > cut.length
         ? `<button class="es-more" id="bc-more">더 보기 (${list.length - cut.length})</button>` : '';
 
-    const ytNote = live.some(p => p.key === 'youtube')
-        ? `<p class="bc-note">※ SOOP·치지직은 1~2분마다, 유튜브는 매시 00·20·40분에 새로 받습니다. 유튜브는 롤 방송 채널 명단을 두고 확인하는 방식이라 빠지는 방송이 있을 수 있고, 시청자 수를 숨긴 방송은 맨 뒤에 놓입니다.</p>`
+    const ytNote = live.length
+        ? `<p class="bc-note">※ 방송 목록은 매시 00·20·40분에 새로 받습니다. 유튜브는 롤 방송 채널 명단을 두고 확인하는 방식이라 빠지는 방송이 있을 수 있고, 시청자 수를 숨긴 방송은 맨 뒤에 놓입니다.</p>`
         : '';
 
     box.innerHTML = `

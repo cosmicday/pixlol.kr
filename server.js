@@ -2917,6 +2917,8 @@ async function startJobs() {
     //   여기서 멈추므로 조회 API 와 화면은 그대로 살아 있다.
     if (process.env.READONLY_JOBS === '1') {
         console.log('[System] READONLY_JOBS=1 — 백그라운드 잡을 띄우지 않는다 (조회만 가능)');
+        // 방송 탭 정시 작업만 로컬에서 시험할 때 (유튜브 할당량을 프로덕션과 나눠 먹으니 잠깐만)
+        if (process.env.BROADCAST_SCHEDULE === '1') scheduleBroadcast();
         return;
     }
 
@@ -2926,8 +2928,8 @@ async function startJobs() {
     scheduleRankUpdate();
     // ★ 컷라인은 명단 갱신과 별개로 하루 한 번(한국시간 자정) 혼자 돈다. 라이엇 호출 0.
     scheduleCutoffJob();
-    // 방송 탭 유튜브 — 매시 00·20·40분 (2026-09-17). 로컬(READONLY_JOBS)에서는 안 돌고 요청 때만 받는다
-    scheduleBroadcastYoutube();
+    // 방송 탭 — 매시 00·20·40분 (2026-09-17). 로컬(READONLY_JOBS)에서는 안 돌고 요청 때만 받는다
+    scheduleBroadcast();
     // ★ 랭커 LP 일별 기록 — 자정 +2분, 라이엇 호출 0 (2026-09-01)
     scheduleLpHistoryJob();
     setInterval(resolveNamesInBackground, 60 * 1000);
@@ -5348,12 +5350,12 @@ app.get('/api/esports/standings', async (req, res) => {
 // ==========================================
 // 방송 — 롤 생방송 목록 (SOOP · 치지직 · 유튜브, 2026-09-17)
 // ==========================================
-// ★★ 세 곳 다 **공식 API** 다. 키는 `.env` 의 SOOP_CLIENT_ID · CHZZK_CLIENT_ID/SECRET · YOUTUBE_API_KEY.
-//   키가 없는 플랫폼은 조용히 빠진다 (로컬에서 키 없이 띄워도 나머지는 돈다).
-// ★★ 잡이 아니라 **요청이 올 때만** 받는다 — 보는 사람이 없으면 바깥 호출도 0 이다.
-//   받아 둔 게 있으면 그걸 바로 주고 뒤에서 새로 받는다(stale-while-revalidate). 처음 한 번만 기다린다.
-//   그래서 READONLY_JOBS 와 무관하게 로컬에서도 화면이 뜬다 (유튜브 할당량은 같은 키라 같이 먹는다 — 아래 계산).
-// ★ DB 에는 유튜브 채널 명단(`ytchannels`)만 쓴다. 방송 목록 자체는 메모리에만 있다.
+// ★★ 키는 `.env` 의 SOOP_CLIENT_ID · CHZZK_CLIENT_ID/SECRET · YOUTUBE_API_KEY.
+//   키가 없는 플랫폼은 조용히 빠진다 (로컬에서 키 없이 띄워도 나머지는 돈다). 치지직은 비공식 경로가 먼저라 키가 없어도 돈다.
+// ★★ 세 곳 다 **매시 00·20·40분**에 서버가 스스로 받는다 (2026-09-17 사용자 결정 — 처음엔 요청 때만 받았다).
+//   요청은 메모리에 있는 걸 줄 뿐 바깥 호출을 안 부른다. 단 READONLY_JOBS=1(로컬)에서는 정시 작업이 안 돌고
+//   예전처럼 요청이 올 때만 받는다 (같은 유튜브 키로 두 곳이 20분마다 돌면 할당량을 나눠 먹는다).
+// ★ DB 에 쓰는 건 유튜브 채널 명단(`ytchannels`)과 플랫폼별 마지막 결과 박제(`esportscaches` 의 broadcast_*)뿐이다.
 //
 // 플랫폼별로 「롤 방송만」 고르는 방법이 다르다 (2026-09-17 실측, docs/방송.md):
 //   SOOP   — 공식 카테고리 조건이 있다 (롤 = 00040019). 60개씩 2~3페이지면 전부다
@@ -5367,15 +5369,13 @@ const broadcastChannels = (() => {
 const BC_YT_EXCLUDE = new Set((broadcastChannels.exclude || []).map(c => c.id));
 const BC_YT_INCLUDE = (broadcastChannels.include || []).map(c => c.id).filter(id => !BC_YT_EXCLUDE.has(id));
 
-// ★★ 유튜브는 요청과 무관하게 **매시 00·20·40분**에 서버가 스스로 받는다 (2026-09-17 사용자 결정).
-//   방문이 뜸해도 명단(lastLive·새 채널 찾기)이 자라야 하기 때문이다. 단 READONLY_JOBS=1(로컬)에서는
-//   예전처럼 요청이 올 때만 받는다 — 로컬이 같은 키로 20분마다 돌면 할당량을 나눠 먹는다.
 // ★ 유튜브 하루 할당량 10,000 유닛 계산 — 명단 확인 1회 = 채널 수 + 50개당 1 (60채널 ≈ 64유닛).
 //   20분마다 하루 72회 × 64 = 4,608. 새 채널 찾기(search, 1회 100유닛)를 2시간마다 = 1,200. 합 ~5,800.
 //   배포마다 부팅 때 한 번 더 받을 수 있다(그 슬롯의 박제가 없을 때만, 64유닛).
 //   **채널 수(BC_YT_MAX)나 주기를 늘리면 이 합을 다시 셀 것**
-const BC_YT_SLOT_MS = 20 * 60 * 1000;
-const BC_TTL = { soop: 90 * 1000, chzzk: 90 * 1000, youtube: BC_YT_SLOT_MS };
+const BC_SLOT_MS = 20 * 60 * 1000;
+// 로컬(요청 때만 받는 모드)에서 「오래됐다」고 보는 기준이자, 화면이 「오래된 값」 을 가르는 기준(×3)
+const BC_TTL = { soop: BC_SLOT_MS, chzzk: BC_SLOT_MS, youtube: BC_SLOT_MS };
 const BC_RETRY_MS = 60 * 1000;                // 실패하면 이만큼은 다시 안 부른다
 const BC_YT_QUOTA_BACKOFF = 60 * 60 * 1000;   // 할당량이 바닥나면 한 시간 쉰다
 const BC_YT_SEARCH_MS = 2 * 60 * 60 * 1000;
@@ -5668,10 +5668,10 @@ function bcRefresh(p, force) {
     bcInflight[p] = bcFetchers[p]()
         .then(items => {
             st.items = items; st.at = Date.now(); st.ok = true; st.reason = null; st.nextTry = 0;
-            if (p === 'youtube' && bcYtScheduled) {
-                // 배포 직후 다음 정시까지 비어 있지 않게 박제해 둔다 (esportscaches 창고를 같이 쓴다. 문서 1개 ~5KB)
-                EsportsCache.updateOne({ key: 'broadcast_youtube' }, { $set: { payload: { items, at: st.at }, at: st.at } }, { upsert: true })
-                    .catch(e => console.warn('[Broadcast] 유튜브 박제 실패:', e.message));
+            if (bcScheduled) {
+                // 배포 직후 다음 정시까지 비어 있지 않게 박제해 둔다 (esportscaches 창고를 같이 쓴다. 문서 3개, 합 ~80KB)
+                EsportsCache.updateOne({ key: 'broadcast_' + p }, { $set: { payload: { items, at: st.at }, at: st.at } }, { upsert: true })
+                    .catch(e => console.warn(`[Broadcast] ${p} 박제 실패:`, e.message));
             }
         })
         .catch(err => {
@@ -5679,34 +5679,36 @@ function bcRefresh(p, force) {
             // 키가 없으면 다시 볼 일이 없다 (env 는 재시작해야 바뀐다)
             st.nextTry = Date.now() + (st.reason === 'nokey' ? 365 * 86400e3 : st.reason === 'quota' ? BC_YT_QUOTA_BACKOFF : BC_RETRY_MS);
             if (st.reason !== 'nokey') console.warn(`[Broadcast] ${p} 수집 실패:`, err.response ? err.response.status : '', err.message);
+            // 정시 모드면 다음 정시(20분 뒤)까지 기다리지 않고 한 번만 다시 해 본다
+            if (bcScheduled && st.reason === 'error' && force !== 'retry') setTimeout(() => bcRefresh(p, 'retry'), BC_RETRY_MS + 1000);
         })
         .finally(() => { delete bcInflight[p]; });
     return bcInflight[p];
 }
 
-// ---- 유튜브 정시 갱신 (매시 00·20·40분) ----
+// ---- 정시 갱신 (매시 00·20·40분, 세 플랫폼 모두) ----
 // ★ 한국시간과 UTC 는 분이 같으므로 epoch 를 20분으로 나눈 경계가 곧 00·20·40분이다
-let bcYtScheduled = false;
-async function scheduleBroadcastYoutube() {
-    if (!process.env.YOUTUBE_API_KEY) return;
-    bcYtScheduled = true;
-    const slotStart = Math.floor(Date.now() / BC_YT_SLOT_MS) * BC_YT_SLOT_MS;
-    try {
-        // 이번 슬롯에 이미 받은 게 있으면(배포 직전 옛 서버가 받았다) 그걸 쓰고 할당량을 아낀다
-        const doc = await EsportsCache.findOne({ key: 'broadcast_youtube' }).lean();
-        const snap = doc && doc.payload;
-        if (snap && Array.isArray(snap.items) && snap.at >= slotStart) {
-            Object.assign(bcState.youtube, { items: snap.items, at: snap.at, ok: true, reason: null });
-            console.log(`[Broadcast] 유튜브 박제 복원 (${snap.items.length}개)`);
-        } else {
-            bcRefresh('youtube', true);
-        }
-    } catch (e) {
-        bcRefresh('youtube', true);
+// ★ 부팅 때 **이번 슬롯에 받은 박제**가 있으면(배포 직전 옛 서버가 받았다) 그걸 쓴다 — 유튜브 할당량을 아끼고
+//   같은 슬롯에 두 번 안 받는다. 없으면 곧바로 한 번 받는다 → 배포 직후에도 화면이 비지 않는다
+let bcScheduled = false;
+async function scheduleBroadcast() {
+    bcScheduled = true;
+    const slotStart = Math.floor(Date.now() / BC_SLOT_MS) * BC_SLOT_MS;
+    for (const p of Object.keys(bcState)) {
+        try {
+            const doc = await EsportsCache.findOne({ key: 'broadcast_' + p }).lean();
+            const snap = doc && doc.payload;
+            if (snap && Array.isArray(snap.items) && snap.at >= slotStart) {
+                Object.assign(bcState[p], { items: snap.items, at: snap.at, ok: true, reason: null });
+                console.log(`[Broadcast] ${p} 박제 복원 (${snap.items.length}개)`);
+                continue;
+            }
+        } catch (e) { /* 박제를 못 읽으면 그냥 받는다 */ }
+        bcRefresh(p, true);
     }
     const tick = () => {
-        const wait = (Math.floor(Date.now() / BC_YT_SLOT_MS) + 1) * BC_YT_SLOT_MS - Date.now() + 5000;
-        setTimeout(() => { bcRefresh('youtube', true); tick(); }, wait);
+        const wait = (Math.floor(Date.now() / BC_SLOT_MS) + 1) * BC_SLOT_MS - Date.now() + 5000;
+        setTimeout(() => { for (const p of Object.keys(bcState)) bcRefresh(p, true); tick(); }, wait);
     };
     tick();
 }
@@ -5714,9 +5716,10 @@ async function scheduleBroadcastYoutube() {
 let bcPayloadCache = { key: '', body: '' };
 app.get('/api/broadcast', async (req, res) => {
     const ps = Object.keys(bcState);
-    // 받아 둔 게 없는 플랫폼만 기다린다. 있으면 그대로 주고 뒤에서 갱신한다
     await Promise.all(ps.map(p => {
-        if (p === 'youtube' && bcYtScheduled) return null;   // 정시 작업이 맡는다
+        // 정시 모드: 바깥 호출은 정시 작업만 한다. 부팅 직후 첫 수집이 도는 중이면 그것만 기다린다
+        if (bcScheduled) return bcState[p].at ? null : (bcInflight[p] || null);
+        // 로컬(요청 모드): 받아 둔 게 없는 플랫폼만 기다린다. 있으면 그대로 주고 뒤에서 갱신한다
         const job = bcRefresh(p);
         return bcState[p].at ? null : job;
     }));
