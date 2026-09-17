@@ -5412,6 +5412,17 @@ const BC_YT_EXCLUDE = new Set((broadcastChannels.exclude || []).map(c => c.id));
 // 방송인 ↔ 라이엇 계정 (broadcast_channels.js 의 streamers). 열쇠 `플랫폼:채널키` → 라이엇 ID 목록
 const BC_STREAMER_LIST = (broadcastChannels.streamers || []).filter(x => x && x.p && x.ch && Array.isArray(x.riot) && x.riot.length);
 const BC_STREAMERS = new Map(BC_STREAMER_LIST.map(x => [`${x.p}:${x.ch}`, x.riot]));
+// 같은 사람 묶기 — 라이엇 ID 가 하나라도 겹치는 명단 줄은 한 사람이다 (데스티니 = 유튜브·SOOP·치지직). `플랫폼:채널키` → 사람 번호
+const BC_PERSON_OF = new Map();
+(() => {
+    const persons = [];
+    for (const x of BC_STREAMER_LIST) {
+        let idx = persons.findIndex(pp => pp.some(r => x.riot.includes(r)));
+        if (idx < 0) { idx = persons.length; persons.push([]); }
+        for (const r of x.riot) if (!persons[idx].includes(r)) persons[idx].push(r);
+        BC_PERSON_OF.set(`${x.p}:${x.ch}`, idx);
+    }
+})();
 // 프로게이머 (2026-09-17 밤) — 방송인 티어 페이지의 「프로게이머」 탭. 라이엇 ID 는 같은 방식으로 검증한 것
 const BC_PROS = (broadcastChannels.pros || []).filter(x => x && x.name).map(x => Object.assign({}, x, { riot: Array.isArray(x.riot) ? x.riot : [] }));   // 계정을 못 찾은 선수도 표에는 나온다 (티어 「-」)
 const BC_YT_INCLUDE = (broadcastChannels.include || []).map(c => c.id).filter(id => !BC_YT_EXCLUDE.has(id));
@@ -6097,8 +6108,28 @@ app.get('/api/broadcast', async (req, res) => {
     // 분 단위를 섞는다 — 「오래된 값」 표시가 시간이 지나면 바뀌어야 한다
     const key = Math.floor(Date.now() / 60000) + '|' + ps.map(p => bcState[p].at + ':' + bcState[p].reason).join('|');
     if (bcPayloadCache.key !== key) {
-        const items = ps.flatMap(p => bcState[p].items)
-            .sort((a, b) => (b.viewers == null ? -1 : b.viewers) - (a.viewers == null ? -1 : a.viewers));
+        // ★ 동시 송출 합치기 (2026-09-17 밤, 사용자 결정) — 명단에서 같은 사람으로 묶인 채널이 여러 플랫폼에 켜져 있으면
+        //   시청자가 제일 많은 플랫폼의 카드 하나만 남기고, 나머지 플랫폼은 `sim` 에 카드째 달아 둔다 (화면이 플랫폼 칩으로
+        //   거를 때 그 플랫폼 카드를 대신 꺼내 그린다). `viewersAll` = 전 플랫폼 합 — 정렬과 요약 줄은 이걸 쓴다.
+        //   명단에 없는 사람은 여전히 플랫폼마다 한 장이다 (같은 사람인지 알 길이 없다)
+        const byPerson = new Map();
+        const merged = [];
+        for (const it of ps.flatMap(p => bcState[p].items)) {
+            const person = BC_PERSON_OF.get(`${it.p}:${it.ch}`);
+            const card = Object.assign({}, it, { sim: [], viewersAll: it.viewers == null ? null : it.viewers });
+            if (person == null) { merged.push(card); continue; }
+            const head = byPerson.get(person);
+            if (!head) { byPerson.set(person, card); merged.push(card); continue; }
+            // 이미 같은 사람이 있다 — 시청자 많은 쪽을 앞(카드)으로, 나머지는 sim 에 카드째
+            const v = x => (x.viewers == null ? -1 : x.viewers);
+            const strip = x => Object.assign({}, x, { sim: undefined, viewersAll: undefined });
+            const [big, small] = v(card) > v(head) ? [card, head] : [head, card];
+            big.sim = head.sim.concat([strip(small)]);
+            big.viewersAll = [big].concat(big.sim).reduce((s, x) => x.viewers == null ? s : (s == null ? 0 : s) + x.viewers, null);
+            big.tier = big.tier || small.tier;
+            if (big !== head) { merged[merged.indexOf(head)] = big; byPerson.set(person, big); }
+        }
+        const items = merged.sort((a, b) => (b.viewersAll == null ? -1 : b.viewersAll) - (a.viewersAll == null ? -1 : a.viewersAll));
         const platforms = {};
         for (const p of ps) {
             const st = bcState[p];

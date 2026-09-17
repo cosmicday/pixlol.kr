@@ -10151,6 +10151,11 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
     font-variant-numeric: tabular-nums;
 }
 
+/* 동시 송출 — 다른 플랫폼 링크 줄 (카드 안이라 <a> 대신 span + 위임 클릭) */
+.bc-sim { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 3px; font-size: 12px; font-style: normal; }
+.bc-sim-link { display: inline-flex; align-items: center; color: var(--text-faint); font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bc-sim-link .bc-mark, .bc-sim-link .bc-dot { margin-right: 4px; }
+@media (hover: hover) { .bc-sim-link:hover { color: var(--text-bright); text-decoration: underline; } }
 .bc-note { margin: 16px 0 0; color: var(--text-faint); font-size: 12px; line-height: 1.6; }
 
 @media (max-width: 768px) {

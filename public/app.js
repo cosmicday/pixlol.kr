@@ -1361,15 +1361,24 @@ function bcCardHtml(b) {
             <span class="bc-text">
                 <b class="bc-title">${escapeHtml(b.title || '(제목 없음)')}</b>
                 <i class="bc-name"><span>${escapeHtml(b.name)}</span>${bcTierHtml(b.tier)}</i>
+                ${b.sim && b.sim.length ? `<i class="bc-sim">${b.sim.map(x => `<span class="bc-sim-link" data-url="${escapeHtml(x.url)}" title="${escapeHtml(x.title || '')}">${bcPlatMark(x.p)}${escapeHtml((BC_PLATFORMS.find(pp => pp.key === x.p) || {}).label || x.p)} ${x.viewers == null ? '비공개' : Number(x.viewers).toLocaleString('ko-KR')}</span>`).join('')}</i>` : ''}
             </span>
         </span>
     </a>`;
 }
 
 // 지금 조건(플랫폼·검색·정렬)에 맞는 목록
+// ★ 동시 송출 카드 (서버가 명단으로 합쳐 준다 — `sim` 에 다른 플랫폼 카드가 들어 있다).
+//   플랫폼 칩으로 거를 땐 그 플랫폼 카드를 대신 꺼내 그린다 (나머지는 다시 sim 으로)
+function bcCardFor(b) {
+    if (!bcPlatform || b.p === bcPlatform || !b.sim || !b.sim.length) return b;
+    const pick = b.sim.find(x => x.p === bcPlatform);
+    if (!pick) return null;
+    return Object.assign({}, pick, { tier: b.tier, viewersAll: b.viewersAll, sim: [Object.assign({}, b, { sim: undefined })].concat(b.sim.filter(x => x !== pick)) });
+}
 function bcFiltered() {
     const d = bcData;
-    let list = bcPlatform ? d.items.filter(b => b.p === bcPlatform) : d.items.slice();
+    let list = bcPlatform ? d.items.map(bcCardFor).filter(Boolean) : d.items.slice();
     const q = bcQuery.trim().toLowerCase();
     if (q) list = list.filter(b => (b.name || '').toLowerCase().includes(q) || (b.title || '').toLowerCase().includes(q));
     if (bcSort === 'recent') list.sort((a, b) => (b.start || 0) - (a.start || 0));   // 서버 순서가 시청자 순이라 'viewers' 는 그대로
@@ -1417,11 +1426,11 @@ function renderBroadcast() {
         ? `<p class="es-stale">${staleList.map(p => `<b>${p.label}</b>`).join(', ')} 목록을 지금 새로 받지 못해 ${pf[staleList[0].key].at ? '예전에 받아 둔 내용을' : '빈 목록을'} 보여주고 있습니다.</p>`
         : '';
 
-    const total = d.items.reduce((s, b) => s + (b.viewers || 0), 0);
+    const total = d.items.reduce((s, b) => s + (b.viewersAll != null ? b.viewersAll : (b.viewers || 0)), 0);   // 동시 송출자는 한 번만 (전 플랫폼 합)
     const summary = `방송 <b>${d.items.length.toLocaleString('ko-KR')}</b>개 · 시청자 <b>${total.toLocaleString('ko-KR')}</b>명`;
 
     const ytNote = live.length
-        ? `<p class="bc-note">※ 방송 목록은 매시 00·20·40분에 새로 받습니다. 유튜브는 방송인이 게임을 「리그 오브 레전드」로 설정했거나 제목에 롤이 드러난 방송만 잡히고, 시청자 수를 숨긴 방송은 맨 뒤에 놓입니다. 티어는 방송인이 공개한 계정 가운데 가장 높은 솔로 랭크 계정 기준이며, 계정을 아는 방송인에게만 붙습니다.</p>`
+        ? `<p class="bc-note">※ 방송 목록은 매시 00·20·40분에 새로 받습니다. 유튜브는 방송인이 게임을 「리그 오브 레전드」로 설정했거나 제목에 롤이 드러난 방송만 잡히고, 시청자 수를 숨긴 방송은 맨 뒤에 놓입니다. 여러 플랫폼에 동시 송출하는 방송인은(계정을 아는 경우) 시청자가 가장 많은 플랫폼 카드 하나로 합치고 나머지 플랫폼은 카드 안에 링크로 둡니다. 티어는 방송인이 공개한 계정 가운데 가장 높은 솔로 랭크 계정 기준이며, 계정을 아는 방송인에게만 붙습니다.</p>`
         : '';
 
     box.innerHTML = `
@@ -1457,6 +1466,14 @@ function renderBroadcast() {
         clr.style.visibility = 'hidden'; inp.focus();
     });
 }
+
+// 동시 송출 링크 — 카드 자체가 <a> 라 안에 <a> 를 못 두므로 위임으로 새 탭을 연다
+document.addEventListener('click', (e) => {
+    const s = e.target.closest('.bc-sim-link[data-url]');
+    if (!s) return;
+    e.preventDefault(); e.stopPropagation();
+    window.open(s.dataset.url, '_blank', 'noopener');
+});
 
 // 플랫폼 칩·정렬 — 주소는 그대로, 화면만 다시 그린다
 document.addEventListener('click', (e) => {
