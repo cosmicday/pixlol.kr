@@ -308,19 +308,34 @@
             renderDropdownList();
             dropdown.classList.add('open');
         });
-        input.addEventListener('blur', function () { dropdown.classList.remove('open'); });
+        var tabTouchAt = 0;
+        dropdown.addEventListener('touchstart', function (e) { if (e.target.closest('.dogu-dropdown-tab')) tabTouchAt = Date.now(); }, { passive: true });
+        input.addEventListener('blur', function () {
+            /* 탭을 누르는 중에 난 blur 는 무시 — 닫히면 다음 click 이 허공에 떨어진다 */
+            if (Date.now() - tabTouchAt < 600) return;
+            dropdown.classList.remove('open');
+        });
         dropdown.addEventListener('mousedown', function (e) { e.preventDefault(); });
         /* ★ 터치(iOS)에서는 mousedown 보다 먼저 input 이 blur 되어 드롭다운이 닫히고, 그 뒤 click 이 허공에 떨어진다 —
            「최근검색을 누른 뒤 즐겨찾기를 눌러도 색이 안 든다」가 그것 (2026-09-18 pixlol 실기기). 탭·삭제는 touchend 에서
            바로 처리하고 preventDefault 로 포커스 이동(blur)과 합성 click 을 막는다. 링크는 그대로 click 으로 간다 */
+        /* 탭은 touchstart 에서 — touchend 까지 기다리면 그 사이 iOS 가 포커스를 옮겨 blur 가 먼저 날 때가 있다 (실기기 재보고 2026-09-18).
+           preventDefault 로 뒤따르는 mouse/click 을 다 끊고, 혹시 blur 가 났어도 되돌리게 input 을 다시 포커스한다 (제스처 안이라 허용) */
+        var switchTab = function (tab) {
+            dropdownState.tab = tab.dataset.tab;
+            renderDropdownList();
+            dropdown.classList.add('open');
+            if (document.activeElement !== input) { try { input.focus({ preventScroll: true }); } catch (e2) { input.focus(); } }
+        };
+        dropdown.addEventListener('touchstart', function (e) {
+            var tab = e.target.closest('.dogu-dropdown-tab');
+            if (!tab) return;
+            e.preventDefault();
+            switchTab(tab);
+        }, { passive: false });
         dropdown.addEventListener('touchend', function (e) {
             var tab = e.target.closest('.dogu-dropdown-tab');
-            if (tab) {
-                e.preventDefault();
-                dropdownState.tab = tab.dataset.tab;
-                renderDropdownList();
-                return;
-            }
+            if (tab) { e.preventDefault(); return; }   /* touchstart 가 이미 처리했다 — click 합성만 막는다 */
             var del = e.target.closest('[data-dogu-del]');
             if (del) {
                 e.preventDefault();
@@ -332,11 +347,7 @@
 
         dropdown.addEventListener('click', function (e) {
             var tab = e.target.closest('.dogu-dropdown-tab');
-            if (tab) {
-                dropdownState.tab = tab.dataset.tab;
-                renderDropdownList();
-                return;
-            }
+            if (tab) { switchTab(tab); return; }
             var del = e.target.closest('[data-dogu-del]');
             if (del) {
                 var source = dropdownState.tab === 'favorites' ? s.favorites : s.recents;
