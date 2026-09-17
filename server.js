@@ -5511,7 +5511,8 @@ const BC_TIER_ORDER = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD'
 const bcTierCache = new Map();   // riotId(명단에 적힌 그대로) → { puuid, name, nameAt, t, r, lp, w, l, at, fail }
 let bcPuuidStore = null;         // { [riotId]: puuid } — DB 창고 사본
 let bcTierJobRunning = false;
-let bcTiersDone = false;         // 부팅 뒤 한 바퀴를 완주했나 (그 전엔 응답에 building: true)
+let bcTiersDone = false;         // 부팅 뒤 한 바퀴를 완주했나(또는 창고에서 되살렸나) — 그 전엔 응답에 building: true
+let bcTierJobStartedAt = 0;      // 로컬(요청 모드)에서 30분에 한 번만 시동을 걸기 위한 시각
 
 function bcTierScore(e) {
     if (!e || !e.t) return -1;
@@ -5543,19 +5544,37 @@ async function bcRiotGet(url) {
     }
 }
 
-async function bcLoadPuuids() {
-    if (bcPuuidStore) return;
-    try {
-        const doc = await EsportsCache.findOne({ key: 'broadcast_puuids' }).lean();
-        bcPuuidStore = (doc && doc.payload) || {};
-    } catch (e) { bcPuuidStore = {}; }
-    for (const [rid, puuid] of Object.entries(bcPuuidStore)) {
-        if (!bcTierCache.has(rid)) bcTierCache.set(rid, { puuid, name: rid, nameAt: 0, t: null, r: null, lp: 0, w: 0, l: 0, at: 0, fail: false });
-    }
+// ★ 창고 둘 (2026-09-17 밤) — `broadcast_puuids` { riotId: puuid } 와 `broadcast_tiers` { riotId: 캐시 항목 그대로 }.
+//   티어까지 박아 두는 이유: 재배포마다 한 바퀴(12~25분) 돌기 전까지 카드에 티어가 안 붙고 표가 「받는 중」이었다.
+//   부팅 때 되살리면 마지막 값이 바로 보이고, 한 시간 안 지난 항목은 호출도 안 한다. 300명이어도 ~50KB
+let bcLoadedStores = null;
+function bcLoadPuuids() {
+    if (!bcLoadedStores) bcLoadedStores = (async () => {
+        try {
+            const [pd, td] = await Promise.all([EsportsCache.findOne({ key: 'broadcast_puuids' }).lean(), EsportsCache.findOne({ key: 'broadcast_tiers' }).lean()]);
+            bcPuuidStore = (pd && pd.payload) || {};
+            const tiers = (td && td.payload) || {};
+            let n = 0;
+            for (const [rid, e] of Object.entries(tiers)) {
+                if (e && e.puuid && !bcTierCache.has(rid)) { bcTierCache.set(rid, Object.assign({ fail: false }, e)); n++; }
+            }
+            if (n) { bcTiersDone = true; console.log(`[Broadcast] 티어 창고 복원 ${n}개`); }
+        } catch (e) { bcPuuidStore = bcPuuidStore || {}; }
+        for (const [rid, puuid] of Object.entries(bcPuuidStore)) {
+            if (!bcTierCache.has(rid)) bcTierCache.set(rid, { puuid, name: rid, nameAt: 0, t: null, r: null, lp: 0, w: 0, l: 0, at: 0, fail: false });
+        }
+    })();
+    return bcLoadedStores;
 }
 function bcSavePuuids() {
     EsportsCache.updateOne({ key: 'broadcast_puuids' }, { $set: { payload: bcPuuidStore, at: Date.now() } }, { upsert: true })
         .catch(e => console.warn('[Broadcast] puuid 창고 저장 실패:', e.message));
+}
+function bcSaveTiers() {
+    const payload = {};
+    for (const [rid, e] of bcTierCache) if (e.puuid) payload[rid] = e;
+    EsportsCache.updateOne({ key: 'broadcast_tiers' }, { $set: { payload, at: Date.now() } }, { upsert: true })
+        .catch(e => console.warn('[Broadcast] 티어 창고 저장 실패:', e.message));
 }
 
 // 계정 하나 — 필요한 호출만 (puuid 없으면 by-riot-id · 닉네임이 하루 지났으면 by-puuid · 리그가 한 시간 지났으면 league)
@@ -5618,20 +5637,29 @@ function bcAttachTiers(items) {
 // 명단 전원을 순서대로 한 바퀴 (2.5초 간격). 매 정시 틱마다 불리지만 한 시간 안 지난 계정은 호출 없이 지나간다
 async function bcTierJob() {
     if (bcTierJobRunning) return;
-    const ids = [...new Set(BC_STREAMER_LIST.concat(BC_PROS).flatMap(x => x.riot))];
+    // ★ 순서 — 지금 켜져 있는 방송인 → 나머지 방송인 → 프로. 생방송 카드부터 채워지게 (2026-09-17 밤)
+    const liveKeys = new Set(Object.keys(bcState).flatMap(p => bcState[p].items.map(it => `${it.p}:${it.ch}`)));
+    const liveFirst = BC_STREAMER_LIST.slice().sort((a, b) => (liveKeys.has(`${b.p}:${b.ch}`) ? 1 : 0) - (liveKeys.has(`${a.p}:${a.ch}`) ? 1 : 0));
+    const ids = [...new Set(liveFirst.concat(BC_PROS).flatMap(x => x.riot))];
     if (!ids.length) return;
-    bcTierJobRunning = true;
+    bcTierJobRunning = true; bcTierJobStartedAt = Date.now();
     const t0 = Date.now(); Object.assign(bcTierStat, { calls: 0, fail: 0, r429: 0, yield: 0 });
+    let touched = 0;
+    console.log(`[Broadcast] 티어 한 바퀴 시작 — 계정 ${ids.length} (켜진 방송인 ${liveKeys.size ? liveFirst.filter(x => liveKeys.has(`${x.p}:${x.ch}`)).length : 0}명 먼저)`);
     try {
         for (const rid of ids) {
             const before = bcTierCache.get(rid);
             const after = await bcResolveTier(rid);
-            if (after !== before) await bcSleep(BC_TIER_GAP_MS);   // 실제로 호출한 경우만 쉰다
+            if (after !== before) {
+                await bcSleep(BC_TIER_GAP_MS);   // 실제로 호출한 경우만 쉰다
+                if (++touched % 50 === 0) { bcSaveTiers(); for (const p of Object.keys(bcState)) bcAttachTiers(bcState[p].items); bcPayloadCache.key = ''; }   // 도중에도 창고·카드 갱신
+            }
         }
         // 한 바퀴 끝 — 생방송 목록에도 새 값을 붙인다 (티어 페이지 응답은 요청 때마다 캐시로 만든다 — 호출 0, LIVE 가 늘 지금 값)
         for (const p of Object.keys(bcState)) bcAttachTiers(bcState[p].items);
         bcTiersDone = true;
         bcPayloadCache.key = '';   // /api/broadcast 문자열 캐시 무효화
+        if (touched) bcSaveTiers();
         const filled = ids.filter(r => { const e = bcTierCache.get(r); return e && e.t; }).length;
         console.log(`[Broadcast] 티어 한 바퀴 — 계정 ${ids.length} (랭크 ${filled}) · 호출 ${bcTierStat.calls} · 실패 ${bcTierStat.fail} · 429 ${bcTierStat.r429} · 양보 ${bcTierStat.yield} · ${Math.round((Date.now() - t0) / 1000)}초`);
     } finally { bcTierJobRunning = false; }
@@ -6072,13 +6100,14 @@ function scheduleBroadcast() {
     return bcBoot;
 }
 async function bcBootRun() {
+    await bcLoadPuuids();   // 티어 창고를 먼저 — 아래 박제 복원·첫 수집이 붙일 티어가 여기서 나온다
     const slotStart = Math.floor(Date.now() / BC_SLOT_MS) * BC_SLOT_MS;
     for (const p of Object.keys(bcState)) {
         try {
             const doc = await EsportsCache.findOne({ key: 'broadcast_' + p }).lean();
             const snap = doc && doc.payload;
             if (snap && Array.isArray(snap.items) && snap.at >= slotStart) {
-                if (snap.at > bcState[p].at) Object.assign(bcState[p], { items: snap.items, at: snap.at, ok: true, reason: null });
+                if (snap.at > bcState[p].at) Object.assign(bcState[p], { items: bcAttachTiers(snap.items), at: snap.at, ok: true, reason: null });
                 console.log(`[Broadcast] ${p} 박제 복원 (${snap.items.length}개)`);
                 continue;
             }
@@ -6087,16 +6116,17 @@ async function bcBootRun() {
     }
     const tick = () => {
         const wait = (Math.floor(Date.now() / BC_SLOT_MS) + 1) * BC_SLOT_MS - Date.now() + 5000;
-        setTimeout(() => { for (const p of Object.keys(bcState)) bcRefresh(p, true); bcTierJob(); tick(); }, wait);
+        setTimeout(() => { for (const p of Object.keys(bcState)) bcRefresh(p, true); bcTierJob().catch(e => console.warn('[Broadcast] 티어 잡 실패:', e.message)); tick(); }, wait);
     };
     tick();
     // 티어는 부팅 직후 한 바퀴 (puuid 창고가 있으면 리그 호출만이라 명단 80명에 3~4분)
-    setTimeout(bcTierJob, 15000);
+    setTimeout(() => bcTierJob().catch(e => console.warn('[Broadcast] 티어 잡 실패:', e.message)), 15000);
 }
 
 let bcPayloadCache = { key: '', body: '' };
 app.get('/api/broadcast', async (req, res) => {
     const ps = Object.keys(bcState);
+    if (!bcScheduled) await bcLoadPuuids();   // 로컬(요청 모드): 티어 창고를 먼저 읽어야 첫 수집에 티어가 붙는다
     await Promise.all(ps.map(p => {
         // 정시 모드: 바깥 호출은 정시 작업만 한다. 부팅 직후 첫 수집이 도는 중이면 그것만 기다린다
         if (bcScheduled) return bcState[p].at ? null : Promise.resolve(bcBoot).then(() => bcInflight[p]);
@@ -6148,7 +6178,8 @@ app.get('/api/broadcast', async (req, res) => {
 
 // 방송인·프로게이머 티어 표 — 명단 전원 (생방송 여부와 무관). bcTierJob 이 한 바퀴 돌 때마다 다시 만든다
 app.get('/api/broadcast/tiers', async (req, res) => {
-    if (!bcScheduled && !bcTierJobRunning && !bcTiersDone) bcTierJob();   // 로컬(요청 모드)에서는 첫 요청이 시동을 건다
+    // 로컬(요청 모드)에서는 요청이 시동을 건다 — 창고에서 되살린 뒤라도 30분에 한 번은 돌려 오래된 항목을 새로 받는다 (한 시간 안 지난 항목은 호출 없이 지나간다)
+    if (!bcScheduled && !bcTierJobRunning && Date.now() - bcTierJobStartedAt > 30 * 60 * 1000) bcTierJob().catch(e => console.warn('[Broadcast] 티어 잡 실패:', e.message));
     // 캐시만 읽어 만든다 (라이엇 호출 0). 한 바퀴를 못 돈 부팅 직후 몇 분은 building: true — 화면이 「받는 중」 줄을 띄운다
     res.json(bcTiersDone ? bcBuildTiers() : Object.assign(bcBuildTiers(), { building: true }));
 });
