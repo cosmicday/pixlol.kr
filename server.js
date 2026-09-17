@@ -5217,6 +5217,8 @@ function slimEsportsEvent(e) {
         block: e.blockName || '',                          // '플레이오프' · '결승' · '7주 차'
         league: (e.league && e.league.slug) || '',
         bo: (m.strategy && m.strategy.count) || 0,
+        // ★ 다시보기가 있으면 카드가 `lolesports.com/ko-KR/vod/<경기id>/1` 로 간다 (추가 요청 없이 주소가 만들어진다 — 2026-09-17 실측 307)
+        vod: Array.isArray(m.flags) && m.flags.includes('hasVod'),
         teams: (m.teams || []).map(t => ({
             name: t.name || '', code: t.code || '', img: esportsImg(t.image),
             score: t.result ? t.result.gameWins : null,
@@ -5251,30 +5253,67 @@ function esportsGet(path, params) {
     });
 }
 
+// ★ 리그 로고 — getLeagues 가 준다 (`http://static.lolesports.com/leagues/…png`, 색은 검정 바탕용). 하루 한 번만 받고
+//   실패하면 로고 없이 간다 (칩 글자만으로도 화면은 성립한다)
+let esportsLeagueImgs = { at: 0, map: {} };
+async function esportsLeaguesWithImg() {
+    if (Date.now() - esportsLeagueImgs.at > 86400e3) {
+        try {
+            const r = await esportsGet('/getLeagues', {});
+            const map = {};
+            ((r.data && r.data.data && r.data.data.leagues) || []).forEach(l => { if (l.slug && l.image) map[l.slug] = esportsImg(l.image); });
+            if (Object.keys(map).length) esportsLeagueImgs = { at: Date.now(), map };
+        } catch (e) { esportsLeagueImgs.at = Date.now() - 86400e3 + 600e3; }   // 10분 뒤 다시
+    }
+    return ESPORTS_LEAGUES.map(l => Object.assign({ img: esportsLeagueImgs.map[l.slug] || null }, l));
+}
+
+// ★★ 「전체」는 리그 11개를 콤마로 한 번에 묻는다 — 한 페이지 80경기라 **최근 3주**가 들어온다 (실측).
+//   그래서 리그 하나를 고르면 `?league=lck` 로 **그 리그만 따로** 묻는다 (2026-09-17). 리그별 80경기면
+//   LCK 는 그룹 스테이지부터 결승까지 한 스플릿이 통째로 온다. 전에는 콤마 페이지에서 걸러 써서
+//   LCK 13경기 · LCP 2경기 · 월즈/MSI/케스파컵/EWC 는 0경기였다
 app.get('/api/esports/schedule', async (req, res) => {
-    const hit = myCache.get('esports_schedule');
+    const lg = req.query.league ? ESPORTS_LEAGUES.find(l => l.slug === String(req.query.league)) : null;
+    if (req.query.league && !lg) return res.status(400).json({ ok: false, error: '없는 리그입니다.' });
+    const key = lg ? 'schedule_' + lg.slug : 'schedule';
+
+    const hit = myCache.get('esports_' + key);
     if (hit) return res.json(hit);
 
     try {
-        // ★ 리그 11개를 콤마로 한 번에 묻는다 — 한 페이지 80경기에 앞뒤 3주가 다 들어온다 (실측)
-        const r = await esportsGet('/getSchedule', { leagueId: ESPORTS_LEAGUES.map(l => l.id).join(',') });
+        const r = await esportsGet('/getSchedule', { leagueId: lg ? lg.id : ESPORTS_LEAGUES.map(l => l.id).join(',') });
         const events = ((r.data && r.data.data && r.data.data.schedule && r.data.data.schedule.events) || [])
             .filter(e => e.type === 'match' && e.match)   // 방송 쇼(type: 'show')는 경기가 아니다
             .map(slimEsportsEvent);
         if (!events.length) throw new Error('일정이 비어 있다');
 
-        const payload = { ok: true, events, leagues: ESPORTS_LEAGUES, fetchedAt: Date.now() };
+        const payload = { ok: true, league: lg ? lg.slug : null, events, leagues: await esportsLeaguesWithImg(), fetchedAt: Date.now() };
         // ★ 진행 중인 경기가 있으면 1분 — 세트 스코어가 경기 중에 올라간다
-        myCache.set('esports_schedule', payload, events.some(e => e.state === 'inProgress') ? 60 : 300);
-        saveEsports('schedule', payload);
+        myCache.set('esports_' + key, payload, events.some(e => e.state === 'inProgress') ? 60 : 300);
+        saveEsports(key, payload);
         res.json(payload);
     } catch (err) {
-        console.warn('[Esports] 일정 수집 실패:', err.message);
-        const fb = await esportsFallback('schedule');
+        console.warn('[Esports] 일정 수집 실패(' + key + '):', err.message);
+        const fb = await esportsFallback(key);
         if (fb) return res.json(Object.assign({}, fb, { stale: true }));
         res.status(503).json({ ok: false, error: '일정을 불러오지 못했습니다.' });
     }
 });
+
+// 대진표 스테이지(플레이오프·플레이-인 — rankings 가 없고 matches 만 있는 칸)의 경기 하나를 화면용으로 줄인다
+function slimBracketMatch(m) {
+    return {
+        id: m.id || null,
+        state: m.state || 'unstarted',
+        vod: Array.isArray(m.flags) && m.flags.includes('hasVod'),
+        teams: (m.teams || []).map(t => ({
+            name: t.name || '', code: t.code || '', img: esportsImg(t.image),
+            tbd: !t.id || t.id === '0' || t.slug === 'tbd',
+            score: t.result ? t.result.gameWins : null,
+            outcome: t.result ? t.result.outcome : null
+        }))
+    };
+}
 
 app.get('/api/esports/standings', async (req, res) => {
     const lg = ESPORTS_LEAGUES.find(l => l.slug === String(req.query.league || ''));
@@ -5299,14 +5338,20 @@ app.get('/api/esports/standings', async (req, res) => {
             && sr.data.data.standings[0] && sr.data.data.standings[0].stages) || []);
 
         const groups = [];
+        const brackets = [];   // 순위표가 없는 스테이지(플레이오프 등)는 경기 결과 목록으로 (2026-09-17)
         stages.forEach(s => (s.sections || []).forEach(sec => {
             const rows = (sec.rankings || []).reduce((acc, rk) => acc.concat((rk.teams || []).map(t => ({
                 ord: rk.ordinal, name: t.name || '', code: t.code || '', img: esportsImg(t.image),
                 w: t.record ? t.record.wins : 0, l: t.record ? t.record.losses : 0
             }))), []);
             // ★★ `rankings` 가 빈 스테이지가 있다 (플레이오프·플레이-인 — 그건 순위표가 아니라 대진표다).
-            //   그런 칸은 통째로 건너뛴다. LCK 2026 시즌3 실측: 그룹 2칸만 남고 나머지 셋은 빠진다
-            if (!rows.length) return;
+            //   그 칸은 `matches` 를 결과 목록으로 넘긴다. ★ 양 팀이 다 TBD 인 경기는 뺀다 — 월즈 2026 처럼
+            //   대진이 하나도 안 정해진 대회는 46경기가 전부 TBD 라 통째로 빈다 (그러면 화면이 「다음 대회」 안내를 그린다)
+            if (!rows.length) {
+                const ms = (sec.matches || []).map(slimBracketMatch).filter(m => m.teams.some(t => !t.tbd));
+                if (ms.length) brackets.push({ stage: s.name || '', section: sec.name || '', matches: ms });
+                return;
+            }
 
             // ★★★ `ordinal` 을 그대로 믿으면 안 된다 (2026-09-16 실측).
             //   LEC·LCS·LPL 의 정규 리그는 승률 내림차순으로 정상인데, **LCK·LCK CL 의 그룹은 어긋난다** —
@@ -5328,12 +5373,13 @@ app.get('/api/esports/standings', async (req, res) => {
         }));
 
         const payload = {
-            ok: true, league: lg.slug, groups,
+            ok: true, league: lg.slug, groups, brackets,
+            tournament: { slug: cur.slug || '', start: cur.startDate || '', end: cur.endDate || '' },
             period: { start: cur.startDate || '', end: cur.endDate || '' },
             fetchedAt: Date.now()
         };
         myCache.set('esports_' + key, payload, 1800);
-        if (groups.length) saveEsports(key, payload);   // 빈 순위표를 창고에 덮어쓰지 않는다
+        if (groups.length || brackets.length) saveEsports(key, payload);   // 빈 순위표를 창고에 덮어쓰지 않는다
         res.json(payload);
     } catch (err) {
         console.warn('[Esports] 순위표 수집 실패(' + lg.slug + '):', err.message);
@@ -5356,8 +5402,8 @@ app.get('/api/esports/standings', async (req, res) => {
 // 플랫폼별로 「롤 방송만」 고르는 방법이 다르다 (2026-09-17 실측, docs/방송.md):
 //   SOOP   — 공식 카테고리 조건이 있다 (롤 = 00040019). 60개씩 2~3페이지면 전부다
 //   치지직 — 카테고리 조건이 **없다.** 전체를 시청자 순으로 넘기며 liveCategory 로 거른다 (1,300개 · 65페이지 · 1.4초)
-//   유튜브 — 게임 조건이 **없다.** 채널 명단을 두고 「업로드 목록 맨 앞이 라이브인가」로 본다 (48 중 47 적중).
-//            RSS 피드는 49/50 이 404·500 이라 못 쓴다. `/channel/ID/live` 페이지는 1.2MB 라 안 쓴다
+//   유튜브 — 게임 조건이 **없다.** InnerTube(비공식)의 「리그 오브 레전드 - 주제」 라이브 탭 + 라이브 검색으로 후보를 모으고
+//            공식 videos.list 로 확인한다 (2026-09-17 저녁). 막히면 옛 명단 방식(공식 search + 채널 확인)으로 폴백
 const broadcastChannels = (() => {
     try { return require('./broadcast_channels.js'); }
     catch (e) { console.warn('[Broadcast] broadcast_channels.js 를 못 읽었다:', e.message); return { include: [], exclude: [] }; }
@@ -5391,7 +5437,7 @@ const BC_OTHER_GAME_RE = new RegExp([
     '피파|fc\s*온라인|롤토체스|롤체|tft|전략적\s*팀\s*전투|이터널\s*리턴|스타크래프트|디아블로|패스\s*오브\s*엑자일|gta',
     '최적화|포맷|포멧',
     '리니지|아이온|림버스|팰월드|dk\s*온라인|열혈강호|에오스|디아\s*[24]|레저렉션|래더|닌텐도|역전재판|lofi|이클립스',
-    '원신|붕괴|니케|블루\s*아카이브|명조|몬스터\s*헌터|몬헌|엘든|던파|던전앤파이터|사이퍼즈|하스스톤|카트라이더|애니모'
+    '원신|붕괴|니케|블루\s*아카이브|명조|몬스터\s*헌터|몬헌|엘든|던파|던전앤파이터|사이퍼즈|하스스톤|카트라이더|애니모|원스\s*휴먼|once\s*human'
 ].join('|'), 'i');
 
 // ★★ 새 채널 찾기(`롤` 검색)는 **제목에 롤 신호가 있어야** 명단에 넣는다 (2026-09-17 실측).
@@ -5548,6 +5594,16 @@ async function bcFetchChzzkOpen() {
 }
 
 // ---- 유튜브 ----
+// ★★★ 2026-09-17 저녁 — 경로를 둘로 나눴다.
+//   ① InnerTube(유튜브 웹이 자기 화면에서 쓰는 비공식 API, 키·할당량 없음)로 **후보**를 모은다 —
+//      「리그 오브 레전드 – 주제」 채널의 라이브 탭(= 방송인이 스튜디오에서 게임을 롤로 설정한 방송 전부, 시청자 순)
+//      + 라이브 검색 몇 단어(게임 태그를 안 단 방송이 여기서 잡힌다). 둘을 합쳐 한국어 방송만 남긴다.
+//      실측: 주제 탭 전 세계 92개 · 한국어 15개 · 1.2초. 옛 방식(공식 search + 채널 명단)은 같은 시각에 10개였다 —
+//      제목에 롤 단어가 없는 방송(온피·김망치·클로잉)은 명단 방식으로는 영영 못 잡는다.
+//   ② 공식 `videos.list` 로 방송 중인지·시청자 수·시작 시각만 확인한다 (50개당 1유닛 → 하루 ~150유닛, 옛 ~5,800 의 1/40)
+//   ★ InnerTube 가 막히면 **옛 경로(공식 search 로 명단 모으기 + 채널 확인)** 로 넘어간다 — 치지직 비공식→공식과 같은 구조.
+//     ①에서 잡힌 채널은 `ytchannels` 에 lastLive 를 찍어 두므로 폴백 명단도 같이 자란다
+//   ★ 페이지 넘김은 첫 응답의 `responseContext.visitorData` 를 되돌려줘야 된다 — 안 주면 2페이지가 빈 응답으로 온다 (실측)
 function bcYtGet(path, params) {
     return axios.get('https://www.googleapis.com/youtube/v3/' + path, {
         params: Object.assign({ key: process.env.YOUTUBE_API_KEY }, params), timeout: 10000
@@ -5558,66 +5614,8 @@ function bcYtQuotaHit(err) {
     return Array.isArray(errs) && errs.some(e => /quota|rateLimit/i.test(e.reason || ''));
 }
 
-// 새 채널 찾기 — `롤` 로 라이브를 검색해 한국어 롤 제목인 채널을 명단에 넣는다 (100유닛)
-// ★ order=viewCount 를 주면 결과가 15개로 줄어든다 (실측, 안 주면 50개 + 다음 페이지). 그래서 안 준다
-async function bcYtDiscover() {
-    const r = await bcYtGet('search', {
-        part: 'snippet', type: 'video', eventType: 'live', regionCode: 'KR', relevanceLanguage: 'ko',
-        videoCategoryId: 20, maxResults: 50, q: '롤'
-    });
-    const now = Date.now();
-    const ops = [];
-    for (const it of (r.data.items || [])) {
-        const sn = it.snippet || {};
-        const title = sn.title || '';
-        if (!sn.channelId || BC_YT_EXCLUDE.has(sn.channelId)) continue;
-        if (!BC_HANGUL_RE.test(title) || !bcLolSignal(title) || BC_OTHER_GAME_RE.test(title)) continue;
-        ops.push({ updateOne: {
-            filter: { _id: sn.channelId },
-            update: { $set: { name: sn.channelTitle || '', lastLive: now, searchAt: now }, $setOnInsert: { found: now }, $inc: { hits: 1 } },
-            upsert: true
-        } });
-    }
-    if (ops.length) await YtChannel.bulkWrite(ops, { ordered: false });
-    bcYtSearchAt = now;
-    console.log(`[Broadcast] 유튜브 새 채널 찾기 — 후보 ${ops.length}개 반영`);
-}
-
-async function bcFetchYoutube() {
-    if (!process.env.YOUTUBE_API_KEY) throw Object.assign(new Error('유튜브 키 없음'), { reason: 'nokey' });
-
-    if (bcYtSearchAt === null) {
-        // 재부팅(배포)마다 검색을 다시 돌리면 100유닛씩 샌다 — 마지막 검색 시각을 DB 에서 잇는다
-        const last = await YtChannel.findOne({ searchAt: { $gt: 0 } }).sort({ searchAt: -1 }).select('searchAt').lean();
-        bcYtSearchAt = last ? last.searchAt : 0;
-    }
-    if (Date.now() - bcYtSearchAt > BC_YT_SEARCH_MS - 60 * 1000) {
-        try { await bcYtDiscover(); }
-        catch (err) {
-            if (bcYtQuotaHit(err)) throw err;
-            bcYtSearchAt = Date.now();   // 검색만 실패하면 명단 확인은 그대로 간다 (다음 검색은 2시간 뒤)
-            console.warn('[Broadcast] 유튜브 새 채널 찾기 실패:', err.message);
-        }
-    }
-
-    const since = Date.now() - BC_YT_ACTIVE_DAYS * 86400 * 1000;
-    const auto = await YtChannel.find({ lastLive: { $gte: since } }).sort({ lastLive: -1 }).limit(BC_YT_MAX + 20).select('_id').lean();
-    const ids = [...new Set(BC_YT_INCLUDE.concat(auto.map(c => c._id)))].filter(id => !BC_YT_EXCLUDE.has(id)).slice(0, BC_YT_INCLUDE.length + BC_YT_MAX);
-    if (!ids.length) return [];
-
-    // ① 채널마다 업로드 목록 맨 앞 3개 (1유닛씩). 라이브가 켜져 있으면 대개 맨 앞이다
-    const heads = await bcMapLimit(ids, 8, async (ch) => {
-        try {
-            const r = await bcYtGet('playlistItems', { part: 'contentDetails', maxResults: 3, playlistId: 'UU' + ch.slice(2) });
-            return (r.data.items || []).map(x => x.contentDetails && x.contentDetails.videoId).filter(Boolean);
-        } catch (err) {
-            if (bcYtQuotaHit(err)) throw err;
-            return [];   // 업로드가 없는 채널은 404 — 그냥 넘어간다
-        }
-    });
-    const vids = [...new Set(heads.flat())];
-
-    // ② 후보 영상의 라이브 여부·시청자 수 (50개당 1유닛)
+// 후보 영상 id → 방송 중인 것만 카드로 (공식 videos.list, 50개당 1유닛). 두 경로가 같이 쓴다
+async function bcYtVideosToItems(vids) {
     const out = [];
     const liveCh = new Set();
     for (let i = 0; i < vids.length; i += 50) {
@@ -5651,6 +5649,191 @@ async function bcFetchYoutube() {
         })), { ordered: false }).catch(err => console.warn('[Broadcast] 유튜브 명단 갱신 실패:', err.message));
     }
     return out;
+}
+
+// 채널마다 업로드 목록 맨 앞 3개 (1유닛씩). 라이브가 켜져 있으면 대개 맨 앞이다 (48채널 중 47 실측)
+async function bcYtHeads(ids) {
+    const heads = await bcMapLimit(ids, 8, async (ch) => {
+        try {
+            const r = await bcYtGet('playlistItems', { part: 'contentDetails', maxResults: 3, playlistId: 'UU' + ch.slice(2) });
+            return (r.data.items || []).map(x => x.contentDetails && x.contentDetails.videoId).filter(Boolean);
+        } catch (err) {
+            if (bcYtQuotaHit(err)) throw err;
+            return [];   // 업로드가 없는 채널은 404 — 그냥 넘어간다
+        }
+    });
+    return heads.flat();
+}
+
+// ===== 경로 ① InnerTube =====
+// ★ 이 키는 비밀이 아니다 — youtube.com 페이지 소스에 박혀 있는 웹 클라이언트 공개 키다 (e스포츠 탭의 lolesports 키와 같은 처지)
+const BC_YT_IT = { key: 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8', ver: '2.20250901.00.00' };
+const BC_YT_TOPIC = 'UCZtmNrG53nmbq-Ww2VJrxEQ';        // 「리그 오브 레전드 - 주제」 채널 (2026-09-17 InnerTube 채널 검색으로 찾음)
+const BC_YT_TOPIC_LIVE = 'EgRsaXZl';                    // 그 채널의 「라이브」 탭 params
+const BC_YT_IT_LIVE_FILTER = 'EgJAAQ%3D%3D';            // 검색 필터 「실시간」
+const BC_YT_IT_QUERIES = ['롤', '리그오브레전드', '솔랭'];
+const BC_YT_IT_MAX_PAGES = 12;                          // 주제 탭 50개씩 (실측 2페이지 = 92개)
+const BC_RERUN_RE = /재방송|rebroadcast|rerun|24\/7/i;
+let bcYtVisitor = null;
+let bcYtItFailLogged = false;
+
+function bcYtItPost(path, body) {
+    const client = { clientName: 'WEB', clientVersion: BC_YT_IT.ver, hl: 'ko', gl: 'KR' };
+    if (bcYtVisitor) client.visitorData = bcYtVisitor;
+    return axios.post(`https://www.youtube.com/youtubei/v1/${path}?key=${BC_YT_IT.key}&prettyPrint=false`,
+        Object.assign({ context: { client } }, body), {
+            headers: Object.assign({
+                'Content-Type': 'application/json', 'Accept-Language': 'ko-KR,ko;q=0.9',
+                'X-Youtube-Client-Name': '1', 'X-Youtube-Client-Version': BC_YT_IT.ver,
+                'Origin': 'https://www.youtube.com', 'Referer': 'https://www.youtube.com/'
+            }, BC_UA), timeout: 10000
+        }).then(r => {
+            const v = r.data && r.data.responseContext && r.data.responseContext.visitorData;
+            if (v) bcYtVisitor = v;
+            return r.data;
+        });
+}
+function bcYtItWalk(o, fn) {
+    if (!o || typeof o !== 'object') return;
+    fn(o);
+    for (const k of Object.keys(o)) bcYtItWalk(o[k], fn);
+}
+// 응답 어디에 있든 영상 카드(gridVideoRenderer · videoRenderer)를 긁어 온다
+function bcYtItVideos(res) {
+    const out = [];
+    bcYtItWalk(res, o => {
+        const v = o.gridVideoRenderer || o.videoRenderer;
+        if (!v || !v.videoId) return;
+        const by = (v.shortBylineText && v.shortBylineText.runs && v.shortBylineText.runs[0]) || (v.ownerText && v.ownerText.runs && v.ownerText.runs[0]);
+        const be = by && by.navigationEndpoint && by.navigationEndpoint.browseEndpoint;
+        out.push({
+            id: v.videoId,
+            title: ((v.title && v.title.runs) || []).map(r => r.text).join('') || (v.title && v.title.simpleText) || '',
+            ch: by ? by.text : '',
+            chId: be ? be.browseId : '',
+            live: JSON.stringify(v.thumbnailOverlays || v.badges || '').includes('LIVE')
+        });
+    });
+    return out;
+}
+function bcYtItCont(res) {
+    let t = null;
+    bcYtItWalk(res, o => {
+        const c = o.continuationItemRenderer && o.continuationItemRenderer.continuationEndpoint && o.continuationItemRenderer.continuationEndpoint.continuationCommand;
+        if (!t && c && c.token) t = c.token;
+    });
+    return t;
+}
+// 후보 모으기 → Map(videoId → { id, title, ch, chId, src: 'topic' | 'search' })
+async function bcYtItCollect() {
+    const map = new Map();
+    const add = (list, src) => list.forEach(v => { if (!map.has(v.id)) map.set(v.id, Object.assign({ src }, v)); });
+
+    // ① 주제 채널 라이브 탭 — 게임을 롤로 설정한 방송 전부 (시청자 순). 페이지를 끝까지 넘긴다
+    let r = await bcYtItPost('browse', { browseId: BC_YT_TOPIC, params: BC_YT_TOPIC_LIVE });
+    let list = bcYtItVideos(r);
+    if (!list.length) throw new Error('주제 채널 라이브 탭이 비어 있다 (응답 모양이 바뀌었나)');
+    add(list, 'topic');
+    let tok = bcYtItCont(r);
+    for (let page = 1; tok && page < BC_YT_IT_MAX_PAGES; page++) {
+        const c = await bcYtItPost('browse', { continuation: tok });
+        list = bcYtItVideos(c);
+        if (!list.length) break;
+        add(list, 'topic');
+        tok = bcYtItCont(c);
+    }
+
+    // ② 라이브 검색 — 게임 태그를 안 단 방송. 첫 페이지 + 한 장 더
+    for (const q of BC_YT_IT_QUERIES) {
+        try {
+            let sr = await bcYtItPost('search', { query: q, params: BC_YT_IT_LIVE_FILTER });
+            add(bcYtItVideos(sr).filter(v => v.live), 'search');
+            const t2 = bcYtItCont(sr);
+            if (t2) { sr = await bcYtItPost('search', { continuation: t2 }); add(bcYtItVideos(sr).filter(v => v.live), 'search'); }
+        } catch (e) { /* 검색 한 단어가 실패해도 주제 탭 결과로 간다 */ }
+    }
+    return map;
+}
+
+async function bcFetchYoutubeFromCandidates(cand) {
+    const ids = [];
+    for (const v of cand.values()) {
+        if (BC_YT_EXCLUDE.has(v.chId)) continue;
+        if (!BC_HANGUL_RE.test(v.title + v.ch)) continue;                       // 한국어 방송만 (제목이나 채널 이름에 한글)
+        if (BC_OTHER_GAME_RE.test(v.title) || BC_RERUN_RE.test(v.title)) continue;
+        if (v.src === 'search' && !bcLolSignal(v.title)) continue;            // 검색에서 온 건 제목에 롤 신호가 있어야 (주제 탭은 게임 태그가 곧 신호)
+        ids.push(v.id);
+    }
+    // 손 명단 include 는 어느 경로에서든 항상 확인한다 (채널당 1유닛)
+    if (BC_YT_INCLUDE.length) ids.push(...await bcYtHeads(BC_YT_INCLUDE));
+    return bcYtVideosToItems([...new Set(ids)]);
+}
+
+async function bcFetchYoutube() {
+    if (!process.env.YOUTUBE_API_KEY) throw Object.assign(new Error('유튜브 키 없음'), { reason: 'nokey' });
+    let cand = null;
+    try {
+        cand = await bcYtItCollect();
+        bcYtItFailLogged = false;
+    } catch (err) {
+        if (!bcYtItFailLogged) {   // 막히면 20분마다 찍힐 테니 한 번만
+            console.warn('[Broadcast] 유튜브 InnerTube 실패 → 공식 명단 경로로:', err.response ? err.response.status : '', err.message);
+            bcYtItFailLogged = true;
+        }
+    }
+    if (cand) return bcFetchYoutubeFromCandidates(cand);
+    return bcFetchYoutubeOfficial();
+}
+
+// ===== 경로 ② 공식 API 만 (폴백) — 2026-09-17 낮까지의 본 경로 그대로 =====
+// 새 채널 찾기 — `롤` 로 라이브를 검색해 한국어 롤 제목인 채널을 명단에 넣는다 (100유닛)
+// ★ order=viewCount 를 주면 결과가 15개로 줄어든다 (실측, 안 주면 50개 + 다음 페이지). 그래서 안 준다
+async function bcYtDiscover() {
+    const r = await bcYtGet('search', {
+        part: 'snippet', type: 'video', eventType: 'live', regionCode: 'KR', relevanceLanguage: 'ko',
+        videoCategoryId: 20, maxResults: 50, q: '롤'
+    });
+    const now = Date.now();
+    const ops = [];
+    for (const it of (r.data.items || [])) {
+        const sn = it.snippet || {};
+        const title = sn.title || '';
+        if (!sn.channelId || BC_YT_EXCLUDE.has(sn.channelId)) continue;
+        if (!BC_HANGUL_RE.test(title) || !bcLolSignal(title) || BC_OTHER_GAME_RE.test(title)) continue;
+        ops.push({ updateOne: {
+            filter: { _id: sn.channelId },
+            update: { $set: { name: sn.channelTitle || '', lastLive: now, searchAt: now }, $setOnInsert: { found: now }, $inc: { hits: 1 } },
+            upsert: true
+        } });
+    }
+    if (ops.length) await YtChannel.bulkWrite(ops, { ordered: false });
+    bcYtSearchAt = now;
+    console.log(`[Broadcast] 유튜브 새 채널 찾기 — 후보 ${ops.length}개 반영`);
+}
+
+async function bcFetchYoutubeOfficial() {
+    if (bcYtSearchAt === null) {
+        // 재부팅(배포)마다 검색을 다시 돌리면 100유닛씩 샌다 — 마지막 검색 시각을 DB 에서 잇는다
+        const last = await YtChannel.findOne({ searchAt: { $gt: 0 } }).sort({ searchAt: -1 }).select('searchAt').lean();
+        bcYtSearchAt = last ? last.searchAt : 0;
+    }
+    if (Date.now() - bcYtSearchAt > BC_YT_SEARCH_MS - 60 * 1000) {
+        try { await bcYtDiscover(); }
+        catch (err) {
+            if (bcYtQuotaHit(err)) throw err;
+            bcYtSearchAt = Date.now();   // 검색만 실패하면 명단 확인은 그대로 간다 (다음 검색은 2시간 뒤)
+            console.warn('[Broadcast] 유튜브 새 채널 찾기 실패:', err.message);
+        }
+    }
+
+    const since = Date.now() - BC_YT_ACTIVE_DAYS * 86400 * 1000;
+    const auto = await YtChannel.find({ lastLive: { $gte: since } }).sort({ lastLive: -1 }).limit(BC_YT_MAX + 20).select('_id').lean();
+    const ids = [...new Set(BC_YT_INCLUDE.concat(auto.map(c => c._id)))].filter(id => !BC_YT_EXCLUDE.has(id)).slice(0, BC_YT_INCLUDE.length + BC_YT_MAX);
+    if (!ids.length) return [];
+
+    // ① 채널마다 업로드 목록 맨 앞 3개 → ② 후보 영상의 라이브 여부·시청자 수
+    const vids = [...new Set(await bcYtHeads(ids))];
+    return bcYtVideosToItems(vids);
 }
 
 const bcFetchers = { soop: bcFetchSoop, chzzk: bcFetchChzzk, youtube: bcFetchYoutube };

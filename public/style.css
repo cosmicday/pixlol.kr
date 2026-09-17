@@ -9574,9 +9574,11 @@ main {
 }
 
 /* ==========================================================================
-   e스포츠 — 대회 일정 · 순위표 (2026-09-16)
+   e스포츠 — 대회 일정 · 순위표 (2026-09-16 · 2026-09-17 개편)
    ★ 새 레이아웃은 없다 — 칩은 `.codex-tab`, 카드는 `.patch-page-item` 과 같은 결,
      순위표는 `.stats-table` 을 그대로 쓴다 (2026-09-03 디자인 감사 5장의 구성안)
+   ★ 2026-09-17: 리그를 고르면 ≥1024 에서 2단(일정 | 순위표·대진 결과 sticky). sticky 의 top 은
+     공통 헤더 높이를 화면이 재서 `--es-top` 에 넣는다 (헤더가 sticky 라 0 이면 밑에 깔린다)
    ========================================================================== */
 #esports-container {
     display: none;
@@ -9593,6 +9595,71 @@ main {
 .es-leagues { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 /* ★ 줄바꿈은 칩 **사이**에서만 — 안 막으면 폰에서 '퍼스트 스탠드'·'케스파컵' 이 칩 안에서 세로로 쪼개진다 */
 .es-leagues .codex-tab { white-space: nowrap; }
+/* 리그 로고가 붙은 칩 (getLeagues 의 image — 검정 바탕용 색 로고) */
+.codex-tab.es-chip { display: inline-flex; align-items: center; gap: 6px; padding-left: 8px; }
+.codex-tab.es-chip:first-child { padding-left: 12px; }
+.es-chip-logo { width: 16px; height: 16px; object-fit: contain; }
+
+/* 리그 화면 2단 — 왼쪽 일정 · 오른쪽 순위표 (sticky) */
+.es-layout { display: block; }
+.es-main { min-width: 0; }
+@media (min-width: 1024px) {
+    .es-layout.has-aside { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 22px; align-items: start; }
+    .es-aside {
+        position: sticky;
+        top: var(--es-top, 100px);
+        max-height: calc(100vh - var(--es-top, 100px) - 16px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+    .es-aside .es-h2:first-child { margin-top: 0; }
+}
+
+/* 리그 머리글 — 로고 · 이름 · 대회 기간 · 공식 페이지 링크 */
+.es-tour {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0.03));
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    border-radius: var(--dogu-r-card);
+}
+.es-tour-logo { flex: none; width: 40px; height: 40px; object-fit: contain; }
+.es-tour-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.es-tour-text b { color: var(--text-bright); font-size: 17px; font-weight: 800; }
+.es-tour-text span { color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.es-tour-text span:empty { display: none; }
+.es-tour-link { margin-left: auto; color: var(--text-faint); font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+@media (hover: hover) { .es-tour-link:hover { color: var(--accent); } }
+
+/* 스테이지(그룹 · 플레이-인 · 플레이오프 · N주 차) 칩 — 한 줄, 넘치면 가로 스크롤 */
+.es-stages {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.es-stages::-webkit-scrollbar { display: none; }
+.es-stage {
+    flex: none;
+    height: 26px;
+    padding: 0 10px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--dogu-r-pill);
+    color: var(--text-faint);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--dogu-ease), border-color var(--dogu-ease), background var(--dogu-ease);
+}
+.es-stage.active { background: rgba(167, 139, 250, 0.14); border-color: rgba(167, 139, 250, 0.45); color: var(--accent); }
+@media (hover: hover) { .es-stage:not(.active):hover { color: var(--text-muted); border-color: rgba(255, 255, 255, 0.15); } }
 
 .es-h2 {
     display: flex;
@@ -9606,6 +9673,18 @@ main {
     font-weight: 800;
 }
 .es-h2:first-of-type { margin-top: 0; }
+.es-main .es-tour + .es-h2, .es-main .es-stages + .es-h2 { margin-top: 0; }
+/* 「예정된 경기」 옆 진행 중 개수 */
+.es-live-n {
+    padding: 2px 8px;
+    background: rgba(232, 64, 87, 0.14);
+    border: 1px solid rgba(232, 64, 87, 0.4);
+    border-radius: var(--dogu-r-pill);
+    color: var(--lose-text);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 800;
+}
 
 .es-none {
     margin: 0;
@@ -9617,6 +9696,16 @@ main {
     font-size: 13px;
     text-align: center;
 }
+/* 「예정된 경기 없음」 — 큰 상자 대신 한 줄. 다음 대회 기간이 오면 그 줄에 채워진다 */
+.es-none-line {
+    margin: 0 0 4px;
+    padding: 9px 14px;
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: var(--dogu-r-card);
+    color: var(--text-faint);
+    font-size: 12px;
+}
+.es-none-line b { color: var(--text-muted); font-weight: 700; }
 
 /* 소스가 막혀 창고 값을 쓰는 중임을 밝히는 줄 */
 .es-stale {
@@ -9631,7 +9720,25 @@ main {
 .es-stale b { color: var(--accent); }
 
 .es-day { margin-bottom: 14px; }
-.es-day-head { margin: 0 0 8px; color: var(--text-muted); font-size: 12px; font-weight: 700; }
+/* 날짜 머리글 — 스크롤하면 헤더 아래에 붙는다. 배경이 그림이라 반투명 판을 깐다 */
+.es-day-head {
+    position: sticky;
+    top: var(--es-top, 90px);
+    z-index: 2;
+    width: fit-content;
+    margin: 0 0 8px;
+    padding: 3px 9px;
+    background: rgba(14, 13, 28, 0.82);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--dogu-r-pill);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+.es-day.is-today .es-day-head { color: var(--accent); border-color: rgba(167, 139, 250, 0.4); }
+.es-day.is-today .es-match { border-color: rgba(167, 139, 250, 0.35); }
 .es-list { display: flex; flex-direction: column; gap: 8px; }
 
 /* 한 줄 = [시간] [왼팀] [스코어] [오른팀] [리그·차수].
@@ -9655,10 +9762,19 @@ main {
     .es-match:hover { background: #22203c; border-color: rgba(167, 139, 250, 0.45); }
 }
 
-.es-match.is-live { border-color: rgba(232, 64, 87, 0.5); }
+.es-match.is-live { border-color: rgba(232, 64, 87, 0.5); background: linear-gradient(90deg, rgba(232, 64, 87, 0.08), var(--surface) 40%); }
 
 .es-time { color: var(--text-muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.es-live { color: var(--lose-text); font-size: 12px; font-style: normal; font-weight: 800; }
+.es-live { display: inline-flex; align-items: center; gap: 5px; color: var(--lose-text); font-size: 12px; font-style: normal; font-weight: 800; }
+.es-live::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--lose);
+    animation: es-pulse 1.4s ease-in-out infinite;
+}
+@keyframes es-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.75); } }
 
 .es-side { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .es-side.is-left { justify-content: flex-end; }
@@ -9721,6 +9837,10 @@ main {
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+/* 다시보기 표시 — 카드 전체가 그 경기 VOD 로 간다. 리그 배지 옆 첫 줄에 둔다 */
+.es-meta-top { display: inline-flex; align-items: center; gap: 6px; }
+.es-vod { color: var(--accent); font-size: 12px; text-decoration: none; font-weight: 700; white-space: nowrap; }
+.es-vod::before { content: '▶ '; font-size: 9px; }
 
 .es-more {
     display: block;
@@ -9740,19 +9860,63 @@ main {
     .es-more:hover { background: var(--surface-hover); border-color: rgba(167, 139, 250, 0.45); color: var(--text-bright); }
 }
 
-.es-standings { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.es-standings { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.es-aside .es-standings { grid-template-columns: 1fr; }
 .es-group-head { margin: 0 0 8px; color: var(--text-muted); font-size: 12px; font-weight: 700; }
 
-/* ★ `.stats-table` 의 th 폭은 7칸 기준(28/10/12…)이라 4칸짜리엔 안 맞는다.
+/* ★ `.stats-table` 의 th 폭은 7칸 기준(28/10/12…)이라 5칸짜리엔 안 맞는다.
    같은 특이성이면 순서 싸움이 되므로 `.stats-table.es-table` 로 한 단 올려 덮는다 */
-.stats-table.es-table th:nth-child(1) { width: 16%; }
-.stats-table.es-table th:nth-child(2) { width: 52%; }
-.stats-table.es-table th:nth-child(3) { width: 16%; }
-.stats-table.es-table th:nth-child(4) { width: 16%; }
+.stats-table.es-table th:nth-child(1) { width: 10%; }
+.stats-table.es-table th:nth-child(2) { width: 46%; }
+.stats-table.es-table th:nth-child(3) { width: 12%; }
+.stats-table.es-table th:nth-child(4) { width: 12%; }
+.stats-table.es-table th:nth-child(5) { width: 20%; }
 .es-table .es-table-team { text-align: left; }
+.es-table tr.is-top td:first-child { color: var(--accent); font-weight: 800; }
 .es-table-flex { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .es-table-flex img { flex: none; width: 22px; height: 22px; object-fit: contain; }
 .es-table-flex b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* 승률 칸 — 숫자 밑에 가는 막대 */
+.es-table td.es-wr { position: relative; font-variant-numeric: tabular-nums; }
+.es-table td.es-wr i {
+    position: absolute;
+    left: 10%;
+    bottom: 4px;
+    height: 3px;
+    max-width: 80%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, rgba(167, 139, 250, 0.45), var(--accent));
+}
+
+/* 대진 결과(플레이오프 · 플레이-인) — 순위표 아래 한 줄짜리 결과 목록 */
+.es-brackets { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.es-aside .es-brackets { grid-template-columns: 1fr; }
+.es-br-list { display: flex; flex-direction: column; gap: 6px; }
+.es-br-row {
+    display: grid;
+    grid-template-columns: 1fr 56px 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--dogu-r-card);
+    color: inherit;
+    text-decoration: none;
+}
+a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-ease); }
+@media (hover: hover) { a.es-br-row:hover { background: #22203c; border-color: rgba(167, 139, 250, 0.45); } }
+.es-br-row.is-live { border-color: rgba(232, 64, 87, 0.5); }
+.es-br-team { display: flex; align-items: center; gap: 7px; min-width: 0; color: var(--text-muted); font-size: 12px; font-weight: 700; }
+.es-br-team.is-left { justify-content: flex-end; }
+.es-br-team.is-win { color: var(--text-bright); }
+.es-br-team.is-lose { opacity: 0.55; }
+.es-br-team img, .es-br-noimg { flex: none; width: 20px; height: 20px; object-fit: contain; }
+.es-br-team b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.es-br-score { display: flex; align-items: center; justify-content: center; gap: 4px; color: var(--text-bright); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.es-br-score i { color: var(--text-dim); font-size: 11px; font-style: normal; }
+.es-br-vs { color: var(--text-dim); font-size: 12px; }
+.es-br-row.is-live .es-br-vs { color: var(--lose-text); }
 
 @media (max-width: 768px) {
     #esports-container { margin: var(--dogu-page-top) auto 0; padding: 0 16px 40px; }
@@ -9763,8 +9927,12 @@ main {
     .es-logo { width: 22px; height: 22px; }
     .es-name-full { display: none; }
     .es-name-code { display: inline; }
-    .es-standings { grid-template-columns: 1fr; }
+    .es-standings, .es-brackets { grid-template-columns: 1fr; }
     .es-src { width: 100%; margin-left: 0; }
+    .es-tour { padding: 10px 12px; gap: 10px; }
+    .es-tour-logo { width: 32px; height: 32px; }
+    .es-tour-text b { font-size: 15px; }
+    .es-aside { margin-top: 22px; }
 }
 
 /* 순위표 각주 — 원본 순위가 승패와 어긋나 다시 매겼을 때만 나온다 */
@@ -9774,7 +9942,7 @@ main {
 /* ==========================================================================
    방송 — 롤 생방송 목록 (2026-09-17)
    ★ 칩·안내 줄·「더 보기」 는 e스포츠 것(.es-leagues · .es-stale · .es-more · .es-none)을 그대로 쓴다.
-     새로 만든 건 카드 격자 하나다
+     새로 만든 건 카드 격자와 도구 줄(검색칸 · 정렬)이다
    ========================================================================== */
 #broadcast-container {
     display: none;
@@ -9784,8 +9952,62 @@ main {
     animation: fadeIn 0.6s ease;
 }
 
+.bc-summary b { color: var(--text-bright); font-weight: 700; font-variant-numeric: tabular-nums; }
 .bc-chip-n { margin-left: 2px; color: var(--text-faint); font-size: 12px; font-variant-numeric: tabular-nums; }
 .codex-tab.active .bc-chip-n { color: inherit; opacity: 0.75; }
+
+/* 플랫폼 색 점 — 칩과 카드 배지가 같이 쓴다 */
+.bc-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; vertical-align: 1px; }
+.bc-dot.is-soop { background: #2b6bff; }
+.bc-dot.is-chzzk { background: #00c07f; }
+.bc-dot.is-youtube { background: #e5202e; }
+
+/* 도구 줄 — 왼쪽 플랫폼 칩, 오른쪽 검색칸 · 정렬 */
+.bc-bar { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px 16px; margin-bottom: 18px; }
+.bc-bar .es-leagues { margin-bottom: 0; }
+.bc-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
+.bc-search-box { position: relative; display: block; width: 220px; max-width: 100%; }
+.bc-search-box::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--text-dim);
+    border-radius: 50%;
+    transform: translateY(-58%);
+    pointer-events: none;
+}
+.bc-search-box::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    width: 6px;
+    height: 2px;
+    background: var(--text-dim);
+    transform: translateY(3px) rotate(45deg);
+    pointer-events: none;
+}
+.bc-search {
+    width: 100%;
+    box-sizing: border-box;
+    height: var(--dogu-ctl-sm);
+    padding: 0 12px 0 30px;
+    background: #12121f;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--dogu-r-pill);
+    color: var(--text-bright);
+    font-size: 12px;
+    outline: none;
+    transition: border-color var(--dogu-ease);
+}
+.bc-search::placeholder { color: var(--text-dim); }
+.bc-search:focus { border-color: rgba(167, 139, 250, 0.6); }
+.bc-search::-webkit-search-cancel-button { -webkit-appearance: none; }
+.bc-sort { display: flex; gap: 6px; }
+.bc-sort .codex-tab { white-space: nowrap; }
 
 .bc-grid {
     display: grid;
@@ -9800,44 +10022,52 @@ main {
     overflow: hidden;
     background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top-width: 2px;
     border-radius: var(--dogu-r-card);
     color: inherit;
     text-decoration: none;
-    transition: background var(--dogu-ease), border-color var(--dogu-ease);
+    transition: background var(--dogu-ease), border-color var(--dogu-ease), transform var(--dogu-ease);
 }
+/* 위 테두리 한 줄이 플랫폼 색 — 배지를 안 읽어도 색으로 갈린다 */
+.bc-card.is-soop { border-top-color: #2b6bff; }
+.bc-card.is-chzzk { border-top-color: #00c07f; }
+.bc-card.is-youtube { border-top-color: #e5202e; }
 @media (hover: hover) {
-    .bc-card:hover { background: #22203c; border-color: rgba(167, 139, 250, 0.45); }
+    .bc-card:hover { background: #22203c; border-color: rgba(167, 139, 250, 0.45); transform: translateY(-2px); }
+    .bc-card.is-soop:hover { border-top-color: #2b6bff; }
+    .bc-card.is-chzzk:hover { border-top-color: #00c07f; }
+    .bc-card.is-youtube:hover { border-top-color: #e5202e; }
+    .bc-card:hover .bc-thumb img { transform: scale(1.03); }
 }
 
 /* 썸네일 자리는 그림이 없어도(이미지 오류·없음) 16:9 를 지킨다 */
 .bc-thumb {
     position: relative;
     display: block;
+    overflow: hidden;
     aspect-ratio: 16 / 9;
     background: rgba(255, 255, 255, 0.05);
 }
-.bc-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.bc-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
 
 .bc-plat,
 .bc-viewers {
     position: absolute;
     top: 8px;
     padding: 2px 7px;
+    background: rgba(0, 0, 0, 0.66);
     border-radius: 4px;
+    color: #fff;
     font-size: 12px;
     font-style: normal;
     font-weight: 800;
     line-height: 1.5;
 }
-.bc-plat { left: 8px; color: #fff; }
-.bc-plat.is-soop { background: #2b6bff; }
-.bc-plat.is-chzzk { background: #00c07f; color: #06231a; }
-.bc-plat.is-youtube { background: #e5202e; }
+.bc-plat { left: 8px; display: inline-flex; align-items: center; }
+.bc-plat .bc-dot { margin-right: 5px; vertical-align: 0; }
 
 .bc-viewers {
     right: 8px;
-    background: rgba(0, 0, 0, 0.72);
-    color: #fff;
     font-variant-numeric: tabular-nums;
 }
 .bc-viewers::before {
@@ -9849,8 +10079,10 @@ main {
     border-radius: 50%;
     background: var(--lose);
     vertical-align: middle;
+    animation: es-pulse 1.4s ease-in-out infinite;
 }
 .bc-viewers.is-hidden { color: rgba(255, 255, 255, 0.7); font-weight: 600; }
+.bc-viewers.is-hidden::before { animation: none; background: var(--text-dim); }
 
 .bc-body { display: flex; gap: 10px; padding: 10px 12px 12px; min-width: 0; }
 
@@ -9886,18 +10118,24 @@ main {
     word-break: break-all;
 }
 .bc-name {
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
     color: var(--text-muted);
     font-size: 12px;
     font-style: normal;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
+.bc-name span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.bc-since { flex: none; color: var(--text-faint); font-style: normal; font-variant-numeric: tabular-nums; }
+.bc-since::before { content: '·'; margin-right: 6px; color: var(--text-dim); }
 
 .bc-note { margin: 16px 0 0; color: var(--text-faint); font-size: 12px; line-height: 1.6; }
 
 @media (max-width: 768px) {
     #broadcast-container { margin: var(--dogu-page-top) auto 0; padding: 0 16px 40px; }
+    .bc-tools { width: 100%; margin-left: 0; }
+    .bc-search-box { flex: 1 1 140px; width: auto; }
     .bc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .bc-body { padding: 8px 10px 10px; gap: 8px; }
     .bc-avatar { width: 26px; height: 26px; }
