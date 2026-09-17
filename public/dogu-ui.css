@@ -662,7 +662,21 @@ body.dogu-body:not(.dogu-home) .dogu-hero { display: none; }
     background: var(--dogu-card-2);
 }
 .dogu-dropdown-tab { font-size: 13px; font-weight: 700; color: var(--dogu-text-3); cursor: pointer; }
-.dogu-dropdown-tab.active { color: var(--dogu-accent-strong); }
+/* 탭 둘 사이 세로 구분선 + 켜진 탭은 옅은 액센트 알약 (2026-09-18, pixlol 요청 — 글자색만 달라서는 "탭" 으로 안 읽혔다).
+   구분선은 gap(14px) 한가운데에 놓는다 */
+.dogu-dropdown-tab { position: relative; padding: 3px 9px; border-radius: 999px; transition: background 0.15s ease, color 0.15s ease; }
+.dogu-dropdown-tab:first-child { margin-left: -9px; }
+.dogu-dropdown-tab + .dogu-dropdown-tab::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 50%;
+    height: 12px;
+    width: 1px;
+    background: var(--dogu-line-2);
+    transform: translateY(-50%);
+}
+.dogu-dropdown-tab.active { color: var(--dogu-accent-strong); background: var(--dogu-accent-weak); }
 .dogu-dropdown-hint { margin-left: auto; font-size: 12px; color: var(--dogu-text-3); }
 .dogu-dropdown-row { display: flex; align-items: center; padding: 7px 14px; border-top: 1px solid var(--dogu-line); }
 .dogu-dropdown-row:first-child { border-top: 0; }
@@ -714,9 +728,13 @@ body.dogu-body:not(.dogu-home) .dogu-hero { display: none; }
 }
 .dogu-footer-inner { padding: 26px 16px 40px; }
 .dogu-footer .dogu-brand { font-size: 20px; text-shadow: none; }
-.dogu-footer-links { display: flex; gap: 16px; margin: 12px 0 14px; flex-wrap: wrap; }
-/* 상하 패딩 8px — 글자만으론 16px 라 폰에서 누르기 어려웠다. 터치 영역 32px 확보 */
-.dogu-footer-links a { margin: 0; padding: 8px 0; font-size: 12px; font-weight: 700; color: var(--dogu-text-2); text-decoration: none; cursor: pointer; }   /* #a9bcd9 리터럴 → 토큰 (2026-09-11) */
+.dogu-footer-links { display: flex; gap: 0; margin: 12px 0 14px; flex-wrap: wrap; }
+/* 상하 패딩 8px — 글자만으론 16px 라 폰에서 누르기 어려웠다. 터치 영역 32px 확보.
+   ★ 링크 사이 세로 구분선 (2026-09-18, pixlol 요청) — gap 대신 좌우 패딩 14px 로 벌리고 둘째부터 왼쪽에 12px 짜리 선.
+     줄이 접히면(폰 좁은 폭) 첫 칸에 오는 링크에도 선이 남지만 12px 라 거슬리지 않는다 */
+.dogu-footer-links a { position: relative; margin: 0; padding: 8px 14px; font-size: 12px; font-weight: 700; color: var(--dogu-text-2); text-decoration: none; cursor: pointer; }   /* #a9bcd9 리터럴 → 토큰 (2026-09-11) */
+.dogu-footer-links a:first-child { padding-left: 0; }
+.dogu-footer-links a + a::before { content: ''; position: absolute; left: 0; top: 50%; height: 12px; width: 1px; background: var(--dogu-line-2); transform: translateY(-50%); }
 @media (hover: hover) {
     .dogu-footer-links a:hover { color: var(--dogu-accent-strong); }
 }

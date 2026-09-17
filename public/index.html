@@ -7,6 +7,8 @@
          확대를 막고 있었고, iOS 사파리는 이 지시를 원래 무시해서 안드로이드에서만
          못 늘어나 동작도 갈렸다. 확대는 열어 두는 게 맞다. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- iOS 사파리가 푸터의 이메일 주소를 스스로 링크(밑줄)로 바꾸는 걸 끈다 — 버그제보 버튼이 주소를 복사해 주므로 (2026-09-18) -->
+    <meta name="format-detection" content="email=no,telephone=no">
     <!-- ★ 「PC 버전」 스위치 (2026-08-26, 사용자 요청). 푸터의 링크가 localStorage 에 켜 두면
          뷰포트를 1240px 로 잡아 폰에서도 PC 배치(768px 이하 규칙 안 탐)로 그린다. 브라우저의
          "데스크톱 사이트" 가 사용자 폰에서 안 먹어서 사이트 쪽에 둔 것. CSS 보다 먼저 돌아야 해서 여기다 -->
@@ -132,7 +134,8 @@
                     라인 이름·아이콘은 안 바뀌는 값이라 골격에도 진짜를 넣는다 (깜빡임 0). -->
             <div id="home-tier-container" class="home-tier-container">
                 <div class="shop-title-container">
-                    <img src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/rarity-gem-icons/legendary.png" style="width: 22px; height: 22px;">
+                    <!-- 아이콘: 전설 스킨 보석(신화상점의 보석과 짝이었지만 추천 챔피언과는 무관) → 사이트 보라색 별 (2026-09-18, 사용자 위임) -->
+                    <svg class="home-tier-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6.1 6.7.8-4.9 4.6 1.3 6.6L12 17.4l-6 3.3 1.3-6.6L2.4 9.5l6.7-.8z" fill="var(--accent)"/></svg>
                     <h3><a href="/stats" data-link class="shop-title-link">오늘의 추천 챔피언</a></h3>
                     <span id="home-tier-scope" class="mythic-rotation"></span>
                 </div>
@@ -219,8 +222,8 @@
             <div class="patch-note-container">
                 <div class="patch-note-col">
                     <div class="patch-note-head">
-                        <h3>패치노트</h3>
-                        <a class="patch-note-more" href="https://www.leagueoflegends.com/ko-kr/news/tags/patch-notes/" target="_blank" rel="noopener">전체 보기 ›</a>
+                        <h3><a href="/patch/live" data-link>패치노트</a></h3>
+                        <a class="patch-note-more" href="/patch/live" data-link>전체 보기 ›</a>
                     </div>
                     <div id="patch-note-list" class="patch-note-list">
                         <div class="dogu-skel-rows" aria-hidden="true"><span class="dogu-skel"></span><span class="dogu-skel"></span><span class="dogu-skel"></span><span class="dogu-skel"></span><span class="dogu-skel"></span></div>
@@ -228,8 +231,8 @@
                 </div>
                 <div class="patch-note-col">
                     <div class="patch-note-head">
-                        <h3>PBE 패치 프리뷰</h3>
-                        <a class="patch-note-more" href="https://x.com/RiotPhroxzon" target="_blank" rel="noopener">@RiotPhroxzon ›</a>
+                        <h3><a href="/patch/pbe" data-link>PBE 패치 프리뷰</a></h3>
+                        <a class="patch-note-more" href="/patch/pbe" data-link>전체 보기 ›</a>
                     </div>
                     <div id="pbe-note-list" class="patch-note-list">
                         <div class="patch-note-empty">
