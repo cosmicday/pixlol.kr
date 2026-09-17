@@ -657,7 +657,7 @@ body.dogu-body:not(.dogu-home) .dogu-hero { display: none; }
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 9px 14px;
+    padding: 9px 14px 9px 11px;        /* 왼쪽 14 → 11 (2026-09-18, pixlol: 즐겨찾기 왼쪽 여백 20% 줄임) */
     border-bottom: 1px solid var(--dogu-line);
     background: var(--dogu-card-2);
 }
@@ -754,12 +754,13 @@ body.dogu-body:not(.dogu-home) .dogu-hero { display: none; }
     top: 120px;
     transform: translate(-50%, -14px);
     padding: 12px 20px;
-    background: var(--dogu-card);
+    /* 사이트가 --dogu-toast-bg / --dogu-toast-line / --dogu-toast-fg 로 덮는다 (pixlol 은 보라 계열, 2026-09-18). 기본은 카드색 */
+    background: var(--dogu-toast-bg, var(--dogu-card));
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid var(--dogu-line-2);
+    border: 1px solid var(--dogu-toast-line, var(--dogu-line-2));
     border-radius: var(--dogu-radius);
-    color: var(--dogu-text);
+    color: var(--dogu-toast-fg, var(--dogu-text));
     font-family: var(--dogu-font);
     font-size: 13px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);

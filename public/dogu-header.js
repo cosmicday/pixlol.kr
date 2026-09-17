@@ -24,7 +24,7 @@
         noMatch: '일치하는 이름이 없습니다.',
         /* 탭 아이콘은 글자·SVG 라 CSS 색이 든다 (이모지 🕘 는 색을 못 바꿨다 — 2026-09-18). 켜진 탭 색은 dogu-ui.css */
         favorites: '<i class="dogu-dropdown-ico">★</i>즐겨찾기',
-        recents: '<i class="dogu-dropdown-ico"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.6V8l2.4 1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></i>최근 검색',
+        recents: '<i class="dogu-dropdown-ico"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.6V8l2.4 1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></i>최근검색',
         hint: '각각 10개까지 저장됩니다.',
         /* 빈 목록 문구 — 사이트가 opts.search.emptyFavorites / emptyRecents 로 덮는다 (pixlol: 「…소환사가 없습니다」) */
         emptyFavorites: '즐겨찾기가 비어 있습니다.',
@@ -310,6 +310,25 @@
         });
         input.addEventListener('blur', function () { dropdown.classList.remove('open'); });
         dropdown.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        /* ★ 터치(iOS)에서는 mousedown 보다 먼저 input 이 blur 되어 드롭다운이 닫히고, 그 뒤 click 이 허공에 떨어진다 —
+           「최근검색을 누른 뒤 즐겨찾기를 눌러도 색이 안 든다」가 그것 (2026-09-18 pixlol 실기기). 탭·삭제는 touchend 에서
+           바로 처리하고 preventDefault 로 포커스 이동(blur)과 합성 click 을 막는다. 링크는 그대로 click 으로 간다 */
+        dropdown.addEventListener('touchend', function (e) {
+            var tab = e.target.closest('.dogu-dropdown-tab');
+            if (tab) {
+                e.preventDefault();
+                dropdownState.tab = tab.dataset.tab;
+                renderDropdownList();
+                return;
+            }
+            var del = e.target.closest('[data-dogu-del]');
+            if (del) {
+                e.preventDefault();
+                var source = dropdownState.tab === 'favorites' ? s.favorites : s.recents;
+                if (source && typeof source.remove === 'function') source.remove(del.dataset.doguDel);
+                renderDropdownList();
+            }
+        }, { passive: false });
 
         dropdown.addEventListener('click', function (e) {
             var tab = e.target.closest('.dogu-dropdown-tab');
