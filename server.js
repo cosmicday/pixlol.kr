@@ -5650,6 +5650,7 @@ function bcBuildTiers() {
     }));
     const pros = BC_PROS.map(x => ({
         name: x.name, team: x.team || '', teamImg: x.teamImg ? esportsImg(x.teamImg) : null, role: x.role || '',
+        squad: Number(x.squad) || 1,   // 1 = LCK 주전 · 2 = LCK CL 주전 · 3 = 3군·후보 (getTeams 명단에서 1·2군을 뺀 나머지)
         tier: bcBestTier(x.riot), accounts: x.riot.length, live: x.riot.map(r => liveByRiot.get(r)).find(Boolean) || null
     }));
     return { ok: true, at: Date.now(), pros, streamers };

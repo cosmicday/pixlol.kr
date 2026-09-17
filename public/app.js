@@ -1321,12 +1321,13 @@ function bcViewers(n) {
 
 // 방송인 롤 티어 배지 — 서버가 손 명단(broadcast_channels.js streamers)으로 붙여 준 `tier` 가 있을 때만
 const BC_TIER_KO = { IRON: '아이언', BRONZE: '브론즈', SILVER: '실버', GOLD: '골드', PLATINUM: '플래티넘', EMERALD: '에메랄드', DIAMOND: '다이아', MASTER: '마스터', GRANDMASTER: '그랜드마스터', CHALLENGER: '챌린저' };
+// ★ 생방송 카드에는 닉네임 **오른쪽**에 티어 이름만 (LP·승패는 마우스 올리면) — 2026-09-17 사용자 요청. 상세는 방송인 티어 페이지
 function bcTierHtml(t) {
     if (!t || !t.t) return '';
     const apex = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(t.t);
-    const label = `${BC_TIER_KO[t.t] || t.t}${apex ? '' : ' ' + t.r} · ${Number(t.lp).toLocaleString('ko-KR')} LP`;
-    const tip = `${t.id} · ${t.w}승 ${t.l}패${t.n > 1 ? ` · 계정 ${t.n}개 중 최고` : ''}`;
-    return `<i class="bc-tier is-${t.t.toLowerCase()}" title="${escapeHtml(tip)}"><img src="${RANK_MEDAL_BASE}${t.t.toLowerCase()}.png" alt="" loading="lazy" onerror="this.remove()">${escapeHtml(label)}</i>`;
+    const label = `${BC_TIER_KO[t.t] || t.t}${apex ? '' : ' ' + t.r}`;
+    const tip = `${t.id} · ${Number(t.lp).toLocaleString('ko-KR')} LP · ${t.w}승 ${t.l}패${t.n > 1 ? ` · 계정 ${t.n}개 중 최고` : ''}`;
+    return `<em class="bc-tier is-${t.t.toLowerCase()}" title="${escapeHtml(tip)}"><img src="${RANK_MEDAL_BASE}${t.t.toLowerCase()}.png" alt="" loading="lazy" onerror="this.remove()">${escapeHtml(label)}</em>`;
 }
 
 // 방송 시간 — HH:MM:SS (2026-09-17 사용자 요청, 전엔 「n시간째」). 썸네일 오른쪽 아래에 두고 1초마다 `bcTick` 이 글자만 바꾼다.
@@ -1359,8 +1360,7 @@ function bcCardHtml(b) {
         <span class="bc-body">${avatar}
             <span class="bc-text">
                 <b class="bc-title">${escapeHtml(b.title || '(제목 없음)')}</b>
-                <i class="bc-name"><span>${escapeHtml(b.name)}</span></i>
-                ${bcTierHtml(b.tier)}
+                <i class="bc-name"><span>${escapeHtml(b.name)}</span>${bcTierHtml(b.tier)}</i>
             </span>
         </span>
     </a>`;
@@ -1472,7 +1472,9 @@ document.addEventListener('click', (e) => {
 let btData = null;
 let btFetchedAt = 0;
 let btTab = 'pro';   // 'pro' | 'streamer'
+let btSquad = 0;     // 프로 탭 안 필터 — 0 전체 · 1 LCK 주전 · 2 LCK CL 주전 · 3 3군·후보
 const BT_ROLE_KO = { top: '탑', jungle: '정글', mid: '미드', bottom: '원딜', support: '서폿' };
+const BT_SQUAD_KO = { 1: '1군', 2: '2군', 3: '3군·후보' };
 
 async function showBroadcastTiers() {
     if (window.location.pathname.replace(/\/$/, '') !== '/broadcast/tiers') {
@@ -1499,8 +1501,10 @@ async function showBroadcastTiers() {
     renderBroadcastTiers();
 }
 
-function btTierCell(t) {
-    if (!t || !t.t) return `<span class="bt-none">언랭</span>`;
+// 티어 칸 — 계정을 모르면 「계정 미확인」, 아직 안 받았으면 「-」, 받았는데 랭크가 없으면 「언랭」
+function btTierCell(t, accounts, building) {
+    if (!accounts) return `<span class="bt-none">계정 미확인</span>`;
+    if (!t || !t.t) return `<span class="bt-none">${building ? '-' : '언랭'}</span>`;
     const apex = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(t.t);
     return `<span class="bc-tier bt-tier is-${t.t.toLowerCase()}"><img src="${RANK_MEDAL_BASE}${t.t.toLowerCase()}.png" alt="" loading="lazy" onerror="this.remove()">${escapeHtml(BC_TIER_KO[t.t] || t.t)}${apex ? '' : ' ' + t.r}</span>`;
 }
@@ -1518,8 +1522,14 @@ function renderBroadcastTiers() {
     if (btTab === 'pro' && !d.pros.length && d.streamers.length) btTab = 'streamer';   // 프로 명단이 비어 있으면 방송인 탭부터
     const score = t => !t || !t.t ? -1 : (['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER'].indexOf(t.t) * 10000
         + (['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(t.t) ? 3 : ({ I: 3, II: 2, III: 1, IV: 0 }[t.r] || 0)) * 1000 + (t.lp || 0));
-    const list = (btTab === 'pro' ? d.pros : d.streamers).slice().sort((a, b) => score(b.tier) - score(a.tier));
     const isPro = btTab === 'pro';
+    const list = (isPro ? d.pros.filter(x => !btSquad || (x.squad || 1) === btSquad) : d.streamers).slice().sort((a, b) => score(b.tier) - score(a.tier));
+    // 프로 탭의 1군 · 2군 · 3군 칩 (e스포츠 스테이지 칩과 같은 모양)
+    const squadN = k => d.pros.filter(x => (x.squad || 1) === k).length;
+    const squadChips = isPro && d.pros.some(x => (x.squad || 1) > 1)
+        ? `<div class="es-stages">${[[0, '전체'], [1, '1군 · LCK'], [2, '2군 · LCK CL'], [3, '3군 · 후보']].map(([k, l]) =>
+            `<button class="es-stage${btSquad === k ? ' active' : ''}" data-bt-squad="${k}">${l}${k ? ` <span class="bc-chip-n">${squadN(k)}</span>` : ''}</button>`).join('')}</div>`
+        : '';
 
     const chips = [{ k: 'pro', l: '프로게이머', n: d.pros.length }, { k: 'streamer', l: '방송인', n: d.streamers.length }]
         .map(c => `<button class="codex-tab${btTab === c.k ? ' active' : ''}" data-bt-tab="${c.k}">${c.l} <span class="bc-chip-n">${c.n}</span></button>`).join('');
@@ -1527,7 +1537,7 @@ function renderBroadcastTiers() {
     const rows = list.map((x, i) => {
         const t = x.tier;
         const who = isPro
-            ? `<span class="bt-who">${x.teamImg ? `<img class="bt-team" src="${escapeHtml(x.teamImg)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<b>${escapeHtml(x.name)}</b><i>${escapeHtml([x.team, BT_ROLE_KO[x.role] || x.role].filter(Boolean).join(' · '))}</i></span>`
+            ? `<span class="bt-who">${x.teamImg ? `<img class="bt-team" src="${escapeHtml(x.teamImg)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<b>${escapeHtml(x.name)}</b><i>${escapeHtml([x.team, (x.squad || 1) > 1 ? BT_SQUAD_KO[x.squad] : '', BT_ROLE_KO[x.role] || x.role].filter(Boolean).join(' · '))}</i></span>`
             : `<span class="bt-who">${(x.platforms || [{ p: x.p }]).map(q => bcPlatMark(q.p)).join('')}<b>${escapeHtml(x.name)}</b>${x.ex ? `<em class="bt-ex">前 ${escapeHtml(x.ex)}</em>` : ''}</span>`;
         const wl = t && t.t ? `${t.w}승 ${t.l}패 <i>(${Math.round(t.w / Math.max(1, t.w + t.l) * 100)}%)</i>` : '-';
         const live = x.live
@@ -1537,7 +1547,7 @@ function renderBroadcastTiers() {
             <td>${i + 1}</td>
             <td class="bt-who-cell">${who}</td>
             <td class="bt-acct">${t && t.t ? `<span>${escapeHtml(t.id)}</span>${x.accounts > 1 ? `<i>+${x.accounts - 1}</i>` : ''}` : '<span class="bt-none">-</span>'}</td>
-            <td>${btTierCell(t)}</td>
+            <td>${btTierCell(t, x.accounts, d.building)}</td>
             <td class="bt-num">${t && t.t ? Number(t.lp).toLocaleString('ko-KR') : '-'}</td>
             <td class="bt-num bt-wl">${wl}</td>
             <td>${live}</td>
@@ -1548,19 +1558,20 @@ function renderBroadcastTiers() {
         <div class="stats-header"><h1 class="ranking-title">방송인 티어</h1>
             <span class="es-src">솔로 랭크 · 계정이 여럿이면 가장 높은 계정${d.at ? ` · ${esportsWhen(d.at)} 갱신` : ''}</span></div>
         <div class="es-leagues">${chips}</div>
+        ${squadChips}
         ${d.building ? `<p class="es-stale">티어를 받는 중입니다 — 몇 분 뒤 다시 열면 전원이 채워집니다.</p>` : ''}
         <div class="stats-table-wrapper"><table class="stats-table bt-table">
             <thead><tr><th>#</th><th>${isPro ? '선수' : '방송인'}</th><th>계정</th><th>티어</th><th>LP</th><th>승패</th><th>방송</th></tr></thead>
             <tbody>${rows || `<tr><td colspan="7" class="bt-none">명단이 비어 있습니다.</td></tr>`}</tbody>
         </table></div>
-        <p class="bc-note">※ ${isPro ? '2026 LCK 정규 로스터 기준입니다. 계정은 공개된 것만 넣었고, 닉네임을 바꿔도 같은 계정을 따라갑니다.' : '방송인이 공개한 계정 기준입니다. 前 프로 방송인은 이 탭에 두고 옛 소속을 배지로 답니다.'} 명단에 없는 사람은 표에 안 나옵니다.</p>`;
+        <p class="bc-note">※ ${isPro ? '2026 LCK 1군·2군(LCK CL) 주전은 최근 경기 출전 명단, 3군·후보는 각 팀 등록 명단에서 1·2군을 뺀 나머지입니다. 계정은 공개된 것만 넣었고, 닉네임을 바꿔도 같은 계정을 따라갑니다.' : '방송인이 공개한 계정 기준입니다. 前 프로 방송인은 이 탭에 두고 옛 소속을 배지로 답니다.'} 명단에 없는 사람은 표에 안 나옵니다.</p>`;
 }
 
 document.addEventListener('click', (e) => {
     const b = e.target.closest('.codex-tab[data-bt-tab]');
-    if (!b) return;
-    btTab = b.dataset.btTab;
-    renderBroadcastTiers();
+    if (b) { btTab = b.dataset.btTab; renderBroadcastTiers(); return; }
+    const s = e.target.closest('.es-stage[data-bt-squad]');
+    if (s) { btSquad = Number(s.dataset.btSquad) || 0; renderBroadcastTiers(); }
 });
 
 function hideAllContainers() {

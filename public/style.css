@@ -10119,11 +10119,9 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
 /* 방송인 롤 티어 — 이름 아래 한 줄. 문장(mini crest)은 랭킹 표와 같은 CommunityDragon 것 */
 .bc-tier {
     display: inline-flex;
+    flex: none;
     align-items: center;
-    gap: 4px;
-    width: fit-content;
-    max-width: 100%;
-    margin-top: 1px;
+    gap: 3px;
     color: var(--text-faint);
     font-size: 12px;
     font-style: normal;
