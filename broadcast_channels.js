@@ -5,7 +5,7 @@
 //   include — 자동으로 안 잡혀도 **항상** 확인할 채널 · exclude — 자동으로 잡혀도 **절대** 안 보여 줄 채널
 //   ★ 값은 채널 ID(`UC` 로 시작하는 24자)다. 채널 주소가 `/@이름` 꼴이면 그 페이지 소스에서 `"channelId":"UC…"` 를 찾으면 된다.
 //
-// ② streamers — 방송인 ↔ 라이엇 계정 (2026-09-17 밤)
+// ② streamers — 방송인 ↔ 라이엇 계정 (2026-09-17 밤) · ③ pros — 프로게이머 (같은 날 밤, 아래)
 //   플랫폼 어디에도 「이 방송인 = 이 라이엇 계정」 칸이 없어서(SOOP·치지직·유튜브 실측) 손으로 잇는다.
 //   그 방송인이 켜졌을 때 여기 적힌 계정들의 솔로 랭크를 받아 **제일 높은 계정** 하나를 카드에 붙인다.
 //   - p  : 'soop' | 'chzzk' | 'youtube'
@@ -56,6 +56,75 @@ module.exports = {
         { p: 'soop', ch: 'baekjidesu', name: '백지라구', riot: ['냐로롱#S2S2'] },
         { p: 'soop', ch: 'gydnjs5742', name: '전뚜기', riot: ['전효원#KR1', 'FA DDUGI#전뚜기', 'Soop전뚜기#성장중'] },
         { p: 'soop', ch: 'hyan9707', name: '김혀니', riot: ['기며니#KR2', '잼처럼 발라드림#KR1'] },
-        // ★ 못 찾은 사람 (deeplol 미등록 · 위키에 태그 없음): 노페 · 김군 · 앰비션 · 도파 · 크캣 · 디나이05 · 챌린저카인 · 테디 · 미키 · 스피릿 · 태평창 · 스오 · 희태시기(유튜브 채널 ID 미확인, 계정은 희태시기#КR1 — 태그의 К 가 키릴 문자다)
+        // ★ 못 찾은 사람 (deeplol 미등록 · 위키에 태그 없음): 노페 · 김군 · 앰비션 · 도파 · 크캣 · 디나이05 · 챌린저카인 · 미키 · 스피릿 · 태평창 · 스오 · 희태시기(유튜브 채널 ID 미확인, 계정은 희태시기#КR1 — 태그의 К 가 키릴 문자다)
+        // ★ 前 프로인 방송인은 여기(방송인)에 두고 `ex: 'T1'` 처럼 옛 소속을 적는다 → 「前 T1」 배지. 테디는 2026 BRO 주전이라 아래 pros 에 있다
+        // ★ 닉네임을 바꿔도 따라간다 — 서버가 처음 찾은 puuid 를 DB 에 두고 그걸로 조회한다. 여기 적힌 ID 가 처음부터 404 일 때만 고치면 된다
+    ],
+    // ③ 프로게이머 — 2026 LCK 정규 로스터 10팀 50명 (2026-09-17 밤). 방송인 티어 페이지의 「프로게이머」 탭
+    //   - 로스터: lolesports livestats 로 뽑은 최근 경기 주전 (docs/방송.md 그 절)
+    //   - riot : deeplol `/pro/<이름>` 등록 계정을 라이엇 API 로 검증한 것 (랭크 있는 계정만). 서버가 제일 높은 계정을 고른다
+    //   - 「계정 미확인」 11명은 riot 이 비어 있어 표에 티어 「-」 로 나온다. 알게 되면 채울 것
+    //   - teamImg 는 lolesports getTeams 의 image (http 는 서버가 https 로 바꾼다)
+    pros: [
+        // DK — Dplus KIA
+        { name: 'Siwoo', team: 'DK', role: 'top', teamImg: 'http://static.lolesports.com/teams/1673260049703_DPlusKIALOGO11.png', riot: ['TOPKING#asd', '아무것도 몰라요#12345'] },
+        { name: 'Lucid', team: 'DK', role: 'jungle', teamImg: 'http://static.lolesports.com/teams/1673260049703_DPlusKIALOGO11.png', riot: [] },   // 계정 미확인
+        { name: 'ShowMaker', team: 'DK', role: 'mid', teamImg: 'http://static.lolesports.com/teams/1673260049703_DPlusKIALOGO11.png', riot: ['DK ShowMaker#KR1', 'MIDKING#asd', 'DWG KIA#KR1'] },
+        { name: 'Smash', team: 'DK', role: 'bottom', teamImg: 'http://static.lolesports.com/teams/1673260049703_DPlusKIALOGO11.png', riot: [] },   // 계정 미확인
+        { name: 'Career', team: 'DK', role: 'support', teamImg: 'http://static.lolesports.com/teams/1673260049703_DPlusKIALOGO11.png', riot: ['인간 병기#0829', '팽도리#1015'] },
+        // T1 — T1
+        { name: 'Doran', team: 'T1', role: 'top', teamImg: 'http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png', riot: [] },   // 계정 미확인
+        { name: 'Oner', team: 'T1', role: 'jungle', teamImg: 'http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png', riot: ['오 너#111'] },
+        { name: 'Faker', team: 'T1', role: 'mid', teamImg: 'http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png', riot: ['Hide on bush#KR1'] },
+        { name: 'Peyz', team: 'T1', role: 'bottom', teamImg: 'http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png', riot: ['Peyz#KR11'] },
+        { name: 'Keria', team: 'T1', role: 'support', teamImg: 'http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png', riot: ['Ciro#KR10'] },
+        // HLE — HLE
+        { name: 'Zeus', team: 'HLE', role: 'top', teamImg: 'http://static.lolesports.com/teams/1631819564399_hle-2021-worlds.png', riot: ['Athene#lll', '배달음식추천부탁#KR1'] },
+        { name: 'Kanavi', team: 'HLE', role: 'jungle', teamImg: 'http://static.lolesports.com/teams/1631819564399_hle-2021-worlds.png', riot: ['vinaka#KR1'] },
+        { name: 'Zeka', team: 'HLE', role: 'mid', teamImg: 'http://static.lolesports.com/teams/1631819564399_hle-2021-worlds.png', riot: [] },   // 계정 미확인
+        { name: 'Gumayusi', team: 'HLE', role: 'bottom', teamImg: 'http://static.lolesports.com/teams/1631819564399_hle-2021-worlds.png', riot: ['HLE Gumayusi#0298', 'thsorre#2830'] },
+        { name: 'Delight', team: 'HLE', role: 'support', teamImg: 'http://static.lolesports.com/teams/1631819564399_hle-2021-worlds.png', riot: ['플레이리스트겨울#KR1'] },
+        // GEN — Gen.G
+        { name: 'Kiin', team: 'GEN', role: 'top', teamImg: 'http://static.lolesports.com/teams/1773829250929_GENGLOGO_GOLD.png', riot: ['kiin#KR1'] },
+        { name: 'Canyon', team: 'GEN', role: 'jungle', teamImg: 'http://static.lolesports.com/teams/1773829250929_GENGLOGO_GOLD.png', riot: ['JUGKlNG#kr'] },
+        { name: 'Chovy', team: 'GEN', role: 'mid', teamImg: 'http://static.lolesports.com/teams/1773829250929_GENGLOGO_GOLD.png', riot: ['허거덩#0303'] },
+        { name: 'Ruler', team: 'GEN', role: 'bottom', teamImg: 'http://static.lolesports.com/teams/1773829250929_GENGLOGO_GOLD.png', riot: ['강 철#샤 넬'] },
+        { name: 'Duro', team: 'GEN', role: 'support', teamImg: 'http://static.lolesports.com/teams/1773829250929_GENGLOGO_GOLD.png', riot: ['Duro#Gen'] },
+        // KT — kt Rolster
+        { name: 'PerfecT', team: 'KT', role: 'top', teamImg: 'http://static.lolesports.com/teams/kt_darkbackground.png', riot: [] },   // 계정 미확인
+        { name: 'Cuzz', team: 'KT', role: 'jungle', teamImg: 'http://static.lolesports.com/teams/kt_darkbackground.png', riot: ['Cuzz#KR1', '독침붕#딱충이'] },
+        { name: 'Bdd', team: 'KT', role: 'mid', teamImg: 'http://static.lolesports.com/teams/kt_darkbackground.png', riot: ['메탈가루몬#0509'] },
+        { name: 'Jiwoo', team: 'KT', role: 'bottom', teamImg: 'http://static.lolesports.com/teams/kt_darkbackground.png', riot: ['중승민#중센조', 'DRX Jiwoo#123'] },
+        { name: 'Effort', team: 'KT', role: 'support', teamImg: 'http://static.lolesports.com/teams/kt_darkbackground.png', riot: ['Effort#4444'] },
+        // BFX — BNK FEARX
+        { name: 'Clear', team: 'BFX', role: 'top', teamImg: 'http://static.lolesports.com/teams/1734691810721_BFXfullcolorfordarkbg.png', riot: [] },   // 계정 미확인
+        { name: 'Raptor', team: 'BFX', role: 'jungle', teamImg: 'http://static.lolesports.com/teams/1734691810721_BFXfullcolorfordarkbg.png', riot: [] },   // 계정 미확인
+        { name: 'VicLa', team: 'BFX', role: 'mid', teamImg: 'http://static.lolesports.com/teams/1734691810721_BFXfullcolorfordarkbg.png', riot: ['대광 #God'] },
+        { name: 'Taeyoon', team: 'BFX', role: 'bottom', teamImg: 'http://static.lolesports.com/teams/1734691810721_BFXfullcolorfordarkbg.png', riot: [] },   // 계정 미확인
+        { name: 'Kellin', team: 'BFX', role: 'support', teamImg: 'http://static.lolesports.com/teams/1734691810721_BFXfullcolorfordarkbg.png', riot: ['댕청잇#KR123', '참새크면비둘기#KR1'] },
+        // BRO — BRION
+        { name: 'Casting', team: 'BRO', role: 'top', teamImg: 'http://static.lolesports.com/teams/1716454325887_Nowyprojekt.png', riot: ['Mela#KR11', 'Casting#KR11'] },
+        { name: 'GIDEON', team: 'BRO', role: 'jungle', teamImg: 'http://static.lolesports.com/teams/1716454325887_Nowyprojekt.png', riot: ['GIDEON#KR2', '초록이필요해#KR3'] },
+        { name: 'Roamer', team: 'BRO', role: 'mid', teamImg: 'http://static.lolesports.com/teams/1716454325887_Nowyprojekt.png', riot: ['우 맨#who', '택배기사#한 진'] },
+        { name: 'Teddy', team: 'BRO', role: 'bottom', teamImg: 'http://static.lolesports.com/teams/1716454325887_Nowyprojekt.png', riot: ['Teddy#sss'] },
+        { name: 'Namgung', team: 'BRO', role: 'support', teamImg: 'http://static.lolesports.com/teams/1716454325887_Nowyprojekt.png', riot: ['shkz#kr33'] },
+        // NS — 농심
+        { name: 'Kingen', team: 'NS', role: 'top', teamImg: 'http://static.lolesports.com/teams/NSFullonDark.png', riot: ['Kingen#KR1'] },
+        { name: 'Sponge', team: 'NS', role: 'jungle', teamImg: 'http://static.lolesports.com/teams/NSFullonDark.png', riot: ['Not Bad#KR2'] },
+        { name: 'Scout', team: 'NS', role: 'mid', teamImg: 'http://static.lolesports.com/teams/NSFullonDark.png', riot: ['미북이#KR1'] },
+        { name: 'Diable', team: 'NS', role: 'bottom', teamImg: 'http://static.lolesports.com/teams/NSFullonDark.png', riot: ['적수가없는사람#KR1', '딜잘넣는원딜임#KR1', 'LSB Diable#KR1'] },
+        { name: 'Lehends', team: 'NS', role: 'support', teamImg: 'http://static.lolesports.com/teams/NSFullonDark.png', riot: ['Lehends#KR1', '따따불#코드네임'] },
+        // KRX — KIWOOM DRX
+        { name: 'Frog', team: 'KRX', role: 'top', teamImg: 'http://static.lolesports.com/teams/1774247803537_horizontal_EN_Wh.png', riot: [] },   // 계정 미확인
+        { name: 'Willer', team: 'KRX', role: 'jungle', teamImg: 'http://static.lolesports.com/teams/1774247803537_horizontal_EN_Wh.png', riot: ['KRX Willer#KRX', '무관빈#48KG', '김정현#Kjh1'] },
+        { name: 'Ucal', team: 'KRX', role: 'mid', teamImg: 'http://static.lolesports.com/teams/1774247803537_horizontal_EN_Wh.png', riot: ['KRX Ucal#0130', '미드가우갈#가내현', '무자식#내 현'] },
+        { name: 'Aiming', team: 'KRX', role: 'bottom', teamImg: 'http://static.lolesports.com/teams/1774247803537_horizontal_EN_Wh.png', riot: ['아카루이#xxxx', '아이린#KR1'] },
+        { name: 'Andil', team: 'KRX', role: 'support', teamImg: 'http://static.lolesports.com/teams/1774247803537_horizontal_EN_Wh.png', riot: ['상승민#빈약조', '안녕하시렵니까#신 사'] },
+        // DNS — DN SOOPers
+        { name: 'DuDu', team: 'DNS', role: 'top', teamImg: 'http://static.lolesports.com/teams/1767340467921_DN_SOOPerslogo_profile.webp', riot: [] },   // 계정 미확인
+        { name: 'Sharvel', team: 'DNS', role: 'jungle', teamImg: 'http://static.lolesports.com/teams/1767340467921_DN_SOOPerslogo_profile.webp', riot: ['Sharvel#1102'] },
+        { name: 'Clozer', team: 'DNS', role: 'mid', teamImg: 'http://static.lolesports.com/teams/1767340467921_DN_SOOPerslogo_profile.webp', riot: ['Clozer#0727'] },
+        { name: 'deokdam', team: 'DNS', role: 'bottom', teamImg: 'http://static.lolesports.com/teams/1767340467921_DN_SOOPerslogo_profile.webp', riot: ['New York#dream', 'Snow Country#0405'] },
+        { name: 'Peter', team: 'DNS', role: 'support', teamImg: 'http://static.lolesports.com/teams/1767340467921_DN_SOOPerslogo_profile.webp', riot: [] },   // 계정 미확인
     ]
 };

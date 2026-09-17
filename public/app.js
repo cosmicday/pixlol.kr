@@ -388,7 +388,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (pathParts[1] === 'esports') {
         showEsports(pathParts[2] ? decodeURIComponent(pathParts[2]) : null);
     } else if (pathParts[1] === 'broadcast') {
-        showBroadcast();
+        // /broadcast · /broadcast/tiers — ★ popstate 쪽도 같이 고친다
+        if (pathParts[2] === 'tiers') showBroadcastTiers(); else showBroadcast();
     } else if (pathParts[1] === 'champions') {
         // /champions/<id>/<탭>/<스킨번호> — 뒤 두 조각은 있을 때만 쓴다
         const requestedChamp = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
@@ -493,7 +494,7 @@ window.addEventListener('popstate', (event) => {
     } else if (currentPath.startsWith('/esports')) {
         showEsports(currentPath.split('/')[2] ? decodeURIComponent(currentPath.split('/')[2]) : null);
     } else if (currentPath.startsWith('/broadcast')) {
-        showBroadcast();
+        if (currentPath.split('/')[2] === 'tiers') showBroadcastTiers(); else showBroadcast();
     } else if (currentPath.startsWith('/champions')) {
         // ★ 진입부(pathParts 분기)와 **여기 두 곳을 항상 같이 고친다**
         const pathParts = currentPath.split('/');
@@ -617,7 +618,11 @@ const DOGU_NAV = [
     ] },
     { key: 'mythic',    navId: 'nav-mythic',    label: '신화상점', href: '/mythic',    go: () => showMythicShop() },
     { key: 'esports',   navId: 'nav-esports',   label: 'e스포츠',  href: '/esports',   go: () => showEsports() },
-    { key: 'broadcast', navId: 'nav-broadcast', label: '방송',     href: '/broadcast', go: () => showBroadcast() },
+    // 방송은 하위 메뉴만 가진 부모다 (2026-09-17 밤, 사용자 요청) — 생방송(/broadcast) · 방송인 티어(/broadcast/tiers)
+    { key: 'broadcast', navId: 'nav-broadcast', label: '방송', sub: [
+        { key: 'broadcast-live',  navId: 'nav-broadcast-live',  label: '생방송',     href: '/broadcast',       go: () => showBroadcast() },
+        { key: 'broadcast-tiers', navId: 'nav-broadcast-tiers', label: '방송인 티어', href: '/broadcast/tiers', go: () => showBroadcastTiers() }
+    ] },
     // 비공개: 장인랭킹(nav-masters) · 챔피언(클래식)(nav-champions-classic). 되살릴 때 여기 줄을 더한다
 ];
 
@@ -1261,19 +1266,22 @@ let bcSort = 'viewers';       // 'viewers' | 'recent'
 let bcShown = BC_PAGE;
 let bcTimer = null;
 
+// ★ 생방송 화면인가 — `/broadcast/tiers` 는 다른 화면이라 startsWith 로 재면 안 된다 (폴링·시계가 거기서도 돌게 된다)
+function bcOnLivePage() { return window.location.pathname.replace(/\/$/, '') === '/broadcast'; }
+
 async function showBroadcast() {
-    if (!window.location.pathname.startsWith('/broadcast')) {
+    if (!bcOnLivePage()) {
         window.history.pushState({ page: 'broadcast' }, '', '/broadcast');   // 메뉴 진입 — 이력을 쌓는다
     }
     hideAllContainers();
     const box = document.getElementById('broadcast-container');
     box.style.display = 'block';
-    setActiveNav('nav-broadcast');
+    setActiveNav('nav-broadcast-live');
     bcShown = BC_PAGE;
 
     if (!bcTimer) bcTimer = setInterval(() => {
         // 다른 화면으로 옮겼으면 멈춘다
-        if (!window.location.pathname.startsWith('/broadcast')) { clearInterval(bcTimer); bcTimer = null; return; }
+        if (!bcOnLivePage()) { clearInterval(bcTimer); bcTimer = null; return; }
         loadBroadcast(true);
     }, BC_POLL_MS);
 
@@ -1301,7 +1309,7 @@ async function loadBroadcast(quiet) {
         if (!quiet && !bcData) bcData = { ok: false };
     }
     // ★ 받는 사이에 다른 화면으로 옮겼으면 버린다
-    if (!window.location.pathname.startsWith('/broadcast')) return;
+    if (!bcOnLivePage()) return;
     // 검색칸에 커서가 있으면 격자만 — 통째로 다시 그리면 치던 글자와 커서가 날아간다
     if (quiet && document.activeElement && document.activeElement.id === 'bc-search') bcRenderGrid();
     else renderBroadcast();
@@ -1331,7 +1339,7 @@ function bcDur(ms) {
 }
 let bcClock = null;
 function bcTick() {
-    if (!window.location.pathname.startsWith('/broadcast')) { clearInterval(bcClock); bcClock = null; return; }
+    if (!bcOnLivePage()) { clearInterval(bcClock); bcClock = null; return; }
     document.querySelectorAll('.bc-dur[data-start]').forEach(el => { el.textContent = bcDur(+el.dataset.start); });
 }
 
@@ -1456,6 +1464,103 @@ document.addEventListener('click', (e) => {
     if (b) { bcPlatform = b.dataset.bcPlatform || null; bcShown = BC_PAGE; renderBroadcast(); return; }
     const s = e.target.closest('.codex-tab[data-bc-sort]');
     if (s) { bcSort = s.dataset.bcSort; bcShown = BC_PAGE; renderBroadcast(); }
+});
+
+// ===== 방송인 티어 — 프로게이머 · 방송인 솔랭 표 (2026-09-17 밤) =====
+// ★ 데이터는 `/api/broadcast/tiers` — 손 명단(broadcast_channels.js 의 pros · streamers) 전원의 제일 높은 계정 솔랭.
+//   서버가 한 시간에 한 번 받는다. 前 프로인 방송인은 「방송인」 탭에 두고 前 소속을 배지로 단다 (지금 하는 일 기준 — 2026-09-17 판단)
+let btData = null;
+let btFetchedAt = 0;
+let btTab = 'pro';   // 'pro' | 'streamer'
+const BT_ROLE_KO = { top: '탑', jungle: '정글', mid: '미드', bottom: '원딜', support: '서폿' };
+
+async function showBroadcastTiers() {
+    if (window.location.pathname.replace(/\/$/, '') !== '/broadcast/tiers') {
+        window.history.pushState({ page: 'broadcast-tiers' }, '', '/broadcast/tiers');   // 메뉴 진입 — 이력을 쌓는다
+    }
+    hideAllContainers();
+    const box = document.getElementById('broadcast-tiers-container');
+    box.style.display = 'block';
+    setActiveNav('nav-broadcast-tiers');
+
+    if (btData && Date.now() - btFetchedAt < 60 * 1000) { renderBroadcastTiers(); return; }
+    if (!btData) {
+        box.innerHTML = `<div class="stats-header"><h1 class="ranking-title">방송인 티어</h1></div>
+            <div class="es-leagues">${Array.from({ length: 2 }, () => '<div class="skel" style="width:80px;height:28px;border-radius:999px"></div>').join('')}</div>
+            ${skelTableHtml(12)}`;
+    }
+    try {
+        const res = await fetch('/api/broadcast/tiers');
+        const d = await res.json();
+        if (d && d.ok) { btData = d; btFetchedAt = Date.now(); }
+        else btData = btData || { ok: false };
+    } catch (e) { btData = btData || { ok: false }; }
+    if (window.location.pathname.replace(/\/$/, '') !== '/broadcast/tiers') return;
+    renderBroadcastTiers();
+}
+
+function btTierCell(t) {
+    if (!t || !t.t) return `<span class="bt-none">언랭</span>`;
+    const apex = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(t.t);
+    return `<span class="bc-tier bt-tier is-${t.t.toLowerCase()}"><img src="${RANK_MEDAL_BASE}${t.t.toLowerCase()}.png" alt="" loading="lazy" onerror="this.remove()">${escapeHtml(BC_TIER_KO[t.t] || t.t)}${apex ? '' : ' ' + t.r}</span>`;
+}
+
+function renderBroadcastTiers() {
+    const box = document.getElementById('broadcast-tiers-container');
+    if (!box) return;
+    const d = btData;
+    if (!d || !d.ok) {
+        box.innerHTML = `<div class="stats-header"><h1 class="ranking-title">방송인 티어</h1></div>` +
+            emptyBoxHtml('티어 표를 불러오지 못했습니다', '잠시 뒤 다시 시도해 주세요.', 'bt-retry');
+        bindRetry('bt-retry', () => { btData = null; showBroadcastTiers(); });
+        return;
+    }
+    if (btTab === 'pro' && !d.pros.length && d.streamers.length) btTab = 'streamer';   // 프로 명단이 비어 있으면 방송인 탭부터
+    const score = t => !t || !t.t ? -1 : (['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER'].indexOf(t.t) * 10000
+        + (['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(t.t) ? 3 : ({ I: 3, II: 2, III: 1, IV: 0 }[t.r] || 0)) * 1000 + (t.lp || 0));
+    const list = (btTab === 'pro' ? d.pros : d.streamers).slice().sort((a, b) => score(b.tier) - score(a.tier));
+    const isPro = btTab === 'pro';
+
+    const chips = [{ k: 'pro', l: '프로게이머', n: d.pros.length }, { k: 'streamer', l: '방송인', n: d.streamers.length }]
+        .map(c => `<button class="codex-tab${btTab === c.k ? ' active' : ''}" data-bt-tab="${c.k}">${c.l} <span class="bc-chip-n">${c.n}</span></button>`).join('');
+
+    const rows = list.map((x, i) => {
+        const t = x.tier;
+        const who = isPro
+            ? `<span class="bt-who">${x.teamImg ? `<img class="bt-team" src="${escapeHtml(x.teamImg)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<b>${escapeHtml(x.name)}</b><i>${escapeHtml([x.team, BT_ROLE_KO[x.role] || x.role].filter(Boolean).join(' · '))}</i></span>`
+            : `<span class="bt-who">${(x.platforms || [{ p: x.p }]).map(q => bcPlatMark(q.p)).join('')}<b>${escapeHtml(x.name)}</b>${x.ex ? `<em class="bt-ex">前 ${escapeHtml(x.ex)}</em>` : ''}</span>`;
+        const wl = t && t.t ? `${t.w}승 ${t.l}패 <i>(${Math.round(t.w / Math.max(1, t.w + t.l) * 100)}%)</i>` : '-';
+        const live = x.live
+            ? `<a class="bt-live" href="${escapeHtml(x.live.url)}" target="_blank" rel="noopener" title="${escapeHtml(x.live.title || '')}">LIVE${x.live.viewers != null ? ` <span>${Number(x.live.viewers).toLocaleString('ko-KR')}</span>` : ''}</a>`
+            : '<span class="bt-none">-</span>';
+        return `<tr>
+            <td>${i + 1}</td>
+            <td class="bt-who-cell">${who}</td>
+            <td class="bt-acct">${t && t.t ? `<span>${escapeHtml(t.id)}</span>${x.accounts > 1 ? `<i>+${x.accounts - 1}</i>` : ''}` : '<span class="bt-none">-</span>'}</td>
+            <td>${btTierCell(t)}</td>
+            <td class="bt-num">${t && t.t ? Number(t.lp).toLocaleString('ko-KR') : '-'}</td>
+            <td class="bt-num bt-wl">${wl}</td>
+            <td>${live}</td>
+        </tr>`;
+    }).join('');
+
+    box.innerHTML = `
+        <div class="stats-header"><h1 class="ranking-title">방송인 티어</h1>
+            <span class="es-src">솔로 랭크 · 계정이 여럿이면 가장 높은 계정${d.at ? ` · ${esportsWhen(d.at)} 갱신` : ''}</span></div>
+        <div class="es-leagues">${chips}</div>
+        ${d.building ? `<p class="es-stale">티어를 받는 중입니다 — 몇 분 뒤 다시 열면 전원이 채워집니다.</p>` : ''}
+        <div class="stats-table-wrapper"><table class="stats-table bt-table">
+            <thead><tr><th>#</th><th>${isPro ? '선수' : '방송인'}</th><th>계정</th><th>티어</th><th>LP</th><th>승패</th><th>방송</th></tr></thead>
+            <tbody>${rows || `<tr><td colspan="7" class="bt-none">명단이 비어 있습니다.</td></tr>`}</tbody>
+        </table></div>
+        <p class="bc-note">※ ${isPro ? '2026 LCK 정규 로스터 기준입니다. 계정은 공개된 것만 넣었고, 닉네임을 바꿔도 같은 계정을 따라갑니다.' : '방송인이 공개한 계정 기준입니다. 前 프로 방송인은 이 탭에 두고 옛 소속을 배지로 답니다.'} 명단에 없는 사람은 표에 안 나옵니다.</p>`;
+}
+
+document.addEventListener('click', (e) => {
+    const b = e.target.closest('.codex-tab[data-bt-tab]');
+    if (!b) return;
+    btTab = b.dataset.btTab;
+    renderBroadcastTiers();
 });
 
 function hideAllContainers() {

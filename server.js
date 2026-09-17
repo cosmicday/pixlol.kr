@@ -5410,9 +5410,10 @@ const broadcastChannels = (() => {
 })();
 const BC_YT_EXCLUDE = new Set((broadcastChannels.exclude || []).map(c => c.id));
 // 방송인 ↔ 라이엇 계정 (broadcast_channels.js 의 streamers). 열쇠 `플랫폼:채널키` → 라이엇 ID 목록
-const BC_STREAMERS = new Map((broadcastChannels.streamers || [])
-    .filter(x => x && x.p && x.ch && Array.isArray(x.riot) && x.riot.length)
-    .map(x => [`${x.p}:${x.ch}`, x.riot]));
+const BC_STREAMER_LIST = (broadcastChannels.streamers || []).filter(x => x && x.p && x.ch && Array.isArray(x.riot) && x.riot.length);
+const BC_STREAMERS = new Map(BC_STREAMER_LIST.map(x => [`${x.p}:${x.ch}`, x.riot]));
+// 프로게이머 (2026-09-17 밤) — 방송인 티어 페이지의 「프로게이머」 탭. 라이엇 ID 는 같은 방식으로 검증한 것
+const BC_PROS = (broadcastChannels.pros || []).filter(x => x && x.name).map(x => Object.assign({}, x, { riot: Array.isArray(x.riot) ? x.riot : [] }));   // 계정을 못 찾은 선수도 표에는 나온다 (티어 「-」)
 const BC_YT_INCLUDE = (broadcastChannels.include || []).map(c => c.id).filter(id => !BC_YT_EXCLUDE.has(id));
 
 // ★ 유튜브 하루 할당량 10,000 유닛 계산 — 명단 확인 1회 = 채널 수 + 50개당 1 (60채널 ≈ 64유닛).
@@ -5482,57 +5483,150 @@ async function bcMapLimit(list, limit, fn) {
     return out;
 }
 
-// ---- 방송인 롤 티어 (2026-09-17 밤, 사용자 요청) ----
+// ---- 방송인·프로게이머 롤 티어 (2026-09-17 밤, 사용자 요청) ----
 // ★ 플랫폼 어디에도 「이 방송인 = 이 라이엇 계정」 칸이 없다 (SOOP·치지직·유튜브 셋 다 실측). 그래서 손 명단이다 —
-//   broadcast_channels.js 의 streamers 에 채널 키와 라이엇 ID 를 적어 두면, 그 방송인이 켜졌을 때 계정들의 솔랭 티어를 받아
-//   **제일 높은 계정** 하나를 카드에 붙인다. 명단은 deeplol 의 스트리머 등록 페이지를 참고해 라이엇 API 로 하나씩 검증한 것 (docs/방송.md)
-// ★ 라이엇 호출: 계정 → puuid 는 한 번만(메모리에 영구), 리그는 한 시간에 한 번. 방송인 30명이어도 시간당 30회 — 순회 예산(2분 100회)에 안 걸린다.
-//   호출은 순서대로 0.3초 간격, 실패하면 그 계정만 건너뛴다 (방송 목록 자체는 영향 없음)
+//   broadcast_channels.js 의 streamers / pros 에 라이엇 ID 를 적어 두면 계정들의 솔랭 티어를 받아 **제일 높은 계정** 하나를 쓴다.
+//   생방송 카드에는 그 방송인이 켜졌을 때 붙고, 「방송인 티어」 페이지(`/api/broadcast/tiers`)에는 명단 전원이 나온다.
+//   명단은 deeplol 의 등록 페이지를 참고해 라이엇 API 로 하나씩 검증한 것 (docs/방송.md)
+// ★★ 닉네임을 바꿔도 따라간다 (2026-09-17 밤) — 처음 찾은 puuid 를 DB(`esportscaches` 의 `broadcast_puuids`)에 박아 두고
+//   그 뒤로는 puuid 로만 조회한다. 현재 닉네임은 하루 한 번 by-puuid 로 다시 받아 카드·표에 그걸 보여 준다.
+//   명단에 적은 ID 가 **처음부터** 404 면(적기 전에 이미 바뀐 경우) 로그에 한 줄 찍는다 — 그때만 사람이 고친다
+// ★ 라이엇 호출은 여기 한 곳(`bcTierJob`)에서만 나간다 — 2.5초 간격 순차라 분당 24회(2분 48회)를 넘지 않는다.
+//   순회 예산(2분 100회, 가드 80)과 같은 키를 쓰므로 그 이상 빨리 돌리면 안 된다. 계정→puuid 는 한 번, 리그는 한 시간, 닉네임은 하루
 const BC_TIER_TTL = 60 * 60 * 1000;
+const BC_NAME_TTL = 24 * 60 * 60 * 1000;
+const BC_TIER_GAP_MS = 2500;
 const BC_TIER_ORDER = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER'];
-const bcTierCache = new Map();   // riotId → { puuid, t, r, lp, w, l, at, fail }
+const bcTierCache = new Map();   // riotId(명단에 적힌 그대로) → { puuid, name, nameAt, t, r, lp, w, l, at, fail }
+let bcPuuidStore = null;         // { [riotId]: puuid } — DB 창고 사본
+let bcTierJobRunning = false;
+let bcTiersDone = false;         // 부팅 뒤 한 바퀴를 완주했나 (그 전엔 응답에 building: true)
+
 function bcTierScore(e) {
     if (!e || !e.t) return -1;
     const div = { I: 3, II: 2, III: 1, IV: 0 }[e.r] || 0;
     return BC_TIER_ORDER.indexOf(e.t) * 10000 + (BC_TIER_ORDER.indexOf(e.t) >= 7 ? 3 : div) * 1000 + (e.lp || 0);
 }
-async function bcResolveTier(riotId) {
-    const c = bcTierCache.get(riotId);
-    const now = Date.now();
-    if (c && now - c.at < (c.fail ? BC_TIER_TTL / 4 : BC_TIER_TTL)) return c;
-    const entry = { puuid: c && c.puuid, t: null, r: null, lp: 0, w: 0, l: 0, at: now, fail: false };
+const bcSleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function bcLoadPuuids() {
+    if (bcPuuidStore) return;
     try {
-        if (!entry.puuid) {
+        const doc = await EsportsCache.findOne({ key: 'broadcast_puuids' }).lean();
+        bcPuuidStore = (doc && doc.payload) || {};
+    } catch (e) { bcPuuidStore = {}; }
+    for (const [rid, puuid] of Object.entries(bcPuuidStore)) {
+        if (!bcTierCache.has(rid)) bcTierCache.set(rid, { puuid, name: rid, nameAt: 0, t: null, r: null, lp: 0, w: 0, l: 0, at: 0, fail: false });
+    }
+}
+function bcSavePuuids() {
+    EsportsCache.updateOne({ key: 'broadcast_puuids' }, { $set: { payload: bcPuuidStore, at: Date.now() } }, { upsert: true })
+        .catch(e => console.warn('[Broadcast] puuid 창고 저장 실패:', e.message));
+}
+
+// 계정 하나 — 필요한 호출만 (puuid 없으면 by-riot-id · 닉네임이 하루 지났으면 by-puuid · 리그가 한 시간 지났으면 league)
+async function bcResolveTier(riotId) {
+    await bcLoadPuuids();
+    const now = Date.now();
+    const c = bcTierCache.get(riotId) || { puuid: null, name: riotId, nameAt: 0, t: null, r: null, lp: 0, w: 0, l: 0, at: 0, fail: false };
+    if (now - c.at < (c.fail ? BC_TIER_TTL / 4 : BC_TIER_TTL)) return c;
+    const e = Object.assign({}, c, { fail: false });
+    try {
+        if (!e.puuid) {
             const i = riotId.lastIndexOf('#');
-            const { data } = await riotApi.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(riotId.slice(0, i))}/${encodeURIComponent(riotId.slice(i + 1))}`);
-            entry.puuid = data.puuid;
-            await new Promise(r => setTimeout(r, 300));
+            try {
+                const { data } = await riotApi.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(riotId.slice(0, i))}/${encodeURIComponent(riotId.slice(i + 1))}`);
+                e.puuid = data.puuid; e.name = `${data.gameName}#${data.tagLine}`; e.nameAt = now;
+                bcPuuidStore[riotId] = e.puuid; bcSavePuuids();
+            } catch (err) {
+                if (err.response && err.response.status === 404) console.warn(`[Broadcast] 라이엇 ID 를 못 찾았다 (닉네임이 바뀌었나?): ${riotId} — broadcast_channels.js 를 고칠 것`);
+                throw err;
+            }
+            await bcSleep(BC_TIER_GAP_MS);
+        } else if (now - (e.nameAt || 0) > BC_NAME_TTL) {
+            try {
+                const { data } = await riotApi.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-puuid/${e.puuid}`);
+                e.name = `${data.gameName}#${data.tagLine}`; e.nameAt = now;
+            } catch (err) { e.nameAt = now - BC_NAME_TTL + BC_TIER_TTL; }   // 이름만 못 받으면 한 시간 뒤 다시
+            await bcSleep(BC_TIER_GAP_MS);
         }
-        const { data } = await riotApi.get(`https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/${entry.puuid}`);
-        const solo = (data || []).find(e => e.queueType === 'RANKED_SOLO_5x5');
-        if (solo) Object.assign(entry, { t: solo.tier, r: solo.rank, lp: solo.leaguePoints, w: solo.wins, l: solo.losses });
+        const { data } = await riotApi.get(`https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/${e.puuid}`);
+        const solo = (data || []).find(x => x.queueType === 'RANKED_SOLO_5x5');
+        Object.assign(e, solo ? { t: solo.tier, r: solo.rank, lp: solo.leaguePoints, w: solo.wins, l: solo.losses } : { t: null, r: null, lp: 0, w: 0, l: 0 });
     } catch (err) {
-        entry.fail = true;
+        e.fail = true;
         if (!err.response || err.response.status !== 404) console.warn('[Broadcast] 티어 조회 실패:', riotId, err.response ? err.response.status : err.message);
     }
-    bcTierCache.set(riotId, entry);
-    return entry;
+    e.at = now;
+    bcTierCache.set(riotId, e);
+    return e;
 }
-// 목록의 방송인 중 명단에 있는 사람에게 tier 를 붙인다 (수집 파이프라인 안에서 — 목록이 화면에 나가기 전에)
-async function bcAttachTiers(items) {
-    if (!BC_STREAMERS.size) return items;
-    for (const it of items) {
+
+// 계정 여럿 중 제일 높은 솔랭 (캐시만 읽는다 — 호출은 bcTierJob 이 한다)
+function bcBestTier(ids) {
+    let best = null;
+    for (const rid of ids) {
+        const e = bcTierCache.get(rid);
+        if (e && e.t && bcTierScore(e) > bcTierScore(best)) best = e;
+    }
+    return best ? { t: best.t, r: best.r, lp: best.lp, w: best.w, l: best.l, id: best.name, n: ids.length } : null;
+}
+// 생방송 목록의 방송인 중 명단에 있는 사람에게 tier 를 붙인다 (캐시만 — 수집 파이프라인 안에서 즉시)
+function bcAttachTiers(items) {
+    if (BC_STREAMERS.size) for (const it of items) {
         const ids = BC_STREAMERS.get(`${it.p}:${it.ch}`);
-        if (!ids) continue;
-        let best = null, bestId = null;
-        for (const rid of ids) {
-            const e = await bcResolveTier(rid);
-            await new Promise(r => setTimeout(r, 300));
-            if (e.t && bcTierScore(e) > bcTierScore(best)) { best = e; bestId = rid; }
-        }
-        if (best) it.tier = { t: best.t, r: best.r, lp: best.lp, w: best.w, l: best.l, id: bestId, n: ids.length };
+        const t = ids && bcBestTier(ids);
+        if (t) it.tier = t;
     }
     return items;
+}
+
+// 명단 전원을 순서대로 한 바퀴 (2.5초 간격). 매 정시 틱마다 불리지만 한 시간 안 지난 계정은 호출 없이 지나간다
+async function bcTierJob() {
+    if (bcTierJobRunning) return;
+    const ids = [...new Set(BC_STREAMER_LIST.concat(BC_PROS).flatMap(x => x.riot))];
+    if (!ids.length) return;
+    bcTierJobRunning = true;
+    try {
+        for (const rid of ids) {
+            const before = bcTierCache.get(rid);
+            const after = await bcResolveTier(rid);
+            if (after !== before) await bcSleep(BC_TIER_GAP_MS);   // 실제로 호출한 경우만 쉰다
+        }
+        // 한 바퀴 끝 — 생방송 목록에도 새 값을 붙인다 (티어 페이지 응답은 요청 때마다 캐시로 만든다 — 호출 0, LIVE 가 늘 지금 값)
+        for (const p of Object.keys(bcState)) bcAttachTiers(bcState[p].items);
+        bcTiersDone = true;
+        bcPayloadCache.key = '';   // /api/broadcast 문자열 캐시 무효화
+    } finally { bcTierJobRunning = false; }
+}
+
+function bcBuildTiers() {
+    const liveByCh = new Map();
+    for (const p of Object.keys(bcState)) for (const it of bcState[p].items) liveByCh.set(`${it.p}:${it.ch}`, it);
+    const liveOf = (p, ch) => { const it = liveByCh.get(`${p}:${ch}`); return it ? { p: it.p, url: it.url, viewers: it.viewers, title: it.title } : null; };
+    // 프로가 방송도 하면(같은 라이엇 ID 가 streamers 에도 있으면) 그 방송으로 잇는다
+    const liveByRiot = new Map();
+    for (const st of BC_STREAMER_LIST) { const lv = liveOf(st.p, st.ch); if (lv) for (const rid of st.riot) liveByRiot.set(rid, lv); }
+    // ★ 같은 사람이 플랫폼마다 한 줄이면(데스티니 = 유튜브·SOOP·치지직) 표에 세 번 나온다 — 라이엇 ID 가 겹치면 한 사람으로 합친다.
+    //   이름은 먼저 적힌 줄의 것, 플랫폼은 전부(켜진 곳엔 live), 계정 목록은 합집합
+    const people = [];
+    for (const x of BC_STREAMER_LIST) {
+        let hit = people.find(pp => pp.riot.some(r => x.riot.includes(r)));
+        if (!hit) { hit = { name: x.name || '', ex: x.ex || null, riot: [], platforms: [] }; people.push(hit); }
+        for (const r of x.riot) if (!hit.riot.includes(r)) hit.riot.push(r);
+        if (!hit.ex && x.ex) hit.ex = x.ex;
+        hit.platforms.push({ p: x.p, ch: x.ch, live: liveOf(x.p, x.ch) });
+    }
+    const streamers = people.map(pp => ({
+        name: pp.name, ex: pp.ex, platforms: pp.platforms,
+        p: pp.platforms[0].p, ch: pp.platforms[0].ch,
+        tier: bcBestTier(pp.riot), accounts: pp.riot.length, live: pp.platforms.map(q => q.live).find(Boolean) || null
+    }));
+    const pros = BC_PROS.map(x => ({
+        name: x.name, team: x.team || '', teamImg: x.teamImg ? esportsImg(x.teamImg) : null, role: x.role || '',
+        tier: bcBestTier(x.riot), accounts: x.riot.length, live: x.riot.map(r => liveByRiot.get(r)).find(Boolean) || null
+    }));
+    return { ok: true, at: Date.now(), pros, streamers };
 }
 
 // ---- SOOP ----
@@ -5953,9 +6047,11 @@ async function bcBootRun() {
     }
     const tick = () => {
         const wait = (Math.floor(Date.now() / BC_SLOT_MS) + 1) * BC_SLOT_MS - Date.now() + 5000;
-        setTimeout(() => { for (const p of Object.keys(bcState)) bcRefresh(p, true); tick(); }, wait);
+        setTimeout(() => { for (const p of Object.keys(bcState)) bcRefresh(p, true); bcTierJob(); tick(); }, wait);
     };
     tick();
+    // 티어는 부팅 직후 한 바퀴 (puuid 창고가 있으면 리그 호출만이라 명단 80명에 3~4분)
+    setTimeout(bcTierJob, 15000);
 }
 
 let bcPayloadCache = { key: '', body: '' };
@@ -5988,6 +6084,13 @@ app.get('/api/broadcast', async (req, res) => {
         bcPayloadCache = { key, body: JSON.stringify({ ok: true, items, platforms, ttl: BC_TTL }) };
     }
     res.type('json').send(bcPayloadCache.body);
+});
+
+// 방송인·프로게이머 티어 표 — 명단 전원 (생방송 여부와 무관). bcTierJob 이 한 바퀴 돌 때마다 다시 만든다
+app.get('/api/broadcast/tiers', async (req, res) => {
+    if (!bcScheduled && !bcTierJobRunning && !bcTiersDone) bcTierJob();   // 로컬(요청 모드)에서는 첫 요청이 시동을 건다
+    // 캐시만 읽어 만든다 (라이엇 호출 0). 한 바퀴를 못 돈 부팅 직후 몇 분은 building: true — 화면이 「받는 중」 줄을 띄운다
+    res.json(bcTiersDone ? bcBuildTiers() : Object.assign(bcBuildTiers(), { building: true }));
 });
 
 app.get('/api/ranking', async (req, res) => {

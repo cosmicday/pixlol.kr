@@ -9561,6 +9561,7 @@ main {
     #patch-container,
     #esports-container,
     #broadcast-container,
+    #broadcast-tiers-container,
     #mythic-container,
     #patch-impact-container,
     #duo-container,
@@ -10167,4 +10168,68 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
     .bc-plat { left: 6px; }
     .bc-viewers { right: 6px; }
     .bc-dur { right: 6px; bottom: 6px; padding: 0 5px; }
+}
+
+/* ==========================================================================
+   방송인 티어 — 프로게이머 · 방송인 솔랭 표 (2026-09-17 밤)
+   ★ 칩·표·안내 줄은 있는 것(.codex-tab · .stats-table · .bc-note)을 쓰고, 표 폭만 7칸에 맞춰 덮는다
+   ========================================================================== */
+#broadcast-tiers-container {
+    display: none;
+    max-width: calc(var(--dogu-wrap) - 32px);
+    margin: var(--dogu-page-top) auto 0;
+    padding-bottom: var(--dogu-page-bottom);
+    animation: fadeIn 0.6s ease;
+}
+.stats-table.bt-table th:nth-child(1) { width: 6%; }
+.stats-table.bt-table th:nth-child(2) { width: 26%; }
+.stats-table.bt-table th:nth-child(3) { width: 20%; }
+.stats-table.bt-table th:nth-child(4) { width: 14%; }
+.stats-table.bt-table th:nth-child(5) { width: 9%; }
+.stats-table.bt-table th:nth-child(6) { width: 15%; }
+.stats-table.bt-table th:nth-child(7) { width: 10%; }
+.bt-table td.bt-who-cell, .bt-table td.bt-acct { text-align: left; }
+.bt-who { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.bt-who b { color: var(--text-bright); font-weight: 700; white-space: nowrap; }
+.bt-who i { color: var(--text-faint); font-size: 12px; font-style: normal; white-space: nowrap; }
+.bt-who .bc-mark { margin-right: 0; vertical-align: 0; }
+.bt-team { flex: none; width: 20px; height: 20px; object-fit: contain; }
+.bt-ex { padding: 1px 6px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--dogu-r-badge); color: var(--text-faint); font-size: 12px; font-style: normal; font-weight: 700; white-space: nowrap; }
+.bt-acct span { color: var(--text-muted); font-size: 12px; }
+.bt-acct i { margin-left: 4px; color: var(--text-dim); font-size: 12px; font-style: normal; }
+.bt-tier { font-size: 12px; }
+.bt-tier img { width: 18px; height: 18px; }
+.bt-tier.is-silver, .bt-tier.is-gold, .bt-tier.is-platinum, .bt-tier.is-bronze, .bt-tier.is-iron { color: var(--text-muted); }
+.bt-num { font-variant-numeric: tabular-nums; }
+.bt-wl { white-space: nowrap; }
+.bt-wl i { color: var(--text-faint); font-size: 12px; font-style: normal; }
+.bt-who .bc-mark + .bc-mark, .bt-who .bc-dot + .bc-mark, .bt-who .bc-mark + .bc-dot, .bt-who .bc-dot + .bc-dot { margin-left: -3px; }
+.bt-none { color: var(--text-dim); font-size: 12px; }
+.bt-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    background: rgba(232, 64, 87, 0.14);
+    border: 1px solid rgba(232, 64, 87, 0.4);
+    border-radius: var(--dogu-r-pill);
+    color: var(--lose-text);
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.bt-live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--lose); animation: es-pulse 1.4s ease-in-out infinite; }
+.bt-live span { color: var(--text-muted); font-weight: 700; }
+@media (hover: hover) { .bt-live:hover { background: rgba(232, 64, 87, 0.26); } }
+
+@media (max-width: 768px) {
+    #broadcast-tiers-container { margin: var(--dogu-page-top) auto 0; padding: 0 16px 40px; }
+    /* 폰은 계정·승패 칸을 숨긴다 — 이름·티어·LP·방송이면 읽힌다.
+       ★ 사이트 공통 폰 규칙이 .stats-table 의 7번째 칸을 숨기므로(통계 표 기준) 방송 칸은 도로 켠다 */
+    .bt-table th:nth-child(3), .bt-table td:nth-child(3), .bt-table th:nth-child(6), .bt-table td:nth-child(6) { display: none; }
+    .stats-table.bt-table th:nth-child(7), .stats-table.bt-table td:nth-child(7) { display: table-cell; width: 20%; }
+    .stats-table.bt-table th:nth-child(2) { width: 40%; }
+    .stats-table.bt-table th:nth-child(4) { width: 24%; }
+    .bt-who i { display: none; }
 }
