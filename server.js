@@ -5820,8 +5820,10 @@ async function bcYtHeads(ids) {
 }
 
 // ===== 경로 ① InnerTube =====
-// ★ 이 키는 비밀이 아니다 — youtube.com 페이지 소스에 박혀 있는 웹 클라이언트 공개 키다 (e스포츠 탭의 lolesports 키와 같은 처지)
-const BC_YT_IT = { key: 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8', ver: '2.20250901.00.00' };
+// ★ `?key=` 는 안 붙인다 (2026-09-17 밤). 전엔 youtube.com 페이지에 박힌 웹 클라이언트 공개 키를 그대로 붙였는데
+//   GitHub secret scanning 이 Google API 키 꼴이라 경고를 냈다. 실측으로 browse·search 둘 다 키 없이 200 이라 뺐다 —
+//   그 키는 우리 Google Cloud 의 것이 아니라 유튜브 웹의 공개 상수였고, 없어도 똑같이 돈다
+const BC_YT_IT = { ver: '2.20250901.00.00' };
 const BC_YT_TOPIC = 'UCZtmNrG53nmbq-Ww2VJrxEQ';        // 「리그 오브 레전드 - 주제」 채널 (2026-09-17 InnerTube 채널 검색으로 찾음)
 const BC_YT_TOPIC_LIVE = 'EgRsaXZl';                    // 그 채널의 「라이브」 탭 params
 const BC_YT_IT_LIVE_FILTER = 'EgJAAQ%3D%3D';            // 검색 필터 「실시간」
@@ -5834,7 +5836,7 @@ let bcYtItFailLogged = false;
 function bcYtItPost(path, body) {
     const client = { clientName: 'WEB', clientVersion: BC_YT_IT.ver, hl: 'ko', gl: 'KR' };
     if (bcYtVisitor) client.visitorData = bcYtVisitor;
-    return axios.post(`https://www.youtube.com/youtubei/v1/${path}?key=${BC_YT_IT.key}&prettyPrint=false`,
+    return axios.post(`https://www.youtube.com/youtubei/v1/${path}?prettyPrint=false`,
         Object.assign({ context: { client } }, body), {
             headers: Object.assign({
                 'Content-Type': 'application/json', 'Accept-Language': 'ko-KR,ko;q=0.9',
