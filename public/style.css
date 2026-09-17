@@ -9971,35 +9971,15 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
 .bc-bar { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px 16px; margin-bottom: 18px; }
 .bc-bar .es-leagues { margin-bottom: 0; }
 .bc-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
-.bc-search-box { position: relative; display: block; width: 220px; max-width: 100%; }
-.bc-search-box::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    width: 12px;
-    height: 12px;
-    border: 2px solid var(--text-dim);
-    border-radius: 50%;
-    transform: translateY(-58%);
-    pointer-events: none;
-}
-.bc-search-box::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 20px;
-    width: 6px;
-    height: 2px;
-    background: var(--text-dim);
-    transform: translateY(3px) rotate(45deg);
-    pointer-events: none;
-}
+/* 검색칸 — 사이트 검색의 돋보기(.pix-search-icon)를 왼쪽에, 랭킹 검색칸의 × 지우기를 오른쪽에 (2026-09-17 사용자 지적: CSS 로 그린 돋보기가 안 어울렸다) */
+.bc-search-box { position: relative; display: block; width: 240px; max-width: 100%; }
+.bc-search-icon { position: absolute; top: 50%; left: 10px; width: 14px; height: 14px; margin: 0; transform: translateY(-50%); color: var(--text-dim); pointer-events: none; }
+.bc-search-box:focus-within .bc-search-icon { color: var(--accent); }
 .bc-search {
     width: 100%;
     box-sizing: border-box;
     height: var(--dogu-ctl-sm);
-    padding: 0 12px 0 30px;
+    padding: 0 30px 0 30px;
     background: #12121f;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--dogu-r-pill);
@@ -10008,9 +9988,9 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
     outline: none;
     transition: border-color var(--dogu-ease);
 }
-.bc-search::placeholder { color: var(--text-dim); }
-.bc-search:focus { border-color: rgba(167, 139, 250, 0.6); }
-.bc-search::-webkit-search-cancel-button { -webkit-appearance: none; }
+.bc-search::placeholder { color: var(--text-faint); }
+.bc-search:focus { border-color: var(--accent); }
+.bc-search-clear { right: 4px; width: 22px; height: 22px; font-size: 16px; }
 .bc-sort { display: flex; gap: 6px; }
 .bc-sort .codex-tab { white-space: nowrap; }
 
@@ -10135,8 +10115,21 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
     font-style: normal;
 }
 .bc-name span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.bc-since { flex: none; color: var(--text-faint); font-style: normal; font-variant-numeric: tabular-nums; }
-.bc-since::before { content: '·'; margin-right: 6px; color: var(--text-dim); }
+/* 방송 시간 HH:MM:SS — 썸네일 오른쪽 아래 (유튜브 재생시간 배지 자리) */
+.bc-dur {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    padding: 1px 6px;
+    background: rgba(0, 0, 0, 0.66);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+}
 
 .bc-note { margin: 16px 0 0; color: var(--text-faint); font-size: 12px; line-height: 1.6; }
 
@@ -10152,4 +10145,5 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
     .bc-plat, .bc-viewers { top: 6px; padding: 1px 5px; }
     .bc-plat { left: 6px; }
     .bc-viewers { right: 6px; }
+    .bc-dur { right: 6px; bottom: 6px; padding: 0 5px; }
 }

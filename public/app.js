@@ -1246,7 +1246,8 @@ const BC_PLATFORMS = [
 //   치지직 — 공식 브랜드 가이드의 아이콘 파일 그대로 (비상업·변형 금지 조건. ★ 사이트에 광고를 붙이면 이 아이콘부터 뺄 것)
 //   SOOP  — 브랜드 가이드가 「플랫폼 밖 사용은 서면 동의 필요」라 로고를 안 쓴다. 색 점 + 이름만
 function bcPlatMark(key) {
-    if (key === 'youtube') return '<svg class="bc-mark is-youtube" viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5.5" fill="#FF0000"/><path d="M11.2 5.6v8.8L18.6 10z" fill="#fff"/></svg>';
+    // ★ 삼각형은 같은 색 stroke(round join)를 얹어 꼭짓점을 둥글린다 — 20px 로 줄이면 맨 path 는 변이 계단져 보인다 (사용자 지적)
+    if (key === 'youtube') return '<svg class="bc-mark is-youtube" viewBox="0 0 28 20" aria-hidden="true" shape-rendering="geometricPrecision"><rect width="28" height="20" rx="5.5" fill="#FF0000"/><path d="M11.6 6.4v7.2L17.8 10z" fill="#fff" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>';
     if (key === 'chzzk') return '<img class="bc-mark is-chzzk" src="/chzzk_icon_40.png" alt="" width="20" height="20">';
     return `<i class="bc-dot is-${key}"></i>`;
 }
@@ -1275,6 +1276,8 @@ async function showBroadcast() {
         if (!window.location.pathname.startsWith('/broadcast')) { clearInterval(bcTimer); bcTimer = null; return; }
         loadBroadcast(true);
     }, BC_POLL_MS);
+
+    if (!bcClock) bcClock = setInterval(bcTick, 1000);
 
     if (bcData && Date.now() - bcFetchedAt < 60 * 1000) { renderBroadcast(); return; }
     if (!bcData) {
@@ -1308,12 +1311,18 @@ function bcViewers(n) {
     return n == null ? '비공개' : Number(n).toLocaleString('ko-KR');
 }
 
-function bcSince(ms) {
+// 방송 시간 — HH:MM:SS (2026-09-17 사용자 요청, 전엔 「n시간째」). 썸네일 오른쪽 아래에 두고 1초마다 `bcTick` 이 글자만 바꾼다.
+//   카드 300장의 텍스트 노드 300개를 초마다 바꾸는 건 아무 부담이 아니다 (다시 그리는 게 아니라 textContent 만)
+function bcDur(ms) {
     if (!ms) return '';
-    const min = Math.max(0, Math.floor((Date.now() - ms) / 60000));
-    if (min < 60) return `${min}분째`;
-    const h = Math.floor(min / 60);
-    return h < 48 ? `${h}시간째` : `${Math.floor(h / 24)}일째`;
+    const sec = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+    const h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60, s2 = sec % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s2).padStart(2, '0')}`;
+}
+let bcClock = null;
+function bcTick() {
+    if (!window.location.pathname.startsWith('/broadcast')) { clearInterval(bcClock); bcClock = null; return; }
+    document.querySelectorAll('.bc-dur[data-start]').forEach(el => { el.textContent = bcDur(+el.dataset.start); });
 }
 
 function bcCardHtml(b) {
@@ -1327,11 +1336,12 @@ function bcCardHtml(b) {
         <span class="bc-thumb">${thumb}
             <em class="bc-plat is-${b.p}">${bcPlatMark(b.p)}${escapeHtml(plat ? plat.label : b.p)}</em>
             <b class="bc-viewers${b.viewers == null ? ' is-hidden' : ''}">${bcViewers(b.viewers)}</b>
+            ${b.start ? `<em class="bc-dur" data-start="${b.start}">${bcDur(b.start)}</em>` : ''}
         </span>
         <span class="bc-body">${avatar}
             <span class="bc-text">
                 <b class="bc-title">${escapeHtml(b.title || '(제목 없음)')}</b>
-                <i class="bc-name"><span>${escapeHtml(b.name)}</span>${b.start ? `<em class="bc-since">${bcSince(b.start)}</em>` : ''}</i>
+                <i class="bc-name"><span>${escapeHtml(b.name)}</span></i>
             </span>
         </span>
     </a>`;
@@ -1401,7 +1411,11 @@ function renderBroadcast() {
         <div class="bc-bar">
             <div class="es-leagues">${chips}</div>
             <div class="bc-tools">
-                <label class="bc-search-box"><input id="bc-search" class="bc-search" type="search" placeholder="방송인 · 제목 검색" value="${escapeHtml(bcQuery)}" autocomplete="off"></label>
+                <div class="bc-search-box">
+                    <svg class="pix-search-icon bc-search-icon" viewBox="1 1 14 14" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9.7" cy="6.3" r="4.3"/><path d="M6.66 9.34 2 14"/></g></svg>
+                    <input id="bc-search" class="bc-search" type="text" placeholder="방송인 · 제목 검색" value="${escapeHtml(bcQuery)}" autocomplete="off">
+                    <button type="button" class="rank-search-clear bc-search-clear" id="bc-search-clear" title="검색어 지우기"${bcQuery ? ' style="visibility:visible"' : ''}>&times;</button>
+                </div>
                 <div class="bc-sort">
                     <button class="codex-tab${bcSort === 'viewers' ? ' active' : ''}" data-bc-sort="viewers">시청자 순</button>
                     <button class="codex-tab${bcSort === 'recent' ? ' active' : ''}" data-bc-sort="recent">최근 시작 순</button>
@@ -1414,7 +1428,15 @@ function renderBroadcast() {
     bcRenderGrid();
 
     const inp = document.getElementById('bc-search');
-    if (inp) inp.addEventListener('input', () => { bcQuery = inp.value; bcShown = BC_PAGE; bcRenderGrid(); });
+    const clr = document.getElementById('bc-search-clear');
+    if (inp) inp.addEventListener('input', () => {
+        bcQuery = inp.value; bcShown = BC_PAGE; bcRenderGrid();
+        if (clr) clr.style.visibility = bcQuery ? 'visible' : 'hidden';
+    });
+    if (clr) clr.addEventListener('click', () => {
+        bcQuery = ''; inp.value = ''; bcShown = BC_PAGE; bcRenderGrid();
+        clr.style.visibility = 'hidden'; inp.focus();
+    });
 }
 
 // 플랫폼 칩·정렬 — 주소는 그대로, 화면만 다시 그린다
