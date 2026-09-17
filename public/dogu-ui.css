@@ -662,10 +662,9 @@ body.dogu-body:not(.dogu-home) .dogu-hero { display: none; }
     background: var(--dogu-card-2);
 }
 .dogu-dropdown-tab { font-size: 13px; font-weight: 700; color: var(--dogu-text-3); cursor: pointer; }
-/* 탭 둘 사이 세로 구분선 + 켜진 탭은 옅은 액센트 알약 (2026-09-18, pixlol 요청 — 글자색만 달라서는 "탭" 으로 안 읽혔다).
-   구분선은 gap(14px) 한가운데에 놓는다 */
-.dogu-dropdown-tab { position: relative; padding: 3px 9px; border-radius: 999px; transition: background 0.15s ease, color 0.15s ease; }
-.dogu-dropdown-tab:first-child { margin-left: -9px; }
+/* 탭 둘 사이 세로 구분선 (2026-09-18, pixlol 요청). 둘 다 무채색이고 켜진 탭만 색이 든다 —
+   즐겨찾기는 별·글자 노랑, 최근 검색은 시계 액센트 + 글자 액센트(밝은쪽). 알약 배경은 안 쓴다 (사용자 결정) */
+.dogu-dropdown-tab { position: relative; transition: color 0.15s ease; }
 .dogu-dropdown-tab + .dogu-dropdown-tab::before {
     content: '';
     position: absolute;
@@ -676,7 +675,11 @@ body.dogu-body:not(.dogu-home) .dogu-hero { display: none; }
     background: var(--dogu-line-2);
     transform: translateY(-50%);
 }
-.dogu-dropdown-tab.active { color: var(--dogu-accent-strong); background: var(--dogu-accent-weak); }
+.dogu-dropdown-ico { display: inline-block; margin-right: 5px; font-style: normal; vertical-align: -1px; line-height: 1; }
+.dogu-dropdown-ico svg { display: inline-block; vertical-align: -2px; }
+.dogu-dropdown-tab.active[data-tab="favorites"] { color: #f5c542; }
+.dogu-dropdown-tab.active[data-tab="recents"] { color: var(--dogu-accent-strong); }
+.dogu-dropdown-tab.active[data-tab="recents"] .dogu-dropdown-ico { color: var(--dogu-accent); }
 .dogu-dropdown-hint { margin-left: auto; font-size: 12px; color: var(--dogu-text-3); }
 .dogu-dropdown-row { display: flex; align-items: center; padding: 7px 14px; border-top: 1px solid var(--dogu-line); }
 .dogu-dropdown-row:first-child { border-top: 0; }
@@ -740,6 +743,9 @@ body.dogu-body:not(.dogu-home) .dogu-hero { display: none; }
 }
 /* 색은 변수로 — 하드코딩(#7288ac)이면 사이트가 --dogu-text-3 를 덮어도 여기만 안 따라온다 (er) */
 .dogu-footer-note { font-size: 12px; color: var(--dogu-text-3); line-height: 1.7; word-break: keep-all; margin-top: 4px; }
+/* 푸터 이메일 — 글자처럼 보이는 버튼. 누르면 복사 (2026-09-18) */
+.dogu-footer-contact { margin: 0; padding: 0; border: 0; background: transparent; appearance: none; -webkit-appearance: none; font: inherit; color: var(--dogu-text-2); cursor: pointer; }
+@media (hover: hover) { .dogu-footer-contact:hover { color: var(--dogu-accent-strong); } }
 
 /* 복사 안내 토스트 (값은 er .toast 그대로) */
 .dogu-toast {

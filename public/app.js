@@ -699,6 +699,9 @@ function mountDoguUI() {
             onSubmit,
             favorites: { all: getFavorites, remove: removeFavorite },
             recents:   { all: getRecents,   remove: removeRecentSearch },
+            // 빈 목록 문구 (2026-09-18 사용자 요청). 공통 기본값은 게임 중립("즐겨찾기가 비어 있습니다")이라 여기서 덮는다
+            emptyFavorites: '즐겨찾기에 등록된 소환사가 없습니다.',
+            emptyRecents:   '최근 검색한 소환사가 없습니다.',
             itemHref:  (name) => '/summoner/' + encodeURIComponent(name),
             onPick:    (name) => onSubmit(name)
         }

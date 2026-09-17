@@ -22,10 +22,13 @@
     var TEXT = {
         searching: '찾는 중…',
         noMatch: '일치하는 이름이 없습니다.',
-        favorites: '★ 즐겨찾기',
-        recents: '🕘 최근 검색',
+        /* 탭 아이콘은 글자·SVG 라 CSS 색이 든다 (이모지 🕘 는 색을 못 바꿨다 — 2026-09-18). 켜진 탭 색은 dogu-ui.css */
+        favorites: '<i class="dogu-dropdown-ico">★</i>즐겨찾기',
+        recents: '<i class="dogu-dropdown-ico"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.6V8l2.4 1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></i>최근 검색',
         hint: '각각 10개까지 저장됩니다.',
-        empty: '저장된 항목이 없습니다.',
+        /* 빈 목록 문구 — 사이트가 opts.search.emptyFavorites / emptyRecents 로 덮는다 (pixlol: 「…소환사가 없습니다」) */
+        emptyFavorites: '즐겨찾기가 비어 있습니다.',
+        emptyRecents: '최근 검색 기록이 없습니다.',
         searchIcon: '⌕',
         buttonLabel: '.GG',
         notFoundTitle: '404',
@@ -263,7 +266,8 @@
         var source = dropdownState.tab === 'favorites' ? s.favorites : s.recents;
         var items = (source && typeof source.all === 'function') ? source.all() : [];
         if (!items.length) {
-            listEl.innerHTML = '<div class="dogu-dropdown-empty">' + TEXT.empty + '</div>';
+            var emptyText = dropdownState.tab === 'favorites' ? (s.emptyFavorites || TEXT.emptyFavorites) : (s.emptyRecents || TEXT.emptyRecents);
+            listEl.innerHTML = '<div class="dogu-dropdown-empty">' + emptyText + '</div>';
             return;
         }
         var label = s.itemLabel || function (it) { return typeof it === 'string' ? it : it.label || it.nickname || it.name; };
@@ -454,7 +458,8 @@
                 }).join('') +
             '</div>' +
             notices.map(function (n) { return '<div class="dogu-footer-note">' + n + '</div>'; }).join('') +
-            (opts.contact ? '<div class="dogu-footer-note">Contact: ' + esc(opts.contact) + '</div>' : '') +
+            /* 주소를 누르면 클립보드 복사 (버그제보 링크와 같은 동작). mailto 가 아니라 자동 감지 밑줄도 안 생긴다 (2026-09-18) */
+            (opts.contact ? '<div class="dogu-footer-note">Contact: <button type="button" class="dogu-footer-contact" id="dogu-contact" title="누르면 복사">' + esc(opts.contact) + '</button></div>' : '') +
         '</div>';
     }
 
@@ -612,6 +617,8 @@
                     copyEmail(opts.contact || '', opts);
                 });
             }
+            var ct = footer.querySelector('#dogu-contact');
+            if (ct) ct.addEventListener('click', function () { copyEmail(opts.contact || '', opts); });
             /* extraLinks 의 onClick 을 id 로 찾아 건다 (href 만 있는 링크는 그냥 링크다) */
             [].concat(opts.extraLinks || []).forEach(function (l) {
                 if (!l.id || typeof l.onClick !== 'function') return;

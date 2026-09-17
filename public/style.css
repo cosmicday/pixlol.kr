@@ -252,7 +252,8 @@ main {
 .home-tier-portrait {
     width: 24px;
     height: 24px;
-    border-radius: 6px;                /* 원형 → 둥근 네모 (2026-09-18): 원본이 네모라 원으로 자르면 귀·무기가 잘려 어색했다 */
+    border-radius: 2px;                /* 원형 → 네모 (2026-09-18): 원본이 정사각형이라 원·둥근 모서리 둘 다 어색했다. 테두리 한 줄로 마감 */
+    border: 1px solid rgba(255, 255, 255, 0.14);
     object-fit: cover;
     flex: none;
 }
@@ -303,7 +304,7 @@ main {
     border-radius: 4px;
 }
 
-.home-tier-skel .home-tier-portrait { border-radius: 6px; }
+.home-tier-skel .home-tier-portrait { border-radius: 2px; border: 0; }
 .home-tier-skel .home-tier-name { width: 56px; height: 11px; }
 .home-tier-skel .home-tier-num { align-items: center; }
 .home-tier-skel .home-tier-num span { height: 11px; }
@@ -337,15 +338,15 @@ main {
             "lane pic name"
             "badge pic num";
         align-items: center;
-        column-gap: 12px;              /* 6 → 12 (2026-09-18): 초상화와 글 사이를 넓힌다 */
+        column-gap: 16px;              /* 6 → 16 (2026-09-18): 구분선·초상화·글 사이를 넓힌다 */
         row-gap: 2px;
         padding: 8px 12px;
     }
-    /* 왼쪽(라인·티어)과 오른쪽 사이 세로 구분선 — 안쪽 여백 12 + 라인 칸 56 + 칸 사이 12 의 한가운데 (2026-09-18) */
+    /* 왼쪽(라인·티어)과 오른쪽 사이 세로 구분선 — 안쪽 여백 12 + 라인 칸 56 + 3 (초상화까지 13px 남긴다, 2026-09-18) */
     .home-tier-col::after {
         content: '';
         position: absolute;
-        left: 74px;
+        left: 71px;
         top: 10px;
         bottom: 10px;
         width: 1px;
@@ -368,7 +369,7 @@ main {
     .home-tier-row { display: contents; }
     .home-tier-row ~ .home-tier-row { display: none; }   /* 2·3위는 폰에서 숨긴다 (★ nth-of-type 은 colhead 까지 세서 전부 숨었다) */
 
-    .home-tier-portrait { grid-area: pic; width: 44px; height: 44px; border-radius: 10px; align-self: center; }   /* 32 → 44 (2026-09-18) */
+    .home-tier-portrait { grid-area: pic; width: 44px; height: 44px; align-self: center; }   /* 32 → 44 (2026-09-18) · 모양은 위 기본 규칙(네모) */
     .home-tier-name { grid-area: name; font-size: 14px; align-self: end; }
 
     /* 배지는 라인 이름 **아래**다. 폭을 풀고 왼쪽에 붙여 라인 아이콘과 시작점을 맞춘다
