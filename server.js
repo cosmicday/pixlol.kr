@@ -5508,6 +5508,29 @@ function bcTierScore(e) {
     return BC_TIER_ORDER.indexOf(e.t) * 10000 + (BC_TIER_ORDER.indexOf(e.t) >= 7 ? 3 : div) * 1000 + (e.lp || 0);
 }
 const bcSleep = ms => new Promise(r => setTimeout(r, ms));
+const BC_TIER_YIELD_AT = Number(process.env.BC_TIER_YIELD_AT) || 60;   // 2분 예산 사용량이 이만큼이면 순회에 양보 (20초 쉼)
+const bcTierStat = { calls: 0, fail: 0, r429: 0, yield: 0 };
+// ★ 라이엇 호출 한 번 — 순회(scanMatchlists)와 같은 키를 나눠 쓰므로 응답 헤더의 2분 사용량을 보고 물러난다.
+//   실측(2026-09-17 밤): 로컬에선 멀쩡했는데 프로덕션에선 순회가 예산을 80까지 쓰는 중이라 2.5초 간격만으로는 429 가 나
+//   프로 50명이 10분 넘게 3명밖에 안 찼다. 429 면 Retry-After 만큼 쉬고 한 번 더, 사용량이 BC_TIER_YIELD_AT 이상이면 20초 양보
+async function bcRiotGet(url) {
+    for (let attempt = 0; ; attempt++) {
+        try {
+            const res = await riotApi.get(url);
+            bcTierStat.calls++;
+            const used = String(res.headers['x-app-rate-limit-count'] || '').split(',').map(x => x.trim().split(':')).find(x => x[1] === '120');
+            if (used && Number(used[0]) >= BC_TIER_YIELD_AT) { bcTierStat.yield++; await bcSleep(20000); }
+            return res;
+        } catch (err) {
+            if (err.response && err.response.status === 429 && attempt < 2) {
+                bcTierStat.r429++;
+                await bcSleep(((Number(err.response.headers['retry-after']) || 10) + 2) * 1000);
+                continue;
+            }
+            throw err;
+        }
+    }
+}
 
 async function bcLoadPuuids() {
     if (bcPuuidStore) return;
@@ -5535,7 +5558,7 @@ async function bcResolveTier(riotId) {
         if (!e.puuid) {
             const i = riotId.lastIndexOf('#');
             try {
-                const { data } = await riotApi.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(riotId.slice(0, i))}/${encodeURIComponent(riotId.slice(i + 1))}`);
+                const { data } = await bcRiotGet(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(riotId.slice(0, i))}/${encodeURIComponent(riotId.slice(i + 1))}`);
                 e.puuid = data.puuid; e.name = `${data.gameName}#${data.tagLine}`; e.nameAt = now;
                 bcPuuidStore[riotId] = e.puuid; bcSavePuuids();
             } catch (err) {
@@ -5545,16 +5568,16 @@ async function bcResolveTier(riotId) {
             await bcSleep(BC_TIER_GAP_MS);
         } else if (now - (e.nameAt || 0) > BC_NAME_TTL) {
             try {
-                const { data } = await riotApi.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-puuid/${e.puuid}`);
+                const { data } = await bcRiotGet(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-puuid/${e.puuid}`);
                 e.name = `${data.gameName}#${data.tagLine}`; e.nameAt = now;
             } catch (err) { e.nameAt = now - BC_NAME_TTL + BC_TIER_TTL; }   // 이름만 못 받으면 한 시간 뒤 다시
             await bcSleep(BC_TIER_GAP_MS);
         }
-        const { data } = await riotApi.get(`https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/${e.puuid}`);
+        const { data } = await bcRiotGet(`https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/${e.puuid}`);
         const solo = (data || []).find(x => x.queueType === 'RANKED_SOLO_5x5');
         Object.assign(e, solo ? { t: solo.tier, r: solo.rank, lp: solo.leaguePoints, w: solo.wins, l: solo.losses } : { t: null, r: null, lp: 0, w: 0, l: 0 });
     } catch (err) {
-        e.fail = true;
+        e.fail = true; bcTierStat.fail++;
         if (!err.response || err.response.status !== 404) console.warn('[Broadcast] 티어 조회 실패:', riotId, err.response ? err.response.status : err.message);
     }
     e.at = now;
@@ -5587,6 +5610,7 @@ async function bcTierJob() {
     const ids = [...new Set(BC_STREAMER_LIST.concat(BC_PROS).flatMap(x => x.riot))];
     if (!ids.length) return;
     bcTierJobRunning = true;
+    const t0 = Date.now(); Object.assign(bcTierStat, { calls: 0, fail: 0, r429: 0, yield: 0 });
     try {
         for (const rid of ids) {
             const before = bcTierCache.get(rid);
@@ -5597,6 +5621,8 @@ async function bcTierJob() {
         for (const p of Object.keys(bcState)) bcAttachTiers(bcState[p].items);
         bcTiersDone = true;
         bcPayloadCache.key = '';   // /api/broadcast 문자열 캐시 무효화
+        const filled = ids.filter(r => { const e = bcTierCache.get(r); return e && e.t; }).length;
+        console.log(`[Broadcast] 티어 한 바퀴 — 계정 ${ids.length} (랭크 ${filled}) · 호출 ${bcTierStat.calls} · 실패 ${bcTierStat.fail} · 429 ${bcTierStat.r429} · 양보 ${bcTierStat.yield} · ${Math.round((Date.now() - t0) / 1000)}초`);
     } finally { bcTierJobRunning = false; }
 }
 
