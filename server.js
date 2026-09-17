@@ -5409,6 +5409,10 @@ const broadcastChannels = (() => {
     catch (e) { console.warn('[Broadcast] broadcast_channels.js 를 못 읽었다:', e.message); return { include: [], exclude: [] }; }
 })();
 const BC_YT_EXCLUDE = new Set((broadcastChannels.exclude || []).map(c => c.id));
+// 방송인 ↔ 라이엇 계정 (broadcast_channels.js 의 streamers). 열쇠 `플랫폼:채널키` → 라이엇 ID 목록
+const BC_STREAMERS = new Map((broadcastChannels.streamers || [])
+    .filter(x => x && x.p && x.ch && Array.isArray(x.riot) && x.riot.length)
+    .map(x => [`${x.p}:${x.ch}`, x.riot]));
 const BC_YT_INCLUDE = (broadcastChannels.include || []).map(c => c.id).filter(id => !BC_YT_EXCLUDE.has(id));
 
 // ★ 유튜브 하루 할당량 10,000 유닛 계산 — 명단 확인 1회 = 채널 수 + 50개당 1 (60채널 ≈ 64유닛).
@@ -5478,6 +5482,59 @@ async function bcMapLimit(list, limit, fn) {
     return out;
 }
 
+// ---- 방송인 롤 티어 (2026-09-17 밤, 사용자 요청) ----
+// ★ 플랫폼 어디에도 「이 방송인 = 이 라이엇 계정」 칸이 없다 (SOOP·치지직·유튜브 셋 다 실측). 그래서 손 명단이다 —
+//   broadcast_channels.js 의 streamers 에 채널 키와 라이엇 ID 를 적어 두면, 그 방송인이 켜졌을 때 계정들의 솔랭 티어를 받아
+//   **제일 높은 계정** 하나를 카드에 붙인다. 명단은 deeplol 의 스트리머 등록 페이지를 참고해 라이엇 API 로 하나씩 검증한 것 (docs/방송.md)
+// ★ 라이엇 호출: 계정 → puuid 는 한 번만(메모리에 영구), 리그는 한 시간에 한 번. 방송인 30명이어도 시간당 30회 — 순회 예산(2분 100회)에 안 걸린다.
+//   호출은 순서대로 0.3초 간격, 실패하면 그 계정만 건너뛴다 (방송 목록 자체는 영향 없음)
+const BC_TIER_TTL = 60 * 60 * 1000;
+const BC_TIER_ORDER = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER'];
+const bcTierCache = new Map();   // riotId → { puuid, t, r, lp, w, l, at, fail }
+function bcTierScore(e) {
+    if (!e || !e.t) return -1;
+    const div = { I: 3, II: 2, III: 1, IV: 0 }[e.r] || 0;
+    return BC_TIER_ORDER.indexOf(e.t) * 10000 + (BC_TIER_ORDER.indexOf(e.t) >= 7 ? 3 : div) * 1000 + (e.lp || 0);
+}
+async function bcResolveTier(riotId) {
+    const c = bcTierCache.get(riotId);
+    const now = Date.now();
+    if (c && now - c.at < (c.fail ? BC_TIER_TTL / 4 : BC_TIER_TTL)) return c;
+    const entry = { puuid: c && c.puuid, t: null, r: null, lp: 0, w: 0, l: 0, at: now, fail: false };
+    try {
+        if (!entry.puuid) {
+            const i = riotId.lastIndexOf('#');
+            const { data } = await riotApi.get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(riotId.slice(0, i))}/${encodeURIComponent(riotId.slice(i + 1))}`);
+            entry.puuid = data.puuid;
+            await new Promise(r => setTimeout(r, 300));
+        }
+        const { data } = await riotApi.get(`https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/${entry.puuid}`);
+        const solo = (data || []).find(e => e.queueType === 'RANKED_SOLO_5x5');
+        if (solo) Object.assign(entry, { t: solo.tier, r: solo.rank, lp: solo.leaguePoints, w: solo.wins, l: solo.losses });
+    } catch (err) {
+        entry.fail = true;
+        if (!err.response || err.response.status !== 404) console.warn('[Broadcast] 티어 조회 실패:', riotId, err.response ? err.response.status : err.message);
+    }
+    bcTierCache.set(riotId, entry);
+    return entry;
+}
+// 목록의 방송인 중 명단에 있는 사람에게 tier 를 붙인다 (수집 파이프라인 안에서 — 목록이 화면에 나가기 전에)
+async function bcAttachTiers(items) {
+    if (!BC_STREAMERS.size) return items;
+    for (const it of items) {
+        const ids = BC_STREAMERS.get(`${it.p}:${it.ch}`);
+        if (!ids) continue;
+        let best = null, bestId = null;
+        for (const rid of ids) {
+            const e = await bcResolveTier(rid);
+            await new Promise(r => setTimeout(r, 300));
+            if (e.t && bcTierScore(e) > bcTierScore(best)) { best = e; bestId = rid; }
+        }
+        if (best) it.tier = { t: best.t, r: best.r, lp: best.lp, w: best.w, l: best.l, id: bestId, n: ids.length };
+    }
+    return items;
+}
+
 // ---- SOOP ----
 async function bcFetchSoop() {
     const id = process.env.SOOP_CLIENT_ID;
@@ -5497,6 +5554,7 @@ async function bcFetchSoop() {
             out.push({
                 p: 'soop',
                 id: String(b.broad_no),
+                ch: String(b.user_id),
                 title: b.broad_title || '',
                 name: b.user_nick || b.user_id || '',
                 viewers: bcNum(b.total_view_cnt),                 // ★ 이름과 달리 현재 시청자로 보인다 (docs/방송.md)
@@ -5520,6 +5578,7 @@ function bcChzzkItem(l, ch) {
     return {
         p: 'chzzk',
         id: String(l.liveId),
+        ch: String(ch.channelId || ''),
         title: l.liveTitle || '',
         name: ch.channelName || '',
         viewers: bcNum(l.concurrentUserCount),
@@ -5632,6 +5691,7 @@ async function bcYtVideosToItems(vids) {
             out.push({
                 p: 'youtube',
                 id: v.id,
+                ch: sn.channelId || '',
                 title: sn.title || '',
                 name: sn.channelTitle || '',
                 viewers: bcNum(ld.concurrentViewers),   // ★ 시청자 수를 숨긴 방송은 값이 없다 → null (맨 뒤)
@@ -5845,6 +5905,7 @@ function bcRefresh(p, force) {
     if (now < st.nextTry) return Promise.resolve();
     if (bcInflight[p]) return bcInflight[p];
     bcInflight[p] = bcFetchers[p]()
+        .then(bcAttachTiers)
         .then(items => {
             st.items = items; st.at = Date.now(); st.ok = true; st.reason = null; st.nextTry = 0;
             if (bcScheduled) {

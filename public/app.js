@@ -1311,6 +1311,16 @@ function bcViewers(n) {
     return n == null ? '비공개' : Number(n).toLocaleString('ko-KR');
 }
 
+// 방송인 롤 티어 배지 — 서버가 손 명단(broadcast_channels.js streamers)으로 붙여 준 `tier` 가 있을 때만
+const BC_TIER_KO = { IRON: '아이언', BRONZE: '브론즈', SILVER: '실버', GOLD: '골드', PLATINUM: '플래티넘', EMERALD: '에메랄드', DIAMOND: '다이아', MASTER: '마스터', GRANDMASTER: '그랜드마스터', CHALLENGER: '챌린저' };
+function bcTierHtml(t) {
+    if (!t || !t.t) return '';
+    const apex = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(t.t);
+    const label = `${BC_TIER_KO[t.t] || t.t}${apex ? '' : ' ' + t.r} · ${Number(t.lp).toLocaleString('ko-KR')} LP`;
+    const tip = `${t.id} · ${t.w}승 ${t.l}패${t.n > 1 ? ` · 계정 ${t.n}개 중 최고` : ''}`;
+    return `<i class="bc-tier is-${t.t.toLowerCase()}" title="${escapeHtml(tip)}"><img src="${RANK_MEDAL_BASE}${t.t.toLowerCase()}.png" alt="" loading="lazy" onerror="this.remove()">${escapeHtml(label)}</i>`;
+}
+
 // 방송 시간 — HH:MM:SS (2026-09-17 사용자 요청, 전엔 「n시간째」). 썸네일 오른쪽 아래에 두고 1초마다 `bcTick` 이 글자만 바꾼다.
 //   카드 300장의 텍스트 노드 300개를 초마다 바꾸는 건 아무 부담이 아니다 (다시 그리는 게 아니라 textContent 만)
 function bcDur(ms) {
@@ -1342,6 +1352,7 @@ function bcCardHtml(b) {
             <span class="bc-text">
                 <b class="bc-title">${escapeHtml(b.title || '(제목 없음)')}</b>
                 <i class="bc-name"><span>${escapeHtml(b.name)}</span></i>
+                ${bcTierHtml(b.tier)}
             </span>
         </span>
     </a>`;
@@ -1402,7 +1413,7 @@ function renderBroadcast() {
     const summary = `방송 <b>${d.items.length.toLocaleString('ko-KR')}</b>개 · 시청자 <b>${total.toLocaleString('ko-KR')}</b>명`;
 
     const ytNote = live.length
-        ? `<p class="bc-note">※ 방송 목록은 매시 00·20·40분에 새로 받습니다. 유튜브는 방송인이 게임을 「리그 오브 레전드」로 설정했거나 제목에 롤이 드러난 방송만 잡히고, 시청자 수를 숨긴 방송은 맨 뒤에 놓입니다.</p>`
+        ? `<p class="bc-note">※ 방송 목록은 매시 00·20·40분에 새로 받습니다. 유튜브는 방송인이 게임을 「리그 오브 레전드」로 설정했거나 제목에 롤이 드러난 방송만 잡히고, 시청자 수를 숨긴 방송은 맨 뒤에 놓입니다. 티어는 방송인이 공개한 계정 가운데 가장 높은 솔로 랭크 계정 기준이며, 계정을 아는 방송인에게만 붙습니다.</p>`
         : '';
 
     box.innerHTML = `

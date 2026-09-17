@@ -10115,6 +10115,27 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
     font-style: normal;
 }
 .bc-name span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* 방송인 롤 티어 — 이름 아래 한 줄. 문장(mini crest)은 랭킹 표와 같은 CommunityDragon 것 */
+.bc-tier {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 1px;
+    color: var(--text-faint);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.bc-tier img { flex: none; width: 16px; height: 16px; }
+.bc-tier.is-challenger { color: #e0b03a; }
+.bc-tier.is-grandmaster { color: #e0566b; }
+.bc-tier.is-master { color: var(--accent); }
+.bc-tier.is-diamond { color: #6aa9e8; }
+.bc-tier.is-emerald { color: #46c48a; }
 /* 방송 시간 HH:MM:SS — 썸네일 오른쪽 아래 (유튜브 재생시간 배지 자리) */
 .bc-dur {
     position: absolute;
