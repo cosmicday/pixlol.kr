@@ -738,6 +738,18 @@ function mountDoguUI() {
         contact: '00.y4no@gmail.com'
     }));
 
+    // ★★ 폰: 검색창에 포커스를 쥔 채 앱을 백그라운드로 보내면, 돌아왔을 때 페이지가 90px 쯤 내려가 있다
+    //   (히어로 로고가 딱 잘려 나간 만큼. 2026-09-18 실기기 — iOS 사파리·안드로이드 크롬 **둘 다**).
+    //   브라우저가 복귀하면서 「포커스를 쥔 입력칸」을 화면 안으로 끌어오느라 스크롤을 옮기는 것이라
+    //   우리 코드가 내리는 게 아니다 (visibilitychange·pageshow·scrollRestoration 핸들러가 아예 없다).
+    //   → 숨을 때 포커스를 뗀다. 돌아오면 끌어올 대상이 없어 맨 위 그대로다.
+    //   ★ 글자를 쳐 둔 상태면 안 뗀다 — 그땐 돌아와서 이어 치는 게 맞고, 입력칸이 보이게 끌려오는 것도 맞다
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'hidden') return;
+        const el = doguSearchInput();
+        if (el && document.activeElement === el && !el.value.trim()) el.blur();
+    });
+
     // 공통 마크업의 내부 링크를 가로챈다. 드롭다운 항목은 onPick 이 이미 처리하므로 뺀다
     document.addEventListener('click', (e) => {
         const a = e.target.closest('a[data-link]');
