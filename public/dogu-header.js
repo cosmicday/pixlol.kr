@@ -36,8 +36,9 @@
         comingTitle: '준비 중',
         comingBody: '아직 만드는 중인 페이지입니다. 조금만 기다려 주세요.',
         backHome: '← 홈으로 돌아가기',
-        copied: function (email) { return '이메일 주소(' + email + ')가 클립보드에 복사되었습니다.'; },
-        copyFailed: function (email) { return '복사에 실패했습니다. 직접 복사해 주세요: ' + email; }
+        /* 토스트는 { kind, title, body } 로 (2026-09-18 개편). 옛 사이트 notify 가 문자열을 기대할 수 있어 toString 을 붙인다 */
+        copied: function (email) { return toastMsg('ok', '이메일 주소를 복사했습니다', email); },
+        copyFailed: function (email) { return toastMsg('fail', '복사하지 못했습니다', '직접 복사해 주세요 · ' + email); }
     };
 
     function esc(s) {
@@ -312,6 +313,16 @@
         });
         var tabTouchAt = 0;
         dropdown.addEventListener('touchstart', function (e) { if (e.target.closest('.dogu-dropdown-tab')) tabTouchAt = Date.now(); }, { passive: true });
+        /* 검색창·드롭다운 밖을 누르면 닫는다 (2026-09-18 pixlol 요청). iOS 는 빈 곳을 눌러도 input 이 blur 되지 않을 때가 있어 blur 에만 기대지 않는다 */
+        var wrapper = root.querySelector('.dogu-search-wrapper') || dropdown;
+        var closeIfOutside = function (e) {
+            if (!dropdown.classList.contains('open')) return;
+            if (wrapper.contains(e.target)) return;
+            dropdown.classList.remove('open');
+            if (document.activeElement === input) input.blur();
+        };
+        document.addEventListener('pointerdown', closeIfOutside, true);
+        document.addEventListener('touchstart', closeIfOutside, { capture: true, passive: true });
         input.addEventListener('blur', function () {
             /* 탭을 누르는 중에 난 blur 는 무시 — 닫히면 다음 click 이 허공에 떨어진다 */
             if (Date.now() - tabTouchAt < 600) return;
@@ -444,18 +455,35 @@
 
     /* ---------- 토스트 (푸터 복사 안내용 최소 구현) ---------- */
     var toastTimer = null;
+    function toastMsg(kind, title, body) {
+        var m = { kind: kind, title: title, body: body || '' };
+        m.toString = function () { return body ? title + ' — ' + body : title; };
+        return m;
+    }
+    var TOAST_ICON = {
+        ok: '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M4.5 10.5l3.5 3.5 7.5-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        fail: '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M6 6l8 8M14 6l-8 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'
+    };
+    /* 토스트 — 아이콘 + 제목 + 부제 (2026-09-18 개편). message 는 문자열이거나 { kind, title, body }.
+       1.1초 뒤 사라진다 (전 2.2초 — pixlol 요청으로 절반). 색은 사이트가 --dogu-toast-* 로 덮는다 */
     function showToast(message) {
         var t = document.getElementById('dogu-toast');
         if (!t) {
             t = document.createElement('div');
             t.id = 'dogu-toast';
-            t.className = 'dogu-toast';
             document.body.appendChild(t);
         }
-        t.textContent = message;
+        var m = (message && typeof message === 'object') ? message : { kind: 'ok', title: String(message), body: '' };
+        t.className = 'dogu-toast is-' + (m.kind === 'fail' ? 'fail' : 'ok');
+        t.innerHTML = '<span class="dogu-toast-ico">' + (TOAST_ICON[m.kind] || TOAST_ICON.ok) + '</span>' +
+            '<span class="dogu-toast-text"><b class="dogu-toast-title">' + esc(m.title) + '</b>' +
+            (m.body ? '<em class="dogu-toast-body">' + esc(m.body) + '</em>' : '') + '</span>';
+        /* 다시 띄울 때 애니메이션이 처음부터 돌게 한 프레임 쉰다 */
+        t.classList.remove('show');
+        void t.offsetWidth;
         t.classList.add('show');
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200);
+        toastTimer = setTimeout(function () { t.classList.remove('show'); }, 1100);
     }
 
     /* 이메일을 클립보드에 복사하고 안내를 띄운다. 사이트가 자기 토스트를 쓰고 싶으면 opts.notify 로 넘긴다 */

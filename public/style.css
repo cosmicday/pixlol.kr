@@ -140,9 +140,17 @@ main {
 
 /* 공통 토스트(복사 안내) 색 — 공통 파일이 덮으라고 연 변수. 사이트 보라 계열로 (2026-09-18) */
 :root {
-    --dogu-toast-bg: rgba(43, 26, 82, 0.92);
-    --dogu-toast-line: rgba(167, 139, 250, 0.55);
-    --dogu-toast-fg: #e6dcff;
+    --dogu-toast-bg: rgba(30, 20, 58, 0.94);
+    --dogu-toast-line: rgba(167, 139, 250, 0.45);
+    --dogu-toast-fg: #efe9ff;
+    --dogu-toast-sub: #b3a6d6;
+    --dogu-toast-ico-bg: rgba(167, 139, 250, 0.18);
+    --dogu-toast-ico: #c9b5ff;
+    /* 검색 드롭다운(즐겨찾기·최근검색)도 보라 계열로 — 공통 기본은 남색 카드색 (2026-09-18 사용자) */
+    --dogu-search-dd-bg: rgba(22, 17, 42, 0.96);
+    --dogu-search-dd-head: rgba(43, 26, 82, 0.55);
+    --dogu-search-dd-line: rgba(167, 139, 250, 0.14);
+    --dogu-search-dd-border: rgba(167, 139, 250, 0.38);
 }
 
 /* 추천 챔피언 제목 아이콘 (2026-09-18) */

@@ -171,3 +171,11 @@
   목록이 비어 있을 때의 `return` 에 걸려 실행이 안 됐다. 즐겨찾기가 비어 있는 폰에서 「최근검색 → 즐겨찾기」 를 누르면 빈 문구는 뜨는데 색이 안 들던 것.
   헤드리스 재현이 안 됐던 이유는 내가 즐겨찾기를 **채워 놓고** 시험해서다 — **빈 상태로도 재 볼 것.** 토글을 목록 그리기 앞으로 옮겼다 (touchstart 처리는 그대로 둔다 — 해롭지 않다).
   추천 챔피언 별 20 → 24px, 폰 카드 초상화 ↔ 글 12px (구분선 ↔ 초상화와 같게)
+- (같은 날 5차) **드롭다운 색 변수 · 바깥 탭 닫힘 · 토스트 개편** (공통 원본 수정 + sync)
+  - 드롭다운(즐겨찾기·최근검색) 색을 공통이 `--dogu-search-dd-bg / -head / -line / -border` 로 열었고 pixlol 이 보라 계열로 덮는다 (`style.css` `:root`). 기본은 예전 카드색 그대로
+  - **검색창·드롭다운 밖을 누르면 닫힌다** — `document` 의 `pointerdown`·`touchstart`(capture) 에서 `.dogu-search-wrapper` 밖이면 `open` 을 떼고 input 을 blur. blur 에만 기대지 않는 이유는 iOS 가 빈 곳을 눌러도 포커스를 안 빼 줄 때가 있어서
+  - 토스트가 **아이콘(✓/✕ 원형) + 제목 + 부제** 두 줄 카드가 됐고 **1.1초** 뒤 사라진다 (전 2.2초 — 사용자 「50% 빨리」). `TEXT.copied/copyFailed` 가 문자열 대신 `{ kind, title, body }` 를 돌려준다.
+    ★ 다른 4개 사이트는 `notify: App.ui.showToast` 로 자기 토스트에 넘기는데 그쪽은 문자열을 기대한다 — 객체에 `toString`(「제목 — 부제」)을 달아 두어 `textContent` 대입이면 그대로 된다. 색은 `--dogu-toast-sub / -ico / -ico-bg` 가 추가로 열렸다
+  - **★★ 함정 (이번에 걸림)**: 토스트 블록을 갈아끼우려고 `s.index('.dogu-toast {')` 로 앵커를 잡았더니 **173번째 줄의 공통 뿌리 선택자 목록**(`.dogu-gnb, .dogu-hero, …, .dogu-toast {`)에 먼저 걸려 **그 사이 595줄(브랜드·gnb·스위처·히어로)을 통째로 날렸고 5개 사이트에 sync 까지 됐다.**
+    증상은 헤더가 187px 로 쪼그라들고 드롭다운이 안 열리는 것. `git checkout` 으로 되돌리고 앵커를 「줄 시작 + 다음 줄 `position: fixed`」로 바꿔 다시 넣었다. **공통 CSS 를 스크립트로 자를 땐 앵커 `count == 1` 과 잘라낸 길이 상한을 assert 로 박을 것** (`patch_ui_css.py` 가 그렇게 한다)
+  - **★ `position: fixed; left: 50%` 인 요소는 폭이 「오른쪽 남은 절반」으로 잡혀** 제목이 두 줄로 꺾였다 — `width: max-content` 로 내용 폭
