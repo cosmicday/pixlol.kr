@@ -240,6 +240,11 @@
 
         /* 자동완성 중에는 탭(즐겨찾기/최근)이 의미가 없어 숨긴다 */
         if (header) header.style.display = suggesting ? 'none' : '';
+        /* ★★ 탭 켜기는 목록을 그리기 **전에** — 예전엔 맨 끝에 있어서 「목록이 비어 있을 때」 return 에 걸려 안 켜졌다.
+           즐겨찾기가 비어 있는 폰에서 「최근검색 → 즐겨찾기」 를 누르면 색이 안 들던 것이 이것 (2026-09-18, 터치 문제가 아니었다) */
+        root.querySelectorAll('.dogu-dropdown-tab').forEach(function (t) {
+            t.classList.toggle('active', t.dataset.tab === dropdownState.tab);
+        });
 
         if (suggesting) {
             if (dropdownState.loading && !dropdownState.items) {
@@ -281,9 +286,6 @@
                 '<button class="dogu-dropdown-del" type="button" data-dogu-del="' + esc(k) + '" title="삭제">✕</button>' +
             '</div>';
         }).join('');
-        root.querySelectorAll('.dogu-dropdown-tab').forEach(function (t) {
-            t.classList.toggle('active', t.dataset.tab === dropdownState.tab);
-        });
     }
 
     function bindHero(root, opts) {

@@ -146,7 +146,7 @@ main {
 }
 
 /* 추천 챔피언 제목 아이콘 (2026-09-18) */
-.home-tier-icon { flex: none; width: 20px; height: 20px; }
+.home-tier-icon { flex: none; width: 24px; height: 24px; }   /* 20 → 24 (2026-09-18 사용자) */
 
 /* 패치노트 카드 제목도 그 페이지로 가는 링크 (2026-09-18) */
 .patch-note-head h3 a { color: inherit; text-decoration: none; }
@@ -345,7 +345,7 @@ main {
             "lane pic name"
             "badge pic num";
         align-items: center;
-        column-gap: 18px;              /* 6 → 18 (2026-09-18): 구분선·초상화·글 사이를 넓힌다 */
+        column-gap: 12px;              /* 초상화 ↔ 이름·수치 12px (2026-09-18 사용자: 구분선 ↔ 초상화와 같게). 구분선 쪽은 아래 초상화 margin 으로 6 을 더한다 */
         row-gap: 2px;
         padding: 8px 12px 8px 6px;     /* 왼쪽 12 → 6: 라인 칸(56, 가운데 정렬) 양옆 여백을 구분선 기준으로 같게 (6 | 56 | 6) */
     }
@@ -376,7 +376,7 @@ main {
     .home-tier-row { display: contents; }
     .home-tier-row ~ .home-tier-row { display: none; }   /* 2·3위는 폰에서 숨긴다 (★ nth-of-type 은 colhead 까지 세서 전부 숨었다) */
 
-    .home-tier-portrait { grid-area: pic; width: 44px; height: 44px; align-self: center; }   /* 32 → 44 (2026-09-18) · 모양은 위 기본 규칙(네모) */
+    .home-tier-portrait { grid-area: pic; width: 44px; height: 44px; align-self: center; margin-left: 6px; }   /* 32 → 44 (2026-09-18) · 모양은 위 기본 규칙(네모) · 구분선(68)과 12px 띄우려 6 을 더한다 (6+56+12+6 = 80) */
     .home-tier-name { grid-area: name; font-size: 14px; align-self: end; }
 
     /* 배지는 라인 이름 **아래**다. 폭을 풀고 왼쪽에 붙여 라인 아이콘과 시작점을 맞춘다
