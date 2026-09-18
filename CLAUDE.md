@@ -78,6 +78,9 @@
 - **유튜브 아이콘은 이제 공식 파일이다** — 구글이 서빙하는 `gstatic …/youtubelogo.svg` 에서 아이콘만 잘라낸 `public/youtube_icon.svg` (er 도 같은 파일 `public/img/youtube_icon.svg`). 직접 그린 SVG 는 버렸다
 - **푸터에 SOOP·치지직·유튜브 제휴 부인 문구** — 모든 페이지, 라이엇 고지 바로 아래 (`app.js` `notice` 배열). er 도 같은 문구(`BROADCAST_NOTICE`)
 - 다른 4개 사이트의 복사 토스트는 자기 `App.ui.showToast` 라 문자열을 기대한다 — 메시지 객체에 `toString`(「제목 — 부제」)이 있어 그대로 나온다. 두 줄 카드는 pixlol 만이다
+- **★ 히어로 검색창 포커스 링·흔들림 캐럿 (같은 날 저녁)** — ① 검색창을 누르면 생기던 보라 테두리가 **왼쪽만 두 겹으로 어긋나 보였다**: 링을 `.dogu-search-input` 에 그렸는데 그 요소는 `border-radius: 0` 이라 **각진 네모**가 되고, 알약 상자의 `overflow: hidden` 이 왼쪽 두 모서리를 잘라 먹었다. **링을 상자로 옮겼다** (`.dogu-search-box:has(.dogu-search-input:focus-visible)`, `outline-offset: 0`) — 상자는 999px 알약이고 **자기 자신의 outline 은 overflow 에 안 잘린다**. ★ 폰 전용 버그가 아니었다 — 글자 입력 요소는 클릭·터치 포커스도 `:focus-visible` 로 치므로 데스크톱도 같았고, 폰은 알약이 42px 이라 곡선에 더 붙어서 눈에 띈 것뿐이다
+- **★★ 빈칸으로 검색해 흔들릴 때 깜빡이는 커서가 알약 밖으로 튀어나갔다 — 캐럿은 브라우저가 따로 그려서 `overflow: hidden` 이 못 자른다.** 0.35s 동안만 `caret-color: transparent` 로 숨긴다. **★ 클래스가 아니라 애니메이션(`doguCaretHide`)으로 줘야 한다** — `.shake` 는 끝나도 안 지워지고 다음 흔들림 때 remove→reflow→add 로 다시 켜는 구조라, 클래스에 직접 주면 **첫 흔들림 뒤로 캐럿이 영영 사라진다**
+- **★★ 위 둘은 `public/dogu-ui.css` 에만 넣었다 (사용자 결정: 이 사이트만 먼저).** 템플릿 원본·다른 4개 사이트는 그대로라 **md5 가 갈라져 있다** — 다음 sync 때 원본(`dogu_template/dogu-ui/dogu-ui.css`)에 같은 두 덩이를 올려야 덮어쓰기로 사라지지 않는다
 - **남은 것**: 계정 미확인 프로 11명·방송인 몇 명(노페·김군·도파 …) 채우기 · `broadcast_channels.js` exclude 정리 · e스포츠 리그 추가 여부(사용자 결정)
 
 ## ★★ 2026-09-17 저녁 — e스포츠·방송 탭 개편 (전말은 `docs/e스포츠.md` · `docs/방송.md` 의 9/17 저녁 절)
