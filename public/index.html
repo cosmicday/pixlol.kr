@@ -6,7 +6,8 @@
     <!-- maximum-scale / user-scalable 을 뺐다 (2026-08-11). 스킬 설명이 14px 인데
          확대를 막고 있었고, iOS 사파리는 이 지시를 원래 무시해서 안드로이드에서만
          못 늘어나 동작도 갈렸다. 확대는 열어 두는 게 맞다. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- interactive-widget=resizes-visual: 안드로이드 크롬이 키보드를 띄울 때 레이아웃 뷰포트(vh·fixed 층)를 안 줄이게 — 배경이 움찔하던 것 (2026-09-18). 다른 브라우저는 무시한다 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
     <!-- iOS 사파리가 푸터의 이메일 주소를 스스로 링크(밑줄)로 바꾸는 걸 끈다 — 버그제보 버튼이 주소를 복사해 주므로 (2026-09-18) -->
     <meta name="format-detection" content="email=no,telephone=no">
     <!-- ★ 「PC 버전」 스위치 (2026-08-26, 사용자 요청). 푸터의 링크가 localStorage 에 켜 두면
