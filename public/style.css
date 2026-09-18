@@ -9999,7 +9999,7 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
 /* 플랫폼 표식 — 칩과 카드 배지가 같이 쓴다. 유튜브는 인라인 SVG(색·비례 고정), 치지직은 공식 아이콘 PNG, SOOP 은 색 점 (근거: app.js bcPlatMark) */
 .bc-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; vertical-align: 1px; }
 .bc-mark { flex: none; display: inline-block; margin-right: 5px; vertical-align: -3px; }
-.bc-mark.is-youtube { width: 20px; height: 14px; }
+.bc-mark.is-youtube { width: auto; height: 14px; }   /* 공식 아이콘 비례(1.45) 그대로 — 폭은 높이에서 나온다 */
 .bc-mark.is-chzzk { width: 16px; height: 16px; border-radius: 3px; }
 .codex-tab .bc-mark { vertical-align: -4px; }
 .codex-tab .bc-mark.is-chzzk { width: 16px; height: 16px; }
@@ -10091,7 +10091,7 @@ a.es-br-row { transition: background var(--dogu-ease), border-color var(--dogu-e
 .bc-plat { left: 8px; display: inline-flex; align-items: center; }
 .bc-plat .bc-dot { margin-right: 5px; vertical-align: 0; }
 .bc-plat .bc-mark { vertical-align: 0; }
-.bc-plat .bc-mark.is-youtube { width: 18px; height: 13px; }
+.bc-plat .bc-mark.is-youtube { width: auto; height: 13px; }
 .bc-plat .bc-mark.is-chzzk { width: 14px; height: 14px; }
 
 .bc-viewers {

@@ -730,7 +730,11 @@ function mountDoguUI() {
     DoguUI.mountFooter(null, Object.assign({}, DOGU_BRAND, {
         links: { terms: '/terms', privacy: '/privacy' },
         extraLinks: pcLink,
-        notice: "pixlol.kr isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
+        notice: [
+            "pixlol.kr isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
+            // 방송 탭의 플랫폼 표식(치지직·유튜브 공식 아이콘) 사용 조건 — 제휴·후원 오인 금지. 모든 페이지 푸터에 둔다 (2026-09-18)
+            "pixlol.kr은 SOOP · 치지직(CHZZK) · YouTube 및 그 운영사와 제휴·후원·보증 관계가 없습니다. 각 플랫폼의 이름과 로고는 해당 회사의 상표이며, 방송 탭은 공개 API로 제공되는 생방송 정보를 안내하고 원본 방송 페이지로 연결할 뿐입니다."
+        ],
         contact: '00.y4no@gmail.com'
     }));
 
@@ -1255,7 +1259,8 @@ const BC_PLATFORMS = [
 //   SOOP  — 브랜드 가이드가 「플랫폼 밖 사용은 서면 동의 필요」라 로고를 안 쓴다. 색 점 + 이름만
 function bcPlatMark(key) {
     // ★ 삼각형은 같은 색 stroke(round join)를 얹어 꼭짓점을 둥글린다 — 20px 로 줄이면 맨 path 는 변이 계단져 보인다 (사용자 지적)
-    if (key === 'youtube') return '<svg class="bc-mark is-youtube" viewBox="0 0 28 20" aria-hidden="true" shape-rendering="geometricPrecision"><rect width="28" height="20" rx="5.5" fill="#FF0000"/><path d="M11.6 6.4v7.2L17.8 10z" fill="#fff" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+    // 유튜브 공식 로고 파일에서 잘라낸 아이콘 (public/youtube_icon.svg, 2026-09-18 — 직접 그린 SVG 를 버렸다). 비례 159.5:110 이라 높이만 주고 폭은 따라간다
+    if (key === 'youtube') return '<img class="bc-mark is-youtube" src="/youtube_icon.svg" alt="" height="14">';
     if (key === 'chzzk') return '<img class="bc-mark is-chzzk" src="/chzzk_icon_40.png" alt="" width="20" height="20">';
     return `<i class="bc-dot is-${key}"></i>`;
 }
