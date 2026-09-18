@@ -132,15 +132,11 @@ body.dogu-body::before {
    → (되돌리기 전 설명) 폰에서는 보통 히어로처럼 그림이 페이지와 같이 스크롤된다. 오버레이(::after)는 색뿐이라 fixed 그대로 두어
      아래로 내려간 곳은 지금처럼 진하게 남는다. 높이는 dogu-header.js 가 큰 뷰포트를 재서 px 로 준다 (--dogu-bg-h) —
      lvh 로 두면 키보드가 뷰포트를 줄이는 브라우저에서 cover 가 다시 확대된다. 데스크톱은 클래스가 안 붙어 위 fixed 그대로 */
-/* ★★★ 2026-09-18 저녁 — 주소창이 접히는 동안 배경이 미끄러지는 것을 JS 로 상쇄한다.
-   크롬은 `fixed` 층을 「보이는 화면(비주얼 뷰포트)」이 아니라 「레이아웃 뷰포트」에 붙이는데,
-   주소창이 접히는 동안 그 둘이 어긋나서 배경만 따라 움직여 보인다. 어긋난 양은 CSS 가 알 수 없고
-   `visualViewport` 만 안다 — app.js 의 syncBgShift 가 재서 --dogu-bg-shift 로 준다 (폰에서만).
-   ★ 그 JS 를 빼면 변수가 없어 0px 로 떨어지고 예전과 똑같아진다 (되돌리기 한 줄) */
-body.dogu-body.dogu-vh-fixed::before {
-    height: var(--dogu-bg-h);
-    transform: translateY(var(--dogu-bg-shift, 0px));
-}
+/* ★★ 2026-09-18 저녁 — `visualViewport` 로 상쇄하는 길은 **실패해서 뺐다** (실기기 실측: 변화 0).
+   `pageTop` 과 `scrollY` 가 끝까지 붙어 다녀서 상쇄값이 줄곧 0 이었다 — 주소창 접힘은 크롬이
+   **컴포지터에서 층을 직접 미는 것**이라 JS 에 그 양이 안 나온다. `visualViewport` 는 높이만,
+   그것도 애니메이션이 끝난 뒤에 알려준다. **이 길은 다시 시도하지 말 것.** */
+body.dogu-body.dogu-vh-fixed::before { height: var(--dogu-bg-h); }
 
 body.dogu-body::after {
     content: '';
