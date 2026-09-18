@@ -738,6 +738,33 @@ function mountDoguUI() {
         contact: '00.y4no@gmail.com'
     }));
 
+    // ★★★ 폰 크롬: 맨 위에서 스크롤을 시작하면 주소창이 접히는 동안 배경 그림이 같이 미끄러진다 (2026-09-18).
+    //   원인은 브라우저가 `position: fixed` 층을 「보이는 화면」이 아니라 「레이아웃 뷰포트」에 붙이는 것이다 —
+    //   주소창이 접히는 0.2초 동안 그 둘이 어긋나고, 어긋난 양은 CSS 로는 알 방법이 없다.
+    //   `visualViewport` 만 그 값을 안다: pageTop(보이는 화면의 문서상 위치) - scrollY(레이아웃 뷰포트의 위치).
+    //   그만큼 배경 층을 반대로 밀어 화면에 다시 붙인다. 사파리는 주소창이 아래라 늘 0 이 나와 무영향.
+    //   ★ 손가락으로 확대(pinch)한 동안은 손대지 않는다 — 배율이 다르면 밀어 봐야 안 맞는다
+    //   ★ 되돌리려면 이 블록만 지우면 된다. 변수가 없으면 CSS 가 0px 로 떨어진다
+    (() => {
+        const vv = window.visualViewport;
+        if (!vv || !window.matchMedia('(hover: none) and (pointer: coarse)').matches) return;
+        let raf = 0, last = null;
+        const sync = () => {
+            if (raf) return;
+            raf = requestAnimationFrame(() => {
+                raf = 0;
+                const y = vv.scale > 1.01 ? 0 : Math.round(vv.pageTop - window.scrollY);
+                if (y === last) return;
+                last = y;
+                document.documentElement.style.setProperty('--dogu-bg-shift', y + 'px');
+            });
+        };
+        vv.addEventListener('resize', sync);
+        vv.addEventListener('scroll', sync);
+        window.addEventListener('scroll', sync, { passive: true });
+        sync();
+    })();
+
     // ★★ 폰: 검색창에 포커스를 쥔 채 앱을 백그라운드로 보내면, 돌아왔을 때 페이지가 90px 쯤 내려가 있다
     //   (히어로 로고가 딱 잘려 나간 만큼. 2026-09-18 실기기 — iOS 사파리·안드로이드 크롬 **둘 다**).
     //   브라우저가 복귀하면서 「포커스를 쥔 입력칸」을 화면 안으로 끌어오느라 스크롤을 옮기는 것이라
